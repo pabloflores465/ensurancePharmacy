@@ -1,7 +1,7 @@
-/Users/randyrivera/IdeaProjects/ensurancePharmacy/back/src/main/java/com/ejemplo/dao/UsuarioDAO.java
-/Users/randyrivera/IdeaProjects/ensurancePharmacy/back/src/main/java/com/ejemplo/server/MainApp.java
-/Users/randyrivera/IdeaProjects/ensurancePharmacy/back/src/main/java/com/ejemplo/rest/UsuarioResource.java
-/Users/randyrivera/IdeaProjects/ensurancePharmacy/back/src/main/java/com/ejemplo/util/HibernateUtil.java
-/Users/randyrivera/IdeaProjects/ensurancePharmacy/back/src/main/java/com/ejemplo/util/HibernateTest.java
-/Users/randyrivera/IdeaProjects/ensurancePharmacy/back/src/main/java/com/ejemplo/test/Main.java
-/Users/randyrivera/IdeaProjects/ensurancePharmacy/back/src/main/java/com/ejemplo/modelo/Usuario.java
+/Users/gp/Documents/ensurancePharmacy/back/src/main/java/com/ejemplo/test/Main.java
+/Users/gp/Documents/ensurancePharmacy/back/src/main/java/com/ejemplo/rest/UsuarioResource.java
+/Users/gp/Documents/ensurancePharmacy/back/src/main/java/com/ejemplo/util/HibernateTest.java
+/Users/gp/Documents/ensurancePharmacy/back/src/main/java/com/ejemplo/modelo/Usuario.java
+/Users/gp/Documents/ensurancePharmacy/back/src/main/java/com/ejemplo/util/HibernateUtil.java
+/Users/gp/Documents/ensurancePharmacy/back/src/main/java/com/ejemplo/dao/UsuarioDAO.java
+/Users/gp/Documents/ensurancePharmacy/back/src/main/java/com/ejemplo/server/MainApp.java
