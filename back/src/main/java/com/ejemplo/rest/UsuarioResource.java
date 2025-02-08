@@ -1,7 +1,7 @@
 package com.ejemplo.rest;
 
 import com.ejemplo.dao.UsuarioDAO;
-import com.ejemplo.model.Usuario;
+import com.ejemplo.modelo.Usuario;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import java.util.List;

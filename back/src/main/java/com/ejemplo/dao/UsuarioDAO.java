@@ -7,6 +7,7 @@ import org.hibernate.query.Query;
 import com.ejemplo.util.HibernateUtil;
 import java.util.List;
 
+
 public class UsuarioDAO {
 
     public List<Usuario> obtenerTodosLosUsuarios() {
@@ -25,5 +26,6 @@ public class UsuarioDAO {
             e.printStackTrace();
             return null;
         }
+
     }
 }
