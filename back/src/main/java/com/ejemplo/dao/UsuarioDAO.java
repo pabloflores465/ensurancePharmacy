@@ -1,6 +1,6 @@
 package com.ejemplo.dao;
 
-import com.ejemplo.model.Usuario;
+import com.ejemplo.modelo.Usuario;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
