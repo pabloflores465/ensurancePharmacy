@@ -12,8 +12,8 @@
         <property name="hibernate.connection.url">jdbc:oracle:thin:@//64.225.58.196:1521/XEPDB1</property>
 
         <!-- Credenciales de usuario -->
-        <property name="hibernate.connection.username">ADMIN</property>
-        <property name="hibernate.connection.password">admin123</property>
+        <property name="hibernate.connection.username">USUARIO</property>
+        <property name="hibernate.connection.password">user123</property>
 
         <!-- Dialecto de Oracle 12c+ (válido para 21c) -->
         <property name="hibernate.dialect">org.hibernate.dialect.Oracle12cDialect</property>

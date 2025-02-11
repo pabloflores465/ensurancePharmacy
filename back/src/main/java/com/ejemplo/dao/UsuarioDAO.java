@@ -12,9 +12,11 @@ public class UsuarioDAO {
 
     public List<Usuario> obtenerTodosLosUsuarios() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("FROM Usuario", Usuario.class).list();
+            //return session.createQuery("FROM Usuario", Usuario.class).list();
+            return session.createQuery("SELECT * FROM LOLA").list();
         } catch (Exception e) {
             e.printStackTrace();
+            System.out.println("Error al obtener los usuarios");
             return null;
         }
     }
@@ -24,8 +26,13 @@ public class UsuarioDAO {
             return session.get(Usuario.class, id);
         } catch (Exception e) {
             e.printStackTrace();
+            System.out.println("Error al obtener el usuarios");
             return null;
         }
 
+    }
+
+    public void cerrar() {
+        HibernateUtil.getSessionFactory().close();
     }
 }

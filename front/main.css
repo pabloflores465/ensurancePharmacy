@@ -1,1 +1,50 @@
-@import "tailwindcss"
+@import "tailwindcss";
+
+:root {
+  --primary-color: #121827;
+  --accent-color: #fbe152;
+  --hover-color: #f5ca0f;
+  --hover-color-secondary: #252f4b;
+  --error-color: #e590a8;
+}
+
+body {
+  background-color: var(--primary-color);
+}
+
+@keyframes materialize {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.appear {
+  animation: materialize 1s ease forwards;
+}
+
+.button {
+  background-color: var(--accent-color);
+  color: #121827;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.1),
+    0 1px 2px rgba(0, 0, 0, 0.06);
+  font-weight: 700;
+  transition-property:
+    background-color, border-color, color, fill, stroke, opacity, box-shadow,
+    transform;
+  transition-duration: 300ms; /* duration-300 */
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transform: scale(1);
+}
+
+.button:hover {
+  background-color: var(--hover-color);
+  transform: scale(1.05);
+}

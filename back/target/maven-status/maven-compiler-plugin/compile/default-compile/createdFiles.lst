@@ -5,3 +5,4 @@ com/ejemplo/rest/UsuarioResource.class
 com/ejemplo/dao/UsuarioDAO.class
 com/ejemplo/test/Main.class
 com/ejemplo/server/MainApp.class
+com/ejemplo/test/TestConexionDB.class

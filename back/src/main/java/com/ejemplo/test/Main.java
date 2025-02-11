@@ -21,8 +21,8 @@ public class Main {
             System.err.println("❌ Error al obtener usuarios: " + e.getMessage());
             e.printStackTrace();
         }
-        //finally {
-          //  usuarioDAO.cerrar(); // Asegura el cierre de la conexión
-        //}
+        finally {
+          usuarioDAO.cerrar(); // Asegura el cierre de la conexión
+        }
     }
 }
