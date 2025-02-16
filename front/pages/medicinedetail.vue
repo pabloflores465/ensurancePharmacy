@@ -1,6 +1,4 @@
-<script setup>
-import { ref } from "vue";
-
+<script setup lang="ts">
 const producto = ref({
   title: "Paracetamol",
   codigo: "MED12345",
@@ -30,8 +28,10 @@ const producto = ref({
 });
 </script>
 <template>
-  <div class="w-full bg-white bg-[url('/carCrash.jpg')] bg-cover bg-center p-6">
-    <div class="flex flex-col gap-6 md:flex-row">
+  <main
+    class="bg-image-[url('/carCrash.jpg')]"
+  >
+    <section class="flex flex-col gap-6 md:flex-row">
       <div class="md:w-1/2">
         <img
           :src="producto.fotos[0]"
@@ -48,48 +48,46 @@ const producto = ref({
           />
         </div>
       </div>
-      <div
-        class="rounded-lg bg-[var(--primary-color)]/80 px-6 py-4 backdrop-blur-md md:w-1/2"
-      >
+      <section class="card md:w-1/2 pt-4">
         <h1
-          class="mb-6 line-clamp-2 text-2xl font-bold text-[var(--accent-color)]"
+          class="title justify-items-start mb-6"
         >
           {{ producto.title }}
         </h1>
-        <p class="mb-6 text-justify text-lg font-bold text-white">
+        <p class="mb-6 text-justify text-lg font-bold text-primary">
           {{ producto.descripcion }}
         </p>
-        <p class="mb-2 text-gray-300">
+        <p class="mb-2 text-secondary">
           <strong class="pe-2">Active Principle: </strong
           >{{ producto.principioActivo }}
         </p>
-        <p class="mb-2 text-gray-300">
+        <p class="mb-2 text-secondary">
           <strong class="pe-2">Code: </strong>{{ producto.codigo }}
         </p>
-        <p class="mb-2 text-gray-300">
+        <p class="mb-2 text-secondary">
           <strong class="pe-2">Presentation: </strong
           >{{ producto.presentacion }}
         </p>
-        <p class="mb-2 text-gray-300">
+        <p class="mb-2 text-secondary">
           <strong class="pe-2">Units: </strong>{{ producto.numeroUnidades }}
         </p>
-        <p class="mb-2 text-gray-300">
+        <p class="mb-2 text-secondary">
           <strong class="pe-2">Recipe Required: </strong
           >{{ !producto.requiereReceta ? "No" : "Yes" }}
         </p>
-        <p class="mb-6 text-gray-300">
+        <p class="mb-6 text-secondary">
           <strong class="pe-2">Brand: </strong>{{ producto.marca }}
         </p>
         <div class="grid grid-cols-2 gap-2 md:grid-cols-3">
           <span
             v-for="(categoria, index) in producto.categorias"
             :key="index"
-            class="rounded bg-[var(--accent-color)] px-2.5 py-1 text-sm break-words font-medium text-[var(--primary-color)]"
+            class="rounded bg-accent hover:bg-h-accent px-2.5 py-1 text-sm font-medium break-words text-[var(--primary-color)]"
           >
             {{ categoria }}
           </span>
         </div>
-      </div>
-    </div>
-  </div>
+      </section>
+    </section>
+  </main>
 </template>

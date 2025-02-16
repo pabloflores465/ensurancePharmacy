@@ -1,24 +1,90 @@
 @import "tailwindcss";
 
-:root {
-  --primary-color: #121827;
-  --accent-color: #fbe152;
-  --hover-color: #f5ca0f;
-  --hover-color-secondary: #252f4b;
-  --error-color: #e590a8;
-  --hover-error-color: #d3446c;
-  --success-color: #90e5cd;
-  --hover-success-color: #44d3ab;
-  --first: #fafafa;
-  --hover-first: white;
-  --second: #e5e5e5;
-  --hover-second: #f5f5f5;
-  --third: #a1a1a1;
-  --hover-third: #d4d4d4;
+@theme {
+  --color-background: #121827;
+  --color-h-background: #252f4b;
+  --color-accent: #fbe152;
+  --color-h-accent: #f5ca0f;
+  --color-error: #e590a8;
+  --color-h-error: #d3446c;
+  --color-success: #90e5cd;
+  --color-h-success: #44d3ab;
+  --color-primary: #fafafa;
+  --color-h-primary: white;
+  --color-secondary: #e5e5e5;
+  --color-h-secondary: #f5f5f5;
+  --color-terciary: #a1a1a1;
+  --color-h-terciary: #d4d4d4;
+}
+
+@layer components {
+  .btn {
+    background-color: var(--color-accent);
+    color: var(--color-background);
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1),
+    0 1px 2px rgba(0, 0, 0, 0.06);
+    font-weight: 700;
+    transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow,
+    transform;
+    transition-duration: 300ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transform: scale(1);
+    @variant hover {
+      background-color: var(--color-h-accent);
+      transform: scale(1.05);
+    }
+  }
+
+  .field {
+    display: block;
+    width: 100%;
+    color: var(--color-primary);
+    outline: 0;
+    border-bottom-width: 2px;
+    border-bottom-color: var(--color-primary);
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    @variant hover {
+      border-bottom-color: var(--color-h-primary);
+    }
+  }
+
+  .card {
+    backdrop-filter: blur(12px);
+    border-radius: 0.5rem;
+    background-color: rgba(19, 24, 38, 0.8);
+    padding: 1.75em 2em;
+    margin: 0.5em;
+    --tw-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+  }
+
+  .label {
+    display: block;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-primary);
+  }
+
+  .title {
+    color: var(--color-accent);
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+}
+
+@utility bg-image-* {
+  width: 100%;
+  background-position: center;
+  background-size: cover;
+  background-image: --value([url]);
 }
 
 body {
-  background-color: var(--primary-color);
+  background-color: var(--color-background);
 }
 
 @keyframes materialize {
@@ -34,26 +100,4 @@ body {
 
 .appear {
   animation: materialize 1s ease forwards;
-}
-
-.button {
-  background-color: var(--accent-color);
-  color: #121827;
-  padding: 0.5rem 1rem;
-  border-radius: 9999px;
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.1),
-    0 1px 2px rgba(0, 0, 0, 0.06);
-  font-weight: 700;
-  transition-property:
-    background-color, border-color, color, fill, stroke, opacity, box-shadow,
-    transform;
-  transition-duration: 300ms; /* duration-300 */
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transform: scale(1);
-}
-
-.button:hover {
-  background-color: var(--hover-color);
-  transform: scale(1.05);
 }

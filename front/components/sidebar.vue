@@ -23,7 +23,7 @@ function toggle(id: number): void {
 }
 </script>
 <template>
-  <div class="flex flex-col border-b-1 border-b-gray-400 py-2">
+  <main class="flex flex-col border-b-1 border-b-secondary py-2">
     <NuxtLink to="/" class="mb-6 flex justify-center">
       <img
         class="rounded-full border-2 border-[var(--hover-color)] hover:scale-105"
@@ -38,11 +38,12 @@ function toggle(id: number): void {
           search = !search;
         }
       "
-      :class="
+      :class="[
+        'px-2 py-2',
         search
-          ? 'bg-[var(--accent-color)] px-2 py-2 hover:bg-[var(--hover-color)]'
-          : 'px-2 py-2 hover:bg-[var(--hover-color-secondary)]'
-      "
+          ? 'bg-accent hover:bg-h-accent'
+          : 'hover:bg-h-background',
+      ]"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -58,18 +59,19 @@ function toggle(id: number): void {
     </button>
     <button
       @click="toggle(1)"
-      :class="
+      :class="[
+        'px-2 py-2',
         currentId === 1
-          ? 'bg-[var(--accent-color)] px-2 py-2 hover:bg-[var(--hover-color)]'
-          : 'px-2 py-2 hover:bg-[var(--hover-color-secondary)]'
-      "
+          ? 'bg-accent hover:bg-h-accent'
+          : 'hover:bg-h-background',
+      ]"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         height="40px"
         viewBox="0 -960 960 960"
         width="40px"
-        :fill="currentId === 1 ? '--primary-color' : 'white'"
+        :fill="currentId === 1 ? '--color-primary' : 'white'"
       >
         <path
           d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Zm80-80h480v-32q0-11-5.5-20T700-306q-54-27-109-40.5T480-360q-56 0-111 13.5T260-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T560-640q0-33-23.5-56.5T480-720q-33 0-56.5 23.5T400-640q0 33 23.5 56.5T480-560Zm0-80Zm0 400Z"
@@ -78,11 +80,12 @@ function toggle(id: number): void {
     </button>
     <button
       @click="toggle(2)"
-      :class="
+      :class="[
+        'px-2 py-2',
         currentId === 2
-          ? 'bg-[var(--accent-color)] px-2 py-2 hover:bg-[var(--hover-color)]'
-          : 'px-2 py-2 hover:bg-[var(--hover-color-secondary)]'
-      "
+          ? 'bg-accent hover:bg-h-accent'
+          : 'hover:bg-h-background',
+      ]"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -98,18 +101,19 @@ function toggle(id: number): void {
     </button>
     <button
       @click="toggle(3)"
-      :class="
+      :class="[
+        'px-2 py-2',
         currentId === 3
-          ? 'bg-[var(--accent-color)] px-2 py-2 hover:bg-[var(--hover-color)]'
-          : 'px-2 py-2 hover:bg-[var(--hover-color-secondary)]'
-      "
+          ? 'bg-accent hover:bg-h-accent'
+          : 'hover:bg-h-background',
+      ]"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         height="40px"
         viewBox="0 -960 960 960"
         width="40px"
-        :fill="currentId === 3 ? '--primary-color' : 'white'"
+        :fill="currentId === 3 ? '--color-primary' : 'white'"
       >
         <path
           d="M440-160q-17 0-28.5-11.5T400-200v-240L168-736q-15-20-4.5-42t36.5-22h560q26 0 36.5 22t-4.5 42L560-440v240q0 17-11.5 28.5T520-160h-80Zm40-308 198-252H282l198 252Zm0 0Z"
@@ -117,19 +121,23 @@ function toggle(id: number): void {
       </svg>
     </button>
     <button
-      @click="():void=>{edit=!edit}"
-      :class="
-        edit
-          ? 'bg-[var(--accent-color)] px-2 py-2 hover:bg-[var(--hover-color)]'
-          : 'px-2 py-2 hover:bg-[var(--hover-color-secondary)]'
+      @click="
+        (): void => {
+          edit = !edit;
+        }
       "
+      :class="[
+        'px-2 py-2',
+        edit
+          ? 'bg-accent hover:bg-h-accent'
+          : 'hover:bg-h-background',
+      ]"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         height="40px"
         viewBox="0 -960 960 960"
         width="40px"
-
         :fill="edit ? '--primary-color' : 'white'"
       >
         <path
@@ -137,16 +145,13 @@ function toggle(id: number): void {
         />
       </svg>
     </button>
-  </div>
-  <div
-    class="min-w-[200px] justify-center border-b-1 border-l-1 border-b-gray-400 border-l-gray-400 bg-[var(--primary-color)] p-2 py-4 max-sm:w-full sm:w-[20%]"
+  </main>
+  <section
+    class="border-b-secondary min-w-[200px] justify-center border-b-1 border-l-1 border-l-gray-400 bg-[var(--primary-color)] p-2 py-4 max-sm:w-full sm:w-[20%]"
     v-if="toggleSidebar && currentId === 1"
   >
     <div class="flex flex-col items-center justify-center">
-      <NuxtLink
-        to="/signup"
-        class="mb-2 flex w-full transform justify-center rounded-full bg-[var(--accent-color)] px-4 py-2 font-bold text-[var(--primary-color)] shadow transition duration-300 ease-in-out hover:scale-105 hover:bg-[var(--hover-color)]"
-      >
+      <NuxtLink to="/signup" class="btn mx-12 flex w-full justify-center mb-4">
         <svg
           class="me-2"
           xmlns="http://www.w3.org/2000/svg"
@@ -163,7 +168,7 @@ function toggle(id: number): void {
       </NuxtLink>
       <NuxtLink
         to="/login"
-        class="mb-2 flex w-full transform justify-center rounded-full bg-[var(--accent-color)] px-4 py-2 font-bold text-[var(--primary-color)] shadow transition duration-300 ease-in-out hover:scale-105 hover:bg-[var(--hover-color)]"
+        class="btn flex w-full justify-center"
       >
         <svg
           class="me-2"
@@ -180,14 +185,14 @@ function toggle(id: number): void {
         Log In</NuxtLink
       >
     </div>
-  </div>
-  <div
+  </section>
+  <section
     class="min-w-[200px] justify-center border-b-1 border-l-1 border-b-gray-400 border-l-gray-400 bg-[var(--primary-color)] p-2 py-4 max-sm:w-full sm:w-[20%]"
     v-if="toggleSidebar && currentId === 2"
   >
     <NuxtLink
       to="/policies"
-      class="mb-2 flex w-full transform items-center justify-center rounded-full bg-[var(--accent-color)] px-4 py-2 font-bold text-[var(--primary-color)] shadow transition duration-300 ease-in-out hover:scale-105 hover:bg-[var(--hover-color)]"
+      class="btn flex w-full justify-center"
     >
       <svg
         class="pe-2"
@@ -195,7 +200,7 @@ function toggle(id: number): void {
         height="30px"
         viewBox="0 -960 960 960"
         width="30px"
-        fill="--primary-color"
+        fill="--color-primary"
       >
         <path
           d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h168q13-36 43.5-58t68.5-22q38 0 68.5 22t43.5 58h168q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm80-80h280v-80H280v80Zm0-160h400v-80H280v80Zm0-160h400v-80H280v80Zm200-190q13 0 21.5-8.5T510-820q0-13-8.5-21.5T480-850q-13 0-21.5 8.5T450-820q0 13 8.5 21.5T480-790ZM200-200v-560 560Z"
@@ -203,16 +208,16 @@ function toggle(id: number): void {
       </svg>
       Policies</NuxtLink
     >
-  </div>
-  <div
-    class="min-w-[200px] justify-center border-b-1 border-l-1 border-b-gray-400 border-l-gray-400 bg-[var(--primary-color)] p-2 max-sm:w-full sm:w-[20%]"
+  </section>
+  <section
+    class="min-w-[200px] justify-center border-b-1 border-l-1 border-b-secondary border-l-gray-400 p-2 max-sm:w-full sm:w-[20%]"
     v-if="toggleSidebar && currentId === 3"
   >
     <div
       class="flex max-h-[calc(100vh-8rem)] flex-col overflow-auto max-sm:items-center"
     >
       <div
-        class="my-4 ms-2 mb-4 font-bold text-white"
+        class="my-4 ms-2 mb-4 font-bold text-primary hover:text-h-accent"
         v-for="(category, catIndex) in categories"
         :key="category.id"
       >
@@ -227,12 +232,11 @@ function toggle(id: number): void {
           {{ category.name }}
           <svg
             v-if="showSubcategories[catIndex]"
-            class="ms-2"
             xmlns="http://www.w3.org/2000/svg"
             height="24px"
             viewBox="0 -960 960 960"
             width="24px"
-            fill="white"
+            fill="currentColor"
           >
             <path d="M480-360 280-560h400L480-360Z" />
           </svg>
@@ -243,7 +247,7 @@ function toggle(id: number): void {
             height="24px"
             viewBox="0 -960 960 960"
             width="24px"
-            fill="white"
+            fill="currentColor"
           >
             <path d="m280-400 200-200 200 200H280Z" />
           </svg>
@@ -251,12 +255,12 @@ function toggle(id: number): void {
         <div
           v-for="subcategory in category.subcategories"
           :key="subcategory.id"
-          class="ms-2 border-s-2 ps-2 font-semibold text-gray-300"
+          class="ms-2 border-s-2 ps-2 font-semibold text-secondary hover:text-h-accent"
           v-if="showSubcategories[catIndex]"
         >
           {{ subcategory.name }}
         </div>
       </div>
     </div>
-  </div>
+  </section>
 </template>

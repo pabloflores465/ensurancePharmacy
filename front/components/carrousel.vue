@@ -58,7 +58,7 @@ const goToSlide: (index: number) => void = (index: number): void => {
     </div>
     <button
       @click="prev"
-      class="button bg-opacity-50 absolute top-1/2 left-0 m-2 flex -translate-y-1/2 transform justify-center p-0 text-white focus:outline-none"
+      class="button bg-opacity-50 absolute top-1/2 left-0 m-2 flex -translate-y-1/2 transform justify-center p-0 text-[var(--first)] focus:outline-none"
     >
       <svg
         stroke="#121827"
@@ -79,7 +79,7 @@ const goToSlide: (index: number) => void = (index: number): void => {
     </button>
     <button
       @click="next"
-      class="button bg-opacity-50 absolute top-1/2 right-0 m-2 -translate-y-1/2 transform p-0 text-white focus:outline-none"
+      class="button bg-opacity-50 absolute top-1/2 right-0 m-2 -translate-y-1/2 transform p-0 text-[var(--first)] focus:outline-none"
     >
       <svg
         stroke="#121827"
