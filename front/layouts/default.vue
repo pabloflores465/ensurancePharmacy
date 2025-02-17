@@ -39,4 +39,5 @@ watch(dark, (newValue, oldValue) => {
       <Footer />
     </div>
   </transition>
+  <Notifications />
 </template>

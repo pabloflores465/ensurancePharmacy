@@ -18,32 +18,10 @@ const notifications: Ref<notification[]> = useNotifications();
           notification.type === 'success'
             ? 'text-success hover:text-h-success'
             : '',
-          notification.type === 'error'
-            ? 'text-error hover:text-h-error'
-            : '',
+          notification.type === 'error' ? 'text-error hover:text-h-error' : '',
         ]"
       >
         {{ notification.title }}
-        <button
-          @click="
-            () => {
-              notifications.splice(index, 1);
-            }
-          "
-          class="ms-auto"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            height="24px"
-            viewBox="0 -960 960 960"
-            width="24px"
-            fill="#e8eaed"
-          >
-            <path
-              d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"
-            />
-          </svg>
-        </button>
       </h2>
       <p class="text-secondary hover:text-h-secondary px-4 pb-2">
         {{ notification.description }}
