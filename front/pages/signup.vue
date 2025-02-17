@@ -1,6 +1,7 @@
+<script setup lang="ts"></script>
 <template>
   <main
-    class="flex w-full items-center justify-center bg-image-[url(/sign.jpg)]"
+    class="bg-image-[url(/sign.jpg)] flex w-full items-center justify-center"
   >
     <section class="card min-w-[80%]">
       <h2 class="title mb-6">Hi, please Sign Up</h2>
