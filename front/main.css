@@ -22,8 +22,8 @@
   --color-h-success: var(--color-green-500);
   --color-dark:var(--color-slate-950);
   --color-h-dark:var(--color-slate-900);
-  --color-body-dark: var(--color-slate-950);
-  --color-body-light: var(--color-slate-50);
+  --color-light: var(--color-slate-50);
+  --color-h-light: var(--color-slate-200);
 
   @keyframes materialize {
     0% {
@@ -75,7 +75,7 @@
   }
 
   body {
-    @apply bg-background
+    @apply bg-background dark:bg-background
   }
 }
 

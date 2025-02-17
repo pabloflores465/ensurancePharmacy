@@ -25,6 +25,8 @@ function toggle(id: number): void {
 }
 
 const dark = darkMode();
+
+const router = useRoute();
 </script>
 <template>
   <main
@@ -65,6 +67,50 @@ const dark = darkMode();
         />
       </svg>
     </button>
+    <NuxtLink
+      to="/signup"
+      :class="[
+        'px-2 py-2',
+        router.path === '/signup'
+          ? 'bg-accent hover:bg-h-accent'
+          : 'hover:bg-h-background',
+      ]"
+    >
+      <svg
+        :class="[router.path === '/signup' ? 'text-dark' : 'text-primary']"
+        xmlns="http://www.w3.org/2000/svg"
+        height="40px"
+        viewBox="0 -960 960 960"
+        width="40px"
+        fill="currentColor"
+      >
+        <path
+          d="M720-400v-120H600v-80h120v-120h80v120h120v80H800v120h-80Zm-360-80q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM40-160v-112q0-34 17.5-62.5T104-378q62-31 126-46.5T360-440q66 0 130 15.5T616-378q29 15 46.5 43.5T680-272v112H40Zm80-80h480v-32q0-11-5.5-20T580-306q-54-27-109-40.5T360-360q-56 0-111 13.5T140-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T440-640q0-33-23.5-56.5T360-720q-33 0-56.5 23.5T280-640q0 33 23.5 56.5T360-560Zm0-80Zm0 400Z"
+        />
+      </svg>
+    </NuxtLink>
+    <NuxtLink
+      to="/login"
+      :class="[
+        'px-2 py-2',
+        router.path === '/login'
+          ? 'bg-accent hover:bg-h-accent'
+          : 'hover:bg-h-background',
+      ]"
+    >
+      <svg
+        :class="[router.path === '/login' ? 'text-dark' : 'text-primary']"
+        xmlns="http://www.w3.org/2000/svg"
+        height="40px"
+        viewBox="0 -960 960 960"
+        width="40px"
+        fill="currentColor"
+      >
+        <path
+          d="M480-120v-80h280v-560H480v-80h280q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H480Zm-80-160-55-58 102-102H120v-80h327L345-622l55-58 200 200-200 200Z"
+        />
+      </svg>
+    </NuxtLink>
     <button
       @click="toggle(1)"
       :class="[
@@ -87,17 +133,17 @@ const dark = darkMode();
         />
       </svg>
     </button>
-    <button
-      @click="toggle(2)"
+    <NuxtLink
+      to="/policies"
       :class="[
         'px-2 py-2',
-        currentId === 2
+        router.path === '/policies'
           ? 'bg-accent hover:bg-h-accent'
           : 'hover:bg-h-background',
       ]"
     >
       <svg
-        :class="[currentId === 2 ? 'text-dark' : 'text-primary']"
+        :class="[router.path === '/policies' ? 'text-dark' : 'text-primary']"
         xmlns="http://www.w3.org/2000/svg"
         height="40px"
         viewBox="0 -960 960 960"
@@ -108,7 +154,7 @@ const dark = darkMode();
           d="M320-240h320v-80H320v80Zm0-160h320v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"
         />
       </svg>
-    </button>
+    </NuxtLink>
     <button
       @click="toggle(3)"
       :class="[
