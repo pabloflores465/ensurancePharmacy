@@ -13,7 +13,7 @@ public class UsuarioDAO {
     public List<Usuario> obtenerTodosLosUsuarios() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             //return session.createQuery("FROM Usuario", Usuario.class).list();
-            return session.createQuery("SELECT * FROM LOLA").list();
+            return session.createQuery("SELECT * FROM Usuarios.LOLA").list();
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Error al obtener los usuarios");
