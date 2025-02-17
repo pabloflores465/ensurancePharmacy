@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { darkMode } from "~/composables/darkMode";
+
 withDefaults(
   defineProps<{
     name?: string;
@@ -20,17 +22,22 @@ withDefaults(
     price: 2300.66,
   },
 );
+
+const dark = darkMode();
 </script>
 
 <template>
   <section
-    class="card m-4 transform px-6 py-4 transition-transform duration-300 hover:scale-105"
+    :class="[
+      'card m-4 w-[50%] transform px-6 py-4 transition-transform duration-300 hover:scale-105 max-sm:w-full',
+      dark ? 'dark' : '',
+    ]"
   >
     <div class="title mb-6">
       {{ name }}
     </div>
 
-    <div class="text-md mb-2 flex text-accent hover:text-h-accent">
+    <div class="text-md text-accent hover:text-h-accent mb-2 flex">
       <div class="flex pe-2 font-semibold">
         <svg
           class="me-2"
@@ -48,7 +55,7 @@ withDefaults(
       </div>
       {{ code }}
     </div>
-    <div class="text-md mb-2 flex text-success hover:text-h-success">
+    <div class="text-md text-success hover:text-h-success mb-2 flex">
       <div class="flex pe-2 font-semibold">
         <svg
           class="me-2"
@@ -66,9 +73,7 @@ withDefaults(
       </div>
       {{ percentage }}
     </div>
-    <div
-      class="text-md mb-6 flex text-error hover:text-h-error"
-    >
+    <div class="text-md text-error hover:text-h-error mb-6 flex">
       <div class="flex pe-2 font-semibold">
         <svg
           class="me-2"
@@ -86,7 +91,7 @@ withDefaults(
       </div>
       Q.{{ price }}
     </div>
-    <div class="text-md mb-2 flex text-primary hover:text-h-primary">
+    <div class="text-md text-primary hover:text-h-primary mb-2 flex">
       <div class="flex pe-2 font-semibold">
         <svg
           class="me-2"
@@ -94,7 +99,7 @@ withDefaults(
           height="24px"
           viewBox="0 -960 960 960"
           width="24px"
-          fill="#e8eaed"
+          fill="currentColor"
         >
           <path
             d="M360-300q-42 0-71-29t-29-71q0-42 29-71t71-29q42 0 71 29t29 71q0 42-29 71t-71 29ZM200-80q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v560q0 33-23.5 56.5T760-80H200Zm0-80h560v-400H200v400Zm0-480h560v-80H200v80Zm0 0v-80 80Z"
@@ -104,7 +109,7 @@ withDefaults(
       </div>
       {{ creationDate }}
     </div>
-    <div class="text-md mb-6 flex text-primary hover:text-h-primary">
+    <div class="text-md text-primary hover:text-h-primary mb-6 flex">
       <div class="flex pe-2 font-semibold">
         <svg
           class="me-2"
@@ -112,7 +117,7 @@ withDefaults(
           height="24px"
           viewBox="0 -960 960 960"
           width="24px"
-          fill="#e8eaed"
+          fill="currentColor"
         >
           <path
             d="M580-240q-42 0-71-29t-29-71q0-42 29-71t71-29q42 0 71 29t29 71q0 42-29 71t-71 29ZM200-80q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v560q0 33-23.5 56.5T760-80H200Zm0-80h560v-400H200v400Zm0-480h560v-80H200v80Zm0 0v-80 80Z"
@@ -122,7 +127,7 @@ withDefaults(
       </div>
       {{ expireDate }}
     </div>
-    <div class="mb-4 text-justify text-sm text-secondary">
+    <div class="text-secondary mb-4 text-justify text-sm">
       {{ description }}
     </div>
   </section>

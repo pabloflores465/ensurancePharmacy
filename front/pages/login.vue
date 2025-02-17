@@ -1,5 +1,13 @@
+<script setup lang="ts">
+const dark = darkMode();
+</script>
 <template>
-  <main class="flex items-center justify-center bg-image-[url('/sign.jpg')]">
+  <main
+    :class="[
+      `bg-image-[url('/sign.jpg')] flex items-center justify-center`,
+      dark ? 'dark' : '',
+    ]"
+  >
     <section class="card">
       <h2 class="title mb-6">Hi, Please Enter Your Credentials</h2>
       <form>
