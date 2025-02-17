@@ -22,11 +22,26 @@ export const notify = (
     notId = notId + 1;
     not.id = notId;
   }
+  if (!not.timeout) {
+    not.timeout = 5000;
+  }
+  if (!not.type) {
+    not.type = "loading";
+  }
   const notifications = useNotifications();
-  notifications.value.push(not);
+  let sameNotification = false;
+  notifications.value.forEach((element) => {
+    if (not.id === element.id) {
+      sameNotification = true;
+    }
+  });
+  if (!sameNotification) {
+    notifications.value.push(not);
+  }
+
   setTimeout(() => {
-    notifications.value = notifications.filter((element) =>
-      shallowEqual(element, not),
+    notifications.value = notifications.value.filter(
+      (element) => !shallowEqual(element, not),
     );
   }, not.timeout);
 };
