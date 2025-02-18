@@ -52,10 +52,6 @@ const buttonItems = computed(() =>
   sidebarItems.value.filter((item) => item.type === "button"),
 );
 
-function getValidPath(item: { path?: string }): string {
-  return item.path ?? "/";
-}
-
 const dark = darkMode();
 </script>
 <template>
