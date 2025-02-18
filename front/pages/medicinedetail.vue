@@ -26,11 +26,10 @@ const producto = ref({
   marca: "Pharma Inc.",
   requiereReceta: false,
 });
+const dark = darkMode();
 </script>
 <template>
-  <main
-    class="bg-image-[url('/carCrash.jpg')]"
-  >
+  <main :class="[`bg-image-[url('/carCrash.jpg')]`, dark ? 'dark' : '']">
     <section class="flex flex-col gap-6 md:flex-row">
       <div class="md:w-1/2">
         <img
@@ -48,41 +47,39 @@ const producto = ref({
           />
         </div>
       </div>
-      <section class="card md:w-1/2 pt-4">
-        <h1
-          class="title justify-items-start mb-6"
-        >
+      <section class="card pt-4 md:w-1/2">
+        <h1 class="title mb-6 justify-items-start">
           {{ producto.title }}
         </h1>
-        <p class="mb-6 text-justify text-lg font-bold text-primary">
+        <p class="text-primary mb-6 text-justify text-lg font-bold">
           {{ producto.descripcion }}
         </p>
-        <p class="mb-2 text-secondary">
+        <p class="text-secondary mb-2">
           <strong class="pe-2">Active Principle: </strong
           >{{ producto.principioActivo }}
         </p>
-        <p class="mb-2 text-secondary">
+        <p class="text-secondary mb-2">
           <strong class="pe-2">Code: </strong>{{ producto.codigo }}
         </p>
-        <p class="mb-2 text-secondary">
+        <p class="text-secondary mb-2">
           <strong class="pe-2">Presentation: </strong
           >{{ producto.presentacion }}
         </p>
-        <p class="mb-2 text-secondary">
+        <p class="text-secondary mb-2">
           <strong class="pe-2">Units: </strong>{{ producto.numeroUnidades }}
         </p>
-        <p class="mb-2 text-secondary">
+        <p class="text-secondary mb-2">
           <strong class="pe-2">Recipe Required: </strong
           >{{ !producto.requiereReceta ? "No" : "Yes" }}
         </p>
-        <p class="mb-6 text-secondary">
+        <p class="text-secondary mb-6">
           <strong class="pe-2">Brand: </strong>{{ producto.marca }}
         </p>
         <div class="grid grid-cols-2 gap-2 md:grid-cols-3">
           <span
             v-for="(categoria, index) in producto.categorias"
             :key="index"
-            class="rounded bg-accent hover:bg-h-accent px-2.5 py-1 text-sm font-medium break-words text-[var(--primary-color)]"
+            class="bg-accent hover:bg-h-accent rounded px-2.5 py-1 text-sm font-medium break-words text-[var(--primary-color)]"
           >
             {{ categoria }}
           </span>

@@ -61,7 +61,7 @@
 
 @layer components {
   .btn {
-    @apply bg-accent text-dark py-2 px-4 rounded-full font-bold transition duration-300 hover:bg-h-accent transform hover:scale-105;
+    @apply bg-accent text-light dark:text-dark py-2 px-4 rounded-full font-bold transition duration-300 hover:bg-h-accent transform hover:scale-105;
   }
 
   .field {
