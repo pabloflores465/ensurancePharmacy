@@ -51,7 +51,6 @@ const linkItems = computed(() =>
 const buttonItems = computed(() =>
   sidebarItems.value.filter((item) => item.type === "button"),
 );
-
 const dark = darkMode();
 </script>
 <template>
