@@ -24,9 +24,39 @@ function toggle(id: number): void {
   }
 }
 
-const dark = darkMode();
-
 const router = useRoute();
+
+const sidebarItems: Ref<
+  {
+    type: "link" | "button";
+    conditional: () => boolean;
+    click?: () => void;
+    path: string;
+    iconPath?: string;
+  }[]
+> = ref([
+  {
+    type: "link",
+    path: "/signup",
+    conditional: () => router.path === "/signup",
+    iconPath:
+      "M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z",
+  },
+]);
+
+const linkItems = computed(() =>
+  sidebarItems.value.filter((item) => item.type === "link"),
+);
+
+const buttonItems = computed(() =>
+  sidebarItems.value.filter((item) => item.type === "button"),
+);
+
+function getValidPath(item: { path?: string }): string {
+  return item.path ?? "/";
+}
+
+const dark = darkMode();
 </script>
 <template>
   <main
@@ -37,12 +67,54 @@ const router = useRoute();
   >
     <NuxtLink to="/" class="mb-6 flex justify-center">
       <img
-        class="rounded-full border-2 border-[var(--hover-color)] hover:scale-105"
-        src="../public/logo.png"
-        height="40px"
-        width="40px"
+        class="border-h-color flex h-12 rounded-full border-2"
+        src="/logo.png"
+        alt="company logo"
       />
     </NuxtLink>
+    <NuxtLink
+      v-for="(item, index) in linkItems"
+      :to="item.path"
+      :key="index"
+      :class="[
+        'px-2 py-2',
+        item.conditional()
+          ? 'bg-accent hover:bg-h-accent'
+          : 'hover:bg-h-background',
+      ]"
+    >
+      <svg
+        :class="[item.conditional() ? 'text-dark' : 'text-primary']"
+        xmlns="http://www.w3.org/2000/svg"
+        height="40px"
+        viewBox="0 -960 960 960"
+        width="40px"
+        fill="currentColor"
+      >
+        <path :d="item.iconPath" />
+      </svg>
+    </NuxtLink>
+    <button
+      v-for="item in buttonItems"
+      @click="() => item.click"
+      :class="[
+        'px-2 py-2',
+        item.conditional()
+          ? 'bg-accent hover:bg-h-accent'
+          : 'hover:bg-h-background',
+      ]"
+    >
+      <svg
+        :class="[item.conditional() ? 'text-dark' : 'text-primary']"
+        xmlns="http://www.w3.org/2000/svg"
+        height="40px"
+        viewBox="0 -960 960 960"
+        width="40px"
+        fill="currentColor"
+      >
+        <path :d="item.iconPath" />
+      </svg>
+    </button>
     <button
       @click="
         (): void => {
@@ -257,63 +329,6 @@ const router = useRoute();
       </svg>
     </NuxtLink>
   </main>
-  <section
-    class="border-b-secondary min-w-[200px] justify-center border-b-1 border-l-1 border-l-gray-400 bg-[var(--primary-color)] p-2 py-4 max-sm:w-full sm:w-[20%]"
-    v-if="toggleSidebar && currentId === 1"
-  >
-    <div class="flex flex-col items-center justify-center">
-      <NuxtLink to="/signup" class="btn mx-12 mb-4 flex w-full justify-center">
-        <svg
-          class="me-2"
-          xmlns="http://www.w3.org/2000/svg"
-          height="24px"
-          viewBox="0 -960 960 960"
-          width="24px"
-          fill="--primary-color"
-        >
-          <path
-            d="M720-400v-120H600v-80h120v-120h80v120h120v80H800v120h-80Zm-360-80q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM40-160v-112q0-34 17.5-62.5T104-378q62-31 126-46.5T360-440q66 0 130 15.5T616-378q29 15 46.5 43.5T680-272v112H40Zm80-80h480v-32q0-11-5.5-20T580-306q-54-27-109-40.5T360-360q-56 0-111 13.5T140-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T440-640q0-33-23.5-56.5T360-720q-33 0-56.5 23.5T280-640q0 33 23.5 56.5T360-560Zm0-80Zm0 400Z"
-          />
-        </svg>
-        Sign Up
-      </NuxtLink>
-      <NuxtLink to="/login" class="btn flex w-full justify-center">
-        <svg
-          class="me-2"
-          xmlns="http://www.w3.org/2000/svg"
-          height="24px"
-          viewBox="0 -960 960 960"
-          width="24px"
-          fill="--primary-color"
-        >
-          <path
-            d="M480-120v-80h280v-560H480v-80h280q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H480Zm-80-160-55-58 102-102H120v-80h327L345-622l55-58 200 200-200 200Z"
-          />
-        </svg>
-        Log In</NuxtLink
-      >
-    </div>
-  </section>
-  <section
-    class="min-w-[200px] justify-center border-b-1 border-l-1 border-b-gray-400 border-l-gray-400 bg-[var(--primary-color)] p-2 py-4 max-sm:w-full sm:w-[20%]"
-    v-if="toggleSidebar && currentId === 2"
-  >
-    <NuxtLink to="/policies" class="btn flex w-full justify-center">
-      <svg
-        class="pe-2"
-        xmlns="http://www.w3.org/2000/svg"
-        height="30px"
-        viewBox="0 -960 960 960"
-        width="30px"
-        fill="--color-primary"
-      >
-        <path
-          d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h168q13-36 43.5-58t68.5-22q38 0 68.5 22t43.5 58h168q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm80-80h280v-80H280v80Zm0-160h400v-80H280v80Zm0-160h400v-80H280v80Zm200-190q13 0 21.5-8.5T510-820q0-13-8.5-21.5T480-850q-13 0-21.5 8.5T450-820q0 13 8.5 21.5T480-790ZM200-200v-560 560Z"
-        />
-      </svg>
-      Policies</NuxtLink
-    >
-  </section>
   <section
     :class="[
       'border-b-secondary min-w-[200px] justify-center border-b-1 border-l-1 border-l-gray-400 p-2 max-sm:w-full sm:w-[20%]',
