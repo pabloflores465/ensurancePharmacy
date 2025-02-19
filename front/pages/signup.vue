@@ -35,6 +35,32 @@ const dark = darkMode();
           placeholder="********"
           class="field mb-6"
         />
+        <label for="date" class="label">Birth Date</label>
+        <input type="date" id="date" required class="field mb-6" />
+        <label for="address" class="label">Address</label>
+        <input
+          type="text"
+          id="address"
+          required
+          placeholder="5th avenue, 1234, New York, NY, 10001"
+          class="field mb-6"
+        />
+        <label for="phone" class="label">Phone Number</label>
+        <input
+          type="number"
+          id="phone"
+          required
+          placeholder="59588867"
+          class="field mb-6"
+        />
+        <label for="dpi" class="label">DPI Number</label>
+        <input
+          type="number"
+          id="dpi"
+          required
+          placeholder="3603954160101"
+          class="field mb-6"
+        />
         <button class="btn flex">
           <svg
             class="me-2"
