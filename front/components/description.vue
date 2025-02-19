@@ -8,7 +8,7 @@ const dark = darkMode();
 <template>
   <dialog
     :class="[
-      `card text-primary z-50 m-1 max-w-['250px'] px-2 py-1`,
+      `card text-primary z-50 m-1 max-w-['150px'] px-2 py-1`,
       dark ? 'dark' : '',
     ]"
     :open="show"
