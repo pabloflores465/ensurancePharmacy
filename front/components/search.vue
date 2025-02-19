@@ -1,6 +1,6 @@
 <script setup lang="ts"></script>
 <template>
-  <div class="bg-[var(--primary-color)] p-2">
+  <div class="bg-primary p-2">
     <div
       class="flex w-full flex-row items-center rounded-full bg-white px-2 py-1"
     >
