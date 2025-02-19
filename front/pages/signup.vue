@@ -1,5 +1,48 @@
 <script setup lang="ts">
 const dark = darkMode();
+import { ref } from 'vue';
+import axios from 'axios';
+import { useRouter } from 'vue-router';
+
+const name = ref('');
+  const email = ref('');
+  const password = ref('');
+  const birthdate = ref('');
+  const address = ref('');
+  const phone = ref('');
+  const cui = ref('');
+  const errorMessage = ref('');
+
+const createUser = async () => {
+
+
+  try {
+
+    console.log(name, cui, phone, email, birthdate, address, password);
+
+    const response = await axios.post(
+      'http://localhost:8080/api/users', // URL de tu endpoint de login
+      {
+        name: name.value,
+        cui: cui.value,
+        phone: phone.value,
+        email: email.value,
+        birthDate: birthdate.value,
+        address: address.value,
+        password: password.value
+      }
+    );
+    
+    // Por ejemplo, si la respuesta contiene el usuario autenticado:
+    console.log('Creacion exitoso:', response.data);
+    
+    // Redirigir a la página principal o dashboard
+    //router.push('/home');
+  } catch (error) {
+    console.error('Error en login:', error);
+    errorMessage.value = 'Credenciales incorrectas o error en el servidor.';
+  }
+};
 </script>
 <template>
   <main
@@ -20,6 +63,7 @@ const dark = darkMode();
           required
           placeholder="Name"
           class="field mb-6"
+          v-model="name"
         />
         <label for="email" class="label">E-Mail</label>
         <input
@@ -28,6 +72,7 @@ const dark = darkMode();
           placeholder="email@example.com"
           required
           class="field mb-6"
+          v-model="email"
         />
         <label for="password" class="label">Password</label>
         <input
@@ -36,9 +81,10 @@ const dark = darkMode();
           required
           placeholder="********"
           class="field mb-6"
+          v-model="password"
         />
         <label for="date" class="label">Birth Date</label>
-        <input type="date" id="date" required class="field mb-6" />
+        <input type="date" id="date" required class="field mb-6" v-model="birthdate"/>
         <label for="address" class="label">Address</label>
         <input
           type="text"
@@ -46,6 +92,7 @@ const dark = darkMode();
           required
           placeholder="5th avenue, 1234, New York, NY, 10001"
           class="field mb-6"
+          v-model="address"
         />
         <label for="phone" class="label">Phone Number</label>
         <input
@@ -54,6 +101,7 @@ const dark = darkMode();
           required
           placeholder="59588867"
           class="field mb-6"
+          v-model="phone"
         />
         <label for="dpi" class="label">DPI Number</label>
         <input
@@ -62,8 +110,9 @@ const dark = darkMode();
           required
           placeholder="3603954160101"
           class="field mb-6"
+          v-model="cui"
         />
-        <button class="btn flex">
+        <button class="btn flex" @click.prevent="createUser">
           <svg
             class="me-2"
             xmlns="http://www.w3.org/2000/svg"

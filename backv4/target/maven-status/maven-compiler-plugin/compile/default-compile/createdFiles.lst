@@ -1,5 +1,6 @@
+com/sources/app/handlers/LoginHandler.class
+com/sources/app/App.class
 com/sources/app/handlers/UserHandler.class
 com/sources/app/util/HibernateUtil.class
 com/sources/app/dao/UserDAO.class
-com/sources/app/App.class
 com/sources/app/entities/User.class

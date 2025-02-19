@@ -1,7 +1,8 @@
 package com.sources.app;
 
 import com.sources.app.dao.UserDAO;
-import com.sources.app.handlers.UserHandler; // Importa el handler desde el paquete handlers
+import com.sources.app.handlers.LoginHandler; // Importa el handler desde el paquete handlers
+import com.sources.app.handlers.UserHandler;
 import com.sources.app.util.HibernateUtil;
 import com.sun.net.httpserver.HttpServer;
 import org.hibernate.Session;
@@ -26,9 +27,10 @@ public class App {
 
         // Crear y configurar el servidor HTTP
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
-        server.createContext("/users", new UserHandler(userDAO));
+        server.createContext("/api/login", new LoginHandler(userDAO));
+        server.createContext("/api/users", new UserHandler(userDAO));
         server.setExecutor(null); // Usa el executor por defecto
         server.start();
-        System.out.println("Servidor iniciado en http://localhost:8080/users");
+        System.out.println("Servidor iniciado en http://localhost:8080/api");
     }
 }

@@ -39,6 +39,9 @@ public class User {
     @Column(name = "ENABLED")
     private Integer enabled;  // Estado (habilitado/deshabilitado)
 
+    @Column(name = "PASSWORD")
+    private String password;
+
     // Constructores, getters y setters
     public User() {}
 
@@ -52,6 +55,7 @@ public class User {
         this.role = role;
         this.idPolicy = idPolicy;
         this.enabled = enabled;
+        this.password = password;
     }
 
     // Getters y Setters
@@ -84,4 +88,7 @@ public class User {
 
     public Integer getEnabled() { return enabled; }
     public void setEnabled(Integer enabled) { this.enabled = enabled; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 }

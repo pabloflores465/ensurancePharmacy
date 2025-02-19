@@ -1,5 +1,37 @@
 <script setup lang="ts">
 const dark = darkMode();
+
+import { ref } from 'vue';
+import axios from 'axios';
+import { useRouter } from 'vue-router';
+
+const email = ref('');
+const password = ref('');
+const errorMessage = ref('');
+//const router = useRouter();
+
+const handleLogin = async () => {
+  try {
+    const response = await axios.post(
+      'http://localhost:8080/api/login', // URL de tu endpoint de login
+      {
+        email: email.value,
+        password: password.value
+      }
+    );
+    
+    // Por ejemplo, si la respuesta contiene el usuario autenticado:
+    console.log('Login exitoso:', response.data);
+    // Puedes guardar la info en un store o en el localStorage si es necesario
+    
+    // Redirigir a la página principal o dashboard
+    //router.push('/home');
+  } catch (error) {
+    console.error('Error en login:', error);
+    errorMessage.value = 'Credenciales incorrectas o error en el servidor.';
+  }
+};
+
 </script>
 <template>
   <main
@@ -20,6 +52,7 @@ const dark = darkMode();
           required
           placeholder="email@example.com"
           class="field mb-6"
+          v-model="email"
         />
         <label for="password" class="label">Password</label>
         <input
@@ -28,8 +61,9 @@ const dark = darkMode();
           required
           placeholder="********"
           class="field mb-6"
+          v-model="password"
         />
-        <button class="btn flex">
+        <button class="btn flex" @click.prevent="handleLogin">
           <svg
             class="me-2"
             xmlns="http://www.w3.org/2000/svg"
