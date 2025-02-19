@@ -1,12 +1,14 @@
 <script setup lang="ts">
-const hospitals: Ref<{
-  id_hos: number;
-  name: string;
-  address: string;
-  phone: string;
-  email: string;
-  enabled: true;
-}> = ref([
+const hospitals: Ref<
+  {
+    id_hos: number;
+    name: string;
+    address: string;
+    phone: string;
+    email: string;
+    enabled: boolean;
+  }[]
+> = ref([
   {
     id_hos: 1,
     name: "Hospital Central",
