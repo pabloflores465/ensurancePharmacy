@@ -8,7 +8,9 @@ const dark = darkMode();
       dark ? 'dark' : '',
     ]"
   >
-    <section class="card min-w-[80%]">
+    <section
+      class="card min-w-[350px] max-sm:mx-2 max-sm:w-full max-sm:flex-col"
+    >
       <h2 class="title mb-6">Hi, please Sign Up</h2>
       <form>
         <label for="nombre" class="label">Name</label>
