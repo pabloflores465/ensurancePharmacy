@@ -1,4 +1,5 @@
 .DS_Store
+/front/node_modules
 /backv4/.idea/
 .idea/
 /.idea/
