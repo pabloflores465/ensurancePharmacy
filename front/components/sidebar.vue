@@ -77,6 +77,14 @@ const sidebarItems: Ref<
       "M420-280h120v-140h140v-120H540v-140H420v140H280v120h140v140ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0-560v560-560Z",
   },
   {
+    type: "link",
+    path: "/pharmacy",
+    conditional: () => router.path === "/pharmacy",
+    click: () => {},
+    iconPath:
+      "M420-260h120v-100h100v-120H540v-100H420v100H320v120h100v100ZM280-120q-33 0-56.5-23.5T200-200v-440q0-33 23.5-56.5T280-720h400q33 0 56.5 23.5T760-640v440q0 33-23.5 56.5T680-120H280Zm0-80h400v-440H280v440Zm-40-560v-80h480v80H240Zm40 120v440-440Z",
+  },
+  {
     type: "button",
     conditional: () => search.value,
     click: () => {
