@@ -11,7 +11,7 @@ const emit = defineEmits(["update:show"]);
     class="fixed inset-0 z-50 flex h-full w-full items-center justify-center rounded-lg backdrop-blur-md"
   >
     <dialog
-      class="bg-background relative z-60 w-full max-w-md rounded-lg px-4 py-2"
+      class="bg-background relative z-60 w-full max-w-md rounded-lg px-4 py-2 shadow-xl"
       :open="show"
     >
       <button @click="() => emit('update:show', false)">
