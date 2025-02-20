@@ -53,7 +53,7 @@ public class UserHandler implements HttpHandler {
                         createUser.getCui(),
                         createUser.getPhone(),
                         createUser.getEmail(),
-                        createUser.getBirthDate(),  // Asegúrate de que este valor es de tipo Date
+                        createUser.getBirthDate(),
                         createUser.getAddress(),
                         createUser.getPassword()
                 );

@@ -1,8 +1,7 @@
 package com.sources.app;
 
-import com.sources.app.dao.UserDAO;
-import com.sources.app.handlers.LoginHandler; // Importa el handler desde el paquete handlers
-import com.sources.app.handlers.UserHandler;
+import com.sources.app.dao.*;
+import com.sources.app.handlers.*;
 import com.sources.app.util.HibernateUtil;
 import com.sun.net.httpserver.HttpServer;
 import org.hibernate.Session;
@@ -11,6 +10,7 @@ import java.net.InetSocketAddress;
 
 public class App {
     private static final UserDAO userDAO = new UserDAO();
+    private static final PolicyDAO policyDAO = new PolicyDAO();
 
     public static void main(String[] args) throws Exception {
         // Prueba de conexión a la base de datos
@@ -29,6 +29,7 @@ public class App {
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
         server.createContext("/api/login", new LoginHandler(userDAO));
         server.createContext("/api/users", new UserHandler(userDAO));
+        server.createContext("/api/policy", new PolicyHandler(policyDAO));
         server.setExecutor(null); // Usa el executor por defecto
         server.start();
         System.out.println("Servidor iniciado en http://localhost:8080/api");
