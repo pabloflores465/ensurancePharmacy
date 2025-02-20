@@ -337,7 +337,7 @@ const prescriptions: Ref<
       </div>
       <button
         @click="() => (prescription.show = !prescription.show)"
-        class="btn flex justify-center"
+        class="btn flex justify-center align-middle"
       >
         <svg
           class="me-2"
