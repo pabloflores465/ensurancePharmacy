@@ -1,27 +1,24 @@
 <script setup lang="ts">
 const dark = darkMode();
-import { ref } from 'vue';
-import axios from 'axios';
-import { useRouter } from 'vue-router';
+import { ref } from "vue";
+import axios from "axios";
+import { useRouter } from "vue-router";
 
-const name = ref('');
-  const email = ref('');
-  const password = ref('');
-  const birthdate = ref('');
-  const address = ref('');
-  const phone = ref('');
-  const cui = ref('');
-  const errorMessage = ref('');
+const name = ref("");
+const email = ref("");
+const password = ref("");
+const birthdate = ref("");
+const address = ref("");
+const phone = ref("");
+const cui = ref("");
+const errorMessage = ref("");
 
 const createUser = async () => {
-
-
   try {
-
     console.log(name, cui, phone, email, birthdate, address, password);
 
     const response = await axios.post(
-      'http://localhost:8080/api/users', // URL de tu endpoint de login
+      "http://localhost:8080/api/users", // URL de tu endpoint de login
       {
         name: name.value,
         cui: cui.value,
@@ -29,27 +26,24 @@ const createUser = async () => {
         email: email.value,
         birthDate: birthdate.value,
         address: address.value,
-        password: password.value
-      }
+        password: password.value,
+      },
     );
-    
+
     // Por ejemplo, si la respuesta contiene el usuario autenticado:
-    console.log('Creacion exitoso:', response.data);
-    
+    console.log("Creacion exitoso:", response.data);
+
     // Redirigir a la página principal o dashboard
     //router.push('/home');
   } catch (error) {
-    console.error('Error en login:', error);
-    errorMessage.value = 'Credenciales incorrectas o error en el servidor.';
+    console.error("Error en login:", error);
+    errorMessage.value = "Credenciales incorrectas o error en el servidor.";
   }
 };
 </script>
 <template>
   <main
-    :class="[
-      'bg-image-[url(/sign.jpg)] flex w-full items-center justify-center',
-      dark ? 'dark' : '',
-    ]"
+    class="bg-image-[url(/sign.jpg)] flex w-full items-center justify-center"
   >
     <section
       class="card min-w-[350px] max-sm:mx-2 max-sm:w-full max-sm:flex-col"
@@ -84,7 +78,13 @@ const createUser = async () => {
           v-model="password"
         />
         <label for="date" class="label">Birth Date</label>
-        <input type="date" id="date" required class="field mb-6" v-model="birthdate"/>
+        <input
+          type="date"
+          id="date"
+          required
+          class="field mb-6"
+          v-model="birthdate"
+        />
         <label for="address" class="label">Address</label>
         <input
           type="text"

@@ -26,10 +26,9 @@ const producto = ref({
   marca: "Pharma Inc.",
   requiereReceta: false,
 });
-const dark = darkMode();
 </script>
 <template>
-  <main :class="[`bg-image-[url('/carCrash.jpg')]`, dark ? 'dark' : '']">
+  <main class="bg-image-[url('/carCrash.jpg')]">
     <section class="flex flex-col gap-6 md:flex-row">
       <div class="md:w-1/2">
         <img

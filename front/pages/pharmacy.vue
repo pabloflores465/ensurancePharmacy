@@ -84,19 +84,13 @@ const pharmacies: Ref<
     enabled: true,
   },
 ]);
-
-const dark = darkMode();
 </script>
 
 <template>
   <div
     class="bg-image-[url('/medicine.jpg')] h-full w-full grid-flow-row items-center justify-center gap-1 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
   >
-    <div
-      v-for="pharmacy in pharmacies"
-      :key="pharmacy.id_farm"
-      :class="[`card`, dark ? 'dark' : '']"
-    >
+    <div v-for="pharmacy in pharmacies" :key="pharmacy.id_farm" class="card">
       <h2 class="title mb-6">Farmacia #{{ pharmacy.id_farm }}</h2>
       <p class="text-primary mb-4 flex">
         <svg
