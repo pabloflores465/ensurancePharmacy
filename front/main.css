@@ -6,6 +6,8 @@
   /*light colors*/
   --color-background: var(--color-slate-100);
   --color-h-background: var(--color-slate-200);
+  --color-s-background: var(--color-slate-300);
+  --color-sh-background: var(--color-slate-400);
   --color-primary: var(--color-gray-950);
   --color-h-primary: var(--color-gray-900);
   --color-secondary: var(--color-gray-800);
@@ -44,6 +46,8 @@
   .dark {
     --color-background: var(--color-slate-950);
     --color-h-background: var(--color-slate-900);
+    --color-s-background: var(--color-slate-800);
+    --color-sh-background: var(--color-slate-600);
     --color-primary: var(--color-gray-100);
     --color-h-primary: var(--color-gray-200);
     --color-secondary: var(--color-gray-300);
