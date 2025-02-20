@@ -1,10 +1,9 @@
 <script setup lang="ts">
 const notifications: Ref<notification[]> = useNotifications();
-const dark = darkMode();
 </script>
 
 <template>
-  <section :class="['fixed top-4 right-4 space-y-4', dark ? 'dark' : '']">
+  <section class="fixed top-4 right-4 space-y-4">
     <div
       v-for="(notification, index) in notifications"
       :class="[

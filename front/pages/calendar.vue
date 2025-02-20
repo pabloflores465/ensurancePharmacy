@@ -54,16 +54,11 @@ function nextWeek() {
   currentWeekStart.value.setDate(currentWeekStart.value.getDate() + 7);
   currentWeekStart.value = new Date(currentWeekStart.value);
 }
-
-const dark = darkMode();
 </script>
 
 <template>
   <div
-    :class="[
-      `bg-image-[url('https://cdn.pixabay.com/photo/2023/11/06/09/52/mountain-8369262_1280.jpg')] mx-auto flex w-full flex-col p-4`,
-      dark ? 'dark' : '',
-    ]"
+    class="bg-image-[url('https://cdn.pixabay.com/photo/2023/11/06/09/52/mountain-8369262_1280.jpg')] mx-auto flex w-full flex-col p-4"
   >
     <div class="mb-4 flex items-center justify-between">
       <button class="btn flex" @click="prevWeek">

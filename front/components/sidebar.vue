@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { darkMode, toggleDark } from "~/composables/darkMode";
-
 const toggleSidebar: Ref<boolean> = useToggleSidebar();
 const currentId: Ref<number> = ref(0);
 const categories = useCategories();
@@ -176,12 +174,7 @@ const buttonItems = computed(() =>
 );
 </script>
 <template>
-  <main
-    :class="[
-      'bg-background border-b-secondary flex flex-col border-b-1 py-2',
-      dark ? 'dark' : '',
-    ]"
-  >
+  <main class="bg-background border-b-secondary flex flex-col border-b-1 py-2">
     <NuxtLink to="/" class="mb-6 flex justify-center">
       <img
         class="border-h-color flex h-12 rounded-full border-2"

@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { darkMode } from "~/composables/darkMode.ts";
-
 const links = [
   { name: "About Us", href: "/about" },
   { name: "Services", href: "/services" },
@@ -9,11 +7,9 @@ const links = [
 ];
 
 const currentYear = new Date().getFullYear();
-
-const dark = darkMode();
 </script>
 <template>
-  <footer :class="['bg-background py-8', dark ? 'dark' : '']">
+  <footer class="bg-background py-8">
     <section
       class="text-primary hover:text-h-primary container mx-auto flex flex-col items-center justify-between px-4 md:flex-row"
     >

@@ -5,15 +5,19 @@ const toggleSidebar = useToggleSidebar();
 const dark = darkMode();
 
 onMounted(() => {
-  document.body.style.backgroundColor = dark.value
-    ? "var(--color-dark)"
-    : "var(--color-light)";
+  if (dark.value) {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
 });
 
 watch(dark, (newValue, oldValue) => {
-  document.body.style.backgroundColor = dark.value
-    ? "var(--color-dark)"
-    : "var(--color-light)";
+  if (dark.value) {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
 });
 </script>
 

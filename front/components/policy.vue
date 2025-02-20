@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { darkMode } from "~/composables/darkMode";
-
 withDefaults(
   defineProps<{
     name?: string;
@@ -22,16 +20,11 @@ withDefaults(
     price: 2300.66,
   },
 );
-
-const dark = darkMode();
 </script>
 
 <template>
   <section
-    :class="[
-      'card m-4 w-[50%] transform px-6 py-4 transition-transform duration-300 hover:scale-105 max-sm:w-full',
-      dark ? 'dark' : '',
-    ]"
+    class="card m-4 w-[50%] transform px-6 py-4 transition-transform duration-300 hover:scale-105 max-sm:w-full"
   >
     <div class="title mb-6">
       {{ name }}

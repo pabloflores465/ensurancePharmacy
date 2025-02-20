@@ -82,14 +82,13 @@ const hospitals: Ref<
     enabled: true,
   },
 ]);
-const dark = darkMode();
 </script>
 
 <template>
   <div
     class="bg-image-[url('/medicine.jpg')] h-full w-full grid-flow-row items-center justify-center gap-1 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
   >
-    <div v-for="hospital in hospitals" :class="[`card`, dark ? 'dark' : '']">
+    <div v-for="hospital in hospitals" class="card">
       <h2 class="title mb-6">Hospital #{{ hospital.id_hos }}</h2>
       <p class="text-primary mb-4 flex">
         <svg
