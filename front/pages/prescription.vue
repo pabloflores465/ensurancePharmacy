@@ -295,7 +295,7 @@ const prescriptions: Ref<
         </svg>
         See More Details
       </button>
-      <Modal :show="prescription.show">
+      <Modal v-model:show="prescription.show">
         <div class="title">
           dsfsghjfgdfgsdafghjfhdfsfadgfhgjhhdgsfaddgfhgjhfhdgsfadgfhgjhdghgjhola
           mundo
