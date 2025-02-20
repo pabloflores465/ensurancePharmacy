@@ -84,6 +84,10 @@
     @apply text-center text-xl font-bold text-dark dark:text-accent;
   }
 
+  .responsive-grid {
+    @apply grid grid-flow-row gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+  }
+
   body {
     @apply bg-background dark:bg-background
   }

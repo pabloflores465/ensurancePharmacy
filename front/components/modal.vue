@@ -2,7 +2,6 @@
 defineProps({
   show: Boolean,
 });
-const emit = defineEmits(["update:show"]);
 </script>
 
 <template>
@@ -14,7 +13,7 @@ const emit = defineEmits(["update:show"]);
       class="bg-background relative z-60 w-full max-w-md rounded-lg px-4 py-2 shadow-xl"
       :open="show"
     >
-      <button @click="() => emit('update:show', false)">
+      <button @click="$emit('update:show', false)">
         <svg
           class="text-primary"
           xmlns="http://www.w3.org/2000/svg"
