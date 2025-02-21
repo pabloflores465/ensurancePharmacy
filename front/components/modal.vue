@@ -27,7 +27,9 @@ defineProps({
           />
         </svg>
       </button>
-      <slot></slot>
+      <div class="flex-col px-6">
+        <slot></slot>
+      </div>
     </dialog>
   </div>
 </template>

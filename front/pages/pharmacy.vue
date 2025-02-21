@@ -84,13 +84,20 @@ const pharmacies: Ref<
     enabled: true,
   },
 ]);
+
+const edit = useEdit();
 </script>
 
 <template>
   <div
     class="bg-image-[url('/medicine.jpg')] h-full w-full grid-flow-row items-center justify-center gap-1 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
   >
-    <div v-for="pharmacy in pharmacies" :key="pharmacy.id_farm" class="card">
+    <div
+      v-if="!edit"
+      v-for="pharmacy in pharmacies"
+      :key="pharmacy.id_farm"
+      class="card"
+    >
       <h2 class="title mb-6">Farmacia #{{ pharmacy.id_farm }}</h2>
       <p class="text-primary mb-4 flex">
         <svg
@@ -157,6 +164,33 @@ const pharmacies: Ref<
         v-model="pharmacy.enabled"
         label="Enabled"
       ></Switch>
+    </div>
+    <div v-if="edit" v-for="pharmacy in pharmacies" class="card">
+      <span class="text-primary font-semibold">Pharmacy</span>
+      <input type="text" class="field mb-8" />
+      <span class="text-primary font-semibold">Name</span>
+      <input type="text" class="field mb-8" />
+      <span class="text-primary font-semibold">Address</span>
+      <input type="text" class="field mb-8" />
+      <span class="text-primary font-semibold">Phone</span>
+      <input type="text" class="field mb-8" />
+      <span class="text-primary font-semibold">E-Mail</span>
+      <input type="text" class="field mb-8" />
+      <Switch class="mb-8" label="Enabled"></Switch>
+      <button class="btn mx-auto flex">
+        <svg
+          class="me-2"
+          xmlns="http://www.w3.org/2000/svg"
+          height="24px"
+          viewBox="0 -960 960 960"
+          width="24px"
+          fill="currentColor"
+        >
+          <path
+            d="M840-680v480q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z"
+          /></svg
+        >Save
+      </button>
     </div>
   </div>
 </template>

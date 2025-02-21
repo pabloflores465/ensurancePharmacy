@@ -1,9 +1,7 @@
-<script setup lang="ts">
-const dark = darkMode();
-</script>
+<script setup lang="ts"></script>
 
 <template>
-  <main :class="[`bg-image-[url('/carCrash.jpg')]`, dark ? 'dark' : '']">
+  <main class="bg-image-[url('/carCrash.jpg')]">
     <Carrousel />
     <Medicine />
     <button @click="() => notify({ id: 1, title: 'hola' })" class="btn">

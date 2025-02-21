@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Hospital from "~/pages/hospital.vue";
+import Pharmacy from "~/pages/pharmacy.vue";
 
 const prescriptions: Ref<
   {
@@ -276,6 +277,7 @@ const prescriptions: Ref<
     show: false,
   },
 ]);
+const edit = useEdit();
 </script>
 
 <template>
@@ -283,6 +285,7 @@ const prescriptions: Ref<
     class="bg-image-[url('https://cdn.prod.website-files.com/6466101d017ab9d60c8d0137/668ce90cd1d21a2f4e8a8536_Repeat%20Prescriptions.jpg')] max-sm:flex-col max-sm:items-center max-sm:justify-center max-sm:gap-4 max-sm:px-2 max-sm:py-8 md:grid md:grid-cols-2 md:gap-4 md:px-8 md:py-16 lg:grid-cols-4 lg:gap-2 xl:grid-cols-4"
   >
     <div
+      v-if="!edit"
       v-for="prescription in prescriptions"
       class="card lg:align-center gap-4 transition duration-300 hover:scale-105 max-sm:mx-2 max-sm:flex-col md:flex-row lg:align-middle"
     >
@@ -355,6 +358,7 @@ const prescriptions: Ref<
       </button>
     </div>
     <Modal
+      v-if="!edit"
       v-for="prescription in prescriptions"
       v-model:show="prescription.show"
     >
@@ -497,6 +501,115 @@ const prescriptions: Ref<
       </div>
       <p class="text-terciary text-md mt-6 mb-3 font-semibold">Comment</p>
       <textarea class="text-secondary">{{ prescription.comments }}</textarea>
+    </Modal>
+    <div
+      v-if="edit"
+      v-for="prescription in prescriptions"
+      class="card lg:align-center gap-4 transition duration-300 hover:scale-105 max-sm:mx-2 max-sm:flex-col md:flex-row lg:align-middle"
+    >
+      <span class="text-primary font-semibold">Number</span>
+      <input type="text" class="field mb-8" />
+      <span class="text-primary font-semibold">Hospital</span>
+      <input type="text" class="field mb-8" />
+      <span class="text-primary font-semibold">User</span>
+      <input type="text" class="field mb-8" />
+      <span class="text-primary font-semibold">Date</span>
+      <input type="text" class="field mb-8" />
+      <button
+        @click="() => (prescription.show = !prescription.show)"
+        class="btn mb-4 flex justify-center align-middle"
+      >
+        <svg
+          class="me-2"
+          xmlns="http://www.w3.org/2000/svg"
+          height="24px"
+          viewBox="0 -960 960 960"
+          width="24px"
+          fill="currentColor"
+        >
+          <path
+            d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
+          />
+        </svg>
+        See More Details
+      </button>
+      <button class="btn mx-auto flex justify-center">
+        <svg
+          class="me-2"
+          xmlns="http://www.w3.org/2000/svg"
+          height="24px"
+          viewBox="0 -960 960 960"
+          width="24px"
+          fill="currentColor"
+        >
+          <path
+            d="M840-680v480q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z"
+          /></svg
+        >Save
+      </button>
+    </div>
+    <Modal
+      v-if="edit"
+      v-for="prescription in prescriptions"
+      v-model:show="prescription.show"
+    >
+      <div class="my-8 max-h-[80vh] overflow-y-auto">
+        <div class="mt-8">
+          <span class="text-primary font-semibold">Number</span>
+          <input type="text" class="field mb-8" />
+        </div>
+        <div class="mt-8">
+          <span class="text-primary font-semibold">User</span>
+          <input type="text" class="field mb-8" />
+        </div>
+        <div class="mt-8">
+          <span class="text-primary font-semibold">Doctor</span>
+          <input type="text" class="field mb-8" />
+        </div>
+        <div class="mt-8">
+          <span class="text-primary font-semibold">Hospital</span>
+          <input type="text" class="field mb-8" />
+        </div>
+        <div class="mt-8">
+          <span class="text-primary font-semibold">Pharmacy</span>
+          <input type="text" class="field mb-8" />
+        </div>
+        <div class="mt-8">
+          <span class="text-primary font-semibold">Total to Pay</span>
+          <input type="text" class="field mb-8" />
+        </div>
+        <div class="mt-8">
+          <span class="text-primary font-semibold">Copay</span>
+          <input type="text" class="field mb-8" />
+        </div>
+        <div class="mt-8">
+          <span class="text-primary font-semibold">Auth</span>
+          <input type="text" class="field mb-8" />
+        </div>
+        <Switch class="mb-6" label="Secured" checked></Switch>
+        <div class="mt-8" v-for="medicine in prescription.medicines">
+          <span class="text-primary font-semibold">Medicine</span>
+          <input type="text" class="field mb-8" />
+        </div>
+        <div class="mt-8">
+          <span class="text-primary font-semibold">Comment</span>
+          <textarea type="text" class="field mb-8" />
+        </div>
+      </div>
+      <button class="btn mx-auto mb-4 flex justify-center">
+        <svg
+          class="me-2"
+          xmlns="http://www.w3.org/2000/svg"
+          height="24px"
+          viewBox="0 -960 960 960"
+          width="24px"
+          fill="currentColor"
+        >
+          <path
+            d="M840-680v480q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z"
+          /></svg
+        >Save
+      </button>
     </Modal>
   </main>
 </template>
