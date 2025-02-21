@@ -25,9 +25,12 @@ function toggle(id: number): void {
 const router = useRoute();
 const dark = darkMode();
 
+const loginPermission = useAuth("read", "login");
+
 const sidebarItems: Ref<
   {
     type: "link" | "button";
+    show: () => boolean;
     conditional: () => boolean;
     click: () => void;
     path: string;
@@ -39,6 +42,7 @@ const sidebarItems: Ref<
   {
     type: "link",
     path: "/signup",
+    show: () => true,
     conditional: () => router.path === "/signup",
     click: () => {},
     showDescription: false,
@@ -49,6 +53,7 @@ const sidebarItems: Ref<
   {
     type: "link",
     path: "/login",
+    show: () => useAuth("read", "login").value,
     conditional: () => router.path === "/login",
     click: () => {},
     showDescription: false,
@@ -58,6 +63,7 @@ const sidebarItems: Ref<
   },
   {
     type: "link",
+    show: () => true,
     conditional: () => router.path === "/profile",
     click: () => {},
     path: "/profile",
@@ -69,6 +75,7 @@ const sidebarItems: Ref<
   {
     type: "link",
     path: "/policies",
+    show: () => true,
     conditional: () => router.path === "/policies",
     click: () => {},
     showDescription: false,
@@ -79,6 +86,7 @@ const sidebarItems: Ref<
   {
     type: "link",
     path: "/calendar",
+    show: () => true,
     conditional: () => router.path === "/calendar",
     click: () => {},
     showDescription: false,
@@ -89,6 +97,7 @@ const sidebarItems: Ref<
   {
     type: "link",
     path: "/hospital",
+    show: () => true,
     conditional: () => router.path === "/hospital",
     click: () => {},
     showDescription: false,
@@ -99,6 +108,7 @@ const sidebarItems: Ref<
   {
     type: "link",
     path: "/pharmacy",
+    show: () => true,
     conditional: () => router.path === "/pharmacy",
     click: () => {},
     showDescription: false,
@@ -109,6 +119,7 @@ const sidebarItems: Ref<
   {
     type: "link",
     path: "/prescription",
+    show: () => true,
     conditional: () => router.path === "/prescription",
     click: () => {},
     showDescription: false,
@@ -120,6 +131,7 @@ const sidebarItems: Ref<
   {
     type: "link",
     path: "/services",
+    show: () => true,
     conditional: () => router.path === "/services",
     click: () => {},
     showDescription: false,
@@ -130,6 +142,7 @@ const sidebarItems: Ref<
   {
     type: "link",
     path: "/transactions",
+    show: () => true,
     conditional: () => router.path === "/transactions",
     click: () => {},
     showDescription: false,
@@ -139,6 +152,7 @@ const sidebarItems: Ref<
   },
   {
     type: "button",
+    show: () => true,
     conditional: () => search.value,
     click: () => {
       search.value = !search.value;
@@ -151,6 +165,7 @@ const sidebarItems: Ref<
   },
   {
     type: "button",
+    show: () => true,
     conditional: () => currentId.value === 3,
     click: () => toggle(3),
     path: "",
@@ -161,6 +176,7 @@ const sidebarItems: Ref<
   },
   {
     type: "button",
+    show: () => true,
     conditional: () => edit.value,
     click: () => {
       edit.value = !edit.value;
@@ -173,6 +189,7 @@ const sidebarItems: Ref<
   },
   {
     type: "button",
+    show: () => true,
     conditional: () => dark.value,
     click: () => toggleDark(),
     path: "",
@@ -202,39 +219,41 @@ const buttonItems = computed(() =>
         alt="company logo"
       />
     </NuxtLink>
-    <NuxtLink
-      v-for="(item, index) in linkItems"
-      @mouseover="item.showDescription = true"
-      @mouseleave="item.showDescription = false"
-      :to="item.path"
-      :key="index"
-      :class="[
-        'px-2 py-2',
-        item.conditional()
-          ? 'bg-accent hover:bg-h-accent'
-          : 'hover:bg-h-background',
-      ]"
-    >
-      <svg
+    <div v-for="(item, index) in linkItems" class="flex">
+      <NuxtLink
+        v-if="item.show()"
+        @mouseover="item.showDescription = true"
+        @mouseleave="item.showDescription = false"
+        :to="item.path"
+        :key="index"
         :class="[
-          item.conditional() ? 'text-light dark:text-dark' : 'text-primary',
+          'px-2 py-2',
+          item.conditional()
+            ? 'bg-accent hover:bg-h-accent'
+            : 'hover:bg-h-background',
         ]"
-        xmlns="http://www.w3.org/2000/svg"
-        height="40px"
-        viewBox="0 -960 960 960"
-        width="40px"
-        fill="currentColor"
       >
-        <path
-          :d="
-            typeof item.iconPath === 'function'
-              ? item.iconPath()
-              : item.iconPath
-          "
-        />
-      </svg>
-      <Description :name="item.description" :show="item.showDescription" />
-    </NuxtLink>
+        <svg
+          :class="[
+            item.conditional() ? 'text-light dark:text-dark' : 'text-primary',
+          ]"
+          xmlns="http://www.w3.org/2000/svg"
+          height="40px"
+          viewBox="0 -960 960 960"
+          width="40px"
+          fill="currentColor"
+        >
+          <path
+            :d="
+              typeof item.iconPath === 'function'
+                ? item.iconPath()
+                : item.iconPath
+            "
+          />
+        </svg>
+        <Description :name="item.description" :show="item.showDescription" />
+      </NuxtLink>
+    </div>
     <button
       v-for="item in buttonItems"
       @mouseover="item.showDescription = true"
