@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const slides: { image: String; alt: String }[] = [
+const slides: { image: string; alt: string }[] = [
   { image: "/attend.jpg", alt: "Seguro de Auto" },
   {
     image: "https://source.unsplash.com/800x400/?insurance,home",
