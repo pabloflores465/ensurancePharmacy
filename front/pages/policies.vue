@@ -162,6 +162,7 @@ const policies: Ref<
     price: 2450.5,
   },
 ]);
+const edit = useEdit();
 </script>
 
 <template>
@@ -170,7 +171,7 @@ const policies: Ref<
   >
     <Search v-if="search" />
     <div class="responsive-grid">
-      <div class="card m-4" v-for="policy in policies">
+      <div v-if="!edit" class="card m-4" v-for="policy in policies">
         <div class="title mb-6">
           {{ policy.name }}
         </div>
@@ -268,6 +269,36 @@ const policies: Ref<
         <div class="text-secondary mb-4 text-justify text-sm">
           {{ policy.description }}
         </div>
+      </div>
+      <div v-if="edit" class="card m-4" v-for="policy in policies">
+        <span class="text-primary font-semibold">Policy</span>
+        <input type="text" class="field mb-8" />
+        <span class="text-primary font-semibold">Policy Code</span>
+        <input type="text" class="field mb-8" />
+        <span class="text-primary font-semibold">Discount Percentage</span>
+        <input type="number" class="field mb-8" />
+        <span class="text-primary font-semibold">Anual Price</span>
+        <input type="number" class="field mb-8" />
+        <span class="text-primary font-semibold">Creation Date</span>
+        <input type="date" class="field mb-8" />
+        <span class="text-primary font-semibold">Expire Date</span>
+        <input type="date" class="field mb-8" />
+        <span class="text-primary font-semibold">Description</span>
+        <input type="text" class="field mb-8" />
+        <button class="btn mx-auto flex justify-center">
+          <svg
+            class="me-2"
+            xmlns="http://www.w3.org/2000/svg"
+            height="24px"
+            viewBox="0 -960 960 960"
+            width="24px"
+            fill="currentColor"
+          >
+            <path
+              d="M840-680v480q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z"
+            /></svg
+          >Save
+        </button>
       </div>
     </div>
   </main>
