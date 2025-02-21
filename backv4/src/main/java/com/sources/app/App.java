@@ -11,6 +11,22 @@ import java.net.InetSocketAddress;
 public class App {
     private static final UserDAO userDAO = new UserDAO();
     private static final PolicyDAO policyDAO = new PolicyDAO();
+    private static final AppointmentDAO appointmentDAO = new AppointmentDAO();
+    private static final AppointmentMadeDAO appointmentMadeDAO = new AppointmentMadeDAO();
+    private static final CategoryDAO categoryDAO = new CategoryDAO();
+    private static final ConfigurableAmountDAO configurableAmountDAO = new ConfigurableAmountDAO();
+    private static final HospitalDAO hospitalDAO = new HospitalDAO();
+    private static final MedicineDAO medicineDAO = new MedicineDAO();
+    private static final MedicinePresDAO medicinePresDAO = new MedicinePresDAO();
+    private static final PharmacyDAO pharmacyDAO = new PharmacyDAO();
+    private static final PrescriptionDAO prescriptionDAO = new PrescriptionDAO();
+    private static final ServiceDAO serviceDAO = new ServiceDAO();
+    private static final TotalHospitalDAO totalHospitalDAO = new TotalHospitalDAO();
+    private static final TotalPharmacyDAO totalPharmacyDAO = new TotalPharmacyDAO();
+    private static final TransactionsDAO transactionsDAO = new TransactionsDAO();
+    private static final TransactionPolicyDAO transactionPolicyDAO = new TransactionPolicyDAO();
+    private static final CoveragePharmacyDAO coveragePharmacyDAO = new CoveragePharmacyDAO();
+
 
     public static void main(String[] args) throws Exception {
         // Prueba de conexión a la base de datos
@@ -30,6 +46,21 @@ public class App {
         server.createContext("/api/login", new LoginHandler(userDAO));
         server.createContext("/api/users", new UserHandler(userDAO));
         server.createContext("/api/policy", new PolicyHandler(policyDAO));
+        server.createContext("/api/appointment", new AppointmentHandler(appointmentDAO));
+        server.createContext("/api/appointmentmade", new AppointmentMadeHandler(appointmentMadeDAO));
+        server.createContext("/api/category", new CategoryHandler(categoryDAO));
+        server.createContext("/api/configurableamount", new ConfigurableAmountHandler(configurableAmountDAO));
+        server.createContext("/api/hospital", new HospitalHandler(hospitalDAO));
+        server.createContext("/api/medicine", new MedicineHandler(medicineDAO));
+        server.createContext("/api/medicinepres", new MedicinePresHandler(medicinePresDAO));
+        server.createContext("/api/pharmacy", new PharmacyHandler(pharmacyDAO));
+        server.createContext("/api/prescription", new PrescriptionHandler(prescriptionDAO));
+        server.createContext("/api/service", new ServiceHandler(serviceDAO));
+        server.createContext("/api/totalhospital", new TotalHospitalHandler(totalHospitalDAO));
+        server.createContext("/api/totalpharmacy", new TotalPharmacyHandler(totalPharmacyDAO));
+        server.createContext("/api/transactions", new TransactionsHandler(transactionsDAO));
+        server.createContext("/api/transactionpolicy", new TransactionPolicyHandler(transactionPolicyDAO));
+        server.createContext("/api/coveragepharmacy", new CoveragePharmacyHandler(coveragePharmacyDAO));
         server.setExecutor(null); // Usa el executor por defecto
         server.start();
         System.out.println("Servidor iniciado en http://localhost:8080/api");
