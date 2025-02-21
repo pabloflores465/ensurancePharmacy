@@ -43,7 +43,7 @@
         <mapping class="com.sources.app.entities.Service"/>
         <mapping class="com.sources.app.entities.TotalHospital"/>
         <mapping class="com.sources.app.entities.TotalPharmacy"/>
-        <mapping class="com.sources.app.entities.TransactionEntity"/>
+        <mapping class="com.sources.app.entities.Transactions"/>
         <mapping class="com.sources.app.entities.TransactionPolicy"/>
     </session-factory>
 </hibernate-configuration>

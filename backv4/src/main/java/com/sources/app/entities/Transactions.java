@@ -5,7 +5,7 @@ import java.util.Date;
 
 @Entity
 @Table(name = "TRANSACTIONS")
-public class TransactionEntity {
+public class Transactions {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID_TRANSACTION")
@@ -40,7 +40,7 @@ public class TransactionEntity {
     private String auth;
 
     // Constructor por defecto
-    public TransactionEntity() {}
+    public Transactions() {}
 
     // Getters y Setters
     public Long getIdTransaction() { return idTransaction; }
