@@ -1,9 +1,8 @@
 <template>
   <div class="relative inline-block text-left" ref="dropdownRef">
-    <!-- Dropdown Button -->
     <button
       @click="toggleDropdown"
-      class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
+      class="inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none"
     >
       Options
       <svg
@@ -21,7 +20,6 @@
       </svg>
     </button>
 
-    <!-- Dropdown Menu -->
     <transition
       enter-active-class="transition ease-out duration-100"
       enter-from-class="transform opacity-0 scale-95"
@@ -32,7 +30,7 @@
     >
       <div
         v-if="isOpen"
-        class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10"
+        class="ring-opacity-5 absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white ring-1 shadow-lg ring-black"
       >
         <div
           class="py-1"
@@ -70,23 +68,19 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
 
-// Reactive state for tracking whether the dropdown is open
 const isOpen = ref(false);
 const dropdownRef = ref(null);
 
-// Toggle the dropdown open/close state
 const toggleDropdown = () => {
   isOpen.value = !isOpen.value;
 };
 
-// Close the dropdown if a click is detected outside of it
 const handleClickOutside = (event) => {
   if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
     isOpen.value = false;
   }
 };
 
-// Add event listener on mount, and remove it before unmounting the component
 onMounted(() => {
   document.addEventListener("click", handleClickOutside);
 });

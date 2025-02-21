@@ -69,5 +69,6 @@ const currentYear = new Date().getFullYear();
         <input type="text" class="field" />
       </div>
     </section>
+    <button class="btn mx-auto flex justify-center">Save</button>
   </footer>
 </template>
