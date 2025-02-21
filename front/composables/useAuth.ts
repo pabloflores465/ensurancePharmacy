@@ -1,42 +1,89 @@
-interface permission {
-  rol: "admin" | "user" | "guest" | "employee" | "extern";
-  action: "create" | "read" | "update" | "delete";
-  resource: string;
+interface Permission {
+  role: Role[];
+  action: Action;
+  resource: Resource;
   additional?: () => boolean[];
 }
-
-const permissionSystem: Ref<permission[]> = ref([
+type Role = "admin" | "user" | "guest" | "employee" | "extern";
+type Action = "create" | "read" | "update" | "delete";
+type Resource =
+  | "signup"
+  | "login"
+  | "profile"
+  | "policies"
+  | "calendar"
+  | "hospital"
+  | "pharmacy"
+  | "prescription"
+  | "services"
+  | "transactions";
+const permissionSystem: Permission[] = [
   {
-    rol: "guest",
+    role: ["guest"],
     action: "read",
     resource: "signup",
   },
   {
-    rol: "guest",
+    role: ["guest"],
     action: "read",
     resource: "login",
   },
   {
-    rol: "admin",
-    action: "create",
-    resource: "user",
+    role: ["user", "employee", "admin"],
+    action: "read",
+    resource: "profile",
   },
-]);
+  {
+    role: ["user", "employee", "admin"],
+    action: "read",
+    resource: "policies",
+  },
+  {
+    role: ["user", "employee", "admin"],
+    action: "read",
+    resource: "calendar",
+  },
+  {
+    role: ["employee", "admin"],
+    action: "read",
+    resource: "hospital",
+  },
+  {
+    role: ["employee", "admin"],
+    action: "read",
+    resource: "pharmacy",
+  },
+  {
+    role: ["employee", "admin"],
+    action: "read",
+    resource: "prescription",
+  },
+  {
+    role: ["guest", "user", "employee", "admin"],
+    action: "read",
+    resource: "services",
+  },
+  {
+    role: ["employee", "admin"],
+    action: "read",
+    resource: "transactions",
+  },
+];
 
 const userRole = ref("guest");
 
-export const setUser = (rol: string) => {
-  userRole.value = rol;
+export const setUser = (role: string) => {
+  userRole.value = role;
   if (import.meta.client) {
-    localStorage.setItem("rol", rol);
+    localStorage.setItem("role", role);
   }
 };
 
 export const getUser = () => {
   if (import.meta.client) {
-    const storedRol = localStorage.getItem("rol");
-    if (storedRol) {
-      userRole.value = storedRol;
+    const storedRole = localStorage.getItem("role");
+    if (storedRole) {
+      userRole.value = storedRole;
     }
   }
   return userRole;
@@ -48,14 +95,16 @@ export const useAuth = (
 ) =>
   computed(() => {
     let found = false;
-    for (const currentPermission of permissionSystem.value) {
+    for (const currentPermission of permissionSystem) {
       if (
         currentPermission.action === action &&
         currentPermission.resource === resource
       ) {
         found = true;
-        if (currentPermission.rol === getUser().value) {
-          return true;
+        for (const role of currentPermission.role) {
+          if (role === getUser().value) {
+            return true;
+          }
         }
       }
     }

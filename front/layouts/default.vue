@@ -5,9 +5,9 @@ const toggleSidebar = useToggleSidebar();
 const dark = darkMode();
 
 onMounted(() => {
-  let rol: string | null = localStorage.getItem("rol");
-  if (rol === null) {
-    localStorage.setItem("rol", "guest");
+  let role: string | null = localStorage.getItem("role");
+  if (role === null) {
+    setUser("guest");
   }
   if (dark.value) {
     document.documentElement.classList.add("dark");

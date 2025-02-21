@@ -21,7 +21,7 @@ const handleLogin = async () => {
     );
 
     // Por ejemplo, si la respuesta contiene el usuario autenticado:
-    setUser(response.data.rol);
+    setUser(response.data.role);
     console.log("Login exitoso:", response.data);
     // Puedes guardar la info en un store o en el localStorage si es necesario
 

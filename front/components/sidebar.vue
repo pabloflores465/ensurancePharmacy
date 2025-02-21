@@ -40,9 +40,22 @@ const sidebarItems: Ref<
   }[]
 > = ref([
   {
+    type: "button",
+    show: () => true,
+    conditional: () => search.value,
+    click: () => {
+      search.value = !search.value;
+    },
+    path: "",
+    showDescription: false,
+    description: "Search for what you want.",
+    iconPath:
+      "M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z",
+  },
+  {
     type: "link",
     path: "/signup",
-    show: () => true,
+    show: () => useAuth("read", "signup").value,
     conditional: () => router.path === "/signup",
     click: () => {},
     showDescription: false,
@@ -63,7 +76,7 @@ const sidebarItems: Ref<
   },
   {
     type: "link",
-    show: () => true,
+    show: () => useAuth("read", "profile").value,
     conditional: () => router.path === "/profile",
     click: () => {},
     path: "/profile",
@@ -75,7 +88,7 @@ const sidebarItems: Ref<
   {
     type: "link",
     path: "/policies",
-    show: () => true,
+    show: () => useAuth("read", "policies").value,
     conditional: () => router.path === "/policies",
     click: () => {},
     showDescription: false,
@@ -86,7 +99,7 @@ const sidebarItems: Ref<
   {
     type: "link",
     path: "/calendar",
-    show: () => true,
+    show: () => useAuth("read", "calendar").value,
     conditional: () => router.path === "/calendar",
     click: () => {},
     showDescription: false,
@@ -97,7 +110,7 @@ const sidebarItems: Ref<
   {
     type: "link",
     path: "/hospital",
-    show: () => true,
+    show: () => useAuth("read", "hospital").value,
     conditional: () => router.path === "/hospital",
     click: () => {},
     showDescription: false,
@@ -108,7 +121,7 @@ const sidebarItems: Ref<
   {
     type: "link",
     path: "/pharmacy",
-    show: () => true,
+    show: () => useAuth("read", "pharmacy").value,
     conditional: () => router.path === "/pharmacy",
     click: () => {},
     showDescription: false,
@@ -119,7 +132,7 @@ const sidebarItems: Ref<
   {
     type: "link",
     path: "/prescription",
-    show: () => true,
+    show: () => useAuth("read", "prescription").value,
     conditional: () => router.path === "/prescription",
     click: () => {},
     showDescription: false,
@@ -131,7 +144,7 @@ const sidebarItems: Ref<
   {
     type: "link",
     path: "/services",
-    show: () => true,
+    show: () => useAuth("read", "services").value,
     conditional: () => router.path === "/services",
     click: () => {},
     showDescription: false,
@@ -139,10 +152,11 @@ const sidebarItems: Ref<
     iconPath:
       "M160-80q-33 0-56.5-23.5T80-160v-480q0-33 23.5-56.5T160-720h160v-80q0-33 23.5-56.5T400-880h160q33 0 56.5 23.5T640-800v80h160q33 0 56.5 23.5T880-640v480q0 33-23.5 56.5T800-80H160Zm0-80h640v-480H160v480Zm240-560h160v-80H400v80ZM160-160v-480 480Zm280-200v120h80v-120h120v-80H520v-120h-80v120H320v80h120Z",
   },
+
   {
     type: "link",
     path: "/transactions",
-    show: () => true,
+    show: () => useAuth("read", "transactions").value,
     conditional: () => router.path === "/transactions",
     click: () => {},
     showDescription: false,
@@ -150,19 +164,7 @@ const sidebarItems: Ref<
     iconPath:
       "M240-80q-50 0-85-35t-35-85v-120h120v-560h600v680q0 50-35 85t-85 35H240Zm480-80q17 0 28.5-11.5T760-200v-600H320v480h360v120q0 17 11.5 28.5T720-160ZM360-600v-80h360v80H360Zm0 120v-80h360v80H360ZM240-160h360v-80H200v40q0 17 11.5 28.5T240-160Zm0 0h-40 400-360Z",
   },
-  {
-    type: "button",
-    show: () => true,
-    conditional: () => search.value,
-    click: () => {
-      search.value = !search.value;
-    },
-    path: "",
-    showDescription: false,
-    description: "Search for what you want.",
-    iconPath:
-      "M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z",
-  },
+
   {
     type: "button",
     show: () => true,
@@ -201,14 +203,6 @@ const sidebarItems: Ref<
         : "M480-120q-150 0-255-105T120-480q0-150 105-255t255-105q14 0 27.5 1t26.5 3q-41 29-65.5 75.5T444-660q0 90 63 153t153 63q55 0 101-24.5t75-65.5q2 13 3 26.5t1 27.5q0 150-105 255T480-120Zm0-80q88 0 158-48.5T740-375q-20 5-40 8t-40 3q-123 0-209.5-86.5T364-660q0-20 3-40t8-40q-78 32-126.5 102T200-480q0 116 82 198t198 82Zm-10-270Z",
   },
 ]);
-
-const linkItems = computed(() =>
-  sidebarItems.value.filter((item) => item.type === "link"),
-);
-
-const buttonItems = computed(() =>
-  sidebarItems.value.filter((item) => item.type === "button"),
-);
 </script>
 <template>
   <main class="bg-background border-b-secondary flex flex-col border-b-1 py-2">
@@ -219,9 +213,9 @@ const buttonItems = computed(() =>
         alt="company logo"
       />
     </NuxtLink>
-    <div v-for="(item, index) in linkItems" class="flex">
+    <div v-for="(item, index) in sidebarItems" class="flex">
       <NuxtLink
-        v-if="item.show()"
+        v-if="item.show() && item.type === 'link'"
         @mouseover="item.showDescription = true"
         @mouseleave="item.showDescription = false"
         :to="item.path"
@@ -253,39 +247,39 @@ const buttonItems = computed(() =>
         </svg>
         <Description :name="item.description" :show="item.showDescription" />
       </NuxtLink>
-    </div>
-    <button
-      v-for="item in buttonItems"
-      @mouseover="item.showDescription = true"
-      @mouseleave="item.showDescription = false"
-      @click="() => item.click()"
-      :class="[
-        'px-2 py-2',
-        item.conditional()
-          ? 'bg-accent hover:bg-h-accent'
-          : 'hover:bg-h-background',
-      ]"
-    >
-      <svg
+      <button
+        v-if="item.show() && item.type === 'button'"
+        @mouseover="item.showDescription = true"
+        @mouseleave="item.showDescription = false"
+        @click="() => item.click()"
         :class="[
-          item.conditional() ? 'text-light dark:text-dark' : 'text-primary',
+          'px-2 py-2',
+          item.conditional()
+            ? 'bg-accent hover:bg-h-accent'
+            : 'hover:bg-h-background',
         ]"
-        xmlns="http://www.w3.org/2000/svg"
-        height="40px"
-        viewBox="0 -960 960 960"
-        width="40px"
-        fill="currentColor"
       >
-        <path
-          :d="
-            typeof item.iconPath === 'function'
-              ? item.iconPath()
-              : item.iconPath
-          "
-        />
-      </svg>
-      <Description :name="item.description" :show="item.showDescription" />
-    </button>
+        <svg
+          :class="[
+            item.conditional() ? 'text-light dark:text-dark' : 'text-primary',
+          ]"
+          xmlns="http://www.w3.org/2000/svg"
+          height="40px"
+          viewBox="0 -960 960 960"
+          width="40px"
+          fill="currentColor"
+        >
+          <path
+            :d="
+              typeof item.iconPath === 'function'
+                ? item.iconPath()
+                : item.iconPath
+            "
+          />
+        </svg>
+        <Description :name="item.description" :show="item.showDescription" />
+      </button>
+    </div>
   </main>
   <section
     :class="[
