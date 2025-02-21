@@ -1,8 +1,8 @@
 <script setup lang="ts"></script>
 <template>
-  <div class="bg-primary p-2">
+  <div class="bg-background p-2">
     <div
-      class="flex w-full flex-row items-center rounded-full bg-white px-2 py-1"
+      class="border-primary flex w-full flex-row items-center rounded-full border-2 border-solid bg-white px-2 py-1"
     >
       <svg
         stroke="currentColor"

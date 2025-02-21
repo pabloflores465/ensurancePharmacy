@@ -16,7 +16,9 @@ type Resource =
   | "pharmacy"
   | "prescription"
   | "services"
-  | "transactions";
+  | "transactions"
+  | "search"
+  | "edit";
 const permissionSystem: Permission[] = [
   {
     role: ["guest"],
@@ -67,6 +69,11 @@ const permissionSystem: Permission[] = [
     role: ["employee", "admin"],
     action: "read",
     resource: "transactions",
+  },
+  {
+    role: ["employee", "admin"],
+    action: "read",
+    resource: "edit",
   },
 ];
 

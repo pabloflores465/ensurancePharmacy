@@ -6,10 +6,12 @@ const links = [
   { name: "Privacy Policy", href: "/privacy" },
 ];
 
+const edit = useEdit();
+
 const currentYear = new Date().getFullYear();
 </script>
 <template>
-  <footer class="bg-background py-8">
+  <footer v-if="!edit" class="bg-background py-8">
     <section
       class="text-primary hover:text-h-primary container mx-auto flex flex-col items-center justify-between px-4 md:flex-row"
     >
@@ -37,6 +39,35 @@ const currentYear = new Date().getFullYear();
           </li>
         </ul>
       </nav>
+    </section>
+  </footer>
+
+  <footer v-if="edit" class="bg-background py-8">
+    <section class="responsive-grid mx-8">
+      <div class="mb-8">
+        <span class="text-primary font-semibold">Title</span>
+        <input type="text" class="field" />
+      </div>
+      <div class="mb-8">
+        <span class="text-primary font-semibold">Rights</span>
+        <input type="text" class="field" />
+      </div>
+      <div class="mb-8">
+        <span class="text-primary font-semibold">About Us</span>
+        <input type="text" class="field" />
+      </div>
+      <div class="mb-8">
+        <span class="text-primary font-semibold">Services</span>
+        <input type="text" class="field" />
+      </div>
+      <div class="mb-8">
+        <span class="text-primary font-semibold">Contact</span>
+        <input type="text" class="field" />
+      </div>
+      <div class="mb-8">
+        <span class="text-primary font-semibold">Privacy</span>
+        <input type="text" class="field" />
+      </div>
     </section>
   </footer>
 </template>
