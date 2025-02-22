@@ -8,7 +8,7 @@ import { useRouter } from "vue-router";
 const email = ref("");
 const password = ref("");
 const errorMessage = ref("");
-//const router = useRouter();
+const router = useRouter();
 
 const handleLogin = async () => {
   try {
@@ -20,13 +20,9 @@ const handleLogin = async () => {
       },
     );
 
-    // Por ejemplo, si la respuesta contiene el usuario autenticado:
     setUser(response.data.role);
     console.log("Login exitoso:", response.data);
-    // Puedes guardar la info en un store o en el localStorage si es necesario
-
-    // Redirigir a la página principal o dashboard
-    //router.push('/home');
+    router.push("/");
   } catch (error) {
     console.error("Error en login:", error);
     errorMessage.value = "Credenciales incorrectas o error en el servidor.";

@@ -46,7 +46,7 @@ export const notify = (
   }, not.timeout);
 };
 
-function shallowEqual(obj1, obj2) {
+function shallowEqual(obj1: any, obj2: any) {
   if (obj1 === obj2) return true;
 
   if (
