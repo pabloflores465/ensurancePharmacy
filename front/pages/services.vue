@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { ref } from "vue";
-
 interface Service {
   name: string;
   hospital: string;
@@ -15,7 +13,7 @@ const services = ref<Service[]>([
     name: "Consulta General",
     hospital: "Hospital Central",
     description: "Revisión médica completa para adultos.",
-    categories: ["Medicina"],
+    categories: ["Medicina", "Terapia", "Medicina", "General", "Consulta"],
     subcategories: ["General"],
     price: 50,
   },
@@ -132,13 +130,15 @@ const services = ref<Service[]>([
     price: 75,
   },
 ]);
+
+const edit = useEdit();
 </script>
 
 <template>
   <div
     class="responsive-grid bg-image-[url(https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=3270&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D)] py-8"
   >
-    <div v-for="service in services" class="card">
+    <div v-if="!edit" v-for="service in services" class="card">
       <h2 class="title mb-6">{{ service.name }}</h2>
       <div class="text-primary mb-4 flex">
         <svg
@@ -172,26 +172,30 @@ const services = ref<Service[]>([
         <p class="me-2 font-semibold">Price:</p>
         {{ service.price }}
       </div>
-      <div class="responsive-grid">
+      <div class="grid grid-flow-row grid-cols-2">
         <div
           v-for="category in service.categories"
-          class="text-background bg-accent mb-4 flex rounded-md p-2"
+          class="text-background bg-accent mx-2 mb-4 rounded-md px-2 py-1 text-sm"
         >
           {{ category }}
-        </div>
-      </div>
-      <div class="responsive-grid mb-6">
-        <div
-          v-for="subcategory in service.subcategories"
-          class="text-background bg-accent mb-4 flex rounded-md p-2"
-        >
-          {{ subcategory }}
         </div>
       </div>
       <p class="text-primary mb-2 font-semibold">Description</p>
       <textarea class="text-secondary flex w-full">{{
         service.description
       }}</textarea>
+    </div>
+
+    <div v-if="edit" v-for="service in services" class="card">
+      <span class="text-primary font-semibold">{{ service.name }}</span>
+      <input type="text" class="field mb-8" />
+      <span class="text-primary font-semibold">{{ service.hospital }}</span>
+      <input type="text" class="field mb-8" />
+      <span class="text-primary font-semibold">{{ service.price }}</span>
+      <input type="text" class="field mb-8" />
+      <Dropdown class="me-2 mb-6" />
+      <span class="text-primary font-semibold">{{ service.description }}</span>
+      <textarea type="text" class="field mb-8" />
     </div>
   </div>
 </template>
