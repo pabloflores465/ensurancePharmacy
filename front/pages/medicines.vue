@@ -45,26 +45,30 @@ const edit = useEdit();
 
 // Variables para filtrar
 const searchText = ref("");
-const attributeOptions = ["name", "brand", "presentation", "activePrinciple", "description"];
+const attributeOptions = [
+  "name",
+  "brand",
+  "presentation",
+  "activePrinciple",
+  "description",
+];
 const selectedAttributes = ref<string[]>([]);
 
 // Computed que filtra la lista de medicamentos según el texto y los atributos seleccionados
 const filteredMedicines = computed(() => {
-  return medicines.value.filter(med => {
+  return medicines.value.filter((med) => {
     const text = searchText.value.toLowerCase();
     if (!text) return true; // Si no hay texto, no se filtra
-    // Si no se selecciona ningún atributo, se buscan en todos
     if (selectedAttributes.value.length === 0) {
       return (
-          med.name.toLowerCase().includes(text) ||
-          med.brand.toLowerCase().includes(text) ||
-          med.presentation.toLowerCase().includes(text) ||
-          med.activePrinciple.toLowerCase().includes(text) ||
-          med.description.toLowerCase().includes(text)
+        med.name.toLowerCase().includes(text) ||
+        med.brand.toLowerCase().includes(text) ||
+        med.presentation.toLowerCase().includes(text) ||
+        med.activePrinciple.toLowerCase().includes(text) ||
+        med.description.toLowerCase().includes(text)
       );
     } else {
-      // Se filtra únicamente en los atributos seleccionados
-      return selectedAttributes.value.some(attr => {
+      return selectedAttributes.value.some((attr) => {
         switch (attr) {
           case "name":
             return med.name.toLowerCase().includes(text);
@@ -86,27 +90,31 @@ const filteredMedicines = computed(() => {
 </script>
 
 <template>
-  <div class="p-4">
+  <div class="h-full w-full">
     <!-- Filtro de texto -->
     <div class="mb-4">
-      <label class="block font-semibold mb-2">Buscar:</label>
+      <label class="mb-2 block font-semibold">Buscar:</label>
       <input
-          type="text"
-          v-model="searchText"
-          placeholder="Escribe para filtrar..."
-          class="border p-2 w-full"
+        type="text"
+        v-model="searchText"
+        placeholder="Escribe para filtrar..."
+        class="w-full border p-2"
       />
     </div>
 
     <!-- Filtro por atributos (checkboxes) -->
     <div class="mb-4">
-      <label class="block font-semibold mb-2">Filtrar en:</label>
-      <div v-for="option in attributeOptions" :key="option" class="flex items-center mb-1">
+      <label class="mb-2 block font-semibold">Filtrar en:</label>
+      <div
+        v-for="option in attributeOptions"
+        :key="option"
+        class="mb-1 flex items-center"
+      >
         <input
-            type="checkbox"
-            :value="option"
-            v-model="selectedAttributes"
-            class="mr-2"
+          type="checkbox"
+          :value="option"
+          v-model="selectedAttributes"
+          class="mr-2"
         />
         <span>{{ option }}</span>
       </div>
@@ -115,8 +123,13 @@ const filteredMedicines = computed(() => {
     <!-- Lista de medicamentos filtrados -->
     <div class="responsive-grid">
       <!-- Vista normal -->
-      <div v-if="!edit" v-for="medicine in filteredMedicines" :key="medicine.idMedicine" class="card p-4 border mb-4">
-        <h2 class="font-bold text-lg">{{ medicine.name }}</h2>
+      <div
+        v-if="!edit"
+        v-for="medicine in filteredMedicines"
+        :key="medicine.idMedicine"
+        class="card mb-4 border p-4"
+      >
+        <h2 class="text-lg font-bold">{{ medicine.name }}</h2>
         <p><strong>Code:</strong> {{ medicine.idMedicine }}</p>
         <p><strong>Active Principle:</strong> {{ medicine.activePrinciple }}</p>
         <p><strong>Presentation:</strong> {{ medicine.presentation }}</p>
@@ -128,13 +141,22 @@ const filteredMedicines = computed(() => {
       </div>
 
       <!-- Vista edición (ejemplo, se puede personalizar) -->
-      <div v-if="edit" v-for="medicine in filteredMedicines" :key="medicine.idMedicine" class="card p-4 border mb-4">
+      <div
+        v-if="edit"
+        v-for="medicine in filteredMedicines"
+        :key="medicine.idMedicine"
+        class="card mb-4 border p-4"
+      >
         <span class="text-primary font-semibold">Name:</span>
         <input type="text" class="field mb-8" :value="medicine.name" />
         <span class="text-primary font-semibold">Code:</span>
         <input type="text" class="field mb-8" :value="medicine.idMedicine" />
         <span class="text-primary font-semibold">Active Principle:</span>
-        <input type="text" class="field mb-8" :value="medicine.activePrinciple" />
+        <input
+          type="text"
+          class="field mb-8"
+          :value="medicine.activePrinciple"
+        />
         <span class="text-primary font-semibold">Presentation:</span>
         <input type="text" class="field mb-8" :value="medicine.presentation" />
         <span class="text-primary font-semibold">Units:</span>

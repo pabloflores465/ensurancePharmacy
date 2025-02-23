@@ -34,7 +34,12 @@ interface SidebarItem {
 const sidebarItems: Ref<SidebarItem[]> = ref([
   {
     id: 1,
-    show: () => true,
+    show: () => {
+      let show = false;
+      router.path === "/medicines" ? (show = true) : null;
+      router.path === "/services" ? (show = true) : null;
+      return show;
+    },
     conditional: () => search.value,
     click: () => {
       search.value = !search.value;

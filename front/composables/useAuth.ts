@@ -128,9 +128,9 @@ export const useAuth = (
       }
     }
     if (!found) {
-      console.log("not found");
+      //console.log("not found");
       return false;
     }
-    console.log("no permission");
+    //console.log("no permission");
     return false;
   });

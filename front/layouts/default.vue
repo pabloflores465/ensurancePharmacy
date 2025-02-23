@@ -3,7 +3,6 @@ import { darkMode } from "~/composables/darkMode";
 
 const toggleSidebar = useToggleSidebar();
 const dark = darkMode();
-const search = useSearch();
 
 onMounted(() => {
   let role: string | null = localStorage.getItem("role");
@@ -27,7 +26,6 @@ watch(dark, (newValue, oldValue) => {
 </script>
 
 <template>
-  <Search v-if="search" />
   <transition
     enter-active-class="transition-opacity duration-500"
     enter-from-class="opacity-0"
