@@ -1,137 +1,44 @@
 <script setup lang="ts">
-interface Service {
+import axios from "axios";
+
+interface Hospital {
+  idHospital: number;
   name: string;
-  hospital: string;
-  description: string;
-  categories: string[];
-  subcategories: string[];
-  price: number;
+  address: string;
+  phone: number;
+  email: string;
+  enabled: number;
 }
 
-const services = ref<Service[]>([
-  {
-    name: "Consulta General",
-    hospital: "Hospital Central",
-    description: "Revisión médica completa para adultos.",
-    categories: ["Medicina", "Terapia", "Medicina", "General", "Consulta"],
-    subcategories: ["General"],
-    price: 50,
-  },
-  {
-    name: "Radiología",
-    hospital: "Clínica Radiológica",
-    description: "Imágenes diagnósticas avanzadas.",
-    categories: ["Diagnóstico"],
-    subcategories: ["Radiología"],
-    price: 100,
-  },
-  {
-    name: "Fisioterapia",
-    hospital: "Centro de Rehabilitación",
-    description: "Tratamientos para mejorar la movilidad y aliviar el dolor.",
-    categories: ["Terapia"],
-    subcategories: ["Fisioterapia"],
-    price: 70,
-  },
-  {
-    name: "Cirugía General",
-    hospital: "Hospital Central",
-    description: "Procedimientos quirúrgicos generales y de urgencia.",
-    categories: ["Cirugía"],
-    subcategories: ["General"],
-    price: 500,
-  },
-  {
-    name: "Odontología",
-    hospital: "Clínica Dental",
-    description: "Cuidado dental integral, revisiones y limpiezas.",
-    categories: ["Salud Oral"],
-    subcategories: ["Revisión", "Limpieza"],
-    price: 80,
-  },
-  {
-    name: "Cardiología",
-    hospital: "Instituto Cardiovascular",
-    description: "Atención y diagnóstico del corazón.",
-    categories: ["Medicina"],
-    subcategories: ["Cardiología"],
-    price: 120,
-  },
-  {
-    name: "Dermatología",
-    hospital: "Clínica de la Piel",
-    description: "Tratamientos especializados para la piel.",
-    categories: ["Medicina"],
-    subcategories: ["Dermatología"],
-    price: 90,
-  },
-  {
-    name: "Pediatría",
-    hospital: "Hospital Infantil",
-    description: "Atención médica especializada para niños.",
-    categories: ["Medicina"],
-    subcategories: ["Pediatría"],
-    price: 60,
-  },
-  {
-    name: "Neurología",
-    hospital: "Centro Neurológico",
-    description: "Diagnóstico y tratamiento de trastornos neurológicos.",
-    categories: ["Medicina"],
-    subcategories: ["Neurología"],
-    price: 130,
-  },
-  {
-    name: "Ginecología",
-    hospital: "Centro de Salud Femenina",
-    description: "Atención integral para la salud de la mujer.",
-    categories: ["Medicina"],
-    subcategories: ["Ginecología"],
-    price: 110,
-  },
-  {
-    name: "Oftalmología",
-    hospital: "Clínica Ocular",
-    description: "Exámenes y tratamientos para el cuidado de la vista.",
-    categories: ["Salud"],
-    subcategories: ["Oftalmología"],
-    price: 95,
-  },
-  {
-    name: "Ortopedia",
-    hospital: "Instituto Ortopédico",
-    description: "Tratamientos para huesos y articulaciones.",
-    categories: ["Terapia"],
-    subcategories: ["Ortopedia"],
-    price: 150,
-  },
-  {
-    name: "Psiquiatría",
-    hospital: "Centro de Salud Mental",
-    description: "Apoyo y tratamiento en salud mental.",
-    categories: ["Salud Mental"],
-    subcategories: ["Psiquiatría"],
-    price: 140,
-  },
-  {
-    name: "Nutrición",
-    hospital: "Centro Nutricional",
-    description: "Planes de alimentación y asesoramiento nutricional.",
-    categories: ["Bienestar"],
-    subcategories: ["Nutrición"],
-    price: 65,
-  },
-  {
-    name: "Laboratorio Clínico",
-    hospital: "Laboratorio Central",
-    description: "Análisis clínicos precisos y rápidos.",
-    categories: ["Diagnóstico"],
-    subcategories: ["Laboratorio"],
-    price: 75,
-  },
-]);
+interface Category {
+  idCategory: number;
+  name: string;
+  enabled: number;
+}
 
+interface Service {
+  idService: number;
+  hospital: Hospital;
+  name: string;
+  description: string;
+  category: Category;
+  subcategory: Category;
+  cost: number;
+  enabled: number;
+}
+
+const services = ref<Service[]>([]);
+const fetchService = async () => {
+  try {
+    const response = await axios.get("http://localhost:8080/api/service");
+    services.value = response.data;
+    console.log("Hospitals obtenidos:", services.value);
+  } catch (error) {
+    console.error("Error al obtener hospitals:", error);
+  }
+};
 const edit = useEdit();
+fetchService();
 </script>
 
 <template>
@@ -154,7 +61,7 @@ const edit = useEdit();
           />
         </svg>
         <p class="me-2 font-semibold">Hospital:</p>
-        {{ service.hospital }}
+        {{ service.hospital.name }}
       </div>
       <div class="text-error mb-4 flex">
         <svg
@@ -170,14 +77,23 @@ const edit = useEdit();
           />
         </svg>
         <p class="me-2 font-semibold">Price:</p>
-        {{ service.price }}
+        {{ service.cost }}
       </div>
       <div class="grid grid-flow-row grid-cols-2">
+        <p class="text-primary mb-2 font-semibold">Categories</p>
         <div
-          v-for="category in service.categories"
+
           class="text-background bg-accent mx-2 mb-4 rounded-md px-2 py-1 text-sm"
         >
-          {{ category }}
+          {{ service.category.name }}
+        </div>
+      </div>
+      <div class="grid grid-flow-row grid-cols-2">
+        <p class="text-primary mb-2 font-semibold">SubCategories</p>
+        <div
+            class="text-background bg-accent mx-2 mb-4 rounded-md px-2 py-1 text-sm"
+        >
+          {{ service.subcategory.name }}
         </div>
       </div>
       <p class="text-primary mb-2 font-semibold">Description</p>
@@ -189,9 +105,9 @@ const edit = useEdit();
     <div v-if="edit" v-for="service in services" class="card">
       <span class="text-primary font-semibold">{{ service.name }}</span>
       <input type="text" class="field mb-8" />
-      <span class="text-primary font-semibold">{{ service.hospital }}</span>
+      <span class="text-primary font-semibold">{{ service.hospital.name }}</span>
       <input type="text" class="field mb-8" />
-      <span class="text-primary font-semibold">{{ service.price }}</span>
+      <span class="text-primary font-semibold">{{ service.cost }}</span>
       <input type="text" class="field mb-8" />
       <Dropdown class="me-2 mb-6" />
       <span class="text-primary font-semibold">{{ service.description }}</span>

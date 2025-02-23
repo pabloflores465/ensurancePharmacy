@@ -23,12 +23,12 @@ public class ServiceHandler implements HttpHandler {
     public ServiceHandler(ServiceDAO serviceDAO) {
         this.serviceDAO = serviceDAO;
         this.objectMapper = new ObjectMapper();
+        // Configuración de formato de fecha (si aplica)
         this.objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
     }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-
         // Configuración CORS
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
         exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
@@ -47,7 +47,7 @@ public class ServiceHandler implements HttpHandler {
             return;
         }
 
-        // Seleccionar operación según método HTTP
+        // Seleccionar operación según el método HTTP
         switch (exchange.getRequestMethod().toUpperCase()){
             case "GET":
                 handleGet(exchange);
@@ -66,10 +66,11 @@ public class ServiceHandler implements HttpHandler {
     private void handleGet(HttpExchange exchange) throws IOException {
         String query = exchange.getRequestURI().getQuery();
         if(query != null && query.contains("id=")){
-            Map<String,String> params = parseQuery(query);
-            try{
+            Map<String, String> params = parseQuery(query);
+            try {
                 Long id = Long.parseLong(params.get("id"));
-                Service service = serviceDAO.findById(id);
+                // Usamos el método que trae las asociaciones (detalles)
+                Service service = serviceDAO.findByIdWithDetails(id);
                 if(service != null){
                     String jsonResponse = objectMapper.writeValueAsString(service);
                     exchange.getResponseHeaders().set("Content-Type","application/json");
@@ -85,7 +86,8 @@ public class ServiceHandler implements HttpHandler {
                 exchange.sendResponseHeaders(400, -1);
             }
         } else {
-            List<Service> list = serviceDAO.findAll();
+            // Recuperamos todos los servicios con sus detalles
+            List<Service> list = serviceDAO.findAllWithDetails();
             String jsonResponse = objectMapper.writeValueAsString(list);
             exchange.getResponseHeaders().set("Content-Type","application/json");
             byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
@@ -97,18 +99,11 @@ public class ServiceHandler implements HttpHandler {
     }
 
     private void handlePost(HttpExchange exchange) throws IOException {
-        try{
+        try {
             String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            // Mapea el JSON a un objeto Service (se espera que incluya los objetos Hospital, Category y Subcategory)
             Service service = objectMapper.readValue(requestBody, Service.class);
-            Service created = serviceDAO.create(
-                    service.getIdHospital(),
-                    service.getName(),
-                    service.getDescription(),
-                    service.getIdCategory(),
-                    service.getIdSubcategory(),
-                    service.getCost(),
-                    service.getEnabled()
-            );
+            Service created = serviceDAO.create(service);
             if(created != null){
                 String jsonResponse = objectMapper.writeValueAsString(created);
                 exchange.getResponseHeaders().set("Content-Type","application/json");
@@ -143,8 +138,7 @@ public class ServiceHandler implements HttpHandler {
         }
     }
 
-
-    private Map<String,String> parseQuery(String query){
+    private Map<String, String> parseQuery(String query){
         return Arrays.stream(query.split("&"))
                 .map(param -> param.split("="))
                 .collect(Collectors.toMap(

@@ -1,89 +1,30 @@
 <script setup lang="ts">
-const hospitals: Ref<
-  {
-    id_hos: number;
-    name: string;
-    address: string;
-    phone: string;
-    email: string;
-    enabled: boolean;
-  }[]
-> = ref([
-  {
-    id_hos: 1,
-    name: "Hospital Central",
-    address: "Av. Principal 123",
-    phone: "555-1234",
-    email: "contacto@hospitalcentral.com",
-    enabled: true,
-  },
-  {
-    id_hos: 2,
-    name: "Clínica del Norte",
-    address: "Calle Secundaria 456",
-    phone: "555-5678",
-    email: "info@clinicadelnorte.org",
-    enabled: false,
-  },
-  {
-    id_hos: 3,
-    name: "Sanatorio del Este",
-    address: "Boulevard de la Salud 789",
-    phone: "555-9012",
-    email: "contact@sanatoriodeleste.com",
-    enabled: true,
-  },
-  {
-    id_hos: 1,
-    name: "Hospital Central",
-    address: "Av. Principal 123",
-    phone: "555-1234",
-    email: "contacto@hospitalcentral.com",
-    enabled: true,
-  },
-  {
-    id_hos: 2,
-    name: "Clínica del Norte",
-    address: "Calle Secundaria 456",
-    phone: "555-5678",
-    email: "info@clinicadelnorte.org",
-    enabled: false,
-  },
-  {
-    id_hos: 3,
-    name: "Sanatorio del Este",
-    address: "Boulevard de la Salud 789",
-    phone: "555-9012",
-    email: "contact@sanatoriodeleste.com",
-    enabled: true,
-  },
-  {
-    id_hos: 1,
-    name: "Hospital Central",
-    address: "Av. Principal 123",
-    phone: "555-1234",
-    email: "contacto@hospitalcentral.com",
-    enabled: true,
-  },
-  {
-    id_hos: 2,
-    name: "Clínica del Norte",
-    address: "Calle Secundaria 456",
-    phone: "555-5678",
-    email: "info@clinicadelnorte.org",
-    enabled: false,
-  },
-  {
-    id_hos: 3,
-    name: "Sanatorio del Este",
-    address: "Boulevard de la Salud 789",
-    phone: "555-9012",
-    email: "contact@sanatoriodeleste.com",
-    enabled: true,
-  },
-]);
+import axios from "axios";
+import { ref } from "vue";
 
+interface Hospital {
+  idHospital: number;
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+  enabled: boolean;
+}
+
+// Declaramos la variable reactiva usando ref (solo minúscula)
+const hospitals = ref<Hospital[]>([]);
+
+const fetchHospitals = async () => {
+  try {
+    const response = await axios.get("http://localhost:8080/api/hospital");
+    hospitals.value = response.data;
+    console.log("Hospitals obtenidos:", hospitals.value);
+  } catch (error) {
+    console.error("Error al obtener hospitals:", error);
+  }
+};
 const edit = useEdit();
+fetchHospitals();
 </script>
 
 <template>
@@ -91,7 +32,7 @@ const edit = useEdit();
     class="bg-image-[url('/medicine.jpg')] h-full w-full grid-flow-row items-center justify-center gap-1 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
   >
     <div v-if="!edit" v-for="hospital in hospitals" class="card">
-      <h2 class="title mb-6">Hospital #{{ hospital.id_hos }}</h2>
+      <h2 class="title mb-6">Hospital #{{ hospital.idHospital }}</h2>
       <p class="text-primary mb-4 flex">
         <svg
           class="me-2"

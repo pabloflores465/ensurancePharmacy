@@ -10,34 +10,31 @@ import java.util.List;
 
 public class ServiceDAO {
 
-    public Service create(Long idHospital, String name, String description,
-                          Long idCategory, Long idSubcategory, Double cost,
-                          Integer enabled) {
+    /**
+     * Crea un nuevo Service usando la entidad completa con relaciones ya definidas.
+     * Se espera que el objeto Service contenga instancias de Hospital, Category y Subcategory.
+     */
+    public Service create(Service service) {
         Transaction tx = null;
-        Service service = null;
+        Service createdService = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
 
-            service = new Service();
-            service.setIdHospital(idHospital);
-            service.setName(name);
-            service.setDescription(description);
-            service.setIdCategory(idCategory);
-            service.setIdSubcategory(idSubcategory);
-            service.setCost(cost);
-            service.setEnabled(enabled);
-
             session.save(service);
             tx.commit();
+            createdService = service;
         } catch (Exception e) {
             if (tx != null) {
                 tx.rollback();
             }
             e.printStackTrace();
         }
-        return service;
+        return createdService;
     }
 
+    /**
+     * Recupera un Service sin inicializar sus asociaciones.
+     */
     public Service findById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Service.class, id);
@@ -47,6 +44,28 @@ public class ServiceDAO {
         }
     }
 
+    /**
+     * Recupera un Service con sus asociaciones (hospital, category y subcategory) ya cargadas.
+     */
+    public Service findByIdWithDetails(Long id) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "select s from Service s " +
+                    "join fetch s.hospital h " +
+                    "join fetch s.category c " +
+                    "join fetch s.subcategory sc " +
+                    "where s.idService = :id";
+            Query<Service> query = session.createQuery(hql, Service.class);
+            query.setParameter("id", id);
+            return query.uniqueResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Recupera la lista de Service sin inicializar las asociaciones.
+     */
     public List<Service> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<Service> query = session.createQuery("FROM Service", Service.class);
@@ -57,6 +76,26 @@ public class ServiceDAO {
         }
     }
 
+    /**
+     * Recupera la lista de Service con sus asociaciones (hospital, category y subcategory) ya cargadas.
+     */
+    public List<Service> findAllWithDetails() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "select s from Service s " +
+                    "join fetch s.hospital h " +
+                    "join fetch s.category c " +
+                    "join fetch s.subcategory sc";
+            Query<Service> query = session.createQuery(hql, Service.class);
+            return query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Actualiza un Service. Se asume que el objeto Service ya tiene las asociaciones configuradas.
+     */
     public Service update(Service service) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

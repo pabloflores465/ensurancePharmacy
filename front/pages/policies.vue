@@ -1,168 +1,29 @@
 <script setup lang="ts">
+import {ref} from "vue";
+import axios from "axios";
+
 const search = useSearch();
-const policies: Ref<
+interface Policy
   {
-    name: string;
-    code: string;
-    percentage: string;
-    description: string;
+    idPolicy: number;
+    percentage: number;
     creationDate: string;
-    expireDate: string;
-    price: number;
-  }[]
-> = ref([
-  {
-    name: "Poliza 1",
-    code: "3A4A",
-    percentage: "80%",
-    description:
-      "Esta póliza de seguro ha sido diseñada para brindarte una protección integral ante cualquier imprevisto.",
-    creationDate: "01-01-2024",
-    expireDate: "01-01-2025",
-    price: 2300.66,
-  },
-  {
-    name: "Poliza 2",
-    code: "4B5B",
-    percentage: "75%",
-    description:
-      "Cobertura adaptada a tus necesidades con respaldo financiero y beneficios exclusivos.",
-    creationDate: "05-01-2024",
-    expireDate: "05-01-2025",
-    price: 2100.5,
-  },
-  {
-    name: "Poliza 3",
-    code: "5C6C",
-    percentage: "85%",
-    description:
-      "Ofrece una protección amplia y personalizada, garantizando tranquilidad en momentos críticos.",
-    creationDate: "10-01-2024",
-    expireDate: "10-01-2025",
-    price: 2500.0,
-  },
-  {
-    name: "Poliza 4",
-    code: "6D7D",
-    percentage: "70%",
-    description:
-      "Diseñada para adaptarse a diferentes necesidades y ofrecer una excelente relación calidad-precio.",
-    creationDate: "15-01-2024",
-    expireDate: "15-01-2025",
-    price: 1950.75,
-  },
-  {
-    name: "Poliza 5",
-    code: "7E8E",
-    percentage: "90%",
-    description:
-      "Con beneficios exclusivos y una cobertura integral que respalda tu tranquilidad financiera.",
-    creationDate: "20-01-2024",
-    expireDate: "20-01-2025",
-    price: 2700.2,
-  },
-  {
-    name: "Poliza 6",
-    code: "8F9F",
-    percentage: "65%",
-    description:
-      "Ideal para quienes buscan un equilibrio entre precio y protección en situaciones imprevistas.",
-    creationDate: "25-01-2024",
-    expireDate: "25-01-2025",
-    price: 1850.4,
-  },
-  {
-    name: "Poliza 7",
-    code: "9G0G",
-    percentage: "80%",
-    description:
-      "Póliza con cobertura completa y descuentos atractivos para una mejor protección.",
-    creationDate: "30-01-2024",
-    expireDate: "30-01-2025",
-    price: 2300.66,
-  },
-  {
-    name: "Poliza 8",
-    code: "0H1H",
-    percentage: "78%",
-    description:
-      "Ofrece respaldo financiero y asistencia inmediata en caso de imprevistos.",
-    creationDate: "05-02-2024",
-    expireDate: "05-02-2025",
-    price: 2200.0,
-  },
-  {
-    name: "Poliza 9",
-    code: "1I2I",
-    percentage: "82%",
-    description:
-      "Diseñada para brindar seguridad y confianza, con una amplia gama de beneficios.",
-    creationDate: "10-02-2024",
-    expireDate: "10-02-2025",
-    price: 2400.55,
-  },
-  {
-    name: "Poliza 10",
-    code: "2J3J",
-    percentage: "77%",
-    description:
-      "Cobertura integral con descuentos significativos, ideal para toda la familia.",
-    creationDate: "15-02-2024",
-    expireDate: "15-02-2025",
-    price: 2250.8,
-  },
-  {
-    name: "Poliza 11",
-    code: "3K4K",
-    percentage: "83%",
-    description:
-      "Garantiza respaldo financiero y una respuesta rápida ante cualquier situación.",
-    creationDate: "20-02-2024",
-    expireDate: "20-02-2025",
-    price: 2350.3,
-  },
-  {
-    name: "Poliza 12",
-    code: "4L5L",
-    percentage: "79%",
-    description:
-      "Una opción equilibrada que combina protección, beneficios y un precio competitivo.",
-    creationDate: "25-02-2024",
-    expireDate: "25-02-2025",
-    price: 2280.9,
-  },
-  {
-    name: "Poliza 13",
-    code: "5M6M",
-    percentage: "81%",
-    description:
-      "Diseñada para ofrecerte tranquilidad con una amplia cobertura y soporte permanente.",
-    creationDate: "01-03-2024",
-    expireDate: "01-03-2025",
-    price: 2400.0,
-  },
-  {
-    name: "Poliza 14",
-    code: "6N7N",
-    percentage: "76%",
-    description:
-      "Con una excelente relación costo-beneficio, brindándote protección ante cualquier eventualidad.",
-    creationDate: "05-03-2024",
-    expireDate: "05-03-2025",
-    price: 2200.75,
-  },
-  {
-    name: "Poliza 15",
-    code: "7O8O",
-    percentage: "84%",
-    description:
-      "Póliza integral que garantiza asistencia inmediata y respaldo financiero en situaciones críticas.",
-    creationDate: "10-03-2024",
-    expireDate: "10-03-2025",
-    price: 2450.5,
-  },
-]);
+    expDate: string;
+    cost: number;
+    enabled: number;
+  }
+const policies = ref<Policy[]>([]);
+const fetchPolicy = async () => {
+  try {
+    const response = await axios.get("http://localhost:8080/api/policy");
+    policies.value = response.data;
+    console.log("Hospitals obtenidos:", policies.value);
+  } catch (error) {
+    console.error("Error al obtener hospitals:", error);
+  }
+};
 const edit = useEdit();
+fetchPolicy();
 </script>
 
 <template>
@@ -173,7 +34,7 @@ const edit = useEdit();
     <div class="responsive-grid">
       <div v-if="!edit" class="card m-4" v-for="policy in policies">
         <div class="title mb-6">
-          {{ policy.name }}
+          {{ policy.percentage }}<span class="font-semibold">%</span>
         </div>
 
         <div class="text-md text-accent hover:text-h-accent mb-2 flex">
@@ -192,7 +53,7 @@ const edit = useEdit();
             </svg>
             Policy Code:
           </div>
-          {{ policy.code }}
+          {{ policy.idPolicy }}
         </div>
         <div class="text-md text-success hover:text-h-success mb-2 flex">
           <div class="flex pe-2 font-semibold">
@@ -228,7 +89,7 @@ const edit = useEdit();
             </svg>
             Anual Price:
           </div>
-          Q.{{ policy.price }}
+          Q.{{ policy.cost }}
         </div>
         <div class="text-md text-primary hover:text-h-primary mb-2 flex">
           <div class="flex pe-2 font-semibold">
@@ -264,10 +125,10 @@ const edit = useEdit();
             </svg>
             Expire Date:
           </div>
-          {{ policy.expireDate }}
+          {{ policy.expDate }}
         </div>
         <div class="text-secondary mb-4 text-justify text-sm">
-          {{ policy.description }}
+          {{ policy.percentage }}
         </div>
       </div>
       <div v-if="edit" class="card m-4" v-for="policy in policies">

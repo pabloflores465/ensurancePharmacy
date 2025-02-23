@@ -5,13 +5,15 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "SERVICES")
 public class Service {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID_SERVICE")
     private Long idService;
 
-    @Column(name = "ID_HOSPITAL", nullable = false)
-    private Long idHospital;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "ID_HOSPITAL", nullable = false)
+    private Hospital hospital;
 
     @Column(name = "NAME", nullable = false, length = 100)
     private String name;
@@ -19,11 +21,13 @@ public class Service {
     @Column(name = "DESCRIPTION", nullable = false, length = 255)
     private String description;
 
-    @Column(name = "ID_CATEGORY", nullable = false)
-    private Long idCategory;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "ID_CATEGORY", nullable = false)
+    private Category category;
 
-    @Column(name = "ID_SUBCATEGORY", nullable = false)
-    private Long idSubcategory;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "ID_SUBCATEGORY", nullable = false)
+    private Category subcategory;
 
     @Column(name = "COST", nullable = false)
     private Double cost;
@@ -35,27 +39,67 @@ public class Service {
     public Service() {}
 
     // Getters y Setters
-    public Long getIdService() { return idService; }
-    public void setIdService(Long idService) { this.idService = idService; }
+    public Long getIdService() {
+        return idService;
+    }
 
-    public Long getIdHospital() { return idHospital; }
-    public void setIdHospital(Long idHospital) { this.idHospital = idHospital; }
+    public void setIdService(Long idService) {
+        this.idService = idService;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public Hospital getHospital() {
+        return hospital;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public void setHospital(Hospital hospital) {
+        this.hospital = hospital;
+    }
 
-    public Long getIdCategory() { return idCategory; }
-    public void setIdCategory(Long idCategory) { this.idCategory = idCategory; }
+    public String getName() {
+        return name;
+    }
 
-    public Long getIdSubcategory() { return idSubcategory; }
-    public void setIdSubcategory(Long idSubcategory) { this.idSubcategory = idSubcategory; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public Double getCost() { return cost; }
-    public void setCost(Double cost) { this.cost = cost; }
+    public String getDescription() {
+        return description;
+    }
 
-    public Integer getEnabled() { return enabled; }
-    public void setEnabled(Integer enabled) { this.enabled = enabled; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public Category getSubcategory() {
+        return subcategory;
+    }
+
+    public void setSubcategory(Category subcategory) {
+        this.subcategory = subcategory;
+    }
+
+    public Double getCost() {
+        return cost;
+    }
+
+    public void setCost(Double cost) {
+        this.cost = cost;
+    }
+
+    public Integer getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Integer enabled) {
+        this.enabled = enabled;
+    }
 }

@@ -1,91 +1,29 @@
 <script setup lang="ts">
 import { ref, type Ref } from "vue";
+import axios from "axios";
 
-const pharmacies: Ref<
+interface Pharmacy
   {
-    id_farm: number;
+    idPharmacy: number;
     name: string;
     address: string;
     phone: string;
     email: string;
-    enabled: boolean;
-  }[]
-> = ref([
-  {
-    id_farm: 1,
-    name: "Farmacia Central",
-    address: "Av. Principal 123",
-    phone: "555-1234",
-    email: "contacto@farmaciacentral.com",
-    enabled: true,
-  },
-  {
-    id_farm: 2,
-    name: "Farmacia del Norte",
-    address: "Calle Secundaria 456",
-    phone: "555-5678",
-    email: "info@farmaciadelnorte.org",
-    enabled: false,
-  },
-  {
-    id_farm: 3,
-    name: "Farmacia del Este",
-    address: "Boulevard de la Salud 789",
-    phone: "555-9012",
-    email: "contact@farmaciadeleste.com",
-    enabled: true,
-  },
-  {
-    id_farm: 1,
-    name: "Farmacia Central",
-    address: "Av. Principal 123",
-    phone: "555-1234",
-    email: "contacto@farmaciacentral.com",
-    enabled: true,
-  },
-  {
-    id_farm: 2,
-    name: "Farmacia del Norte",
-    address: "Calle Secundaria 456",
-    phone: "555-5678",
-    email: "info@farmaciadelnorte.org",
-    enabled: false,
-  },
-  {
-    id_farm: 3,
-    name: "Farmacia del Este",
-    address: "Boulevard de la Salud 789",
-    phone: "555-9012",
-    email: "contact@farmaciadeleste.com",
-    enabled: true,
-  },
-  {
-    id_farm: 1,
-    name: "Farmacia Central",
-    address: "Av. Principal 123",
-    phone: "555-1234",
-    email: "contacto@farmaciacentral.com",
-    enabled: true,
-  },
-  {
-    id_farm: 2,
-    name: "Farmacia del Norte",
-    address: "Calle Secundaria 456",
-    phone: "555-5678",
-    email: "info@farmaciadelnorte.org",
-    enabled: false,
-  },
-  {
-    id_farm: 3,
-    name: "Farmacia del Este",
-    address: "Boulevard de la Salud 789",
-    phone: "555-9012",
-    email: "contact@farmaciadeleste.com",
-    enabled: true,
-  },
-]);
+    enabled: number;
+  }
+const pharmacies = ref<Pharmacy[]>([]);
 
+const fetchPharmacy = async () => {
+  try {
+    const response = await axios.get("http://localhost:8080/api/pharmacy");
+    pharmacies.value = response.data;
+    console.log("Hospitals obtenidos:", pharmacies.value);
+  } catch (error) {
+    console.error("Error al obtener hospitals:", error);
+  }
+};
 const edit = useEdit();
+fetchPharmacy();
 </script>
 
 <template>
@@ -95,10 +33,10 @@ const edit = useEdit();
     <div
       v-if="!edit"
       v-for="pharmacy in pharmacies"
-      :key="pharmacy.id_farm"
+      :key="pharmacy.idPharmacy"
       class="card"
     >
-      <h2 class="title mb-6">Farmacia #{{ pharmacy.id_farm }}</h2>
+      <h2 class="title mb-6">Farmacia #{{ pharmacy.idPharmacy }}</h2>
       <p class="text-primary mb-4 flex">
         <svg
           class="me-2"
