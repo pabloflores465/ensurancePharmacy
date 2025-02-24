@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import axios from "axios";
-import { ref } from "vue";
 
 interface Hospital {
   idHospital: number;
@@ -25,12 +24,32 @@ const fetchHospitals = async () => {
 };
 const edit = useEdit();
 fetchHospitals();
+const search = useSearch();
 </script>
 
 <template>
   <div
     class="bg-image-[url('/medicine.jpg')] h-full w-full grid-flow-row items-center justify-center gap-1 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
   >
+    <Search
+      :fieldNames="[
+        'Id',
+        'Name',
+        'Address',
+        'Phone Number',
+        'E-Mail',
+        'Enabled',
+      ]"
+      v-model:output="hospitals"
+      :searchFields="[
+        'idHospital',
+        'name',
+        'address',
+        'phone',
+        'email',
+        'enabled',
+      ]"
+    />
     <div v-if="!edit" v-for="hospital in hospitals" class="card">
       <h2 class="title mb-6">Hospital #{{ hospital.idHospital }}</h2>
       <p class="text-primary mb-4 flex">
