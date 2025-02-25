@@ -23,8 +23,167 @@ const fetchHospitals = async () => {
   }
 };
 const edit = useEdit();
-fetchHospitals();
 const search = useSearch();
+const showServices: Ref<boolean> = ref(false);
+fetchHospitals();
+
+const services: Ref<
+  {
+    id_serv: number;
+    id_hos: number;
+    name: string;
+    descrip: string;
+    id_cat: number;
+    enabled: boolean;
+    cost: number;
+  }[]
+> = ref([
+  {
+    id_serv: 1,
+    id_hos: 10,
+    name: "Consulta General",
+    descrip: "Evaluación médica de rutina",
+    id_cat: 1,
+    enabled: true,
+    cost: 200.0,
+  },
+  {
+    id_serv: 2,
+    id_hos: 10,
+    name: "Vacunación",
+    descrip: "Aplicación de vacunas preventivas",
+    id_cat: 2,
+    enabled: true,
+    cost: 300.0,
+  },
+  {
+    id_serv: 3,
+    id_hos: 10,
+    name: "Rayos X",
+    descrip: "Servicio de radiografía para diagnóstico",
+    id_cat: 3,
+    enabled: true,
+    cost: 450.0,
+  },
+  {
+    id_serv: 4,
+    id_hos: 10,
+    name: "Laboratorio de Sangre",
+    descrip: "Análisis de sangre completo",
+    id_cat: 4,
+    enabled: true,
+    cost: 600.0,
+  },
+  {
+    id_serv: 5,
+    id_hos: 11,
+    name: "Ultrasonido",
+    descrip: "Estudios de ultrasonido para diversos diagnósticos",
+    id_cat: 3,
+    enabled: true,
+    cost: 800.0,
+  },
+  {
+    id_serv: 6,
+    id_hos: 11,
+    name: "Terapia Física",
+    descrip: "Sesiones de rehabilitación y fisioterapia",
+    id_cat: 5,
+    enabled: true,
+    cost: 350.0,
+  },
+  {
+    id_serv: 7,
+    id_hos: 11,
+    name: "Odontología",
+    descrip: "Tratamientos dentales y limpiezas",
+    id_cat: 6,
+    enabled: true,
+    cost: 500.0,
+  },
+  {
+    id_serv: 8,
+    id_hos: 11,
+    name: "Nutrición",
+    descrip: "Consulta nutricional y planes de alimentación",
+    id_cat: 7,
+    enabled: false,
+    cost: 400.0,
+  },
+  {
+    id_serv: 9,
+    id_hos: 12,
+    name: "Consulta Especializada",
+    descrip: "Atención de especialistas (cardiólogos, neurólogos, etc.)",
+    id_cat: 1,
+    enabled: true,
+    cost: 1000.0,
+  },
+  {
+    id_serv: 10,
+    id_hos: 12,
+    name: "Pediatría",
+    descrip: "Atención médica para niños",
+    id_cat: 1,
+    enabled: true,
+    cost: 700.0,
+  },
+  {
+    id_serv: 11,
+    id_hos: 12,
+    name: "Dermatología",
+    descrip: "Diagnóstico y tratamiento de enfermedades de la piel",
+    id_cat: 1,
+    enabled: true,
+    cost: 750.0,
+  },
+  {
+    id_serv: 12,
+    id_hos: 13,
+    name: "Cirugía Menor",
+    descrip: "Procedimientos quirúrgicos de baja complejidad",
+    id_cat: 8,
+    enabled: true,
+    cost: 2500.0,
+  },
+  {
+    id_serv: 13,
+    id_hos: 13,
+    name: "Cirugía Mayor",
+    descrip: "Procedimientos quirúrgicos de alta complejidad",
+    id_cat: 8,
+    enabled: false,
+    cost: 15000.0,
+  },
+  {
+    id_serv: 14,
+    id_hos: 13,
+    name: "Hospitalización",
+    descrip: "Camas y servicios de internación",
+    id_cat: 9,
+    enabled: true,
+    cost: 2000.0,
+  },
+  {
+    id_serv: 15,
+    id_hos: 13,
+    name: "Emergencias",
+    descrip: "Atención de urgencias 24/7",
+    id_cat: 10,
+    enabled: true,
+    cost: 0.0,
+  },
+]);
+
+const isHospitalService = (service) => {
+  let hospitalService = false;
+  hospitals.value.forEach((hospital) => {
+    if (service.id_hos === hospital.idHospital) {
+      hospitalService = true;
+    }
+  });
+  return hospitalService;
+};
 </script>
 
 <template>
@@ -115,7 +274,27 @@ const search = useSearch();
         v-model="hospital.enabled"
         label="Enabled"
       ></Switch>
-      <Dropdown class="text-primary"> hola </Dropdown>
+      <button
+        class="btn mb-4 flex"
+        @click="
+          () => {
+            showServices = true;
+          }
+        "
+      >
+        <svg
+          class="me-2"
+          xmlns="http://www.w3.org/2000/svg"
+          height="24px"
+          viewBox="0 -960 960 960"
+          width="24px"
+          fill="#e8eaed"
+        >
+          <path
+            d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
+          /></svg
+        >See Details
+      </button>
     </div>
     <div v-if="edit" v-for="hospital in hospitals" class="card">
       <span class="text-primary font-semibold">Hospital</span>
@@ -148,4 +327,28 @@ const search = useSearch();
       </button>
     </div>
   </div>
+  <Modal v-for="service in services" v-model:show="showServices">
+    <div
+      v-if="isHospitalService(service)"
+      class="title text-accent mx-auto mb-6 flex w-full justify-center text-lg"
+    >
+      Number {{ service.id_serv }}
+    </div>
+    <div class="mb-4 flex">
+      <div class="me-2 font-bold">Name:</div>
+      {{ service.name }}
+    </div>
+    <div class="mb-4 flex">
+      <div class="me-2 font-bold">Description:</div>
+      {{ service.descrip }}
+    </div>
+    <div class="mb-4 flex">
+      <div class="me-2 font-bold">Enabled:</div>
+      {{ service.enabled }}
+    </div>
+    <div class="mb-4 flex">
+      <div class="me-2 font-bold">Cost:</div>
+      {{ service.cost }}
+    </div>
+  </Modal>
 </template>
