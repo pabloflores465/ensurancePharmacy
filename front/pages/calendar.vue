@@ -123,7 +123,9 @@ function nextWeek() {
               v-for="(dia, dayIndex) in diasSemana"
               :key="dayIndex"
               class="bg-background/80 border-primary hover:bg-h-background/80 border-top h-16 border-e"
-            ></td>
+            >
+              <button></button>
+            </td>
           </tr>
         </tbody>
       </table>
