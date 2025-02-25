@@ -1,22 +1,23 @@
 <script setup lang="ts">
-import {ref} from "vue";
+import { ref } from "vue";
 import axios from "axios";
 
 const search = useSearch();
-interface Policy
-  {
-    idPolicy: number;
-    percentage: number;
-    creationDate: string;
-    expDate: string;
-    cost: number;
-    enabled: number;
-  }
+interface Policy {
+  idPolicy: number;
+  percentage: number;
+  creationDate: string;
+  expDate: string;
+  cost: number;
+  enabled: number;
+}
 const policies = ref<Policy[]>([]);
+let policyChanges: Policy[] = [];
 const fetchPolicy = async () => {
   try {
     const response = await axios.get("http://localhost:8080/api/policy");
     policies.value = response.data;
+    policyChanges = response.data.map((policy: Policy) => ({ ...policy }));
     console.log("Hospitals obtenidos:", policies.value);
   } catch (error) {
     console.error("Error al obtener hospitals:", error);
@@ -30,7 +31,7 @@ fetchPolicy();
   <main
     class="bg-image-[url(https://cdn.pixabay.com/photo/2020/11/03/15/32/man-5710164_1280.jpg)]"
   >
-    <Search v-if="search" />
+    <!--<Search v-if="search" />-->
     <div class="responsive-grid">
       <div v-if="!edit" class="card m-4" v-for="policy in policies">
         <div class="title mb-6">
@@ -131,22 +132,89 @@ fetchPolicy();
           {{ policy.percentage }}
         </div>
       </div>
-      <div v-if="edit" class="card m-4" v-for="policy in policies">
+      <div v-if="edit" class="card m-4" v-for="(policy, index) in policies">
         <span class="text-primary font-semibold">Policy</span>
-        <input type="text" class="field mb-8" />
+        <input
+          type="number"
+          class="field mb-8"
+          @input="
+            (event) => {
+              const target = event.target as HTMLInputElement;
+              policyChanges[index].percentage = parseInt(target.value);
+            }
+          "
+        />
         <span class="text-primary font-semibold">Policy Code</span>
-        <input type="text" class="field mb-8" />
+        <input
+          type="number"
+          class="field mb-8"
+          @input="
+            (event) => {
+              const target = event.target as HTMLInputElement;
+              policyChanges[index].idPolicy = parseInt(target.value);
+            }
+          "
+        />
         <span class="text-primary font-semibold">Discount Percentage</span>
         <input type="number" class="field mb-8" />
         <span class="text-primary font-semibold">Anual Price</span>
-        <input type="number" class="field mb-8" />
+        <input
+          type="number"
+          class="field mb-8"
+          @input="
+            (event) => {
+              const target = event.target as HTMLInputElement;
+              //policyChanges[index].cost = parseInt(target.value);
+            }
+          "
+        />
         <span class="text-primary font-semibold">Creation Date</span>
-        <input type="date" class="field mb-8" />
+        <input
+          type="date"
+          class="field mb-8"
+          @input="
+            (event) => {
+              const target = event.target as HTMLInputElement;
+              policyChanges[index].creationDate = target.value;
+            }
+          "
+        />
         <span class="text-primary font-semibold">Expire Date</span>
-        <input type="date" class="field mb-8" />
-        <span class="text-primary font-semibold">Description</span>
-        <input type="text" class="field mb-8" />
-        <button class="btn mx-auto flex justify-center">
+        <input
+          type="date"
+          class="field mb-8"
+          @input="
+            (event) => {
+              const target = event.target as HTMLInputElement;
+              policyChanges[index].expDate = target.value;
+            }
+          "
+        />
+        <!--<span class="text-primary font-semibold">Description</span>
+        <input
+          type="text"
+          class="field mb-8"
+          @input="
+            (event) => {
+              const target = event.target as HTMLInputElement;
+              //policyChanges[index]. = parseInt(target.value);
+            }
+          "
+        />-->
+        <button
+          class="btn mx-auto flex justify-center"
+          @click="
+            () => {
+              console.log(policy);
+              console.log(policyChanges[index]);
+              addChange(
+                ['Policy Id:', 'Percentage', 'Creation Date', 'Expire Date'],
+                policy,
+                policyChanges[index],
+              );
+            }
+          "
+        >
           <svg
             class="me-2"
             xmlns="http://www.w3.org/2000/svg"

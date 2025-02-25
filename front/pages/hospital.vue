@@ -32,6 +32,7 @@ const search = useSearch();
     class="bg-image-[url('/medicine.jpg')] h-full w-full grid-flow-row items-center justify-center gap-1 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
   >
     <Search
+      v-if="search"
       :fieldNames="[
         'Id',
         'Name',
@@ -110,10 +111,11 @@ const search = useSearch();
         <span class="font-semibold">Email:</span> {{ hospital.email }}
       </p>
       <Switch
-        class="text-sm"
+        class="mb-4 flex w-full"
         v-model="hospital.enabled"
         label="Enabled"
       ></Switch>
+      <Dropdown class="text-primary"> hola </Dropdown>
     </div>
     <div v-if="edit" v-for="hospital in hospitals" class="card">
       <span class="text-primary font-semibold">Hospital</span>

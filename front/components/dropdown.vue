@@ -72,27 +72,7 @@ onBeforeUnmount(() => {
           aria-orientation="vertical"
           aria-labelledby="options-menu"
         >
-          <a
-            href="#"
-            class="text-primary hover:bg-h-background block px-4 py-2 text-sm"
-            role="menuitem"
-          >
-            Option 1
-          </a>
-          <a
-            href="#"
-            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-            role="menuitem"
-          >
-            Option 2
-          </a>
-          <a
-            href="#"
-            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-            role="menuitem"
-          >
-            Option 3
-          </a>
+          <slot></slot>
         </div>
       </div>
     </transition>

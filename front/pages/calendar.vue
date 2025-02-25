@@ -71,7 +71,6 @@ function nextWeek() {
         >
           <path d="M400-80 0-480l400-400 71 71-329 329 329 329-71 71Z" />
         </svg>
-        Previous
       </button>
 
       <div class="text-xl font-semibold">
@@ -79,7 +78,6 @@ function nextWeek() {
       </div>
 
       <button class="btn flex" @click="nextWeek">
-        Next
         <svg
           xmlns="http://www.w3.org/2000/svg"
           height="24px"
