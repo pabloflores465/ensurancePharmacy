@@ -1,81 +1,187 @@
 <template>
-  <!-- Header con navegación principal -->
-  <header class="bg-blue-600 p-4 text-white flex justify-between items-center">
-      <h1 class="text-2xl font-bold">Farmacia Salud</h1>
-      <nav>
-          <a href="#" class="mx-3 hover:underline">Inicio</a>
-          <a href="#" class="mx-3 hover:underline">Medicamentos</a>
-          <a href="#" class="mx-3 hover:underline">Sucursales</a>
-          <a href="#" class="mx-3 hover:underline">Contacto</a>
-          <a href="#" class="bg-white text-blue-600 px-3 py-1 rounded">Iniciar Sesión</a>
-      </nav>
-  </header>
-
-  <!-- Hero/Banner con mensaje principal y buscador -->
-  <section class="text-center py-16 bg-blue-200">
-      <h2 class="text-4xl font-bold mb-4">Tu salud en nuestras manos</h2>
-      <p class="text-lg mb-6">Encuentra tus medicamentos fácilmente</p>
-      <input type="text" v-model="search" placeholder="Buscar medicamento..." class="px-4 py-2 rounded w-1/2">
-  </section>
-
-  <!-- Sección de productos destacados -->
-  <section class="p-8">
-      <h2 class="text-3xl font-bold text-center mb-6">Medicamentos en Oferta</h2>
-      <div class="grid grid-cols-3 gap-4">
-          <div v-for="(med, index) in medicines" :key="index" class="bg-white p-4 shadow rounded-lg text-center">
-              <img :src="med.image" :alt="med.name" class="mx-auto">
-              <h3 class="text-lg font-semibold mt-2">{{ med.name }}</h3>
-              <p class="text-green-600">{{ med.price }}</p>
-          </div>
+  <div class="dashboard">
+    <!-- Sidebar Izquierdo -->
+    <aside class="sidebar">
+      <div class="contact-icons">
+        <button class="icon-btn">💬</button>
+        <button class="icon-btn">📞</button>
+        <button class="icon-btn">📱</button>
       </div>
-  </section>
+      <ul class="sidebar-menu">
+        <li>Equipo Médico</li>
+        <li>Aseguradoras</li>
+        <li>Canje de puntos</li>
+        <li>Pago en Cuotas</li>
+      </ul>
+    </aside>
 
-  <!-- Beneficios de la farmacia -->
-  <section class="bg-gray-200 p-8 text-center">
-      <h2 class="text-3xl font-bold mb-4">¿Por qué elegirnos?</h2>
-      <p>✔ Conexión con hospitales y seguros médicos</p>
-      <p>✔ Pagos seguros y descuentos aplicados</p>
-      <p>✔ Recibe notificaciones sobre tus medicamentos</p>
-  </section>
+    <!-- Contenido Principal -->
+    <main class="content">
+      <!-- Carrusel de Ofertas -->
+      <section class="carousel">
+        <img :src="carouselImages[currentImage]" class="carousel-img" />
+        <button @click="prevImage" class="carousel-btn left">◀</button>
+        <button @click="nextImage" class="carousel-btn right">▶</button>
+      </section>
 
-  <!-- Mapa de sucursales -->
-  <section class="p-8 text-center">
-      <h2 class="text-3xl font-bold mb-4">Nuestras Sucursales</h2>
-      <p>Encuentra la más cercana a ti</p>
-      <div class="bg-gray-400 h-64 w-full mt-4"></div> <!-- Placeholder para el mapa -->
-  </section>
-
-  <!-- Footer con información básica -->
-  <footer class="bg-blue-600 text-white text-center p-4">
-      <p>© 2025 Farmacia Salud | Todos los derechos reservados</p>
-  </footer>
+      <!-- Sección de Redes Sociales y Ofertas -->
+      <section class="offers">
+        <h2 class="section-title">Redes Sociales</h2>
+        <div class="offers-container">
+          <div v-for="(offer, index) in offers" :key="index" class="offer-card">
+            <img :src="offer.image" :alt="offer.title" class="offer-img" />
+            <p class="offer-title">{{ offer.title }}</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
 </template>
 
-<script>
-export default {
-  data() {
-      return {
-          search: '', // Almacena el valor ingresado en el buscador
-          medicines: [ // Lista de medicamentos en oferta
-              { name: 'Paracetamol 500mg', price: 'Q25.00', image: 'https://via.placeholder.com/150' },
-              { name: 'Ibuprofeno 200mg', price: 'Q30.00', image: 'https://via.placeholder.com/150' },
-              { name: 'Amoxicilina 500mg', price: 'Q40.00', image: 'https://via.placeholder.com/150' }
-          ]
-      };
-  }
+<script setup>
+import { ref } from "vue";
+
+// Lista de imágenes del carrusel (URLs)
+const carouselImages = ref([
+  "https://via.placeholder.com/900x300/FFD700/000000?text=Oferta+1",
+  "https://via.placeholder.com/900x300/FF4500/FFFFFF?text=Oferta+2",
+  "https://via.placeholder.com/900x300/1E90FF/FFFFFF?text=Oferta+3"
+]);
+
+// Lista de ofertas con imágenes desde URL
+const offers = ref([
+  { title: "Omron - Presión Arterial", image: "https://via.placeholder.com/300x200" },
+  { title: "Sukrol - Suplemento Cerebral", image: "https://via.placeholder.com/300x200" },
+  { title: "10% Descuento en ISDIN", image: "https://via.placeholder.com/300x200" }
+]);
+
+// Estado del carrusel
+const currentImage = ref(0);
+
+// Funciones para cambiar imágenes del carrusel
+const prevImage = () => {
+  currentImage.value = (currentImage.value - 1 + carouselImages.value.length) % carouselImages.value.length;
+};
+
+const nextImage = () => {
+  currentImage.value = (currentImage.value + 1) % carouselImages.value.length;
 };
 </script>
 
 <style scoped>
-/* Estilos personalizados */
-header nav a {
-  transition: color 0.3s;
+/* Layout principal */
+.dashboard {
+  display: flex;
+  height: 100vh;
+  background-color: #f8f9fa;
 }
-header nav a:hover {
-  color: yellow;
+
+/* Sidebar */
+.sidebar {
+  width: 250px;
+  background: #002366;
+  color: white;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
-input {
-  border: 1px solid #ccc;
+
+.contact-icons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.icon-btn {
+  background: white;
+  color: #002366;
   padding: 8px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.sidebar-menu {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar-menu li {
+  padding: 10px;
+  border-bottom: 1px solid white;
+  text-align: center;
+}
+
+/* Contenido Principal */
+.content {
+  flex-grow: 1;
+  padding: 20px;
+}
+
+/* Carrusel */
+.carousel {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.carousel-img {
+  width: 100%;
+  border-radius: 10px;
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.left {
+  left: 10px;
+}
+.right {
+  right: 10px;
+}
+
+/* Sección de Ofertas */
+.offers {
+  margin-top: 20px;
+}
+
+.section-title {
+  text-align: center;
+  font-size: 24px;
+  color: #002366;
+  margin-bottom: 10px;
+}
+
+.offers-container {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.offer-card {
+  background: white;
+  padding: 10px;
+  text-align: center;
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.offer-img {
+  width: 100%;
+  border-radius: 5px;
+}
+
+.offer-title {
+  font-weight: bold;
+  margin-top: 5px;
 }
 </style>

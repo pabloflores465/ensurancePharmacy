@@ -1,158 +1,61 @@
 <!-- eslint-disable vue/multi-word-component-names -->
-<template>
-  <div class="dashboard-container">
-    <h1>Bienvenido, {{ patientName }}</h1>
-
-    <!-- Sección Mis Recetas -->
-    <section class="my-prescriptions">
-      <h2>Mis Recetas</h2>
-      <ul>
-        <li v-for="prescription in prescriptions" :key="prescription.id">
-          <span>Código: {{ prescription.code }}</span>
-          <span>Estado: {{ prescription.status }}</span>
-        </li>
-      </ul>
-      <div>
-        <label for="new-prescription-code">Solicitar nueva receta:</label>
-        <input type="text" id="new-prescription-code" v-model="newPrescriptionCode" />
-        <button @click="requestNewPrescription">Solicitar</button>
-      </div>
-    </section>
-
-    <!-- Sección Búsqueda de Medicamentos -->
-    <section class="search-medicines">
-      <h2>Búsqueda de Medicamentos</h2>
-      <input type="text" v-model="searchQuery" placeholder="Buscar medicamentos..." />
-      <button @click="searchMedicines">Buscar</button>
-      <ul>
-        <li v-for="medicine in medicines" :key="medicine.id">
-          <span>{{ medicine.name }}</span>
-          <button @click="addToCart(medicine)" v-if="medicine.isOverTheCounter">Agregar a la lista de compras</button>
-        </li>
-      </ul>
-    </section>
-
-    <!-- Sección Historial de Compras -->
-    <section class="purchase-history">
-      <h2>Historial de Compras</h2>
-      <ul>
-        <li v-for="purchase in purchaseHistory" :key="purchase.id">
-          <span>{{ purchase.medicineName }}</span>
-          <a :href="purchase.invoiceUrl" download>Descargar factura</a>
-        </li>
-      </ul>
-    </section>
-
-    <!-- Sección Notificaciones y Alertas -->
-    <section class="notifications">
-      <h2>Notificaciones y Alertas</h2>
-      <ul>
-        <li v-for="notification in notifications" :key="notification.id">
-          <span>{{ notification.message }}</span>
-        </li>
-      </ul>
-    </section>
-
-    <!-- Sección Opciones de Perfil -->
-    <section class="profile-options">
-      <h2>Opciones de Perfil</h2>
-      <button @click="editProfile">Editar Información Personal</button>
-      <button @click="managePaymentMethods">Métodos de Pago</button>
-      <button @click="configureNotifications">Configuración de Notificaciones</button>
-    </section>
-  </div>
-</template>
-
 <script setup>
-import { ref } from 'vue';
+import { computed } from 'vue';
+import { useUserStore } from '@/stores/userStore';
 
-const patientName = ref('Nombre del Paciente');
-const prescriptions = ref([
-  { id: 1, code: 'RX123', status: 'pendiente' },
-  { id: 2, code: 'RX124', status: 'en proceso' },
-  // ...otras recetas
-]);
-const newPrescriptionCode = ref('');
-const searchQuery = ref('');
-const medicines = ref([
-  { id: 1, name: 'Medicamento A', isOverTheCounter: true },
-  { id: 2, name: 'Medicamento B', isOverTheCounter: false },
-  // ...otros medicamentos
-]);
-const purchaseHistory = ref([
-  { id: 1, medicineName: 'Medicamento A', invoiceUrl: '/path/to/invoice1.pdf' },
-  { id: 2, medicineName: 'Medicamento B', invoiceUrl: '/path/to/invoice2.pdf' },
-  // ...otras compras
-]);
-const notifications = ref([
-  { id: 1, message: 'Su receta RX123 está lista para recoger.' },
-  { id: 2, message: 'El medicamento B está agotado.' },
-  // ...otras notificaciones
-]);
+const userStore = useUserStore();
 
-const requestNewPrescription = () => {
-  console.log('Solicitando nueva receta con código:', newPrescriptionCode.value);
-  // Lógica para solicitar nueva receta
-};
-
-const searchMedicines = () => {
-  console.log('Buscando medicamentos con query:', searchQuery.value);
-  // Lógica para buscar medicamentos
-};
-
-const addToCart = (medicine) => {
-  console.log('Agregando a la lista de compras:', medicine.name);
-  // Lógica para agregar medicamento a la lista de compras
-};
-
-const editProfile = () => {
-  console.log('Editando información personal');
-  // Lógica para editar información personal
-};
-
-const managePaymentMethods = () => {
-  console.log('Gestionando métodos de pago');
-  // Lógica para gestionar métodos de pago
-};
-
-const configureNotifications = () => {
-  console.log('Configurando notificaciones');
-  // Lógica para configurar notificaciones
-};
+// Computed para verificar el estado del usuario
+const isLoggedIn = computed(() => userStore.user !== null);
+const isAdmin = computed(() => userStore.user?.role === 'admin');
 </script>
 
+<template>
+
+
+  <!-- Contenido dinámico según el rol -->
+  <main>
+    <section v-if="isAdmin">
+      <h2>Panel de Administración</h2>
+      <p>Bienvenido Administrador. Aquí puedes gestionar el inventario y los seguros.</p>
+    </section>
+
+    <section v-else-if="isLoggedIn">
+      <h2>Bienvenido a tu Panel</h2>
+      <p>Aquí puedes ver tus recetas y tu historial de compras.</p>
+    </section>
+
+    <section v-else>
+      <h2>Bienvenido</h2>
+      <p>Por favor, inicia sesión para acceder a más funciones.</p>
+    </section>
+  </main>
+</template>
+
 <style scoped>
-.dashboard-container {
-  padding: 20px;
-}
-
-h1, h2 {
-  color: #1e40af;
-}
-
-section {
-  margin-bottom: 20px;
-}
-
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-li {
-  margin-bottom: 10px;
-}
-
-button {
-  background-color: #1e40af;
+/* Estilos generales */
+.header {
+  background: #1e40af;
   color: white;
-  padding: 10px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
 }
 
-button:hover {
-  background-color: #1e3a8a;
+.nav ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+.nav a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+main {
+  padding: 20px;
 }
 </style>

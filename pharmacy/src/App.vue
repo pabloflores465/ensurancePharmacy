@@ -1,12 +1,16 @@
 <template>
   <div id="app">
+    <Header />
     <router-view /> <!-- Aquí se mostrarán las páginas según la ruta -->
   </div>
 </template>
 
 <script>
+import Header from '@/components/Header.vue';
+
 export default {
-  name: "App"
+  name: "App",
+  components: { Header }
 };
 </script>
 
@@ -14,7 +18,7 @@ export default {
 /* Estilos globales opcionales */
 body {
   font-family: Arial, sans-serif;
-  background-color: #f5f5f5;
+  background-color: #f1f9ff;
   margin: 0;
 }
 </style>
