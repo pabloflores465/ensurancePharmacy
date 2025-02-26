@@ -132,7 +132,7 @@ const handleSearch = () => {
       );
     })
     .slice(0, 5); // Limit to 5 results
-  
+
   showDropdown.value = searchResults.value.length > 0;
 };
 
@@ -173,24 +173,27 @@ const search = useSearch();
 <template>
   <div class="container bg-color p-4">
     <!-- Page header -->
-     <Search v-if="search" :fieldNames="['Nombre', 'Descripción', 'Categoría', 'Proveedor']" :searchFields="['name', 'description', 'category', 'supplier']" v-model:output="medicines" />
+    <Search v-if="search" :fieldNames="['Nombre', 'Descripción', 'Categoría', 'Proveedor']"
+      :searchFields="['name', 'description', 'category', 'supplier']" v-model:output="medicines" />
 
     <!-- Search and filters bar -->
-    
+
 
     <!-- Updated Loading and Error States -->
     <div v-if="isLoading" class="flex justify-center my-8">
       <LoadingSpinner size="lg" message="Cargando medicamentos..." />
     </div>
-    
+
     <div v-else-if="hasError" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6">
       <span class="block sm:inline">Hubo un error al cargar los medicamentos. Intente nuevamente.</span>
     </div>
 
     <!-- Empty state -->
     <div v-else-if="filteredMedicines.length === 0" class="bg-white rounded-lg shadow-md p-8 text-center">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-4" fill="none"
+        viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
       <h3 class="text-lg font-medium text-gray-900 mb-1">No se encontraron medicamentos</h3>
       <p class="text-gray-500">No se encontraron medicamentos que coincidan con su búsqueda.</p>
@@ -198,37 +201,18 @@ const search = useSearch();
 
     <!-- Medicines grid -->
     <div v-else>
-      <!-- Actions bar -->
-      <div class="flex justify-between items-center mb-4">
-        <div>
-          <span class="text-sm text-gray-600">Mostrando {{ filteredMedicines.length }} medicamentos</span>
-        </div>
-        <div>
-          <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            Añadir medicamento
-          </button>
-        </div>
-      </div>
-
       <!-- Grid of medicines -->
       <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         <!-- Vista normal -->
-        <div
-          v-if="!edit"
-          v-for="medicine in filteredMedicines"
-          :key="medicine.idMedicine"
-          class="card p-6 shadow-md transition-all hover:shadow-lg"
-        >
+        <div v-if="!edit" v-for="medicine in filteredMedicines" :key="medicine.idMedicine"
+          class="card p-6 shadow-md transition-all hover:shadow-lg">
           <div class="flex justify-between items-start mb-4">
             <h2 class="text-xl font-bold text-primary">{{ medicine.name }}</h2>
             <span class="bg-success-light text-success text-xs font-medium px-2.5 py-0.5 rounded-full">
               {{ medicine.stock }} unidades
             </span>
           </div>
-          
+
           <div class="space-y-2 text-sm">
             <p class="flex justify-between">
               <span class="font-medium text-secondary">Code:</span>
@@ -251,92 +235,97 @@ const search = useSearch();
               <span class="font-bold text-primary">${{ medicine.price }}</span>
             </p>
           </div>
-          
-          <div class="mt-4 pt-4 border-t border-muted-light">
-            <p class="text-sm text-muted mb-2">{{ medicine.description }}</p>
+
+          <div class="mt-4 pt-4 border-t border-secondary">
+            <p class="text-sm text-secondary mb-2">{{ medicine.description }}</p>
             <div class="flex items-center mt-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-muted mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-secondary mr-1" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
-              <span class="text-xs text-muted">{{ medicine.pharmacy.name }}</span>
+              <span class="text-xs text-secondary">{{ medicine.pharmacy.name }}</span>
             </div>
           </div>
-          
+
         </div>
 
         <!-- Vista edición (ejemplo, se puede personalizar) -->
-        <div
-          v-if="edit"
-          v-for="(medicine, index) in filteredMedicines"
-          :key="medicine.idMedicine"
-          class="card p-6 shadow-md hover:shadow-lg transition-all"
-        >
+        <div v-if="edit" v-for="(medicine, index) in filteredMedicines" :key="medicine.idMedicine"
+          class="card p-6 shadow-md hover:shadow-lg transition-all">
           <div class="space-y-4">
             <div>
               <label class="block text-sm font-medium text-secondary">Name:</label>
-              <input 
-                type="text" 
-                :placeholder="medicine.name"
-        
+              <input type="text" :placeholder="medicine.name"
                 class="mt-1 block w-full rounded-md border text-primary border-primary px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              />
+                @input="
+                  (event) => {
+                    const target = event.target as HTMLInputElement;
+                    medicineChanges[index].name = target.value;
+                  }
+                " />
             </div>
-            
+
             <div>
               <label class="block text-sm font-medium text-secondary">Code:</label>
-              <input 
-                type="text" 
-                :placeholder="medicine.idMedicine.toString()"
-               
-                class="mt-1 block w-full rounded-md border text-primary border-primary px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              />
+              <input type="text" :placeholder="medicine.idMedicine.toString()" @input="
+                (event) => {
+                  const target = event.target as HTMLInputElement;
+                  medicineChanges[index].idMedicine = parseInt(target.value);
+                }
+              " class="mt-1 block w-full rounded-md border text-primary border-primary px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
             </div>
-            
+
             <div>
               <label class="block text-sm font-medium text-secondary">Active Principle:</label>
-              <input 
-                type="text" 
-                :placeholder="medicine.activePrinciple"
-                class="mt-1 block w-full rounded-md border text-primary border-primary px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              />
+              <input type="text" :placeholder="medicine.activePrinciple" @input="
+                (event) => {
+                  const target = event.target as HTMLInputElement;
+                  medicineChanges[index].activePrinciple = target.value;
+                }
+              " class="mt-1 block w-full rounded-md border text-primary border-primary px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
             </div>
-            
+
             <div>
               <label class="block text-sm font-medium text-secondary">Presentation:</label>
-              <input 
-                type="text" 
-                :placeholder="medicine.presentation"
-       
+              <input type="text" :placeholder="medicine.presentation"
                 class="mt-1 block w-full text-primary rounded-md border border-primary px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              />
+                @input="
+                  (event) => {
+                    const target = event.target as HTMLInputElement;
+                    medicineChanges[index].presentation = target.value;
+                  }
+                " />
             </div>
-            
+
             <div>
               <label class="block text-sm font-medium text-secondary">Units:</label>
-              <input 
-                type="number" 
-                :placeholder="medicine.stock.toString()" 
-         
+              <input type="number" :placeholder="medicine.stock.toString()"
                 class="mt-1 block w-full text-primary rounded-md border border-primary px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              />
+                @input="
+                  (event) => {
+                    const target = event.target as HTMLInputElement;
+                    medicineChanges[index].stock = parseInt(target.value);
+                  }
+                " />
             </div>
-            
+
             <div>
               <Switch class="mt-2" label="Recipe Required" />
             </div>
-            
+
             <div>
               <label class="block text-sm font-medium text-secondary">Brand:</label>
-              <input 
-                type="text" 
-                :placeholder="medicine.brand" 
-                class="mt-1 block w-full rounded-md border text-primary border-primary px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              />
+              <input type="text" :placeholder="medicine.brand" @input="
+                (event) => {
+                  const target = event.target as HTMLInputElement;
+                  medicineChanges[index].brand = target.value;
+                }
+              " class="mt-1 block w-full rounded-md border text-primary border-primary px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
             </div>
-            
+
             <Dropdown class="mt-2" />
-            <button class="btn mx-auto flex"
-            @click="
+            <button class="btn mx-auto flex" @click="
               () => {
                 addChange(
                   ['Medicine', 'Name', 'Code', 'Active Principle', 'Presentation', 'Units', 'Brand'],
@@ -344,9 +333,12 @@ const search = useSearch();
                   medicineChanges[index],
                 );
               }
-            "
-            >
-            <svg class="me-2" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M840-680v480q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z"/></svg>
+            ">
+              <svg class="me-2" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                fill="currentColor">
+                <path
+                  d="M840-680v480q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z" />
+              </svg>
 
               Save
             </button>

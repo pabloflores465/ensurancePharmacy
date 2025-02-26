@@ -182,7 +182,7 @@ fetchPolicy();
           @input="
             (event) => {
               const target = event.target as HTMLInputElement;
-              //policyChanges[index].cost = parseInt(target.value);
+              policyChanges[index].cost = parseInt(target.value);
             }
           "
         />

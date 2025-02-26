@@ -124,15 +124,50 @@ fetchPharmacy();
     </div>
     <div v-if="edit" v-for="(pharmacy, index) in pharmacies" class="card">
       <span class="text-primary font-semibold">Pharmacy</span>
-      <input type="text" class="field mb-8" :placeholder="pharmacy.idPharmacy.toString()" />
+      <input type="text" class="field mb-8" :placeholder="pharmacy.idPharmacy.toString()" 
+      @input="
+      (event) => {
+        const target = event.target as HTMLInputElement;
+        pharmacyChanges[index].idPharmacy = parseInt(target.value);
+      }
+    "
+      />
       <span class="text-primary font-semibold">Name</span>
-      <input type="text" class="field mb-8" :placeholder="pharmacy.name" />
+      <input type="text" class="field mb-8" :placeholder="pharmacy.name" 
+      @input="
+      (event) => {
+        const target = event.target as HTMLInputElement;
+        pharmacyChanges[index].name = target.value;
+      }
+    "
+      />
       <span class="text-primary font-semibold">Address</span>
-      <input type="text" class="field mb-8" :placeholder="pharmacy.address" />
+      <input type="text" class="field mb-8" :placeholder="pharmacy.address"
+      @input="
+      (event) => {
+        const target = event.target as HTMLInputElement;
+        pharmacyChanges[index].address = target.value;
+      }
+    "
+      />
       <span class="text-primary font-semibold">Phone</span>
-      <input type="text" class="field mb-8" :placeholder="pharmacy.phone" />
+      <input type="text" class="field mb-8" :placeholder="pharmacy.phone" 
+      @input="
+      (event) => {
+        const target = event.target as HTMLInputElement;
+        pharmacyChanges[index].phone = target.value;
+      }
+    "
+      />
       <span class="text-primary font-semibold">E-Mail</span>
-      <input type="text" class="field mb-8" :placeholder="pharmacy.email" />
+      <input type="text" class="field mb-8" :placeholder="pharmacy.email" 
+      @input="
+      (event) => {
+        const target = event.target as HTMLInputElement;
+        pharmacyChanges[index].email = target.value;
+      }
+    "
+      />
       <Switch class="mb-8" label="Enabled"></Switch>
       <button class="btn mx-auto flex"
       @click="

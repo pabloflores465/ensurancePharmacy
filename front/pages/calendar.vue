@@ -110,9 +110,6 @@ function closeModal() {
         </svg>
       </button>
     </div>
-
-
-
     <div
       class="border-primary overflow-auto rounded-3xl border-2 backdrop-blur-md"
     >

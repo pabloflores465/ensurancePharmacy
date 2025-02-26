@@ -514,17 +514,42 @@ const search = useSearch();
       </Modal>
       <div
         v-if="edit"
-        v-for="prescription in prescriptions"
+        v-for="(prescription, index) in prescriptions"
         class="card lg:align-center gap-4 transition duration-300 hover:scale-105 max-sm:mx-2 max-sm:flex-col md:flex-row lg:align-middle"
       >
         <span class="text-primary font-semibold">Number</span>
-        <input type="text" class="field mb-8" :placeholder="prescription.id.toString()" />
+        <input type="text" class="field mb-8" :placeholder="prescription.id.toString()"
+        @input="
+        (event) => {
+          const target = event.target as HTMLInputElement;
+          prescriptionChanges[index].id = parseInt(target.value);
+        }
+        "
+        />
         <span class="text-primary font-semibold">Hospital</span>
-        <input type="text" class="field mb-8" :placeholder="prescription.hospital" />
+        <input type="text" class="field mb-8" :placeholder="prescription.hospital"  
+        @input="
+        (event) => {
+          const target = event.target as HTMLInputElement;
+          prescriptionChanges[index].hospital = target.value;
+        }
+        " />
         <span class="text-primary font-semibold">User</span>
-        <input type="text" class="field mb-8" :placeholder="prescription.patient" />
+        <input type="text" class="field mb-8" :placeholder="prescription.patient"
+        @input="
+        (event) => {
+          const target = event.target as HTMLInputElement;
+          prescriptionChanges[index].patient = target.value;
+        }
+        " />
         <span class="text-primary font-semibold">Date</span>
-        <input type="text" class="field mb-8" :placeholder="prescription.date" />
+        <input type="text" class="field mb-8" :placeholder="prescription.date"
+        @input="
+        (event) => {
+          const target = event.target as HTMLInputElement;
+          prescriptionChanges[index].date = target.value;
+        }
+        " />
         <button
           @click="() => (prescription.show = !prescription.show)"
           class="btn mb-4 flex justify-center align-middle"
@@ -543,7 +568,17 @@ const search = useSearch();
           </svg>
           See More Details
         </button>
-        <button class="btn mx-auto flex justify-center">
+        <button class="btn mx-auto flex justify-center"
+        @click="
+        () => {
+          addChange(
+            ['Prescription', 'Number', 'Hospital', 'User', 'Date', 'Comment'],
+            prescription,
+            prescriptionChanges[index],
+          );
+        }
+        "
+        >
           <svg
             class="me-2"
             xmlns="http://www.w3.org/2000/svg"

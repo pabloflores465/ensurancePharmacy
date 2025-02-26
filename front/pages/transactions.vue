@@ -472,40 +472,40 @@ const search = useSearch();
       <div class="my-8 max-h-[80vh] overflow-y-auto">
         <div class="mt-8">
           <span class="text-primary font-semibold">Number</span>
-          <input type="text" class="field mb-8" />
+          <input type="text" class="field mb-8" :placeholder="prescription.id.toString()" />
         </div>
         <div class="mt-8">
           <span class="text-primary font-semibold">User</span>
-          <input type="text" class="field mb-8" />
+          <input type="text" class="field mb-8" :placeholder="prescription.patient" />
         </div>
         <div class="mt-8">
           <span class="text-primary font-semibold">Doctor</span>
-          <input type="text" class="field mb-8" />
+          <input type="text" class="field mb-8" :placeholder="prescription.doctor" />
         </div>
         <div class="mt-8">
           <span class="text-primary font-semibold">Hospital</span>
-          <input type="text" class="field mb-8" />
+          <input type="text" class="field mb-8" :placeholder="prescription.hospital" />
         </div>
         <div class="mt-8">
           <span class="text-primary font-semibold">Pharmacy</span>
-          <input type="text" class="field mb-8" />
+          <input type="text" class="field mb-8" :placeholder="prescription.pharmacy" />
         </div>
         <div class="mt-8">
           <span class="text-primary font-semibold">Total to Pay</span>
-          <input type="text" class="field mb-8" />
+          <input type="text" class="field mb-8" :placeholder="prescription.total.toString()" />
         </div>
         <div class="mt-8">
           <span class="text-primary font-semibold">Copay</span>
-          <input type="text" class="field mb-8" />
+          <input type="text" class="field mb-8" :placeholder="prescription.copay.toString()" />
         </div>
         <div class="mt-8">
           <span class="text-primary font-semibold">Auth</span>
-          <input type="text" class="field mb-8" />
+          <input type="text" class="field mb-8" :placeholder="prescription.auth_no" />
         </div>
         <Switch class="mb-6" label="Secured" checked></Switch>
         <div class="mt-8">
           <span class="text-primary font-semibold">Comment</span>
-          <textarea type="text" class="field mb-8" />
+          <textarea type="text" class="field mb-8" :placeholder="prescription.comments" />
         </div>
       </div>
       <button class="btn mx-auto mb-4 flex justify-center">
