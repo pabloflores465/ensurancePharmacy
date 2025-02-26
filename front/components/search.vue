@@ -19,7 +19,7 @@ onMounted(() => {
 });
 
 watch([searchValue, checkedFields], () => {
-  if (!searchValue.value) {
+  if (!searchValue.value || searchValue.value === "") {
     emit("update:output", initialValue);
     return;
   }
