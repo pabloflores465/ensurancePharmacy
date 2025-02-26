@@ -236,6 +236,20 @@ fetchPolicy();
           >Save
         </button>
       </div>
+      <button v-if="edit" class="btn mx-auto flex justify-center mb-6"
+        @click="()=>{
+          policies.push({
+            idPolicy: 0,
+            percentage: 0,
+            cost: 0,
+            creationDate: '',
+            expDate: '',
+            enabled: 1,
+          });
+        }"
+      >
+        Add Policy
+      </button>
     </div>
   </main>
 </template>

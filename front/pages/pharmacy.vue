@@ -111,7 +111,7 @@ fetchPharmacy();
           fill="currentColor"
         >
           <path
-            d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm320-280L160-640v400h640v-400L480-440Zm0-80 320-200H160l320 200ZM160-640v-80 480-400Z"
+            d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm320-280L160-640v400h640v-400Zm0-80 320-200H160l320 200ZM160-640v-80 480-400Z"
           />
         </svg>
         <span class="font-semibold">Email:</span> {{ pharmacy.email }}
@@ -168,7 +168,7 @@ fetchPharmacy();
       }
     "
       />
-      <Switch class="mb-8" label="Enabled"></Switch>
+      <Switch class="mb-8" label="Enabled" v-model="pharmacyChanges[index].enabled"></Switch>
       <button class="btn mx-auto flex"
       @click="
         () => {
@@ -193,6 +193,31 @@ fetchPharmacy();
           /></svg
         >Save
       </button>
+
     </div>
+    <button v-if="edit" class="btn mx-auto flex mt-4 w-auto text-sm"
+      @click="()=>{
+        pharmacies.push({
+          idPharmacy: 0,
+          name: '',
+          address: '',
+          phone: '',  
+          email: '',
+          enabled: 1,
+        });
+      }"
+      >
+        <svg
+          class="me-2"
+          xmlns="http://www.w3.org/2000/svg"
+          height="20px"
+          viewBox="0 -960 960 960"
+          width="20px"
+          fill="currentColor"
+        >
+          <path d="M440-280h80v-160h160v-80H520v-160h-80v160H280v80h160v160Zm40 200q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"/>
+        </svg>
+        Add Pharmacy
+      </button>
   </div>
 </template>

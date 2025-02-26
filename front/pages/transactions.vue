@@ -464,6 +464,26 @@ const search = useSearch();
         >Save
       </button>
     </div>
+    <button v-if="edit" class="btn mx-auto flex justify-center mb-6" @click="() => {
+      prescriptions.push({
+        id: 0,
+        hospital: '',
+        patient: '',  
+        date: '',
+        total: 0,
+        copay: 0,
+        comments: '',
+        secured: false,
+        auth_no: '',
+        result: '',
+        show: false,
+        doctor: '',
+        pharmacy: '',
+      });
+    }"
+    >
+      Add Prescription
+    </button> 
     <Modal
       v-if="edit"
       v-for="prescription in prescriptions"
@@ -508,6 +528,8 @@ const search = useSearch();
           <textarea type="text" class="field mb-8" :placeholder="prescription.comments" />
         </div>
       </div>
+      
+      
       <button class="btn mx-auto mb-4 flex justify-center">
         <svg
           class="me-2"

@@ -21,7 +21,8 @@ type Resource =
   | "edit"
   | "medicines"
   | "logout"
-  | "moderation";
+  | "moderation"
+  | "users";
 const permissionSystem: Permission[] = [
   {
     role: ["guest"],
@@ -92,6 +93,11 @@ const permissionSystem: Permission[] = [
     role: ["admin"],
     action: "read",
     resource: "moderation",
+  },
+  {
+    role: ["employee", "admin"],
+    action: "read",
+    resource: "users",
   },
 ];
 

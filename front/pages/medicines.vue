@@ -344,6 +344,25 @@ const search = useSearch();
             </button>
           </div>
         </div>
+
+
+        <button v-if="edit" class="btn mx-auto flex justify-center mb-6" @click="() => {
+          medicines.push({
+            idMedicine: 0,
+            name: '',
+            description: '',
+            price: 0,
+              pharmacy: { idPharmacy: 0, name: '', address: '', phone: 0, email: '', enabled: 1 },
+            enabled: 1,
+            activePrinciple: '',
+            presentation: '',
+            stock: 0,
+            brand: '',
+          });
+        }"
+        >
+          Add Medicine
+        </button>
       </div>
     </div>
   </div>

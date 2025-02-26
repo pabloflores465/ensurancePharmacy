@@ -348,6 +348,20 @@ const isHospitalService = (service) => {
           Save
         </button>
       </div>
+      <button v-if="edit" class="btn mx-auto flex justify-center mb-6"
+        @click="()=>{
+          hospitals.push({
+            idHospital: 0,
+            name: '',
+            address: '',
+            phone: '',
+            email: '',
+            enabled: true,
+          });
+        }"
+      >
+        Add Policy
+      </button>
     </div>
     <div v-if="isLoading" class="flex justify-center my-8">
       <LoadingSpinner size="lg" message="Cargando hospitales..." />
