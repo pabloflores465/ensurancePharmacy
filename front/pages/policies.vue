@@ -46,7 +46,7 @@ fetchPolicy();
   <main
     class="bg-image-[url(https://cdn.pixabay.com/photo/2020/11/03/15/32/man-5710164_1280.jpg)]"
   >
-    <!--<Search v-if="search" />-->
+    <Search v-if="search" :fieldNames="['Policy Code', 'Percentage', 'Anual Price', 'Creation Date', 'Expire Date']" :searchFields="['idPolicy', 'percentage', 'cost', 'creationDate', 'expDate']" v-model:output="policies" />
     <div class="responsive-grid">
       <div v-if="!edit" class="card m-4" v-for="policy in policies">
         <div class="title mb-6">

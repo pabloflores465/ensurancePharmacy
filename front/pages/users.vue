@@ -158,12 +158,14 @@ function toggleViewMode() {
 function selectUser(user) {
   selectedUser.value = user;
 }
+const search = useSearch();
 </script>
 
 <template>
   <div
     class="from-s-background to-sh-background h-full w-full bg-gradient-to-br py-8"
   >
+  <Search v-if="search" :fieldNames="['Name', 'CUI', 'Phone', 'Email', 'Address', 'Birthdate', 'Role', 'Policy']" :searchFields="['name', 'cui', 'phone', 'email', 'address', 'birthdate', 'role', 'policy']" v-model:output="users" />
     <div class="card mb-6">
       <div class="flex justify-between items-center mb-6">
         <h1 class="title">Users Management</h1>

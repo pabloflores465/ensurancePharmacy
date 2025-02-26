@@ -211,12 +211,14 @@ const prescriptions: Ref<
   },
 ]);
 const edit = useEdit();
+const search = useSearch();
 </script>
 
 <template>
   <main
     class="bg-image-[url('https://cdn.prod.website-files.com/6466101d017ab9d60c8d0137/668ce90cd1d21a2f4e8a8536_Repeat%20Prescriptions.jpg')] max-sm:flex-col max-sm:items-center max-sm:justify-center max-sm:gap-4 max-sm:px-2 max-sm:py-8 md:grid md:grid-cols-2 md:gap-4 md:px-8 md:py-16 lg:grid-cols-4 lg:gap-2 xl:grid-cols-4"
   >
+    <Search v-if="search" :fieldNames="['Hospital', 'Patient', 'Date', 'Total', 'Copay', 'Comments', 'Secured', 'Auth No', 'Result']" :searchFields="['hospital', 'patient', 'date', 'total', 'copay', 'comments', 'secured', 'auth_no', 'result']" v-model:output="prescriptions" />
     <div
       v-if="!edit"
       v-for="prescription in prescriptions"

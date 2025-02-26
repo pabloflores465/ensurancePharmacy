@@ -165,15 +165,13 @@ function updateFilteredMedicines(newMedicines: Medicine[]) {
 onMounted(() => {
   fetchMedicines();
 });
+const search = useSearch();
 </script>
 
 <template>
   <div class="container bg-color p-4">
     <!-- Page header -->
-    <div class="mb-8">
-      <h1 class="text-2xl font-bold text-gray-800 mb-2">Medicamentos</h1>
-      <p class="text-gray-600">Gestión de medicamentos y sus inventarios</p>
-    </div>
+     <Search v-if="search" :fieldNames="['Nombre', 'Descripción', 'Categoría', 'Proveedor']" :searchFields="['name', 'description', 'category', 'supplier']" v-model:output="medicines" />
 
     <!-- Search and filters bar -->
     
@@ -213,14 +211,6 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- Componente de búsqueda -->
-      <Search 
-        :field-names="fieldNames"
-        :search-fields="searchFields"
-        :output="medicines"
-        @update:output="updateFilteredMedicines"
-      />
-
       <!-- Grid of medicines -->
       <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         <!-- Vista normal -->
@@ -240,19 +230,19 @@ onMounted(() => {
           <div class="space-y-2 text-sm">
             <p class="flex justify-between">
               <span class="font-medium text-secondary">Code:</span>
-              <span class="text-primary-dark">{{ medicine.idMedicine }}</span>
+              <span class="text-primary">{{ medicine.idMedicine }}</span>
             </p>
             <p class="flex justify-between">
               <span class="font-medium text-secondary">Active Principle:</span>
-              <span class="text-primary-dark">{{ medicine.activePrinciple }}</span>
+              <span class="text-primary">{{ medicine.activePrinciple }}</span>
             </p>
             <p class="flex justify-between">
               <span class="font-medium text-secondary">Presentation:</span>
-              <span class="text-primary-dark">{{ medicine.presentation }}</span>
+              <span class="text-primary">{{ medicine.presentation }}</span>
             </p>
             <p class="flex justify-between">
               <span class="font-medium text-secondary">Brand:</span>
-              <span class="text-primary-dark">{{ medicine.brand }}</span>
+              <span class="text-primary">{{ medicine.brand }}</span>
             </p>
             <p class="flex justify-between">
               <span class="font-medium text-secondary">Price:</span>
@@ -270,12 +260,6 @@ onMounted(() => {
             </div>
           </div>
           
-          <!-- Botón de detalles -->
-          <div class="mt-4 text-center">
-            <button class="bg-secondary hover:bg-secondary-dark text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
-              Ver detalles
-            </button>
-          </div>
         </div>
 
         <!-- Vista edición (ejemplo, se puede personalizar) -->

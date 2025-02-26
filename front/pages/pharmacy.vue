@@ -38,6 +38,7 @@ const fetchPharmacy = async () => {
   }
 };
 const edit = useEdit();
+const search = useSearch();
 fetchPharmacy();
 </script>
 
@@ -45,6 +46,7 @@ fetchPharmacy();
   <div
     class="bg-image-[url('/medicine.jpg')] h-full w-full grid-flow-row items-center justify-center gap-1 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
   >
+  <Search v-if="search" :fieldNames="['Nombre', 'Dirección', 'Teléfono', 'Email', 'Habilitado']" :searchFields="['name', 'address', 'phone', 'email', 'enabled']" v-model:output="pharmacies" />
     <div
       v-if="!edit"
       v-for="pharmacy in pharmacies"

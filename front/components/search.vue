@@ -56,16 +56,17 @@ function updateSearchValue(event: Event) {
 </script>
 
 <template>
-  <div class="bg-background rounded-lg shadow-md p-4">
+  <div class="bg-background rounded-lg shadow-md p-4 mx-4 my-2">
     <div
-      class="border-primary flex w-full flex-row items-center rounded-full border-2 border-solid bg-white px-3 py-2 mb-4 hover:shadow-md transition-shadow"
+      class="border-primary flex w-full flex-row items-center rounded-full border-2 border-solid bg-white px-3 py-2 mb-4 hover:shadow-md transition-shadow "
     >
       <svg
+        
         stroke="currentColor"
         fill="currentColor"
         stroke-width="0"
         viewBox="0 0 512 512"
-        class="text-primary h-5 w-5"
+        class="text-dark h-5 w-5"
         xmlns="http://www.w3.org/2000/svg"
       >
         <path
@@ -87,7 +88,7 @@ function updateSearchValue(event: Event) {
     </div>
 
     <div v-if="props.fieldNames.length > 0" class="mt-2">
-      <div class="label font-medium text-gray-700 mb-2">Filtrar por:</div>
+      <div class="label font-medium text-secondary mb-2">Filtrar por:</div>
       <div class="grid grid-cols-2 gap-2 md:grid-cols-3">
         <div 
           v-for="(name, index) in props.fieldNames" 

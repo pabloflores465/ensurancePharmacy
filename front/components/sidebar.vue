@@ -39,6 +39,12 @@ const sidebarItems: Ref<SidebarItem[]> = ref([
       router.path === "/medicines" ? (show = true) : null;
       router.path === "/prescription" ? (show = true) : null;
       router.path === "/hospital" ? (show = true) : null;
+      router.path === "/pharmacy" ? (show = true) : null;
+      router.path === "/policies" ? (show = true) : null;
+      router.path === "/services" ? (show = true) : null;
+      router.path === "/users" ? (show = true) : null;
+      router.path === "/moderation" ? (show = true) : null;
+      router.path === "/transactions" ? (show = true) : null;
       return show;
     },
     conditional: () => search.value,
