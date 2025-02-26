@@ -424,13 +424,13 @@ const search = useSearch();
       class="card lg:align-center gap-4 transition duration-300 hover:scale-105 max-sm:mx-2 max-sm:flex-col md:flex-row lg:align-middle"
     >
       <span class="text-primary font-semibold">Number</span>
-      <input type="text" class="field mb-8" />
+      <input type="text" class="field mb-8" :placeholder="prescription.id.toString()" />
       <span class="text-primary font-semibold">Hospital</span>
-      <input type="text" class="field mb-8" />
+      <input type="text" class="field mb-8" :placeholder="prescription.hospital" />
       <span class="text-primary font-semibold">User</span>
-      <input type="text" class="field mb-8" />
+      <input type="text" class="field mb-8" :placeholder="prescription.patient" />
       <span class="text-primary font-semibold">Date</span>
-      <input type="text" class="field mb-8" />
+      <input type="text" class="field mb-8" :placeholder="prescription.date" />
       <button
         @click="() => (prescription.show = !prescription.show)"
         class="btn mb-4 flex justify-center align-middle"

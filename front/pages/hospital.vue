@@ -320,17 +320,17 @@ const isHospitalService = (service) => {
       </div>
       <div v-if="edit" v-for="hospital in hospitals" class="card">
         <span class="text-primary font-semibold">Hospital</span>
-        <input type="text" class="field mb-8" />
+        <input type="text" class="field mb-8" :placeholder="hospital.idHospital.toString()" />
         <span class="text-primary font-semibold">Name</span>
-        <input type="text" class="field mb-8" />
+        <input type="text" class="field mb-8" :placeholder="hospital.name" />
         <span class="text-primary font-semibold">Address</span>
-        <input type="text" class="field mb-8" />
+        <input type="text" class="field mb-8" :placeholder="hospital.address" />
         <span class="text-primary font-semibold">Phone Number</span>
-        <input type="text" class="field mb-8" />
+        <input type="text" class="field mb-8" :placeholder="hospital.phone" />
         <span class="text-primary font-semibold">E-Mail</span>
-        <input type="text" class="field mb-8" />
+        <input type="text" class="field mb-8" :placeholder="hospital.email" />
         <div class="mb-8">
-          <Switch />
+          <Switch label="Enabled" />
         </div>
         <button class="btn mx-auto flex">
           <svg

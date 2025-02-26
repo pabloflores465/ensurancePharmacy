@@ -30,6 +30,7 @@ interface Medicine {
 const medicines = ref<Medicine[]>([]);
 const isLoading = ref(false);
 const hasError = ref(false);
+let medicineChanges: Medicine[] = [];
 
 const fetchMedicines = async () => {
   try {
@@ -42,6 +43,7 @@ const fetchMedicines = async () => {
     hasError.value = false;
     const response = await axios.get("http://localhost:8080/api/medicine");
     medicines.value = response.data;
+    medicineChanges = response.data.map((medicine: Medicine) => ({ ...medicine }));
     console.log("Medicines obtenidas:", medicines.value);
     notify({
       type: "success",
@@ -265,7 +267,7 @@ const search = useSearch();
         <!-- Vista edición (ejemplo, se puede personalizar) -->
         <div
           v-if="edit"
-          v-for="medicine in filteredMedicines"
+          v-for="(medicine, index) in filteredMedicines"
           :key="medicine.idMedicine"
           class="card p-6 shadow-md hover:shadow-lg transition-all"
         >
@@ -274,8 +276,9 @@ const search = useSearch();
               <label class="block text-sm font-medium text-secondary">Name:</label>
               <input 
                 type="text" 
-                :value="medicine.name" 
-                class="mt-1 block w-full rounded-md border border-primary px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                :placeholder="medicine.name"
+        
+                class="mt-1 block w-full rounded-md border text-primary border-primary px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
             
@@ -283,8 +286,9 @@ const search = useSearch();
               <label class="block text-sm font-medium text-secondary">Code:</label>
               <input 
                 type="text" 
-                :value="medicine.idMedicine" 
-                class="mt-1 block w-full rounded-md border border-primary px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                :placeholder="medicine.idMedicine.toString()"
+               
+                class="mt-1 block w-full rounded-md border text-primary border-primary px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
             
@@ -292,8 +296,8 @@ const search = useSearch();
               <label class="block text-sm font-medium text-secondary">Active Principle:</label>
               <input 
                 type="text" 
-                :value="medicine.activePrinciple" 
-                class="mt-1 block w-full rounded-md border border-primary px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                :placeholder="medicine.activePrinciple"
+                class="mt-1 block w-full rounded-md border text-primary border-primary px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
             
@@ -301,8 +305,9 @@ const search = useSearch();
               <label class="block text-sm font-medium text-secondary">Presentation:</label>
               <input 
                 type="text" 
-                :value="medicine.presentation" 
-                class="mt-1 block w-full rounded-md border border-primary px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                :placeholder="medicine.presentation"
+       
+                class="mt-1 block w-full text-primary rounded-md border border-primary px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
             
@@ -310,8 +315,9 @@ const search = useSearch();
               <label class="block text-sm font-medium text-secondary">Units:</label>
               <input 
                 type="number" 
-                :value="medicine.stock" 
-                class="mt-1 block w-full rounded-md border border-primary px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                :placeholder="medicine.stock.toString()" 
+         
+                class="mt-1 block w-full text-primary rounded-md border border-primary px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
             
@@ -323,12 +329,27 @@ const search = useSearch();
               <label class="block text-sm font-medium text-secondary">Brand:</label>
               <input 
                 type="text" 
-                :value="medicine.brand" 
-                class="mt-1 block w-full rounded-md border border-primary px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                :placeholder="medicine.brand" 
+                class="mt-1 block w-full rounded-md border text-primary border-primary px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
             
             <Dropdown class="mt-2" />
+            <button class="btn mx-auto flex"
+            @click="
+              () => {
+                addChange(
+                  ['Medicine', 'Name', 'Code', 'Active Principle', 'Presentation', 'Units', 'Brand'],
+                  medicine,
+                  medicineChanges[index],
+                );
+              }
+            "
+            >
+            <svg class="me-2" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M840-680v480q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z"/></svg>
+
+              Save
+            </button>
           </div>
         </div>
       </div>

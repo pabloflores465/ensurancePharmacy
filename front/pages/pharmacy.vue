@@ -12,6 +12,7 @@ interface Pharmacy
     enabled: number;
   }
 const pharmacies = ref<Pharmacy[]>([]);
+let pharmacyChanges: Pharmacy[] = [];
 
 const fetchPharmacy = async () => {
   try {
@@ -22,6 +23,7 @@ const fetchPharmacy = async () => {
     });
     const response = await axios.get("http://localhost:8080/api/pharmacy");
     pharmacies.value = response.data;
+    pharmacyChanges = response.data.map((pharmacy: Pharmacy) => ({ ...pharmacy }));
     console.log("Hospitals obtenidos:", pharmacies.value);
     notify({
       type: "success",
@@ -120,19 +122,29 @@ fetchPharmacy();
         label="Enabled"
       ></Switch>
     </div>
-    <div v-if="edit" v-for="pharmacy in pharmacies" class="card">
+    <div v-if="edit" v-for="(pharmacy, index) in pharmacies" class="card">
       <span class="text-primary font-semibold">Pharmacy</span>
-      <input type="text" class="field mb-8" />
+      <input type="text" class="field mb-8" :placeholder="pharmacy.idPharmacy.toString()" />
       <span class="text-primary font-semibold">Name</span>
-      <input type="text" class="field mb-8" />
+      <input type="text" class="field mb-8" :placeholder="pharmacy.name" />
       <span class="text-primary font-semibold">Address</span>
-      <input type="text" class="field mb-8" />
+      <input type="text" class="field mb-8" :placeholder="pharmacy.address" />
       <span class="text-primary font-semibold">Phone</span>
-      <input type="text" class="field mb-8" />
+      <input type="text" class="field mb-8" :placeholder="pharmacy.phone" />
       <span class="text-primary font-semibold">E-Mail</span>
-      <input type="text" class="field mb-8" />
+      <input type="text" class="field mb-8" :placeholder="pharmacy.email" />
       <Switch class="mb-8" label="Enabled"></Switch>
-      <button class="btn mx-auto flex">
+      <button class="btn mx-auto flex"
+      @click="
+        () => {
+          addChange(
+            ['Pharmacy', 'Name', 'Address', 'Phone', 'E-Mail'],
+            pharmacy,
+            pharmacyChanges[index],
+          );
+        }
+      "
+      >
         <svg
           class="me-2"
           xmlns="http://www.w3.org/2000/svg"

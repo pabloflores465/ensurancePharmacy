@@ -43,7 +43,6 @@ const sidebarItems: Ref<SidebarItem[]> = ref([
       router.path === "/policies" ? (show = true) : null;
       router.path === "/services" ? (show = true) : null;
       router.path === "/users" ? (show = true) : null;
-      router.path === "/moderation" ? (show = true) : null;
       router.path === "/transactions" ? (show = true) : null;
       return show;
     },

@@ -121,14 +121,14 @@ const search = useSearch();
 
     <div v-if="edit" v-for="service in services" class="card">
       <span class="text-primary font-semibold">{{ service.name }}</span>
-      <input type="text" class="field mb-8" />
+      <input type="text" class="field mb-8" :placeholder="service.name" />
       <span class="text-primary font-semibold">{{ service.hospital.name }}</span>
-      <input type="text" class="field mb-8" />
-      <span class="text-primary font-semibold">{{ service.cost }}</span>
-      <input type="text" class="field mb-8" />
+      <input type="text" class="field mb-8" :placeholder="service.hospital.name" />
+      <span class="text-primary font-semibold">Price</span>
+      <input type="text" class="field mb-8" :placeholder="service.cost.toString()" />
       <Dropdown class="me-2 mb-6" />
       <span class="text-primary font-semibold">{{ service.description }}</span>
-      <textarea type="text" class="field mb-8" />
+      <textarea type="text" class="field mb-8" :placeholder="service.description" />
     </div>
   </div>
 </template>
