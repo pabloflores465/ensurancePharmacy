@@ -1,24 +1,62 @@
 <script setup lang="ts">
-const profile: Ref<{
+import {setProfile, useProfile} from "~/composables/useProfile";
+import axios from "axios";
+import {onMounted} from "vue";
+
+interface Policy {
+  idPolicy: number;
+  percentage: number;
+  creationDate: number;
+  expDate: number;
+  cost: number;
+  enabled: number;
+}
+
+interface User {
+  idUser: number;
   name: string;
   cui: number;
   phone: string;
   email: string;
   address: string;
-  birthdate: string;
+  birthDate: number;
   role: string;
-  policy: string;
-}> = ref({
-  name: "John Doe",
-  cui: 123456789,
-  phone: "+1 (555) 123-4567",
-  email: "johndoe@example.com",
-  address: "123 Main Street, Springfield, USA",
-  birthdate: "1990-01-01",
-  role: "Administrator",
-  policy: "Standard User Policy",
-});
+  policy: Policy;
+  enabled: number;
+  password: string;
+}
 
+const profile = useProfile();
+console.log(JSON.stringify(profile.value))
+const user = ref<User | null>(null);
+const isLoading = ref(false);
+const hasError = ref(false);
+
+const fetchUser = async () => {
+  try {
+    isLoading.value = true;
+    hasError.value = false;
+
+    const storedUser = profile.value;
+    const id = storedUser?.idUser;
+
+    if (!id) {
+      throw new Error("No se encontró idUser en localStorage");
+    }
+
+    const response = await axios.get(`http://localhost:8080/api/users/${id}`);
+    user.value = response.data;
+    setProfile(user.value!);
+  } catch (error) {
+    console.error("Error al cargar el perfil:", error);
+    hasError.value = true;
+  } finally {
+    isLoading.value = false;
+  }
+};
+onMounted(() => {
+  fetchUser();
+});
 const prescriptions: Ref<
   {
     id: number;
@@ -191,6 +229,7 @@ const appointments: Ref<
   },
 ]);
 const edit = useEdit();
+console.log()
 </script>
 
 <template>
@@ -204,7 +243,7 @@ const edit = useEdit();
           alt="Profile Picture"
           class="mx-auto mb-6 flex h-30 w-30 items-center justify-center rounded-full object-cover"
         />
-        <h1 v-if="!edit" class="title mb-6">Hi, {{ profile.name }}</h1>
+        <h1 v-if="!edit" class="title mb-6">Hi, {{ user?.name }}</h1>
       </div>
       <div v-if="!edit" class="card mb-6">
         <h2 class="title mb-6 text-lg">General Info</h2>
@@ -222,7 +261,7 @@ const edit = useEdit();
             />
           </svg>
           <p class="me-2 font-semibold">E-Mail:</p>
-          {{ profile.email }}
+          {{ user?.email }}
         </div>
         <div class="text-primary mb-6 flex">
           <svg
@@ -238,7 +277,7 @@ const edit = useEdit();
             />
           </svg>
           <p class="me-2 font-semibold">Phone:</p>
-          {{ profile.phone }}
+          {{ user?.phone }}
         </div>
         <div class="text-secondary mb-4 flex text-sm">
           <svg
@@ -254,7 +293,7 @@ const edit = useEdit();
             />
           </svg>
           <p class="me-2 font-semibold">Address:</p>
-          {{ profile.address }}
+          {{ user?.address }}
         </div>
         <div class="text-secondary mb-4 flex text-sm">
           <svg
@@ -270,7 +309,7 @@ const edit = useEdit();
             />
           </svg>
           <p class="me-2 font-semibold">Birthday:</p>
-          {{ profile.birthdate }}
+          {{ user?.birthDate }}
         </div>
         <div class="text-secondary mb-6 flex text-sm">
           <svg
@@ -286,7 +325,7 @@ const edit = useEdit();
             />
           </svg>
           <p class="me-2 font-semibold">CUI:</p>
-          {{ profile.cui }}
+          {{ user?.cui }}
         </div>
         <div class="text-success mb-6 flex">
           <svg
@@ -303,7 +342,7 @@ const edit = useEdit();
           </svg>
 
           <p class="me-2 font-semibold">Policy:</p>
-          {{ profile.policy }}
+          {{ user?.policy.percentage }}
         </div>
       </div>
       <div></div>
@@ -570,35 +609,35 @@ const edit = useEdit();
       <p class="title mb-6">Edit Profile</p>
       <div class="mb-8">
         <span class="text-primary font-semibold">Name</span>
-        <input type="text" class="field" :placeholder="profile.name" />
+        <input type="text" class="field" :placeholder="user?.name" />
       </div>
       <div class="mb-8">
         <span class="text-primary font-semibold">Email</span>
-        <input type="email" class="field" :placeholder="profile.email" />
+        <input type="email" class="field" :placeholder="user?.email" />
       </div>
       <div class="mb-8">
         <span class="text-primary font-semibold">Phone</span>
-        <input type="text" class="field" :placeholder="profile.phone" />
+        <input type="text" class="field" :placeholder="user?.phone" />
       </div>
       <div class="mb-8">
         <span class="text-primary font-semibold">Address</span>
-        <input type="text" class="field" :placeholder="profile.address" />
+        <input type="text" class="field" :placeholder="user?.address" />
       </div>
       <div class="mb-8">
         <span class="text-primary font-semibold">BirthDay</span>
-        <input type="date" class="field" :placeholder="profile.birthdate" />
+        <input type="date" class="field" :placeholder="user?.birthDate?.toString()" />
       </div>
       <div class="mb-8">
         <span class="text-primary font-semibold">CUI</span>
-        <input type="number" class="field" :placeholder="profile.cui.toString()" />
+        <input type="number" class="field" :placeholder="user?.cui.toString()" />
       </div>
       <div class="mb-8">
         <span class="text-primary font-semibold">Policy</span>
-        <input type="text" class="field" :placeholder="profile.policy" />
+        <input type="text" class="field" :placeholder="user?.policy.percentage.toString()" />
       </div>
       <div class="mb-8">
         <span class="text-primary font-semibold">Role</span>
-        <input type="text" class="field" :placeholder="profile.role" />
+        <input type="text" class="field" :placeholder="profiles.role" />
       </div>
       <button class="btn mx-auto flex">
         <svg

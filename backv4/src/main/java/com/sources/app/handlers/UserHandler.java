@@ -8,6 +8,7 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 public class UserHandler implements HttpHandler {
     private final UserDAO userDAO;
@@ -33,21 +34,57 @@ public class UserHandler implements HttpHandler {
             return;
         }
 
-        // Verificar que la ruta solicitada sea la que maneja este handler
+        // Obtenemos la ruta solicitada
         String path = exchange.getRequestURI().getPath();
-        if (!path.equalsIgnoreCase(ENDPOINT)) {
+
+        // Si la ruta no comienza con el endpoint, devolvemos 404
+        if (!path.startsWith(ENDPOINT)) {
             exchange.sendResponseHeaders(404, -1);
             return;
         }
 
-        // Solo permitimos el método POST para crear un usuario
-        if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+        // Manejo de GET
+        if ("GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+            // Si la URL es del tipo /api/users/{id} intentamos leer un usuario por id
+            String[] parts = path.split("/");
+            if (parts.length == 4) {
+                try {
+                    Long id = Long.parseLong(parts[3]);
+                    User user = userDAO.findById(id);
+                    if (user != null) {
+                        String jsonResponse = objectMapper.writeValueAsString(user);
+                        exchange.getResponseHeaders().set("Content-Type", "application/json");
+                        byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
+                        exchange.sendResponseHeaders(200, responseBytes.length);
+                        try (OutputStream os = exchange.getResponseBody()) {
+                            os.write(responseBytes);
+                        }
+                    } else {
+                        exchange.sendResponseHeaders(404, -1);
+                    }
+                } catch (NumberFormatException e) {
+                    exchange.sendResponseHeaders(400, -1);
+                }
+            } else {
+                // Si no se especifica un id, devolvemos todos los usuarios
+                List<User> users = userDAO.findAll();
+                String jsonResponse = objectMapper.writeValueAsString(users);
+                exchange.getResponseHeaders().set("Content-Type", "application/json");
+                byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
+                exchange.sendResponseHeaders(200, responseBytes.length);
+                try (OutputStream os = exchange.getResponseBody()) {
+                    os.write(responseBytes);
+                }
+            }
+        }
+        // Manejo de POST (crear usuario)
+        else if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
             try {
                 // Leemos el cuerpo de la petición y lo convertimos a un objeto User
                 String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
                 User createUser = objectMapper.readValue(requestBody, User.class);
 
-                // Llamamos al método create del DAO con los datos recibidos
+                // Llamamos al método create del DAO, ahora incluyendo el objeto Policy
                 User user = userDAO.create(
                         createUser.getName(),
                         createUser.getCui(),
@@ -55,7 +92,8 @@ public class UserHandler implements HttpHandler {
                         createUser.getEmail(),
                         createUser.getBirthDate(),
                         createUser.getAddress(),
-                        createUser.getPassword()
+                        createUser.getPassword(),
+                        createUser.getPolicy() // Se espera que en el JSON se incluya la información de la Policy
                 );
 
                 if (user != null) {
@@ -69,15 +107,16 @@ public class UserHandler implements HttpHandler {
                         os.write(responseBytes);
                     }
                 } else {
-                    // Si no se pudo crear, devolvemos un error (por ejemplo, 400 Bad Request)
+                    // Si no se pudo crear, devolvemos 400 Bad Request
                     exchange.sendResponseHeaders(400, -1);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
                 exchange.sendResponseHeaders(500, -1);
             }
-        } else {
-            // Si se utiliza otro método, se rechaza con 405 (Method Not Allowed)
+        }
+        // Si se utiliza otro método, se rechaza con 405 (Method Not Allowed)
+        else {
             exchange.sendResponseHeaders(405, -1);
         }
     }

@@ -6,6 +6,7 @@ import java.util.Date;
 @Entity
 @Table(name = "USERS")
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID_USER")
@@ -30,22 +31,25 @@ public class User {
     @Column(name = "BIRTHDATE")
     private Date birthDate;  // Fecha de nacimiento
 
-    @Column(name = "ROL")
+    @Column(name = "ROL", nullable = false)
     private String role;  // Rol del usuario
 
-    @Column(name = "ID_POLICY")
-    private Long idPolicy;  // ID de política
+    // Relación ManyToOne obligatoria con Policy
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "ID_POLICY", nullable = false)
+    private Policy policy;
 
-    @Column(name = "ENABLED")
+    @Column(name = "ENABLED", nullable = false)
     private Integer enabled;  // Estado (habilitado/deshabilitado)
 
-    @Column(name = "PASSWORD")
+    @Column(name = "PASSWORD", nullable = false)
     private String password;
 
-    // Constructores, getters y setters
+    // Constructor sin argumentos
     public User() {}
 
-    public User(String name, Long cui, String phone, String email, String address, Date birthDate, String role, Long idPolicy, Integer enabled) {
+    // Constructor completo
+    public User(String name, Long cui, String phone, String email, String address, Date birthDate, String role, Policy policy, Integer enabled, String password) {
         this.name = name;
         this.cui = cui;
         this.phone = phone;
@@ -53,7 +57,7 @@ public class User {
         this.address = address;
         this.birthDate = birthDate;
         this.role = role;
-        this.idPolicy = idPolicy;
+        this.policy = policy;
         this.enabled = enabled;
         this.password = password;
     }
@@ -83,8 +87,8 @@ public class User {
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
 
-    public Long getIdPolicy() { return idPolicy; }
-    public void setIdPolicy(Long idPolicy) { this.idPolicy = idPolicy; }
+    public Policy getPolicy() { return policy; }
+    public void setPolicy(Policy policy) { this.policy = policy; }
 
     public Integer getEnabled() { return enabled; }
     public void setEnabled(Integer enabled) { this.enabled = enabled; }

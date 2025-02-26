@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import {setProfile} from "~/composables/useProfile";
 const dark = darkMode();
 
 import { ref } from "vue";
@@ -9,6 +10,7 @@ const email = ref("");
 const password = ref("");
 const errorMessage = ref("");
 const router = useRouter();
+
 
 const handleLogin = async () => {
   try {
@@ -46,6 +48,8 @@ const handleLogin = async () => {
     errorMessage.value = "Credenciales incorrectas o error en el servidor.";
   }
 };
+
+
 </script>
 <template>
   <main
