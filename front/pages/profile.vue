@@ -570,27 +570,35 @@ const edit = useEdit();
       <p class="title mb-6">Edit Profile</p>
       <div class="mb-8">
         <span class="text-primary font-semibold">Name</span>
-        <input type="text" class="field" />
+        <input type="text" class="field" :placeholder="profile.name" />
       </div>
       <div class="mb-8">
         <span class="text-primary font-semibold">Email</span>
-        <input type="email" class="field" />
+        <input type="email" class="field" :placeholder="profile.email" />
       </div>
       <div class="mb-8">
         <span class="text-primary font-semibold">Phone</span>
-        <input type="number" class="field" />
+        <input type="text" class="field" :placeholder="profile.phone" />
       </div>
       <div class="mb-8">
         <span class="text-primary font-semibold">Address</span>
-        <input type="text" class="field" />
+        <input type="text" class="field" :placeholder="profile.address" />
       </div>
       <div class="mb-8">
         <span class="text-primary font-semibold">BirthDay</span>
-        <input type="text" class="field" />
+        <input type="date" class="field" :placeholder="profile.birthdate" />
       </div>
       <div class="mb-8">
         <span class="text-primary font-semibold">CUI</span>
-        <input type="number" class="field" />
+        <input type="number" class="field" :placeholder="profile.cui.toString()" />
+      </div>
+      <div class="mb-8">
+        <span class="text-primary font-semibold">Policy</span>
+        <input type="text" class="field" :placeholder="profile.policy" />
+      </div>
+      <div class="mb-8">
+        <span class="text-primary font-semibold">Role</span>
+        <input type="text" class="field" :placeholder="profile.role" />
       </div>
       <button class="btn mx-auto flex">
         <svg
