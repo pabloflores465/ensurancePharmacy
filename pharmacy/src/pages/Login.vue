@@ -77,7 +77,7 @@ const login = async () => {
       return;
     }
     console.log(`Autenticando ${role.value} con ID: ${identifier.value}`);
-    router.push('/dashboard');
+    router.push('/');
 
   } else if (role.value === 'admin') {
     if (adminUsername.value.trim() === '' || adminPassword.value.trim() === '') {
@@ -86,7 +86,7 @@ const login = async () => {
     }
     if (adminUsername.value === 'admin' && adminPassword.value === '123') {
       console.log("Administrador autenticado");
-      router.push('/dashboard'); // Redirigir al inicio de la plataforma
+      router.push('/'); // Redirigir al inicio de la plataforma
     } else {
       errorMessage.value = "Credenciales incorrectas.";
     }

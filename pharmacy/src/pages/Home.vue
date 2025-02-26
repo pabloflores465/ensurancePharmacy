@@ -10,7 +10,7 @@
         </div>
         <ul class="sidebar-menu">
           <li>Equipo Médico</li>
-          <li>Aseguradoras</li>
+          <router-link to="/aseguradoras" class="nav-item">Aseguradoras Afiliadas</router-link>
           <li>Canje de puntos</li>
           <li>Pago en Cuotas</li>
         </ul>
@@ -82,7 +82,7 @@
   /* Sidebar */
   .sidebar {
     width: 250px;
-    background: #002366;
+    background: #729ef1;
     color: white;
     padding: 20px;
     display: flex;
