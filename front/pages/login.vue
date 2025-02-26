@@ -23,6 +23,7 @@ const handleLogin = async () => {
     setUser(response.data.role);
     console.log("Login exitoso:", response.data);
     router.push("/");
+    setProfile(response.data);
   } catch (error) {
     console.error("Error en login:", error);
     errorMessage.value = "Credenciales incorrectas o error en el servidor.";
