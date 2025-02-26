@@ -1,14 +1,13 @@
 <script setup>
-import Modal from '~/components/modal.vue';
-
 const currentWeekStart = ref(getMonday(new Date()));
-
 const horasDelDia = Array.from({ length: 24 }, (_, i) => i);
-
-// Estado para controlar el modal
 const showModal = ref(false);
 const selectedDate = ref(null);
 const selectedHour = ref(null);
+const nombrePaciente = ref('');
+const duracion = ref(30);
+const notas = ref('');
+const appointments = ref([]);
 
 function getMonday(date) {
   const d = new Date(date);
@@ -71,9 +70,76 @@ function openAppointmentModal(date, hour) {
   console.log('Estado del modal:', showModal.value);
 }
 
-// Función para cerrar el modal
+// Función para guardar la cita
+function saveAppointment() {
+  if (!selectedDate.value || selectedHour.value === null || !nombrePaciente.value) {
+    return; // Validación básica
+  }
+
+  const newAppointment = {
+    id: Date.now(), // ID único simple
+    date: new Date(selectedDate.value),
+    hour: selectedHour.value,
+    duration: parseInt(duracion.value),
+    patientName: nombrePaciente.value,
+    notes: notas.value
+  };
+
+  appointments.value.push(newAppointment);
+  
+  // Resetear el formulario
+  nombrePaciente.value = '';
+  duracion.value = 30;
+  notas.value = '';
+  
+  // Cerrar el modal
+  closeModal();
+}
+
+// Función para comprobar si hay una cita en una fecha y hora específicas
+function getAppointmentsForDateAndHour(date, hour) {
+  return appointments.value.filter(app => {
+    const appDate = new Date(app.date);
+    return appDate.getDate() === date.getDate() && 
+           appDate.getMonth() === date.getMonth() && 
+           appDate.getFullYear() === date.getFullYear() &&
+           app.hour === hour;
+  });
+}
+
+// Función para cerrar el modal - actualizada para limpiar los campos
 function closeModal() {
   showModal.value = false;
+  nombrePaciente.value = '';
+  duracion.value = 30;
+  notas.value = '';
+}
+
+// Función para editar una cita existente
+function editAppointment(appointment) {
+  selectedDate.value = new Date(appointment.date);
+  selectedHour.value = appointment.hour;
+  nombrePaciente.value = appointment.patientName;
+  duracion.value = appointment.duration;
+  notas.value = appointment.notes;
+  
+  // Almacenar el ID de la cita que estamos editando
+  const editingAppointmentId = appointment.id;
+  
+  // Modificar la función saveAppointment para actualizar en lugar de crear nueva
+  const saveOriginal = saveAppointment;
+  saveAppointment = () => {
+    // Eliminar la cita anterior
+    appointments.value = appointments.value.filter(a => a.id !== editingAppointmentId);
+    
+    // Llamar a la función original
+    saveOriginal();
+    
+    // Restaurar la función original
+    saveAppointment = saveOriginal;
+  };
+  
+  showModal.value = true;
 }
 </script>
 
@@ -142,52 +208,70 @@ function closeModal() {
             <td
               v-for="(dia, dayIndex) in diasSemana"
               :key="dayIndex"
-              class="bg-background/80 border-primary hover:bg-h-background/80 border-top h-16 border-e p-0"
+              class="bg-background/80 border-primary hover:bg-h-background/80 border-top h-16 border-e p-0 relative"
             >
               <button 
                 type="button"
                 @click="openAppointmentModal(dia, hora)"
                 class="w-full h-full p-2 text-left hover:bg-primary/10 transition-colors duration-200 flex items-start justify-start"
               >
-                <span class="text-xs">{{ hora }}:00 - Disponible</span>
+                <span v-if="getAppointmentsForDateAndHour(dia, hora).length === 0" class="text-xs"></span>
               </button>
+              <!-- Mostrar citas en esta celda -->
+              <div 
+                v-for="appointment in getAppointmentsForDateAndHour(dia, hora)" 
+                :key="appointment.id"
+                class="absolute inset-x-0 mx-1 rounded-md bg-accent text-primary dark:text-dark shadow-md overflow-hidden cursor-pointer z-10"
+                :style="{
+                  top: '2px',
+                  height: `calc(${appointment.duration / 60 * 100}% - 4px)`,
+                  maxHeight: 'calc(100% - 4px)'
+                }"
+                @click.stop="editAppointment(appointment)"
+              >
+                <div class="p-2">
+                  <div class="text-xs font-bold truncate">{{ appointment.patientName }}</div>
+                  <div class="text-xs opacity-90">{{ hora }}:00 - {{ (hora + Math.floor(appointment.duration/60)) }}:{{ appointment.duration % 60 || '00' }}</div>
+                  <div v-if="appointment.notes" class="text-xs mt-1 opacity-80 line-clamp-2">{{ appointment.notes }}</div>
+                </div>
+              </div>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- Modal con estructura simplificada -->
+    <!-- Modal actualizado con v-model para los campos del formulario -->
     <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center">
       <div class="fixed inset-0 bg-black/50" @click="closeModal"></div>
-      <div class="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+      <div class="relative card rounded-lg shadow-xl max-w-md w-full mx-4">
         <div class="p-4 border-b">
-          <h2 class="text-xl font-semibold">
+          <h2 class="text-xl font-semibold title">
             Configurar cita: {{ selectedDate ? `${selectedDate.toLocaleDateString('es-ES')} a las ${selectedHour}:00` : '' }}
           </h2>
         </div>
         <div class="p-4">
           <div class="mb-4">
-            <label class="block text-sm font-medium mb-1" for="nombrePaciente">Nombre del paciente</label>
-            <input id="nombrePaciente" type="text" class="w-full p-2 border border-primary rounded-md">
+            <label class="block text-sm font-medium mb-1 text-primary" for="nombrePaciente">Nombre del paciente</label>
+            <input v-model="nombrePaciente" id="nombrePaciente" type="text" class="w-full p-2 border border-primary rounded-md text-secondary">
           </div>
           <div class="mb-4">
-            <label class="block text-sm font-medium mb-1" for="duracion">Duración (minutos)</label>
-            <select id="duracion" class="w-full p-2 border border-primary rounded-md">
+            <label class="block text-sm font-medium mb-1 text-primary" for="duracion">Duración (minutos)</label>
+            <select v-model="duracion" id="duracion" class="w-full p-2 border border-primary rounded-md text-secondary">
               <option value="15">15 minutos</option>
-              <option value="30" selected>30 minutos</option>
+              <option value="30">30 minutos</option>
               <option value="45">45 minutos</option>
               <option value="60">1 hora</option>
             </select>
           </div>
           <div class="mb-4">
-            <label class="block text-sm font-medium mb-1" for="notas">Notas</label>
-            <textarea id="notas" class="w-full p-2 border border-primary rounded-md" rows="3"></textarea>
+            <label class="block text-sm font-medium mb-1 text-primary" for="notas">Notas</label>
+            <textarea v-model="notas" id="notas" class="w-full p-2 border border-primary rounded-md text-secondary" rows="3"></textarea>
           </div>
         </div>
-        <div class="p-4 border-t flex justify-end space-x-2">
+        <div class="p-4 border-t border-primary flex justify-end space-x-2">
           <button class="btn btn-outline" @click="closeModal">Cancelar</button>
-          <button class="btn btn-primary">Guardar cita</button>
+          <button class="btn btn-primary" @click="saveAppointment">Guardar cita</button>
         </div>
       </div>
     </div>
