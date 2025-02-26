@@ -148,14 +148,14 @@ const users: Ref<
 ]);
 
 const viewMode = ref('basic'); // 'basic' or 'detail'
-const selectedUser = ref(null);
+const selectedUser: Ref<typeof users.value[0] | null> = ref(null);
 const edit = useEdit();
 
 function toggleViewMode() {
   viewMode.value = viewMode.value === 'basic' ? 'detail' : 'basic';
 }
 
-function selectUser(user) {
+function selectUser(user: typeof users.value[0]) {
   selectedUser.value = user;
 }
 const search = useSearch();
@@ -170,10 +170,9 @@ const search = useSearch();
       <div class="flex justify-between items-center mb-6">
         <h1 class="title">Users Management</h1>
         <div class="flex gap-4">
-          <button @click="toggleViewMode" class="btn-secondary py-2 px-4 rounded-md">
+          <button @click="toggleViewMode" class="btn py-2 px-4">
             {{ viewMode === 'basic' ? 'Show Details' : 'Show Basic' }}
           </button>
-          <button v-if="edit" class="btn py-2 px-4 rounded-md">Add User</button>
         </div>
       </div>
       
@@ -510,7 +509,25 @@ const search = useSearch();
         </div>
       </div>
     </div>
+      <button v-if="edit" class="btn mx-auto flex justify-center mb-6" @click="() => {
+    users.push({
+      name: '',
+      cui: 0,
+      phone: '',
+      email: '',  
+      address: '',
+      birthdate: '',
+      role: '',
+      policy: '',
+      prescriptions: [],
+      appointments: []
+    });
+  }"
+  >
+    Add User
+  </button>
   </div>
+
 </template>
 
 <style scoped>
