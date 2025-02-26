@@ -1,7 +1,14 @@
 <script setup>
+import Modal from '~/components/modal.vue';
+
 const currentWeekStart = ref(getMonday(new Date()));
 
 const horasDelDia = Array.from({ length: 24 }, (_, i) => i);
+
+// Estado para controlar el modal
+const showModal = ref(false);
+const selectedDate = ref(null);
+const selectedHour = ref(null);
 
 function getMonday(date) {
   const d = new Date(date);
@@ -54,6 +61,20 @@ function nextWeek() {
   currentWeekStart.value.setDate(currentWeekStart.value.getDate() + 7);
   currentWeekStart.value = new Date(currentWeekStart.value);
 }
+
+// Función para abrir el modal - modificada con depuración
+function openAppointmentModal(date, hour) {
+  console.log('Abriendo modal para:', date, hour);
+  selectedDate.value = new Date(date);
+  selectedHour.value = hour;
+  showModal.value = true;
+  console.log('Estado del modal:', showModal.value);
+}
+
+// Función para cerrar el modal
+function closeModal() {
+  showModal.value = false;
+}
 </script>
 
 <template>
@@ -90,6 +111,8 @@ function nextWeek() {
       </button>
     </div>
 
+
+
     <div
       class="border-primary overflow-auto rounded-3xl border-2 backdrop-blur-md"
     >
@@ -122,13 +145,54 @@ function nextWeek() {
             <td
               v-for="(dia, dayIndex) in diasSemana"
               :key="dayIndex"
-              class="bg-background/80 border-primary hover:bg-h-background/80 border-top h-16 border-e"
+              class="bg-background/80 border-primary hover:bg-h-background/80 border-top h-16 border-e p-0"
             >
-              <button></button>
+              <button 
+                type="button"
+                @click="openAppointmentModal(dia, hora)"
+                class="w-full h-full p-2 text-left hover:bg-primary/10 transition-colors duration-200 flex items-start justify-start"
+              >
+                <span class="text-xs">{{ hora }}:00 - Disponible</span>
+              </button>
             </td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Modal con estructura simplificada -->
+    <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center">
+      <div class="fixed inset-0 bg-black/50" @click="closeModal"></div>
+      <div class="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div class="p-4 border-b">
+          <h2 class="text-xl font-semibold">
+            Configurar cita: {{ selectedDate ? `${selectedDate.toLocaleDateString('es-ES')} a las ${selectedHour}:00` : '' }}
+          </h2>
+        </div>
+        <div class="p-4">
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-1" for="nombrePaciente">Nombre del paciente</label>
+            <input id="nombrePaciente" type="text" class="w-full p-2 border border-primary rounded-md">
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-1" for="duracion">Duración (minutos)</label>
+            <select id="duracion" class="w-full p-2 border border-primary rounded-md">
+              <option value="15">15 minutos</option>
+              <option value="30" selected>30 minutos</option>
+              <option value="45">45 minutos</option>
+              <option value="60">1 hora</option>
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-1" for="notas">Notas</label>
+            <textarea id="notas" class="w-full p-2 border border-primary rounded-md" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="p-4 border-t flex justify-end space-x-2">
+          <button class="btn btn-outline" @click="closeModal">Cancelar</button>
+          <button class="btn btn-primary">Guardar cita</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>

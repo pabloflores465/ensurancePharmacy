@@ -19,12 +19,27 @@ const isLoading = ref(false);
 
 const fetchHospitals = async () => {
   try {
+    notify({
+      type: "loading",
+      title: "Loading hospitals",
+      description: "Please wait...",
+    });
     isLoading.value = true;
     const response = await axios.get("http://localhost:8080/api/hospital");
     hospitals.value = response.data;
     console.log("Hospitals obtenidos:", hospitals.value);
+    notify({
+      type: "success",
+      title: "Hospitals loaded",
+      description: "Hospitals loaded successfully",
+    });
   } catch (error) {
     console.error("Error al obtener hospitals:", error);
+    notify({
+      type: "error",
+      title: "Error loading hospitals",
+      description: "Error loading hospitals",
+    });
   } finally {
     isLoading.value = false;
   }

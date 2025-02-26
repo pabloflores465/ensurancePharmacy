@@ -15,11 +15,26 @@ const pharmacies = ref<Pharmacy[]>([]);
 
 const fetchPharmacy = async () => {
   try {
+    notify({
+      type: "loading",
+      title: "Loading pharmacies",
+      description: "Please wait...",
+    });
     const response = await axios.get("http://localhost:8080/api/pharmacy");
     pharmacies.value = response.data;
     console.log("Hospitals obtenidos:", pharmacies.value);
+    notify({
+      type: "success",
+      title: "Pharmacies loaded",
+      description: "Pharmacies loaded successfully",
+    });
   } catch (error) {
     console.error("Error al obtener hospitals:", error);
+    notify({  
+      type: "error",
+      title: "Error loading pharmacies",
+      description: "Error loading pharmacies",
+    });
   }
 };
 const edit = useEdit();

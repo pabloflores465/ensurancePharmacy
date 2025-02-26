@@ -2,7 +2,7 @@
 interface Props {
   fieldNames: string[];
   searchFields: (boolean | string | number)[];
-  output: object[];
+  output: Record<string, any>[];
 }
 const props = defineProps<Props>();
 const emit = defineEmits(["update:output"]);
@@ -56,17 +56,16 @@ function updateSearchValue(event: Event) {
 </script>
 
 <template>
-  <div class="bg-background px-4 pt-2 pb-4">
+  <div class="bg-background rounded-lg shadow-md p-4">
     <div
-      class="border-primary flex w-full flex-row items-center rounded-full border-2 border-solid bg-white px-2 py-1"
+      class="border-primary flex w-full flex-row items-center rounded-full border-2 border-solid bg-white px-3 py-2 mb-4 hover:shadow-md transition-shadow"
     >
       <svg
         stroke="currentColor"
         fill="currentColor"
         stroke-width="0"
         viewBox="0 0 512 512"
-        height="30px"
-        width="30px"
+        class="text-primary h-5 w-5"
         xmlns="http://www.w3.org/2000/svg"
       >
         <path
@@ -80,20 +79,31 @@ function updateSearchValue(event: Event) {
       </svg>
       <input
         @input="updateSearchValue"
-        class="w-full rounded-l-full px-4 py-2 leading-tight text-gray-700 focus:outline-none"
+        class="w-full px-4 py-1 leading-tight text-gray-700 focus:outline-none"
         id="search"
         type="text"
-        placeholder="Please Search Something..."
+        placeholder="Buscar..."
       />
     </div>
-  </div>
-  <div class="bg-background px-4 py-2">
-    <div class="label pb-4">Filter By</div>
-    <div v-for="(name, index) in props.fieldNames" :key="index" class="mb-4">
-      <label class="label text-primary">
-        <input type="checkbox" class="me-2" v-model="checkedFields[index]" />
-        {{ name }}
-      </label>
+
+    <div v-if="props.fieldNames.length > 0" class="mt-2">
+      <div class="label font-medium text-gray-700 mb-2">Filtrar por:</div>
+      <div class="grid grid-cols-2 gap-2 md:grid-cols-3">
+        <div 
+          v-for="(name, index) in props.fieldNames" 
+          :key="index" 
+          class="mb-2"
+        >
+          <label class="flex items-center cursor-pointer text-primary">
+            <input 
+              type="checkbox" 
+              class="form-checkbox mr-2 h-4 w-4 text-primary rounded" 
+              v-model="checkedFields[index]" 
+            />
+            <span class="text-sm">{{ name }}</span>
+          </label>
+        </div>
+      </div>
     </div>
   </div>
 </template>

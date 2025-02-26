@@ -15,6 +15,11 @@ const errorMessage = ref("");
 
 const createUser = async () => {
   try {
+    notify({
+      type: "loading",
+      title: "Creating user",
+      description: "Please wait...",
+    });
     console.log(name, cui, phone, email, birthdate, address, password);
 
     const response = await axios.post(
@@ -35,9 +40,19 @@ const createUser = async () => {
 
     // Redirigir a la página principal o dashboard
     //router.push('/home');
+    notify({
+      type: "success",
+      title: "User created",
+      description: "User created successfully, Please way for admin approval",
+    });
   } catch (error) {
     console.error("Error en login:", error);
-    errorMessage.value = "Credenciales incorrectas o error en el servidor.";
+          errorMessage.value = "Credenciales incorrectas o error en el servidor.";
+    notify({
+      type: "error",
+      title: "Error creating user",
+      description: "Error creating user",
+    });
   }
 };
 </script>

@@ -33,14 +33,28 @@ const hasError = ref(false);
 
 const fetchMedicines = async () => {
   try {
+    notify({
+      type: "loading",
+      title: "Loading medicines",
+      description: "Please wait...",
+    });
     isLoading.value = true;
     hasError.value = false;
     const response = await axios.get("http://localhost:8080/api/medicine");
     medicines.value = response.data;
     console.log("Medicines obtenidas:", medicines.value);
+    notify({
+      type: "success",
+      title: "Medicines loaded",
+      description: "Medicines loaded successfully",
+    });
   } catch (error) {
     console.error("Error al obtener medicines:", error);
-    hasError.value = true;
+    notify({
+      type: "error",
+      title: "Error loading medicines",
+      description: "Error loading medicines",
+    });
   } finally {
     isLoading.value = false;
   }

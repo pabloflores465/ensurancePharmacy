@@ -13,14 +13,29 @@ interface Policy {
 }
 const policies = ref<Policy[]>([]);
 let policyChanges: Policy[] = [];
-const fetchPolicy = async () => {
+const fetchPolicy = async () => {       
   try {
+    notify({
+      type: "loading",
+      title: "Loading policies",
+      description: "Please wait...",
+    });
     const response = await axios.get("http://localhost:8080/api/policy");
     policies.value = response.data;
     policyChanges = response.data.map((policy: Policy) => ({ ...policy }));
-    console.log("Hospitals obtenidos:", policies.value);
+    console.log("Hospitals obtenidos:", policies.value);  
+    notify({
+      type: "success",
+      title: "Policies loaded",
+      description: "Policies loaded successfully",
+    });
   } catch (error) {
     console.error("Error al obtener hospitals:", error);
+    notify({
+      type: "error",
+      title: "Error loading policies",
+      description: "Error loading policies",
+    });
   }
 };
 const edit = useEdit();

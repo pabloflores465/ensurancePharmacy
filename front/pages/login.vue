@@ -12,6 +12,11 @@ const router = useRouter();
 
 const handleLogin = async () => {
   try {
+    notify({
+      type: "loading",
+      title: "Iniciando sesión",
+      description: "Procesando tu solicitud, por favor espera...",
+    });
     const response = await axios.post(
       "http://localhost:8080/api/login", // URL de tu endpoint de login
       {
@@ -22,9 +27,21 @@ const handleLogin = async () => {
 
     setUser(response.data.role);
     console.log("Login exitoso:", response.data);
+    notify({
+      type: "success",
+      title: "Login exitoso",
+      description: "Inicio de sesión exitoso.",
+      timeout: 2000,
+    });
     router.push("/");
     setProfile(response.data);
   } catch (error) {
+    notify({
+      type: "error",
+      title: "Error en login",
+      description: "Credenciales incorrectas o error en el servidor.",
+      timeout: 2000,
+    });
     console.error("Error en login:", error);
     errorMessage.value = "Credenciales incorrectas o error en el servidor.";
   }

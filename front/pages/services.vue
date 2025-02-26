@@ -28,13 +28,28 @@ interface Service {
 }
 
 const services = ref<Service[]>([]);
-const fetchService = async () => {
+const fetchService = async () => {  
   try {
+    notify({
+      type: "loading",
+      title: "Loading services",
+      description: "Please wait...",
+    });
     const response = await axios.get("http://localhost:8080/api/service");
     services.value = response.data;
     console.log("Hospitals obtenidos:", services.value);
-  } catch (error) {
+    notify({
+      type: "success",
+      title: "Services loaded",
+      description: "Services loaded successfully",
+    });
+    } catch (error) {
     console.error("Error al obtener hospitals:", error);
+    notify({
+      type: "error",
+      title: "Error loading services",
+      description: "Error loading services",
+    });
   }
 };
 const edit = useEdit();
