@@ -393,7 +393,7 @@ const currentCategory = getCurrentCategory();
   </main>
   <section
     class="border-b-secondary min-w-[200px] justify-center border-b-1 border-l-1 border-l-gray-400 p-2 max-sm:w-full sm:w-[20%]"
-    v-if="toggleSidebar && currentId === 3"
+    v-if="toggleSidebar && currentId === 3 && router.path === '/services'"
   >
     <div
       class="flex max-h-[calc(100vh-8rem)] flex-col overflow-auto max-sm:items-center"
