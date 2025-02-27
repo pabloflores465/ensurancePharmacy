@@ -65,32 +65,32 @@ public class TotalHospitalHandler implements HttpHandler {
 
     private void handleGet(HttpExchange exchange) throws IOException {
         String query = exchange.getRequestURI().getQuery();
-        if(query != null && query.contains("id=")){
+        if (query != null && query.contains("id=")) {
             Map<String,String> params = parseQuery(query);
-            try{
+            try {
                 Long id = Long.parseLong(params.get("id"));
                 TotalHospital th = totalHospitalDAO.findById(id);
-                if(th != null){
+                if (th != null) {
                     String jsonResponse = objectMapper.writeValueAsString(th);
-                    exchange.getResponseHeaders().set("Content-Type","application/json");
+                    exchange.getResponseHeaders().set("Content-Type", "application/json");
                     byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
                     exchange.sendResponseHeaders(200, responseBytes.length);
-                    try(OutputStream os = exchange.getResponseBody()){
+                    try (OutputStream os = exchange.getResponseBody()){
                         os.write(responseBytes);
                     }
                 } else {
                     exchange.sendResponseHeaders(404, -1);
                 }
-            } catch(NumberFormatException e){
+            } catch (NumberFormatException e) {
                 exchange.sendResponseHeaders(400, -1);
             }
         } else {
             List<TotalHospital> list = totalHospitalDAO.findAll();
             String jsonResponse = objectMapper.writeValueAsString(list);
-            exchange.getResponseHeaders().set("Content-Type","application/json");
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
             byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
             exchange.sendResponseHeaders(200, responseBytes.length);
-            try(OutputStream os = exchange.getResponseBody()){
+            try (OutputStream os = exchange.getResponseBody()){
                 os.write(responseBytes);
             }
         }
@@ -100,23 +100,30 @@ public class TotalHospitalHandler implements HttpHandler {
         try {
             String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
             TotalHospital th = objectMapper.readValue(requestBody, TotalHospital.class);
+
+            // Se espera que el JSON incluya el objeto 'hospital' con su id
+            if (th.getHospital() == null || th.getHospital().getIdHospital() == null) {
+                exchange.sendResponseHeaders(400, -1);
+                return;
+            }
+
             TotalHospital created = totalHospitalDAO.create(
-                    th.getIdHospital(),
+                    th.getHospital().getIdHospital(), // Extraemos el ID de la entidad Hospital
                     th.getTotalDate(),
                     th.getTotal()
             );
-            if(created != null){
+            if (created != null) {
                 String jsonResponse = objectMapper.writeValueAsString(created);
-                exchange.getResponseHeaders().set("Content-Type","application/json");
+                exchange.getResponseHeaders().set("Content-Type", "application/json");
                 byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
                 exchange.sendResponseHeaders(201, responseBytes.length);
-                try(OutputStream os = exchange.getResponseBody()){
+                try (OutputStream os = exchange.getResponseBody()){
                     os.write(responseBytes);
                 }
             } else {
                 exchange.sendResponseHeaders(500, -1);
             }
-        } catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             exchange.sendResponseHeaders(500, -1);
         }
@@ -126,12 +133,12 @@ public class TotalHospitalHandler implements HttpHandler {
         String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
         TotalHospital th = objectMapper.readValue(requestBody, TotalHospital.class);
         TotalHospital updated = totalHospitalDAO.update(th);
-        if(updated != null){
+        if (updated != null) {
             String jsonResponse = objectMapper.writeValueAsString(updated);
-            exchange.getResponseHeaders().set("Content-Type","application/json");
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
             byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
             exchange.sendResponseHeaders(200, responseBytes.length);
-            try(OutputStream os = exchange.getResponseBody()){
+            try (OutputStream os = exchange.getResponseBody()){
                 os.write(responseBytes);
             }
         } else {
@@ -139,8 +146,7 @@ public class TotalHospitalHandler implements HttpHandler {
         }
     }
 
-
-    private Map<String,String> parseQuery(String query){
+    private Map<String,String> parseQuery(String query) {
         return Arrays.stream(query.split("&"))
                 .map(param -> param.split("="))
                 .collect(Collectors.toMap(

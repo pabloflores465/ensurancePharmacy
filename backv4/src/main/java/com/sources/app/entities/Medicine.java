@@ -40,6 +40,10 @@ public class Medicine {
     @Column(name = "BRAND", nullable = true, length = 100)
     private String brand;
 
+    // Nuevo atributo coverage (NUMBER(1,0))
+    @Column(name = "COVERAGE", nullable = false, precision = 1, scale = 0)
+    private Integer coverage;
+
     // Constructor por defecto
     public Medicine() {}
 
@@ -122,5 +126,13 @@ public class Medicine {
 
     public void setBrand(String brand) {
         this.brand = brand;
+    }
+
+    public Integer getCoverage() {
+        return coverage;
+    }
+
+    public void setCoverage(Integer coverage) {
+        this.coverage = coverage;
     }
 }

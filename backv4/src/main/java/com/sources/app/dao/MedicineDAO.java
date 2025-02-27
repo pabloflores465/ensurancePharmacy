@@ -14,7 +14,7 @@ public class MedicineDAO {
 
     public Medicine create(String name, String description, BigDecimal price, Pharmacy pharmacy,
                            Integer enabled, String activePrinciple, String presentation,
-                           Integer stock, String brand) {
+                           Integer stock, String brand, Integer coverage) {
         Transaction tx = null;
         Medicine medicine = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -30,6 +30,7 @@ public class MedicineDAO {
             medicine.setPresentation(presentation);
             medicine.setStock(stock);
             medicine.setBrand(brand);
+            medicine.setCoverage(coverage); // Se asigna el atributo coverage
 
             session.save(medicine);
             tx.commit();

@@ -1,7 +1,6 @@
 package com.sources.app.handlers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sources.app.dao.PrescriptionDAO;
 import com.sources.app.entities.Prescription;
 import com.sources.app.entities.Hospital;
 import com.sources.app.entities.User;

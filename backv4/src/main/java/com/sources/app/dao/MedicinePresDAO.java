@@ -1,11 +1,13 @@
 package com.sources.app.dao;
 
 import com.sources.app.entities.MedicinePres;
+import com.sources.app.entities.MedicinePresId;
+import com.sources.app.entities.Prescription;
+import com.sources.app.entities.Medicine;
 import com.sources.app.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
-
 import java.util.List;
 
 public class MedicinePresDAO {
@@ -16,9 +18,16 @@ public class MedicinePresDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
 
+            // Recuperar las entidades Prescription y Medicine
+            Prescription prescription = session.get(Prescription.class, idPrescription);
+            Medicine medicine = session.get(Medicine.class, idMedicine);
+            if (prescription == null || medicine == null) {
+                throw new RuntimeException("Prescription or Medicine not found");
+            }
+
             medPres = new MedicinePres();
-            medPres.setIdPrescription(idPrescription);
-            medPres.setIdMedicine(idMedicine);
+            medPres.setPrescription(prescription);
+            medPres.setMedicine(medicine);
 
             session.save(medPres);
             tx.commit();
@@ -31,9 +40,10 @@ public class MedicinePresDAO {
         return medPres;
     }
 
-    public MedicinePres findById(Long id) {
+    public MedicinePres findById(Long idPrescription, Long idMedicine) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.get(MedicinePres.class, id);
+            MedicinePresId key = new MedicinePresId(idPrescription, idMedicine);
+            return session.get(MedicinePres.class, key);
         } catch (Exception e) {
             e.printStackTrace();
             return null;

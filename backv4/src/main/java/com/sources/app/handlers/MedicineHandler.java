@@ -99,17 +99,18 @@ public class MedicineHandler implements HttpHandler {
         try {
             String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
             Medicine medicine = objectMapper.readValue(requestBody, Medicine.class);
-            // Se asume que el JSON enviado incluye el objeto 'pharmacy' y los nuevos campos
+            // Se asume que el JSON enviado incluye el objeto 'pharmacy' y los nuevos campos, incluyendo 'coverage'
             Medicine created = medicineDAO.create(
                     medicine.getName(),
                     medicine.getDescription(),
                     medicine.getPrice(),
                     medicine.getPharmacy(),          // Objeto Pharmacy
                     medicine.getEnabled(),
-                    medicine.getActivePrinciple(),     // Nuevo campo
-                    medicine.getPresentation(),        // Nuevo campo
-                    medicine.getStock(),               // Nuevo campo
-                    medicine.getBrand()                // Nuevo campo
+                    medicine.getActivePrinciple(),
+                    medicine.getPresentation(),
+                    medicine.getStock(),
+                    medicine.getBrand(),
+                    medicine.getCoverage()           // Nuevo campo coverage
             );
             if (created != null) {
                 String jsonResponse = objectMapper.writeValueAsString(created);

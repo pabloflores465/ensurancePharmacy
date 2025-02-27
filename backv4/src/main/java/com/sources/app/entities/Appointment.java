@@ -11,11 +11,15 @@ public class Appointment {
     @Column(name = "ID_APPOINTMENT")
     private Long idAppointment;
 
-    @Column(name = "ID_HOSPITAL", nullable = false)
-    private Long idHospital;
+    // Relación ManyToOne con Hospital
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "ID_HOSPITAL", nullable = false)
+    private Hospital hospital;
 
-    @Column(name = "ID_USER", nullable = false)
-    private Long idUser;
+    // Relación ManyToOne con User
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "ID_USER", nullable = false)
+    private User user;
 
     @Temporal(TemporalType.DATE)
     @Column(name = "APPOINTMENT_DATE", nullable = false)
@@ -28,18 +32,38 @@ public class Appointment {
     public Appointment() {}
 
     // Getters y Setters
-    public Long getIdAppointment() { return idAppointment; }
-    public void setIdAppointment(Long idAppointment) { this.idAppointment = idAppointment; }
+    public Long getIdAppointment() {
+        return idAppointment;
+    }
+    public void setIdAppointment(Long idAppointment) {
+        this.idAppointment = idAppointment;
+    }
 
-    public Long getIdHospital() { return idHospital; }
-    public void setIdHospital(Long idHospital) { this.idHospital = idHospital; }
+    public Hospital getHospital() {
+        return hospital;
+    }
+    public void setHospital(Hospital hospital) {
+        this.hospital = hospital;
+    }
 
-    public Long getIdUser() { return idUser; }
-    public void setIdUser(Long idUser) { this.idUser = idUser; }
+    public User getUser() {
+        return user;
+    }
+    public void setUser(User user) {
+        this.user = user;
+    }
 
-    public Date getAppointmentDate() { return appointmentDate; }
-    public void setAppointmentDate(Date appointmentDate) { this.appointmentDate = appointmentDate; }
+    public Date getAppointmentDate() {
+        return appointmentDate;
+    }
+    public void setAppointmentDate(Date appointmentDate) {
+        this.appointmentDate = appointmentDate;
+    }
 
-    public Integer getEnabled() { return enabled; }
-    public void setEnabled(Integer enabled) { this.enabled = enabled; }
+    public Integer getEnabled() {
+        return enabled;
+    }
+    public void setEnabled(Integer enabled) {
+        this.enabled = enabled;
+    }
 }

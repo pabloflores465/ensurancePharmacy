@@ -1,6 +1,10 @@
 package com.sources.app.dao;
 
 import com.sources.app.entities.Prescription;
+import com.sources.app.entities.Hospital;
+import com.sources.app.entities.User;
+import com.sources.app.entities.Medicine;
+import com.sources.app.entities.Pharmacy;
 import com.sources.app.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -20,11 +24,21 @@ public class PrescriptionDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
 
+            // Recuperar las entidades relacionadas
+            Hospital hospital = session.get(Hospital.class, idHospital);
+            User user = session.get(User.class, idUser);
+            Medicine medicine = session.get(Medicine.class, idMedicine);
+            Pharmacy pharmacy = session.get(Pharmacy.class, idPharmacy);
+
+            if(hospital == null || user == null || medicine == null || pharmacy == null) {
+                throw new RuntimeException("Alguna entidad relacionada no fue encontrada.");
+            }
+
             prescription = new Prescription();
-            prescription.setIdHospital(idHospital);
-            prescription.setIdUser(idUser);
-            prescription.setIdMedicine(idMedicine);
-            prescription.setIdPharmacy(idPharmacy);
+            prescription.setHospital(hospital);
+            prescription.setUser(user);
+            prescription.setMedicine(medicine);
+            prescription.setPharmacy(pharmacy);
             prescription.setPrescriptionDate(prescriptionDate);
             prescription.setTotal(total);
             prescription.setCopay(copay);

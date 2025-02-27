@@ -3,6 +3,8 @@ package com.sources.app.handlers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sources.app.dao.TransactionsDAO;
 import com.sources.app.entities.Transactions;
+import com.sources.app.entities.User;
+import com.sources.app.entities.Hospital;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
@@ -29,7 +31,7 @@ public class TransactionsHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 
-        // Configuración CORS
+        // Configuración de CORS
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
         exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type, Authorization");
@@ -72,7 +74,7 @@ public class TransactionsHandler implements HttpHandler {
                 Transactions t = transactionsDAO.findById(id);
                 if(t != null){
                     String jsonResponse = objectMapper.writeValueAsString(t);
-                    exchange.getResponseHeaders().set("Content-Type","application/json");
+                    exchange.getResponseHeaders().set("Content-Type", "application/json");
                     byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
                     exchange.sendResponseHeaders(200, responseBytes.length);
                     try(OutputStream os = exchange.getResponseBody()){
@@ -87,7 +89,7 @@ public class TransactionsHandler implements HttpHandler {
         } else {
             List<Transactions> list = transactionsDAO.findAll();
             String jsonResponse = objectMapper.writeValueAsString(list);
-            exchange.getResponseHeaders().set("Content-Type","application/json");
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
             byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
             exchange.sendResponseHeaders(200, responseBytes.length);
             try(OutputStream os = exchange.getResponseBody()){
@@ -100,9 +102,15 @@ public class TransactionsHandler implements HttpHandler {
         try{
             String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
             Transactions t = objectMapper.readValue(requestBody, Transactions.class);
+            // Se asume que el JSON incluye los objetos anidados para user y hospital
+            if(t.getUser() == null || t.getUser().getIdUser() == null ||
+                    t.getHospital() == null || t.getHospital().getIdHospital() == null) {
+                exchange.sendResponseHeaders(400, -1);
+                return;
+            }
             Transactions created = transactionsDAO.create(
-                    t.getIdUser(),
-                    t.getIdHospital(),
+                    t.getUser().getIdUser(),        // Extraer el ID de User desde el objeto relacionado
+                    t.getHospital().getIdHospital(),  // Extraer el ID de Hospital desde el objeto relacionado
                     t.getTransDate(),
                     t.getTotal(),
                     t.getCopay(),
@@ -113,7 +121,7 @@ public class TransactionsHandler implements HttpHandler {
             );
             if(created != null){
                 String jsonResponse = objectMapper.writeValueAsString(created);
-                exchange.getResponseHeaders().set("Content-Type","application/json");
+                exchange.getResponseHeaders().set("Content-Type", "application/json");
                 byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
                 exchange.sendResponseHeaders(201, responseBytes.length);
                 try(OutputStream os = exchange.getResponseBody()){
@@ -134,7 +142,7 @@ public class TransactionsHandler implements HttpHandler {
         Transactions updated = transactionsDAO.update(t);
         if(updated != null){
             String jsonResponse = objectMapper.writeValueAsString(updated);
-            exchange.getResponseHeaders().set("Content-Type","application/json");
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
             byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
             exchange.sendResponseHeaders(200, responseBytes.length);
             try(OutputStream os = exchange.getResponseBody()){
@@ -144,7 +152,6 @@ public class TransactionsHandler implements HttpHandler {
             exchange.sendResponseHeaders(500, -1);
         }
     }
-
 
     private Map<String,String> parseQuery(String query){
         return Arrays.stream(query.split("&"))

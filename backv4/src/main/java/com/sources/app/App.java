@@ -25,7 +25,7 @@ public class App {
     private static final TotalPharmacyDAO totalPharmacyDAO = new TotalPharmacyDAO();
     private static final TransactionsDAO transactionsDAO = new TransactionsDAO();
     private static final TransactionPolicyDAO transactionPolicyDAO = new TransactionPolicyDAO();
-    private static final CoveragePharmacyDAO coveragePharmacyDAO = new CoveragePharmacyDAO();
+    private static final ServiceCategoryDAO serviceCategoryDAO = new ServiceCategoryDAO();
 
 
     public static void main(String[] args) throws Exception {
@@ -60,7 +60,7 @@ public class App {
         server.createContext("/api/totalpharmacy", new TotalPharmacyHandler(totalPharmacyDAO));
         server.createContext("/api/transactions", new TransactionsHandler(transactionsDAO));
         server.createContext("/api/transactionpolicy", new TransactionPolicyHandler(transactionPolicyDAO));
-        server.createContext("/api/coveragepharmacy", new CoveragePharmacyHandler(coveragePharmacyDAO));
+        server.createContext("/api/servicecategory", new ServiceCategoryHandler(serviceCategoryDAO));
         server.setExecutor(null); // Usa el executor por defecto
         server.start();
         System.out.println("Servidor iniciado en http://localhost:8080/api");

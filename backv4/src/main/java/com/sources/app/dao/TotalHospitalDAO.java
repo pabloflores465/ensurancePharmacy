@@ -1,6 +1,7 @@
 package com.sources.app.dao;
 
 import com.sources.app.entities.TotalHospital;
+import com.sources.app.entities.Hospital;
 import com.sources.app.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -18,8 +19,14 @@ public class TotalHospitalDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
 
+            // Recuperar la entidad Hospital a partir del id
+            Hospital hospital = session.get(Hospital.class, idHospital);
+            if (hospital == null) {
+                throw new RuntimeException("Hospital no encontrado para id: " + idHospital);
+            }
+
             th = new TotalHospital();
-            th.setIdHospital(idHospital);
+            th.setHospital(hospital);  // Se asigna la entidad Hospital
             th.setTotalDate(totalDate);
             th.setTotal(total);
 

@@ -3,6 +3,8 @@ package com.sources.app.handlers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sources.app.dao.AppointmentDAO;
 import com.sources.app.entities.Appointment;
+import com.sources.app.entities.Hospital;
+import com.sources.app.entities.User;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
@@ -96,9 +98,18 @@ public class AppointmentHandler implements HttpHandler {
         try {
             String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
             Appointment appointment = objectMapper.readValue(requestBody, Appointment.class);
+
+            // Extraer los identificadores de Hospital y User desde las relaciones
+            Hospital hospital = appointment.getHospital();
+            User user = appointment.getUser();
+            if (hospital == null || user == null) {
+                exchange.sendResponseHeaders(400, -1);
+                return;
+            }
+
             Appointment createdAppointment = appointmentDAO.create(
-                    appointment.getIdHospital(),
-                    appointment.getIdUser(),
+                    hospital.getIdHospital(),  // Se asume que Hospital tiene getIdHospital()
+                    user.getIdUser(),          // Se asume que User tiene getIdUser()
                     appointment.getAppointmentDate(),
                     appointment.getEnabled()
             );

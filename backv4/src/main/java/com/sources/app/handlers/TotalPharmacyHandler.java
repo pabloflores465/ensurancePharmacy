@@ -3,6 +3,7 @@ package com.sources.app.handlers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sources.app.dao.TotalPharmacyDAO;
 import com.sources.app.entities.TotalPharmacy;
+import com.sources.app.entities.Pharmacy;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
@@ -29,7 +30,7 @@ public class TotalPharmacyHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 
-        // Configuración CORS
+        // Configuración de CORS
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
         exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type, Authorization");
@@ -100,8 +101,14 @@ public class TotalPharmacyHandler implements HttpHandler {
         try {
             String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
             TotalPharmacy tp = objectMapper.readValue(requestBody, TotalPharmacy.class);
+            // Se espera que el JSON incluya el objeto 'pharmacy' con su ID
+            Pharmacy pharmacy = tp.getPharmacy();
+            if(pharmacy == null || pharmacy.getIdPharmacy() == null){
+                exchange.sendResponseHeaders(400, -1);
+                return;
+            }
             TotalPharmacy created = totalPharmacyDAO.create(
-                    tp.getIdPharmacy(),
+                    pharmacy.getIdPharmacy(), // Extraemos el ID a través de la relación
                     tp.getTotalDate(),
                     tp.getTotal()
             );
@@ -138,7 +145,6 @@ public class TotalPharmacyHandler implements HttpHandler {
             exchange.sendResponseHeaders(500, -1);
         }
     }
-
 
     private Map<String,String> parseQuery(String query){
         return Arrays.stream(query.split("&"))

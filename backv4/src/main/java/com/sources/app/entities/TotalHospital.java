@@ -7,13 +7,16 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "TOTAL_HOSPITAL")
 public class TotalHospital {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID_TOTAL_HOSPITAL")
     private Long idTotalHospital;
 
-    @Column(name = "ID_HOSPITAL", nullable = false)
-    private Long idHospital;
+    // Relación ManyToOne con Hospital (la columna ID_HOSPITAL es llave foránea)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "ID_HOSPITAL", nullable = false)
+    private Hospital hospital;
 
     @Temporal(TemporalType.DATE)
     @Column(name = "TOTAL_DATE", nullable = false)
@@ -26,15 +29,35 @@ public class TotalHospital {
     public TotalHospital() {}
 
     // Getters y Setters
-    public Long getIdTotalHospital() { return idTotalHospital; }
-    public void setIdTotalHospital(Long idTotalHospital) { this.idTotalHospital = idTotalHospital; }
+    public Long getIdTotalHospital() {
+        return idTotalHospital;
+    }
 
-    public Long getIdHospital() { return idHospital; }
-    public void setIdHospital(Long idHospital) { this.idHospital = idHospital; }
+    public void setIdTotalHospital(Long idTotalHospital) {
+        this.idTotalHospital = idTotalHospital;
+    }
 
-    public Date getTotalDate() { return totalDate; }
-    public void setTotalDate(Date totalDate) { this.totalDate = totalDate; }
+    public Hospital getHospital() {
+        return hospital;
+    }
 
-    public BigDecimal getTotal() { return total; }
-    public void setTotal(BigDecimal total) { this.total = total; }
+    public void setHospital(Hospital hospital) {
+        this.hospital = hospital;
+    }
+
+    public Date getTotalDate() {
+        return totalDate;
+    }
+
+    public void setTotalDate(Date totalDate) {
+        this.totalDate = totalDate;
+    }
+
+    public BigDecimal getTotal() {
+        return total;
+    }
+
+    public void setTotal(BigDecimal total) {
+        this.total = total;
+    }
 }

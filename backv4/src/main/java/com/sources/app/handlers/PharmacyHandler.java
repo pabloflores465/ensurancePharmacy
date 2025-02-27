@@ -1,10 +1,10 @@
 package com.sources.app.handlers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sources.app.dao.PharmacyDAO;
 import com.sources.app.entities.Pharmacy;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import com.sources.app.dao.PharmacyDAO;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;

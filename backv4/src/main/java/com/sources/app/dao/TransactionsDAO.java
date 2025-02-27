@@ -1,6 +1,8 @@
 package com.sources.app.dao;
 
 import com.sources.app.entities.Transactions;
+import com.sources.app.entities.User;
+import com.sources.app.entities.Hospital;
 import com.sources.app.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -19,9 +21,16 @@ public class TransactionsDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
 
+            // Recuperar las entidades relacionadas a partir de sus IDs
+            User user = session.get(User.class, idUser);
+            Hospital hospital = session.get(Hospital.class, idHospital);
+            if (user == null || hospital == null) {
+                throw new RuntimeException("User or Hospital not found.");
+            }
+
             t = new Transactions();
-            t.setIdUser(idUser);
-            t.setIdHospital(idHospital);
+            t.setUser(user);
+            t.setHospital(hospital);
             t.setTransDate(transDate);
             t.setTotal(total);
             t.setCopay(copay);

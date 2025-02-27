@@ -1,6 +1,7 @@
 package com.sources.app.dao;
 
 import com.sources.app.entities.TotalPharmacy;
+import com.sources.app.entities.Pharmacy;
 import com.sources.app.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -18,8 +19,14 @@ public class TotalPharmacyDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
 
+            // Recuperar la entidad Pharmacy a partir de su id
+            Pharmacy pharmacy = session.get(Pharmacy.class, idPharmacy);
+            if (pharmacy == null) {
+                throw new RuntimeException("Pharmacy no encontrada para id: " + idPharmacy);
+            }
+
             tp = new TotalPharmacy();
-            tp.setIdPharmacy(idPharmacy);
+            tp.setPharmacy(pharmacy);  // Asignar la entidad Pharmacy
             tp.setTotalDate(totalDate);
             tp.setTotal(total);
 

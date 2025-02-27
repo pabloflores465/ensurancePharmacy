@@ -7,16 +7,21 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "TRANSACTION_POLICY")
 public class TransactionPolicy {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID_TRANSACTION_POLICY")
     private Long idTransactionPolicy;
 
-    @Column(name = "ID_POLICY", nullable = false)
-    private Long idPolicy;
+    // Relación ManyToOne con Policy
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "ID_POLICY", nullable = false)
+    private Policy policy;
 
-    @Column(name = "ID_USER", nullable = false)
-    private Long idUser;
+    // Relación ManyToOne con User
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "ID_USER", nullable = false)
+    private User user;
 
     @Temporal(TemporalType.DATE)
     @Column(name = "PAY_DATE", nullable = false)
@@ -29,18 +34,38 @@ public class TransactionPolicy {
     public TransactionPolicy() {}
 
     // Getters y Setters
-    public Long getIdTransactionPolicy() { return idTransactionPolicy; }
-    public void setIdTransactionPolicy(Long idTransactionPolicy) { this.idTransactionPolicy = idTransactionPolicy; }
+    public Long getIdTransactionPolicy() {
+        return idTransactionPolicy;
+    }
+    public void setIdTransactionPolicy(Long idTransactionPolicy) {
+        this.idTransactionPolicy = idTransactionPolicy;
+    }
 
-    public Long getIdPolicy() { return idPolicy; }
-    public void setIdPolicy(Long idPolicy) { this.idPolicy = idPolicy; }
+    public Policy getPolicy() {
+        return policy;
+    }
+    public void setPolicy(Policy policy) {
+        this.policy = policy;
+    }
 
-    public Long getIdUser() { return idUser; }
-    public void setIdUser(Long idUser) { this.idUser = idUser; }
+    public User getUser() {
+        return user;
+    }
+    public void setUser(User user) {
+        this.user = user;
+    }
 
-    public Date getPayDate() { return payDate; }
-    public void setPayDate(Date payDate) { this.payDate = payDate; }
+    public Date getPayDate() {
+        return payDate;
+    }
+    public void setPayDate(Date payDate) {
+        this.payDate = payDate;
+    }
 
-    public BigDecimal getTotal() { return total; }
-    public void setTotal(BigDecimal total) { this.total = total; }
+    public BigDecimal getTotal() {
+        return total;
+    }
+    public void setTotal(BigDecimal total) {
+        this.total = total;
+    }
 }

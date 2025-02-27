@@ -1,39 +1,37 @@
 package com.sources.app.dao;
 
-import com.sources.app.entities.TransactionPolicy;
-import com.sources.app.entities.Policy;
-import com.sources.app.entities.User;
+import com.sources.app.entities.ServiceCategory;
+import com.sources.app.entities.ServiceCategoryId;
+import com.sources.app.entities.Service;
+import com.sources.app.entities.Category;
 import com.sources.app.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
-import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 
-public class TransactionPolicyDAO {
+public class ServiceCategoryDAO {
 
-    public TransactionPolicy create(Long idPolicy, Long idUser, Date payDate, BigDecimal total) {
+    public ServiceCategory create(Long idService, Long idCategory) {
         Transaction tx = null;
-        TransactionPolicy tp = null;
+        ServiceCategory serviceCategory = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
 
             // Recuperar las entidades relacionadas
-            Policy policy = session.get(Policy.class, idPolicy);
-            User user = session.get(User.class, idUser);
-            if (policy == null || user == null) {
-                throw new RuntimeException("Policy o User no encontrados.");
+            Service service = session.get(Service.class, idService);
+            Category category = session.get(Category.class, idCategory);
+
+            if (service == null || category == null) {
+                throw new RuntimeException("Service o Category no encontrado.");
             }
 
-            tp = new TransactionPolicy();
-            tp.setPolicy(policy); // Asignar la entidad Policy
-            tp.setUser(user);     // Asignar la entidad User
-            tp.setPayDate(payDate);
-            tp.setTotal(total);
+            serviceCategory = new ServiceCategory();
+            serviceCategory.setService(service);
+            serviceCategory.setCategory(category);
 
-            session.save(tp);
+            session.save(serviceCategory);
             tx.commit();
         } catch (Exception e) {
             if (tx != null) {
@@ -41,21 +39,22 @@ public class TransactionPolicyDAO {
             }
             e.printStackTrace();
         }
-        return tp;
+        return serviceCategory;
     }
 
-    public TransactionPolicy findById(Long id) {
+    public ServiceCategory findById(Long idService, Long idCategory) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.get(TransactionPolicy.class, id);
+            ServiceCategoryId scId = new ServiceCategoryId(idService, idCategory);
+            return session.get(ServiceCategory.class, scId);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    public List<TransactionPolicy> findAll() {
+    public List<ServiceCategory> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Query<TransactionPolicy> query = session.createQuery("FROM TransactionPolicy", TransactionPolicy.class);
+            Query<ServiceCategory> query = session.createQuery("FROM ServiceCategory", ServiceCategory.class);
             return query.getResultList();
         } catch (Exception e) {
             e.printStackTrace();
@@ -63,13 +62,13 @@ public class TransactionPolicyDAO {
         }
     }
 
-    public TransactionPolicy update(TransactionPolicy tp) {
+    public ServiceCategory update(ServiceCategory serviceCategory) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
-            session.update(tp);
+            session.update(serviceCategory);
             tx.commit();
-            return tp;
+            return serviceCategory;
         } catch (Exception e) {
             if (tx != null) {
                 tx.rollback();

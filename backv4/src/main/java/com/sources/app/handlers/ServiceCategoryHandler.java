@@ -1,10 +1,13 @@
 package com.sources.app.handlers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sources.app.dao.CoveragePharmacyDAO;
-import com.sources.app.entities.CoveragePharmacy;
+import com.sources.app.dao.ServiceCategoryDAO;
+import com.sources.app.entities.ServiceCategory;
+import com.sources.app.entities.Service;
+import com.sources.app.entities.Category;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -13,14 +16,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class CoveragePharmacyHandler implements HttpHandler {
+public class ServiceCategoryHandler implements HttpHandler {
 
-    private final CoveragePharmacyDAO coveragePharmacyDAO;
+    private final ServiceCategoryDAO serviceCategoryDAO;
     private final ObjectMapper objectMapper;
-    private static final String ENDPOINT = "/api/coveragepharmacy";
+    private static final String ENDPOINT = "/api/servicecategory";
 
-    public CoveragePharmacyHandler(CoveragePharmacyDAO coveragePharmacyDAO) {
-        this.coveragePharmacyDAO = coveragePharmacyDAO;
+    public ServiceCategoryHandler(ServiceCategoryDAO serviceCategoryDAO) {
+        this.serviceCategoryDAO = serviceCategoryDAO;
         this.objectMapper = new ObjectMapper();
     }
 
@@ -62,13 +65,15 @@ public class CoveragePharmacyHandler implements HttpHandler {
 
     private void handleGet(HttpExchange exchange) throws IOException {
         String query = exchange.getRequestURI().getQuery();
-        if (query != null && query.contains("id=")) {
+        // Para obtener un registro único se requieren ambos parámetros: idService e idCategory
+        if (query != null && query.contains("idService=") && query.contains("idCategory=")) {
             Map<String, String> params = parseQuery(query);
             try {
-                Long id = Long.parseLong(params.get("id"));
-                CoveragePharmacy cp = coveragePharmacyDAO.findById(id);
-                if (cp != null) {
-                    String jsonResponse = objectMapper.writeValueAsString(cp);
+                Long idService = Long.parseLong(params.get("idService"));
+                Long idCategory = Long.parseLong(params.get("idCategory"));
+                ServiceCategory sc = serviceCategoryDAO.findById(idService, idCategory);
+                if (sc != null) {
+                    String jsonResponse = objectMapper.writeValueAsString(sc);
                     exchange.getResponseHeaders().set("Content-Type", "application/json");
                     byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
                     exchange.sendResponseHeaders(200, responseBytes.length);
@@ -82,7 +87,8 @@ public class CoveragePharmacyHandler implements HttpHandler {
                 exchange.sendResponseHeaders(400, -1);
             }
         } else {
-            List<CoveragePharmacy> list = coveragePharmacyDAO.findAll();
+            // Si no se especifican ambos IDs, devolvemos todos los registros
+            List<ServiceCategory> list = serviceCategoryDAO.findAll();
             String jsonResponse = objectMapper.writeValueAsString(list);
             exchange.getResponseHeaders().set("Content-Type", "application/json");
             byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
@@ -96,12 +102,22 @@ public class CoveragePharmacyHandler implements HttpHandler {
     private void handlePost(HttpExchange exchange) throws IOException {
         try {
             String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-            CoveragePharmacy cp = objectMapper.readValue(requestBody, CoveragePharmacy.class);
-            CoveragePharmacy created = coveragePharmacyDAO.create(
-                    cp.getIdPharmacy(),
-                    cp.getIdMedicine(),
-                    cp.getCoverage()
+            ServiceCategory sc = objectMapper.readValue(requestBody, ServiceCategory.class);
+
+            // Se asume que el JSON incluye objetos anidados "service" y "category" o, al menos, sus IDs
+            Service service = sc.getService();
+            Category category = sc.getCategory();
+            if (service == null || category == null ||
+                    service.getIdService() == null || category.getIdCategory() == null) {
+                exchange.sendResponseHeaders(400, -1);
+                return;
+            }
+
+            ServiceCategory created = serviceCategoryDAO.create(
+                    service.getIdService(),
+                    category.getIdCategory()
             );
+
             if (created != null) {
                 String jsonResponse = objectMapper.writeValueAsString(created);
                 exchange.getResponseHeaders().set("Content-Type", "application/json");
@@ -120,9 +136,12 @@ public class CoveragePharmacyHandler implements HttpHandler {
     }
 
     private void handlePut(HttpExchange exchange) throws IOException {
+        // El PUT se usaría para actualizar la relación. En una tabla de relación pura
+        // (con clave compuesta y sin atributos extra), no suele ser común actualizar,
+        // pero se incluye por consistencia.
         String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-        CoveragePharmacy cp = objectMapper.readValue(requestBody, CoveragePharmacy.class);
-        CoveragePharmacy updated = coveragePharmacyDAO.update(cp);
+        ServiceCategory sc = objectMapper.readValue(requestBody, ServiceCategory.class);
+        ServiceCategory updated = serviceCategoryDAO.update(sc);
         if (updated != null) {
             String jsonResponse = objectMapper.writeValueAsString(updated);
             exchange.getResponseHeaders().set("Content-Type", "application/json");
@@ -135,7 +154,6 @@ public class CoveragePharmacyHandler implements HttpHandler {
             exchange.sendResponseHeaders(500, -1);
         }
     }
-
 
     private Map<String, String> parseQuery(String query) {
         return Arrays.stream(query.split("&"))

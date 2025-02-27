@@ -1,11 +1,12 @@
 package com.sources.app.dao;
 
 import com.sources.app.entities.Appointment;
+import com.sources.app.entities.Hospital;
+import com.sources.app.entities.User;
 import com.sources.app.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
-
 import java.util.Date;
 import java.util.List;
 
@@ -17,9 +18,19 @@ public class AppointmentDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
 
+            // Recuperar las entidades Hospital y User usando sus identificadores
+            Hospital hospital = session.get(Hospital.class, idHospital);
+            User user = session.get(User.class, idUser);
+
+            // Validamos que las entidades existan
+            if (hospital == null || user == null) {
+                throw new RuntimeException("Hospital or User not found");
+            }
+
+            // Creamos y configuramos la cita con las entidades recuperadas
             appointment = new Appointment();
-            appointment.setIdHospital(idHospital);
-            appointment.setIdUser(idUser);
+            appointment.setHospital(hospital);
+            appointment.setUser(user);
             appointment.setAppointmentDate(appointmentDate);
             appointment.setEnabled(enabled);
 

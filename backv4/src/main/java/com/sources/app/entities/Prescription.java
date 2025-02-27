@@ -12,17 +12,21 @@ public class Prescription {
     @Column(name = "ID_PRESCRIPTION")
     private Long idPrescription;
 
-    @Column(name = "ID_HOSPITAL", nullable = false)
-    private Long idHospital;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "ID_HOSPITAL", nullable = false)
+    private Hospital hospital;
 
-    @Column(name = "ID_USER", nullable = false)
-    private Long idUser;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "ID_USER", nullable = false)
+    private User user;
 
-    @Column(name = "ID_MEDICINE", nullable = false)
-    private Long idMedicine;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "ID_MEDICINE", nullable = false)
+    private Medicine medicine;
 
-    @Column(name = "ID_PHARMACY", nullable = false)
-    private Long idPharmacy;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "ID_PHARMACY", nullable = false)
+    private Pharmacy pharmacy;
 
     @Temporal(TemporalType.DATE)
     @Column(name = "PRESCRIPTION_DATE", nullable = false)
@@ -47,36 +51,80 @@ public class Prescription {
     public Prescription() {}
 
     // Getters y Setters
-    public Long getIdPrescription() { return idPrescription; }
-    public void setIdPrescription(Long idPrescription) { this.idPrescription = idPrescription; }
+    public Long getIdPrescription() {
+        return idPrescription;
+    }
+    public void setIdPrescription(Long idPrescription) {
+        this.idPrescription = idPrescription;
+    }
 
-    public Long getIdHospital() { return idHospital; }
-    public void setIdHospital(Long idHospital) { this.idHospital = idHospital; }
+    public Hospital getHospital() {
+        return hospital;
+    }
+    public void setHospital(Hospital hospital) {
+        this.hospital = hospital;
+    }
 
-    public Long getIdUser() { return idUser; }
-    public void setIdUser(Long idUser) { this.idUser = idUser; }
+    public User getUser() {
+        return user;
+    }
+    public void setUser(User user) {
+        this.user = user;
+    }
 
-    public Long getIdMedicine() { return idMedicine; }
-    public void setIdMedicine(Long idMedicine) { this.idMedicine = idMedicine; }
+    public Medicine getMedicine() {
+        return medicine;
+    }
+    public void setMedicine(Medicine medicine) {
+        this.medicine = medicine;
+    }
 
-    public Long getIdPharmacy() { return idPharmacy; }
-    public void setIdPharmacy(Long idPharmacy) { this.idPharmacy = idPharmacy; }
+    public Pharmacy getPharmacy() {
+        return pharmacy;
+    }
+    public void setPharmacy(Pharmacy pharmacy) {
+        this.pharmacy = pharmacy;
+    }
 
-    public Date getPrescriptionDate() { return prescriptionDate; }
-    public void setPrescriptionDate(Date prescriptionDate) { this.prescriptionDate = prescriptionDate; }
+    public Date getPrescriptionDate() {
+        return prescriptionDate;
+    }
+    public void setPrescriptionDate(Date prescriptionDate) {
+        this.prescriptionDate = prescriptionDate;
+    }
 
-    public BigDecimal getTotal() { return total; }
-    public void setTotal(BigDecimal total) { this.total = total; }
+    public BigDecimal getTotal() {
+        return total;
+    }
+    public void setTotal(BigDecimal total) {
+        this.total = total;
+    }
 
-    public BigDecimal getCopay() { return copay; }
-    public void setCopay(BigDecimal copay) { this.copay = copay; }
+    public BigDecimal getCopay() {
+        return copay;
+    }
+    public void setCopay(BigDecimal copay) {
+        this.copay = copay;
+    }
 
-    public String getPrescriptionComment() { return prescriptionComment; }
-    public void setPrescriptionComment(String prescriptionComment) { this.prescriptionComment = prescriptionComment; }
+    public String getPrescriptionComment() {
+        return prescriptionComment;
+    }
+    public void setPrescriptionComment(String prescriptionComment) {
+        this.prescriptionComment = prescriptionComment;
+    }
 
-    public Integer getSecured() { return secured; }
-    public void setSecured(Integer secured) { this.secured = secured; }
+    public Integer getSecured() {
+        return secured;
+    }
+    public void setSecured(Integer secured) {
+        this.secured = secured;
+    }
 
-    public String getAuth() { return auth; }
-    public void setAuth(String auth) { this.auth = auth; }
+    public String getAuth() {
+        return auth;
+    }
+    public void setAuth(String auth) {
+        this.auth = auth;
+    }
 }
