@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+import axios from 'axios';
 const currentWeekStart = ref(getMonday(new Date()));
 const horasDelDia = Array.from({ length: 24 }, (_, i) => i);
 const showModal = ref(false);
@@ -149,6 +150,38 @@ function editAppointment(appointment) {
 
   showModal.value = true;
 }
+
+interface Appointment {
+  hospital: string
+  user: id;
+  date: Date;
+  enabled: boolean;
+}
+
+const fetchAppointments = async () => {
+  try {
+    notify({
+      type: "loading",
+      title: "Loading Appointments",
+      description: "Please wait...",
+    });
+    const response = await axios.get("http://localhost:8080/api/appointment");
+    console.log("Appointments obtenidos:", response.data);
+    notify({
+      type: "success",
+      title: "Appointments loaded",
+      description: "Services loaded successfully",
+    });
+  } catch (error) {
+    console.error("Error al obtener hospitals:", error);
+    notify({
+      type: "error",
+      title: "Error loading appointments",
+      description: "Error loading services",
+    });
+  }
+};
+fetchAppointments();
 </script>
 
 <template>
@@ -286,7 +319,7 @@ function editAppointment(appointment) {
             <label
               class="text-primary mb-1 block text-sm font-medium"
               for="nombrePaciente"
-              >Nombre del paciente</label
+              >Hospital</label
             >
             <input
               v-model="nombrePaciente"
@@ -326,7 +359,7 @@ function editAppointment(appointment) {
             ></textarea>
           </div>
         </div>
-        <div class="border-primary flex justify-end space-x-2 border-t p-4">
+        <div class="border-primary flex justify-end space-x-2 border-t pt-4 px-4">
           <button class="btn btn-outline" @click="closeModal">Cancelar</button>
           <button class="btn btn-primary" @click="saveAppointment">
             Guardar cita

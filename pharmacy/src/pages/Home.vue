@@ -13,6 +13,7 @@
           <router-link to="/aseguradoras" class="nav-item">Aseguradoras Afiliadas</router-link>
           <li>Canje de puntos</li>
           <li>Pago en Cuotas</li>
+          <Button />
         </ul>
       </aside>
   

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-const users: Ref<
-  {
+import axios from 'axios';
+interface User   {
     name: string;
     cui: number;
     phone: string;
@@ -32,7 +32,11 @@ const users: Ref<
       doctor: string;
       hospital: string;
     }[];
-  }[]
+  }
+  const users: Ref<User[]> = ref([]);
+
+/*const users: Ref<
+User[]
 > = ref([
   {
     name: "John Doe",
@@ -145,7 +149,7 @@ const users: Ref<
       },
     ],
   },
-]);
+]);*/
 
 const viewMode = ref('basic'); // 'basic' or 'detail'
 const selectedUser: Ref<typeof users.value[0] | null> = ref(null);

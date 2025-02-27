@@ -1,4 +1,15 @@
-export const useCategories = () => useState('categories', () => [
+interface Category {
+  id: number;
+  name: string;
+  subcategories: { id: number; name: string }[];
+}
+
+interface SelectedCategory {
+  id: number;
+  name: string;
+}
+
+export const useCategories = (): Ref<Category[]> => useState<Category[]>('categories', () => [
   {
     id: 1,
     name: 'Category 1',
@@ -9,7 +20,7 @@ export const useCategories = () => useState('categories', () => [
   },
   {
     id: 2,
-    name: 'Category 2',
+    name: 'Blood',
     subcategories: [
       { id: 3, name: 'Subcategory 2-1' },
       { id: 4, name: 'Subcategory 2-2' }
@@ -119,3 +130,26 @@ export const useCategories = () => useState('categories', () => [
       { id: 30, name: 'Subcategory 15-2' }
     ]
   }]);
+
+  let currentCategory:()=>Ref<SelectedCategory|null> = ()=>useState<SelectedCategory|null>('currentCategory', () => null);
+
+  export const selectedCategory = (idCategory: number, idSubcategory: number|null) => {
+    let element:Category | undefined = useCategories().value.find(category => category.id === idCategory);
+    if (element && !idSubcategory) {
+      currentCategory().value = {
+        id: element.id,
+        name: element.name
+      };
+      return;
+    }
+    let subelement:SelectedCategory | undefined = element?.subcategories.find(subcategory => subcategory.id === idSubcategory);
+    if (subelement) {
+      currentCategory().value = subelement;
+    }
+  };
+
+  export const getCurrentCategory:()=>Ref<SelectedCategory|null> = () => useState<SelectedCategory|null>('currentCategory', () => currentCategory().value);
+
+  export const clearCategories = ()=>{
+    currentCategory().value = null;
+  }

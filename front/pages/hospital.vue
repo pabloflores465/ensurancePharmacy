@@ -44,160 +44,53 @@ const fetchHospitals = async () => {
     isLoading.value = false;
   }
 };
+
+interface Service {
+  id_serv: number;
+  id_hos: number;
+  name: string;
+  descrip: string;
+  id_cat: number;
+  enabled: boolean;
+  cost: number;
+}
+
+const services: Ref<Service[]> = ref([]);
+
+const fetchService = async () => {
+  try {
+    notify({
+      type: "loading",
+      title: "Loading services",
+      description: "Please wait...",
+    });
+    const response = await axios.get("http://localhost:8080/api/service");
+    services.value = response.data;
+    console.log("Hospitals obtenidos:", services.value);
+    notify({
+      type: "success",
+      title: "Services loaded",
+      description: "Services loaded successfully",
+    });
+  } catch (error) {
+    console.error("Error al obtener hospitals:", error);
+    notify({
+      type: "error",
+      title: "Error loading services",
+      description: "Error loading services",
+    });
+  }
+}
+
+
 const edit = useEdit();
 const search = useSearch();
 const showServices: Ref<boolean> = ref(false);
+
+fetchService();
 fetchHospitals();
 
-const services: Ref<
-  {
-    id_serv: number;
-    id_hos: number;
-    name: string;
-    descrip: string;
-    id_cat: number;
-    enabled: boolean;
-    cost: number;
-  }[]
-> = ref([
-  {
-    id_serv: 1,
-    id_hos: 10,
-    name: "Consulta General",
-    descrip: "Evaluación médica de rutina",
-    id_cat: 1,
-    enabled: true,
-    cost: 200.0,
-  },
-  {
-    id_serv: 2,
-    id_hos: 10,
-    name: "Vacunación",
-    descrip: "Aplicación de vacunas preventivas",
-    id_cat: 2,
-    enabled: true,
-    cost: 300.0,
-  },
-  {
-    id_serv: 3,
-    id_hos: 10,
-    name: "Rayos X",
-    descrip: "Servicio de radiografía para diagnóstico",
-    id_cat: 3,
-    enabled: true,
-    cost: 450.0,
-  },
-  {
-    id_serv: 4,
-    id_hos: 10,
-    name: "Laboratorio de Sangre",
-    descrip: "Análisis de sangre completo",
-    id_cat: 4,
-    enabled: true,
-    cost: 600.0,
-  },
-  {
-    id_serv: 5,
-    id_hos: 11,
-    name: "Ultrasonido",
-    descrip: "Estudios de ultrasonido para diversos diagnósticos",
-    id_cat: 3,
-    enabled: true,
-    cost: 800.0,
-  },
-  {
-    id_serv: 6,
-    id_hos: 11,
-    name: "Terapia Física",
-    descrip: "Sesiones de rehabilitación y fisioterapia",
-    id_cat: 5,
-    enabled: true,
-    cost: 350.0,
-  },
-  {
-    id_serv: 7,
-    id_hos: 11,
-    name: "Odontología",
-    descrip: "Tratamientos dentales y limpiezas",
-    id_cat: 6,
-    enabled: true,
-    cost: 500.0,
-  },
-  {
-    id_serv: 8,
-    id_hos: 11,
-    name: "Nutrición",
-    descrip: "Consulta nutricional y planes de alimentación",
-    id_cat: 7,
-    enabled: false,
-    cost: 400.0,
-  },
-  {
-    id_serv: 9,
-    id_hos: 12,
-    name: "Consulta Especializada",
-    descrip: "Atención de especialistas (cardiólogos, neurólogos, etc.)",
-    id_cat: 1,
-    enabled: true,
-    cost: 1000.0,
-  },
-  {
-    id_serv: 10,
-    id_hos: 12,
-    name: "Pediatría",
-    descrip: "Atención médica para niños",
-    id_cat: 1,
-    enabled: true,
-    cost: 700.0,
-  },
-  {
-    id_serv: 11,
-    id_hos: 12,
-    name: "Dermatología",
-    descrip: "Diagnóstico y tratamiento de enfermedades de la piel",
-    id_cat: 1,
-    enabled: true,
-    cost: 750.0,
-  },
-  {
-    id_serv: 12,
-    id_hos: 13,
-    name: "Cirugía Menor",
-    descrip: "Procedimientos quirúrgicos de baja complejidad",
-    id_cat: 8,
-    enabled: true,
-    cost: 2500.0,
-  },
-  {
-    id_serv: 13,
-    id_hos: 13,
-    name: "Cirugía Mayor",
-    descrip: "Procedimientos quirúrgicos de alta complejidad",
-    id_cat: 8,
-    enabled: false,
-    cost: 15000.0,
-  },
-  {
-    id_serv: 14,
-    id_hos: 13,
-    name: "Hospitalización",
-    descrip: "Camas y servicios de internación",
-    id_cat: 9,
-    enabled: true,
-    cost: 2000.0,
-  },
-  {
-    id_serv: 15,
-    id_hos: 13,
-    name: "Emergencias",
-    descrip: "Atención de urgencias 24/7",
-    id_cat: 10,
-    enabled: true,
-    cost: 0.0,
-  },
-]);
-
-const isHospitalService = (service) => {
+const isHospitalService = (service: Service) => {
   let hospitalService = false;
   hospitals.value.forEach((hospital) => {
     if (service.id_hos === hospital.idHospital) {

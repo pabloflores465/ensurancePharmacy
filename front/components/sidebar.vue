@@ -206,7 +206,14 @@ const sidebarItems: Ref<SidebarItem[]> = ref([
   },
   {
     id: 14,
-    show: () => true,
+    show: () => {
+      let show = false;
+      router.path === "/services" ? show = true : show = false;
+      if (!show) {
+        clearCategories();
+      }
+      return show;
+    },
     conditional: () => currentId.value === 3,
     click: () => toggle(3),
     showDescription: false,
@@ -298,6 +305,11 @@ watch(sidebarItems.value, () => {
   sidebarItems.value.forEach((element: SidebarItem) => ids.push(element.id));
   localStorage.setItem("ids", JSON.stringify(ids));
 });
+
+watch(getCurrentCategory(), ()=>{
+  console.log(getCurrentCategory().value);
+})
+const currentCategory = getCurrentCategory();
 </script>
 <template>
   <main class="bg-background border-b-secondary flex flex-col border-b-1 py-2">
@@ -380,10 +392,7 @@ watch(sidebarItems.value, () => {
     </div>
   </main>
   <section
-    :class="[
-      'border-b-secondary min-w-[200px] justify-center border-b-1 border-l-1 border-l-gray-400 p-2 max-sm:w-full sm:w-[20%]',
-      dark ? 'dark' : '',
-    ]"
+    class="border-b-secondary min-w-[200px] justify-center border-b-1 border-l-1 border-l-gray-400 p-2 max-sm:w-full sm:w-[20%]"
     v-if="toggleSidebar && currentId === 3"
   >
     <div
@@ -399,6 +408,8 @@ watch(sidebarItems.value, () => {
           @click="
             () => {
               showSubcategories[catIndex] = !showSubcategories[catIndex];
+              selectedCategory(category.id, null);
+              console.log(currentCategory);
             }
           "
         >
@@ -425,14 +436,16 @@ watch(sidebarItems.value, () => {
             <path d="m280-400 200-200 200 200H280Z" />
           </svg>
         </button>
-        <div
+        <button
+          @click="() => {selectedCategory(category.id, subcategory.id); 
+            }"
           v-for="subcategory in category.subcategories"
           :key="subcategory.id"
           class="text-secondary hover:text-h-accent ms-2 border-s-2 ps-2 font-semibold"
           v-if="showSubcategories[catIndex]"
         >
           {{ subcategory.name }}
-        </div>
+        </button>
       </div>
     </div>
   </section>
