@@ -103,7 +103,7 @@ const isHospitalService = (service: Service) => {
 
 <template>
     <div
-      class="bg-image-[url('/medicine.jpg')] h-full w-full grid-flow-row items-center justify-center gap-1 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 p-4"
+      class="bg-image-[url('/medicine.jpg')] h-full w-full grid-flow-row items-center justify-center p-4"
     >
       <Search
         v-if="search"
@@ -125,6 +125,7 @@ const isHospitalService = (service: Service) => {
           'enabled',
         ]"
       />
+      <div class="responsive-grid">
       <div v-if="!edit" v-for="hospital in hospitals" class="card">
         <h2 class="title mb-6">Hospital #{{ hospital.idHospital }}</h2>
         <p class="text-primary mb-4 flex">
@@ -256,6 +257,7 @@ const isHospitalService = (service: Service) => {
         Add Policy
       </button>
     </div>
+  </div>
     <div v-if="isLoading" class="flex justify-center my-8">
       <LoadingSpinner size="lg" message="Cargando hospitales..." />
     </div>
