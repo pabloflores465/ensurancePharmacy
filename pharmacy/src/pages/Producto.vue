@@ -6,6 +6,23 @@
       <img :src="product.image" :alt="product.name" class="product-image" />
       <p class="product-description">{{ product.description }}</p>
       
+      <!-- Botón para ver detalles adicionales -->
+      <button @click="showModal = true" class="open-modal-btn">
+        Ver detalles adicionales
+      </button>
+      
+      <!-- Modal de información adicional -->
+      <div v-if="showModal" class="modal-overlay">
+        <div class="modal">
+          <h3>Detalles del Producto</h3>
+          <p><strong>Inventario:</strong> {{ product.inventory }}</p>
+          <p><strong>Principio Activo:</strong> {{ product.activeIngredient }}</p>
+          <p><strong>Descripción General:</strong> {{ product.generalDescription }}</p>
+          <p><strong>Recomendación de Uso:</strong> {{ product.usageRecommendation }}</p>
+          <button @click="showModal = false" class="close-modal-btn">Cerrar</button>
+        </div>
+      </div>
+
       <!-- Comments Section -->
       <section class="comments-section">
         <h3>Comentarios</h3>
@@ -37,17 +54,48 @@ import Header from '@/components/Header.vue';
 const route = useRoute();
 const productId = route.params.id;
 
-// Dummy products list for demonstration
+// Lista de productos dummy con campos adicionales
 const products = [
-  { id: '1', name: "Botellas Médicas", image: "@/src/assets/botellas.jpg", description: "Descripción de Botellas Médicas", comments: [] },
-  { id: '2', name: "Farmacia General", image: "@/src/assets/farmacia.png", description: "Descripción de Farmacia General", comments: [] },
-  { id: '3', name: "Medicina Variada", image: "@/src/assets/medicina.png", description: "Descripción de Medicina Variada", comments: [] }
-  // ...existing products...
+  { 
+    id: '1', 
+    name: "Botellas Médicas", 
+    image: "@/src/assets/botellas.jpg", 
+    description: "Descripción de Botellas Médicas", 
+    inventory: 100,
+    activeIngredient: "Acetaminofén",
+    generalDescription: "Producto utilizado en diversas aplicaciones médicas.",
+    usageRecommendation: "Ideal para aliviar el dolor de muela, combatir infecciones y como jarabe.",
+    comments: [] 
+  },
+  { 
+    id: '2', 
+    name: "Farmacia General", 
+    image: "@/src/assets/farmacia.png", 
+    description: "Descripción de Farmacia General", 
+    inventory: 50,
+    activeIngredient: "Ibuprofeno",
+    generalDescription: "Preparado para uso general en farmacias.",
+    usageRecommendation: "Recomendado para el alivio del dolor y para tratar infecciones leves.",
+    comments: [] 
+  },
+  { 
+    id: '3', 
+    name: "Medicina Variada", 
+    image: "@/src/assets/medicina.png", 
+    description: "Descripción de Medicina Variada", 
+    inventory: 75,
+    activeIngredient: "Amoxicilina",
+    generalDescription: "Medicamento de amplio espectro.",
+    usageRecommendation: "Utilizable en casos de infecciones y para preparar jarabes.",
+    comments: [] 
+  }
+  // ...otros productos si es necesario...
 ];
 
 const product = computed(() => products.find(p => p.id === productId));
 
 const newComment = ref('');
+const showModal = ref(false);
 
 const submitComment = () => {
   if (newComment.value.trim() && product.value) {
@@ -85,6 +133,57 @@ const submitComment = () => {
   font-size: 18px;
   color: #333;
   margin-bottom: 30px;
+}
+
+.open-modal-btn {
+  background: #1e40af;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 30px;
+  transition: background 0.3s;
+}
+
+.open-modal-btn:hover {
+  background: #1e3a8a;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  background: #fff;
+  padding: 20px 30px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 500px;
+  text-align: left;
+}
+
+.close-modal-btn {
+  background: #e3342f;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: background 0.3s;
+}
+
+.close-modal-btn:hover {
+  background: #cc1f1a;
 }
 
 .comments-section {
