@@ -6,9 +6,9 @@ interface Hospital {
   idHospital: number;
   name: string;
   address: string;
-  phone: string;
+  phone: number;
   email: string;
-  enabled: boolean;
+  enabled: number;
 }
 
 // Declaramos la variable reactiva usando ref (solo minúscula)
@@ -56,11 +56,10 @@ const addHospital = async () => {
     description: "Please wait...",
   });
   await axios.post(`http://${ip}:8080/api/hospital`, {
-    idHospital: 90,
-    name: '',
-    address: '',
-    phone: '',
-    email: '',
+    name: 'hgfghjk',
+    address: 'hgfghjk',
+    phone: 5555,
+    email: 'hgfghjk',
     enabled: 1,
   }).then((response) => {
     console.log("Hospital agregado:", response.data);
@@ -222,7 +221,7 @@ const isHospitalService = (service: Service) => {
         <input type="text" class="field mb-8" :defaultValue="hospital.phone" @input="
           (event) => {
             const target = event.target as HTMLInputElement;
-            hospitalsChanges[index].phone = target.value;
+            hospitalsChanges[index].phone = parseInt(target.value);
           }
         " />
         <span class="text-primary font-semibold">E-Mail</span>
