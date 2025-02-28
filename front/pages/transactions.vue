@@ -367,13 +367,13 @@ const search = useSearch();
     <div v-if="edit" v-for="prescription in prescriptions"
       class="card lg:align-center gap-4 transition duration-300 hover:scale-105 max-sm:mx-2 max-sm:flex-col md:flex-row lg:align-middle">
       <span class="text-primary font-semibold">Number</span>
-      <input type="text" class="field mb-8" :placeholder="prescription.id.toString()" />
+      <input type="text" class="field mb-8" :defaultValue="prescription.id.toString()" />
       <span class="text-primary font-semibold">Hospital</span>
-      <input type="text" class="field mb-8" :placeholder="prescription.hospital" />
+      <input type="text" class="field mb-8" :defaultValue="prescription.hospital" />
       <span class="text-primary font-semibold">User</span>
-      <input type="text" class="field mb-8" :placeholder="prescription.patient" />
+      <input type="text" class="field mb-8" :defaultValue="prescription.patient" />
       <span class="text-primary font-semibold">Date</span>
-      <input type="text" class="field mb-8" :placeholder="prescription.date" />
+      <input type="text" class="field mb-8" :defaultValue="prescription.date" />
       <button @click="() => (prescription.show = !prescription.show)" class="btn mb-4 flex justify-center align-middle">
         <svg class="me-2" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
           fill="currentColor">
@@ -413,40 +413,40 @@ const search = useSearch();
       <div class="my-8 max-h-[80vh] overflow-y-auto">
         <div class="mt-8">
           <span class="text-primary font-semibold">Number</span>
-          <input type="text" class="field mb-8" :placeholder="prescription.id.toString()" />
+          <input type="text" class="field mb-8" :defaultValue="prescription.id.toString()" />
         </div>
         <div class="mt-8">
           <span class="text-primary font-semibold">User</span>
-          <input type="text" class="field mb-8" :placeholder="prescription.patient" />
+          <input type="text" class="field mb-8" :defaultValue="prescription.patient" />
         </div>
         <div class="mt-8">
           <span class="text-primary font-semibold">Doctor</span>
-          <input type="text" class="field mb-8" :placeholder="prescription.doctor" />
+          <input type="text" class="field mb-8" :defaultValue="prescription.doctor" />
         </div>
         <div class="mt-8">
           <span class="text-primary font-semibold">Hospital</span>
-          <input type="text" class="field mb-8" :placeholder="prescription.hospital" />
+          <input type="text" class="field mb-8" :defaultValue="prescription.hospital" />
         </div>
         <div class="mt-8">
           <span class="text-primary font-semibold">Pharmacy</span>
-          <input type="text" class="field mb-8" :placeholder="prescription.pharmacy" />
+          <input type="text" class="field mb-8" :defaultValue="prescription.pharmacy" />
         </div>
         <div class="mt-8">
           <span class="text-primary font-semibold">Total to Pay</span>
-          <input type="text" class="field mb-8" :placeholder="prescription.total.toString()" />
+          <input type="text" class="field mb-8" :defaultValue="prescription.total.toString()" />
         </div>
         <div class="mt-8">
           <span class="text-primary font-semibold">Copay</span>
-          <input type="text" class="field mb-8" :placeholder="prescription.copay.toString()" />
+          <input type="text" class="field mb-8" :defaultValue="prescription.copay.toString()" />
         </div>
         <div class="mt-8">
           <span class="text-primary font-semibold">Auth</span>
-          <input type="text" class="field mb-8" :placeholder="prescription.auth_no" />
+          <input type="text" class="field mb-8" :defaultValue="prescription.auth_no" />
         </div>
         <Switch class="mb-6" label="Secured" checked></Switch>
         <div class="mt-8">
           <span class="text-primary font-semibold">Comment</span>
-          <textarea type="text" class="field mb-8" :placeholder="prescription.comments" />
+          <textarea type="text" class="field mb-8" :defaultValue="prescription.comments" />
         </div>
       </div>
 

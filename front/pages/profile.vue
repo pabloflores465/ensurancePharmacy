@@ -581,35 +581,35 @@ console.log()
       <p class="title mb-6">Edit Profile</p>
       <div class="mb-8">
         <span class="text-primary font-semibold">Name</span>
-        <input type="text" class="field" :placeholder="user?.name" />
+        <input type="text" class="field" :defaultValue="user?.name" />
       </div>
       <div class="mb-8">
         <span class="text-primary font-semibold">Email</span>
-        <input type="email" class="field" :placeholder="user?.email" />
+        <input type="email" class="field" :defaultValue="user?.email" />
       </div>
       <div class="mb-8">
         <span class="text-primary font-semibold">Phone</span>
-        <input type="text" class="field" :placeholder="user?.phone" />
+        <input type="text" class="field" :defaultValue="user?.phone" />
       </div>
       <div class="mb-8">
         <span class="text-primary font-semibold">Address</span>
-        <input type="text" class="field" :placeholder="user?.address" />
+        <input type="text" class="field" :defaultValue="user?.address" />
       </div>
       <div class="mb-8">
         <span class="text-primary font-semibold">BirthDay</span>
-        <input type="date" class="field" :placeholder="user?.birthDate?.toString()" />
+        <input type="date" class="field" :defaultValue="user?.birthDate?.toString()" />
       </div>
       <div class="mb-8">
         <span class="text-primary font-semibold">CUI</span>
-        <input type="number" class="field" :placeholder="user?.cui.toString()" />
+        <input type="number" class="field" :defaultValue="user?.cui.toString()" />
       </div>
       <div class="mb-8">
         <span class="text-primary font-semibold">Policy</span>
-        <input type="text" class="field" :placeholder="user?.policy.percentage.toString()" />
+        <input type="text" class="field" :defaultValue="user?.policy.percentage.toString()" />
       </div>
       <div class="mb-8">
         <span class="text-primary font-semibold">Role</span>
-        <input type="text" class="field" :placeholder="profiles.role" />
+        <input type="text" class="field" :defaultValue="profiles.role" />
       </div>
       <button class="btn mx-auto flex">
         <svg

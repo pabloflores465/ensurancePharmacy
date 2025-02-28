@@ -413,28 +413,28 @@ const search = useSearch();
       <div v-if="edit" v-for="(prescription, index) in prescriptions"
         class="card lg:align-center gap-4 transition duration-300 hover:scale-105 max-sm:mx-2 max-sm:flex-col md:flex-row lg:align-middle">
         <span class="text-primary font-semibold">Number</span>
-        <input type="text" class="field mb-8" :placeholder="prescription.id.toString()" @input="
+        <input type="text" class="field mb-8" :defaultValue="prescription.id.toString()" @input="
           (event) => {
             const target = event.target as HTMLInputElement;
             prescriptionChanges[index].id = parseInt(target.value);
           }
         " />
         <span class="text-primary font-semibold">Hospital</span>
-        <input type="text" class="field mb-8" :placeholder="prescription.hospital" @input="
+        <input type="text" class="field mb-8" :defaultValue="prescription.hospital" @input="
           (event) => {
             const target = event.target as HTMLInputElement;
             prescriptionChanges[index].hospital = target.value;
           }
         " />
         <span class="text-primary font-semibold">User</span>
-        <input type="text" class="field mb-8" :placeholder="prescription.patient" @input="
+        <input type="text" class="field mb-8" :defaultValue="prescription.patient" @input="
           (event) => {
             const target = event.target as HTMLInputElement;
             prescriptionChanges[index].patient = target.value;
           }
         " />
         <span class="text-primary font-semibold">Date</span>
-        <input type="text" class="field mb-8" :placeholder="prescription.date" @input="
+        <input type="text" class="field mb-8" :defaultValue="prescription.date" @input="
           (event) => {
             const target = event.target as HTMLInputElement;
             prescriptionChanges[index].date = target.value;

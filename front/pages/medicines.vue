@@ -258,7 +258,7 @@ const search = useSearch();
           <div class="space-y-4">
             <div>
               <label class="block text-sm font-medium text-secondary">Name:</label>
-              <input type="text" :placeholder="medicine.name"
+              <input type="text" :defaultValue="medicine.name"
                 class="mt-1 block w-full rounded-md border text-primary border-primary px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 @input="
                   (event) => {
@@ -270,7 +270,7 @@ const search = useSearch();
 
             <div>
               <label class="block text-sm font-medium text-secondary">Code:</label>
-              <input type="text" :placeholder="medicine.idMedicine.toString()" @input="
+              <input type="text" :defaultValue="medicine.idMedicine.toString()" @input="
                 (event) => {
                   const target = event.target as HTMLInputElement;
                   medicineChanges[index].idMedicine = parseInt(target.value);
@@ -280,7 +280,7 @@ const search = useSearch();
 
             <div>
               <label class="block text-sm font-medium text-secondary">Active Principle:</label>
-              <input type="text" :placeholder="medicine.activePrinciple" @input="
+              <input type="text" :defaultValue="medicine.activePrinciple" @input="
                 (event) => {
                   const target = event.target as HTMLInputElement;
                   medicineChanges[index].activePrinciple = target.value;
@@ -290,7 +290,7 @@ const search = useSearch();
 
             <div>
               <label class="block text-sm font-medium text-secondary">Presentation:</label>
-              <input type="text" :placeholder="medicine.presentation"
+              <input type="text" :defaultValue="medicine.presentation"
                 class="mt-1 block w-full text-primary rounded-md border border-primary px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 @input="
                   (event) => {
@@ -302,7 +302,7 @@ const search = useSearch();
 
             <div>
               <label class="block text-sm font-medium text-secondary">Units:</label>
-              <input type="number" :placeholder="medicine.stock.toString()"
+              <input type="number" :defaultValue="medicine.stock.toString()"
                 class="mt-1 block w-full text-primary rounded-md border border-primary px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 @input="
                   (event) => {
@@ -318,7 +318,7 @@ const search = useSearch();
 
             <div>
               <label class="block text-sm font-medium text-secondary">Brand:</label>
-              <input type="text" :placeholder="medicine.brand" @input="
+              <input type="text" :defaultValue="medicine.brand" @input="
                 (event) => {
                   const target = event.target as HTMLInputElement;
                   medicineChanges[index].brand = target.value;

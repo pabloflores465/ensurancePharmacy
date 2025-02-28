@@ -130,14 +130,14 @@ watch(getCategory, () => {
 
       <div v-if="edit" v-for="service in services" class="card">
         <span class="text-primary font-semibold">{{ service.name }}</span>
-        <input type="text" class="field mb-8" :placeholder="service.name" />
+        <input type="text" class="field mb-8" :defaultValue="service.name" />
         <span class="text-primary font-semibold">{{ service.hospital.name }}</span>
-        <input type="text" class="field mb-8" :placeholder="service.hospital.name" />
+        <input type="text" class="field mb-8" :defaultValue="service.hospital.name" />
         <span class="text-primary font-semibold">Price</span>
-        <input type="text" class="field mb-8" :placeholder="service.cost.toString()" />
+        <input type="text" class="field mb-8" :defaultValue="service.cost.toString()" />
         <Dropdown class="me-2 mb-6" />
         <span class="text-primary font-semibold">{{ service.description }}</span>
-        <textarea type="text" class="field mb-8" :placeholder="service.description" />
+        <textarea type="text" class="field mb-8" :defaultValue="service.description" />
       </div>
     </div>
     <button v-if="edit" class="btn flex mx-auto justify-center mb-6" @click="() => {

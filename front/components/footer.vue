@@ -75,27 +75,27 @@ const edit = useEdit();
     <section class="responsive-grid mx-8">
       <div class="mb-8">
         <span class="text-primary font-semibold">Title</span>
-        <input type="text" class="field" :placeholder="links[0].name" />
+        <input type="text" class="field" :defaultValue="links[0].name"/>
       </div>
       <div class="mb-8">
         <span class="text-primary font-semibold">Rights</span>
-        <input type="text" class="field" :placeholder="links[1].name" />
+        <input type="text" class="field" :defaultValue="links[1].name" />
       </div>
       <div class="mb-8">
         <span class="text-primary font-semibold">About Us</span>
-        <input type="text" class="field" :placeholder="links[2].name" />
+        <input type="text" class="field" :defaultValue="links[2].name" />
       </div>
       <div class="mb-8">
         <span class="text-primary font-semibold">Services</span>
-        <input type="text" class="field" :placeholder="links[3].name" />
+        <input type="text" class="field" :defaultValue="links[3].name" />
       </div>
       <div class="mb-8">
         <span class="text-primary font-semibold">Contact</span>
-        <input type="text" class="field" :placeholder="links[4].name" />
+        <input type="text" class="field" :defaultValue="links[4].name" />
       </div>
       <div class="mb-8">
         <span class="text-primary font-semibold">Privacy</span>
-        <input type="text" class="field" :placeholder="links[5].name" />
+        <input type="text" class="field" :defaultValue="links[5].name" />
       </div>
     </section>
     <button class="btn mx-auto flex justify-center">Save</button>

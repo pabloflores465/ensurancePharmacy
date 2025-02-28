@@ -154,7 +154,7 @@ fetchPolicy();
         <input
           type="number"
           class="field mb-8"
-          :placeholder="policy.percentage.toString()"
+          :defaultValue="policy.percentage.toString()"
           @input="
             (event) => {
               const target = event.target as HTMLInputElement;
@@ -166,7 +166,7 @@ fetchPolicy();
         <input
           type="number"
           class="field mb-8"
-          :placeholder="policy.idPolicy.toString()"
+          :defaultValue="policy.idPolicy.toString()"
           @input="
             (event) => {
               const target = event.target as HTMLInputElement;
@@ -175,12 +175,12 @@ fetchPolicy();
           "
         />
         <span class="text-primary font-semibold">Discount Percentage</span>
-        <input type="number" class="field mb-8" :placeholder="policy.percentage.toString()" />
+        <input type="number" class="field mb-8" :defaultValue="policy.percentage.toString()" />
         <span class="text-primary font-semibold">Anual Price</span>
         <input
           type="number"
           class="field mb-8"
-          :placeholder="policy.cost.toString()"
+          :defaultValue="policy.cost.toString()"
           @input="
             (event) => {
               const target = event.target as HTMLInputElement;
