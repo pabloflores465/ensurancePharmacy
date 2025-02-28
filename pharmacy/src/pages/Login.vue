@@ -1,189 +1,168 @@
-<!-- eslint-disable vue/multi-word-component-names -->
+<!-- src/pages/LoginPage.vue -->
 <template>
   <div class="login-container">
-    <!-- Sección izquierda con imagen de fondo -->
-    <div class="login-image"></div>
-
-    <!-- Sección derecha con formulario -->
-    <div class="login-box">
-      <div class="logo-container">
-        <img src="@/assets/logo.png" alt="Farmacia Logo" class="logo" />
-      </div>
-
-      <h2 class="text-2xl font-bold text-center text-blue-800 mb-4">Iniciar Sesión</h2>
-
-      <!-- Selector de tipo de usuario -->
-      <div class="mb-4">
-        <label class="block text-gray-700">Selecciona tu rol:</label>
-        <select v-model="role" class="w-full p-2 border rounded-lg">
-          <option value="user">Usuario</option>
-          <option value="employee">Empleado</option>
-          <option value="admin">Administrador</option>
-        </select>
-      </div>
-
-      <!-- Formulario de inicio de sesión -->
-      <form @submit.prevent="login">
-        <!-- Para usuarios y empleados -->
-        <div v-if="role === 'user' || role === 'employee'" class="mb-4">
-          <label class="block text-gray-700">
-            {{ role === 'user' ? "Número de Usuario" : "Número de Empleado" }}
-          </label>
-          <div class="input-group">
-            <input v-model="identifier" type="text" class="input-field" required />
-            <span class="icon">👤</span>
-          </div>
-          <div class="mb-4">
-            <label class="block text-gray-700">Contraseña</label>
-            <div class="input-group">
-              <input v-model="adminPassword" type="password" class="input-field" required />
-              <span class="icon">🔒</span>
-            </div>
-          </div>
-        </div>
-              <!-- Botón de inicio de sesión -->
-              <button type="submit" class="login-button">
-          Iniciar sesión →
-        </button>
-      </form>
-      <!-- Enlace para registrarse -->
-      <div class="text-center mt-4">
-        <router-link to="/register" class="text-blue-500 hover:underline">Regístrarse aquí</router-link>
-      </div>
+    <form @submit.prevent="handleLogin" class="login-form">
+      <h2>Iniciar Sesión</h2>
       
-    </div>
+      <div class="form-group">
+        <input
+          v-model="username"
+          type="text"
+          placeholder="Usuario"
+          required
+          :class="{ 'error': errors.username }"
+        />
+        <span v-if="errors.username" class="error-message">{{ errors.username }}</span>
+      </div>
+
+      <div class="form-group">
+        <input
+          v-model="password"
+          type="password"
+          placeholder="Contraseña"
+          required
+          :class="{ 'error': errors.password }"
+        />
+        <span v-if="errors.password" class="error-message">{{ errors.password }}</span>
+      </div>
+
+      <div v-if="errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+      </div>
+
+      <button type="submit" :disabled="loading">
+        {{ loading ? 'Cargando...' : 'Iniciar Sesión' }}
+      </button>
+    </form>
   </div>
 </template>
-<script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-const ip = process.env.VUE_APP_IP;
-console.log("tu puta madre " + ip);
 
-// Manejo de rutas para la imagen de fondo
+<script>
+import { authService } from '@/services/authService';
 
-
-const role = ref('user'); 
-const identifier = ref('');
-const adminUsername = ref('');
-const adminPassword = ref('');
-const errorMessage = ref('');
-const router = useRouter();
-
-const login = async () => {
-  errorMessage.value = '';
-
-  if (role.value === 'user' || role.value === 'employee') {
-    if (identifier.value.trim() === '') {
-      errorMessage.value = "El número de usuario/empleado es obligatorio.";
-      return;
+export default {
+  name: 'LoginPage', // Nombre multi-palabra para cumplir con ESLint
+  data() {
+    return {
+      username: '',
+      password: '',
+      loading: false,
+      errorMessage: '',
+      errors: {
+        username: '',
+        password: ''
+      }
     }
-    console.log(`Autenticando ${role.value} con ID: ${identifier.value}`);
-    router.push('/');
+  },
+  methods: {
+    validateForm() {
+      let isValid = true;
+      this.errors = { username: '', password: '' };
 
-  } else if (role.value === 'admin') {
-    if (adminUsername.value.trim() === '' || adminPassword.value.trim() === '') {
-      errorMessage.value = "Usuario y contraseña son obligatorios.";
-      return;
-    }
-    if (adminUsername.value === 'admin' && adminPassword.value === '123') {
-      console.log("Administrador autenticado");
-      router.push('/'); // Redirigir al inicio de la plataforma
-    } else {
-      errorMessage.value = "Credenciales incorrectas.";
+      if (!this.username) {
+        this.errors.username = 'El usuario es requerido';
+        isValid = false;
+      }
+
+// Ejemplo: permitir contraseñas de 3 caracteres
+if (!this.password) {
+  this.errors.password = 'La contraseña es requerida';
+  isValid = false;
+} else if (this.password.length < 3) {
+  this.errors.password = 'La contraseña debe tener al menos 3 caracteres';
+  isValid = false;
+}
+
+      return isValid;
+    },
+
+    async handleLogin() {
+      if (!this.validateForm()) return;
+
+      this.loading = true;
+      this.errorMessage = '';
+
+      try {
+        // Se realiza la conexión a la API enviando username y password
+        await authService.login({
+          username: this.username,
+          password: this.password
+        });
+        // Si el login es exitoso, redirige al dashboard u otra ruta
+        this.$router.push('/dashboard');
+      } catch (error) {
+        this.errorMessage = 'Usuario o contraseña incorrectos';
+      } finally {
+        this.loading = false;
+      }
     }
   }
-};
+}
 </script>
 
 <style scoped>
-/* Diseño de dos columnas */
 .login-container {
   display: flex;
-  height: 100vh;
-  background-color: #f8f9fa;
-}
-
-/* Sección izquierda con imagen de fondo */
-.login-image {
-  flex: 1;
-  background-image: url(@/assets/farmacialog.jpg);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
 }
 
-/* Sección derecha (Formulario) */
-.login-box {
-  flex: 1;
+.login-form {
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
   background: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 50px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-  border-radius: 15px;
-}
-
-/* Logo */
-.logo-container {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-.logo {
-  max-width: 150px;
-}
-
-/* Inputs estilizados */
-.input-group {
-  position: relative;
-  width: 100%;
-}
-.input-field {
-  width: 100%;
-  padding: 12px 40px 12px 12px;
-  border: 1px solid #ccc;
   border-radius: 8px;
-  font-size: 16px;
-}
-.icon {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Botón estilizado */
-.login-button {
+.form-group {
+  margin-bottom: 15px;
+}
+
+input {
   width: 100%;
-  background: #1e40af;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 5px;
+}
+
+input.error {
+  border-color: #dc3545;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 0.8em;
+}
+
+.alert {
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  background: #007bff;
   color: white;
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 18px;
-  font-weight: bold;
+  border: none;
+  border-radius: 4px;
   cursor: pointer;
-  transition: 0.3s;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.login-button:hover {
-  background: #1e3a8a;
 }
 
-/* Responsivo */
-@media (max-width: 768px) {
-  .login-container {
-    flex-direction: column;
-  }
-  .login-image {
-    display: none; /* Ocultar imagen en pantallas pequeñas */
-  }
+button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }
 </style>

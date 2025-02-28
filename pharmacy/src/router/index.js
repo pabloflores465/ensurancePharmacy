@@ -8,6 +8,7 @@ import Aseguradoras from '@/pages/Aseguradoras.vue';
 import Ofertas from '@/pages/Ofertas.vue';
 import ProductoDetalle from '@/pages/ProductoDetalle.vue'; // new import
 import Receta from '@/components/Receta.vue';
+import { authService } from '@/services/authService';
 
 const routes = [
   { path: '/', component: Home },
@@ -25,6 +26,17 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+router.beforeEach((to, from, next) => {
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  const currentUser = authService.getCurrentUser();
+
+  if (requiresAuth && !currentUser) {
+    next('/login');
+  } else {
+    next();
+  }
 });
 
 export default router;
