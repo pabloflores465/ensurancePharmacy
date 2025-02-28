@@ -23,6 +23,7 @@ type Resource =
   | "logout"
   | "moderation"
   | "users";
+  
 const permissionSystem: Permission[] = [
   {
     role: ["guest"],

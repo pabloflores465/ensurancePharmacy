@@ -98,7 +98,9 @@ const sidebarItems: Ref<SidebarItem[]> = ref([
     show: () => useAuth("read", "logout").value,
     conditional: () => false,
     click: () => {
-      setUser("guest"), navigate.push("/");
+      setUser("guest");
+      localStorage.removeItem("profile");
+      navigate.push("/");
     },
     showDescription: false,
     dragging: false,
@@ -225,7 +227,7 @@ const sidebarItems: Ref<SidebarItem[]> = ref([
   },
   {
     id: 15,
-    show: () => true,
+    show: () => useAuth("read", "edit").value,
     conditional: () => edit.value,
     click: () => {
       edit.value = !edit.value;
