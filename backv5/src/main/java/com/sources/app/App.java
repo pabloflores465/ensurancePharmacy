@@ -5,6 +5,8 @@ import com.sources.app.handlers.*;
 import com.sources.app.util.HibernateUtil;
 import com.sun.net.httpserver.HttpServer;
 import org.hibernate.Session;
+
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 public class App {
@@ -56,9 +58,8 @@ public class App {
         server.createContext("/api2/prescriptions", new PrescriptionHandler(prescriptionDAO));
         server.createContext("/api2/prescription_medicines", new PrescriptionMedicineHandler(prescriptionMedicineDAO));
         server.createContext("/api2/subcategories", new SubcategoryHandler(subcategoryDAO));
-
         server.setExecutor(null); // Usa el executor por defecto
-        server.start();
-        System.out.println("Servidor iniciado en http://localhost:8000/api2");
+        InetAddress ip = InetAddress.getLocalHost();
+        System.out.println("Servidor iniciado en http://" + ip.getHostAddress() + ":8000/api");
     }
 }
