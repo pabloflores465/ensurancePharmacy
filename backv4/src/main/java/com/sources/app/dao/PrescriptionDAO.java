@@ -57,6 +57,20 @@ public class PrescriptionDAO {
         return prescription;
     }
 
+    public List<Prescription> findByUserId(Long idUser) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Query<Prescription> query = session.createQuery(
+                    "FROM Prescription p WHERE p.user.idUser = :idUser", Prescription.class
+            );
+            query.setParameter("idUser", idUser);
+            return query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
     public Prescription findById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Prescription.class, id);

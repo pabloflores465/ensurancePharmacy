@@ -13,7 +13,9 @@ public class PharmacyDAO {
     public Pharmacy create(String name, String address, Long phone, String email, Integer enabled) {
         Transaction tx = null;
         Pharmacy pharmacy = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        Session session = null;
+        try {
+            session = HibernateUtil.getSessionFactory().openSession();
             tx = session.beginTransaction();
 
             pharmacy = new Pharmacy();
@@ -26,10 +28,18 @@ public class PharmacyDAO {
             session.save(pharmacy);
             tx.commit();
         } catch (Exception e) {
-            if (tx != null) {
-                tx.rollback();
+            if (tx != null && tx.getStatus().canRollback()) {
+                try {
+                    tx.rollback();
+                } catch (Exception rbEx) {
+                    rbEx.printStackTrace();
+                }
             }
             e.printStackTrace();
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
         }
         return pharmacy;
     }
@@ -55,17 +65,27 @@ public class PharmacyDAO {
 
     public Pharmacy update(Pharmacy pharmacy) {
         Transaction tx = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        Session session = null;
+        try {
+            session = HibernateUtil.getSessionFactory().openSession();
             tx = session.beginTransaction();
             session.update(pharmacy);
             tx.commit();
             return pharmacy;
         } catch (Exception e) {
-            if (tx != null) {
-                tx.rollback();
+            if (tx != null && tx.getStatus().canRollback()) {
+                try {
+                    tx.rollback();
+                } catch (Exception rbEx) {
+                    rbEx.printStackTrace();
+                }
             }
             e.printStackTrace();
             return null;
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
         }
     }
 }

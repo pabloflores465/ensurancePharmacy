@@ -100,6 +100,53 @@ const fetchUsers = async () => {
 };
 fetchUsers();
 
+interface Hospital {
+  idHospital: number;
+  name: string;
+  address: string;
+  phone: number;
+  email: string;
+  enabled: number;
+}
+
+interface Transaction {
+  idTransaction: number;
+  user: User;
+  hospital: Hospital;
+  transDate: string;         // Formato: "YYYY-MM-DD"
+  total: number;
+  copay: number;
+  transactionComment: string;
+  result: string;
+  covered: number;
+  auth: string;
+}
+const transaction: Ref<Transaction[]> = ref([]);
+const fetchTransactions = async (userId : number) => {
+  try {
+    notify({
+      type: "loading",
+      title: "Loading services",
+      description: "Please wait...",
+    });
+    const response = await axios.get(`http://${ip}:8080/api/transactions?user_id?=${userId}`);
+    console.log("Prescriptions obtenidos:", response.data);
+    transaction.value = response.data;
+    notify({
+      type: "success",
+      title: "Services loaded",
+      description: "Services loaded successfully",
+    });
+  } catch (error) {
+    console.error("Error al obtener hospitals:", error);
+    notify({
+      type: "error",
+      title: "Error loading services",
+      description: "Error loading services",
+    });
+  }
+};
+
 
 const viewMode = ref('basic'); // 'basic' or 'detail'
 const selectedUser: Ref<typeof users.value[0] | null> = ref(null);
@@ -112,6 +159,7 @@ function toggleViewMode() {
 function selectUser(user: typeof users.value[0]) {
   selectedUser.value = user;
   fetchAppointments(user.idUser);
+  fetchTransactions(user.idUser)
 }
 const search = useSearch();
 </script>

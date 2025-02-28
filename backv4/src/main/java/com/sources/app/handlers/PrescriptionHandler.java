@@ -28,7 +28,6 @@ public class PrescriptionHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-
         // Configuración CORS
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
         exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
@@ -48,7 +47,7 @@ public class PrescriptionHandler implements HttpHandler {
         }
 
         // Enrutamiento según método HTTP
-        switch (exchange.getRequestMethod().toUpperCase()) {
+        switch (exchange.getRequestMethod().toUpperCase()){
             case "GET":
                 handleGet(exchange);
                 break;
@@ -65,43 +64,73 @@ public class PrescriptionHandler implements HttpHandler {
 
     private void handleGet(HttpExchange exchange) throws IOException {
         String query = exchange.getRequestURI().getQuery();
-        if (query != null && query.contains("id=")) {
+        // Si hay query, podemos buscar por "id" o por "user_id"
+        if (query != null) {
             Map<String, String> params = parseQuery(query);
-            try {
-                Long id = Long.parseLong(params.get("id"));
-                Prescription prescription = prescriptionDAO.findById(id);
-                if (prescription != null) {
-                    String jsonResponse = objectMapper.writeValueAsString(prescription);
+            if (params.containsKey("user_id")) {
+                // Buscar recetas por el ID del usuario
+                try {
+                    Long userId = Long.parseLong(params.get("user_id"));
+                    List<Prescription> list = prescriptionDAO.findByUserId(userId);
+                    String jsonResponse = objectMapper.writeValueAsString(list);
                     exchange.getResponseHeaders().set("Content-Type", "application/json");
                     byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
                     exchange.sendResponseHeaders(200, responseBytes.length);
-                    try (OutputStream os = exchange.getResponseBody()) {
+                    try(OutputStream os = exchange.getResponseBody()){
                         os.write(responseBytes);
                     }
-                } else {
-                    exchange.sendResponseHeaders(404, -1);
+                } catch(NumberFormatException e){
+                    exchange.sendResponseHeaders(400, -1);
                 }
-            } catch (NumberFormatException e) {
-                exchange.sendResponseHeaders(400, -1);
+            } else if (params.containsKey("id")) {
+                // Buscar una receta específica por ID
+                try {
+                    Long id = Long.parseLong(params.get("id"));
+                    Prescription prescription = prescriptionDAO.findById(id);
+                    if (prescription != null) {
+                        String jsonResponse = objectMapper.writeValueAsString(prescription);
+                        exchange.getResponseHeaders().set("Content-Type", "application/json");
+                        byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
+                        exchange.sendResponseHeaders(200, responseBytes.length);
+                        try(OutputStream os = exchange.getResponseBody()){
+                            os.write(responseBytes);
+                        }
+                    } else {
+                        exchange.sendResponseHeaders(404, -1);
+                    }
+                } catch(NumberFormatException e){
+                    exchange.sendResponseHeaders(400, -1);
+                }
+            } else {
+                // Si no se pasan parámetros específicos, se retornan todas las recetas
+                List<Prescription> list = prescriptionDAO.findAll();
+                String jsonResponse = objectMapper.writeValueAsString(list);
+                exchange.getResponseHeaders().set("Content-Type", "application/json");
+                byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
+                exchange.sendResponseHeaders(200, responseBytes.length);
+                try(OutputStream os = exchange.getResponseBody()){
+                    os.write(responseBytes);
+                }
             }
         } else {
+            // Sin query, retorna todas las recetas
             List<Prescription> list = prescriptionDAO.findAll();
             String jsonResponse = objectMapper.writeValueAsString(list);
             exchange.getResponseHeaders().set("Content-Type", "application/json");
             byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
             exchange.sendResponseHeaders(200, responseBytes.length);
-            try (OutputStream os = exchange.getResponseBody()) {
+            try(OutputStream os = exchange.getResponseBody()){
                 os.write(responseBytes);
             }
         }
     }
 
     private void handlePost(HttpExchange exchange) throws IOException {
-        try {
+        try{
             String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
             Prescription prescription = objectMapper.readValue(requestBody, Prescription.class);
-            // Se asume que el JSON enviado incluye los objetos anidados para hospital, user, medicine y pharmacy.
-            // Se extraen los IDs de las entidades relacionadas:
+            // Se asume que el JSON incluye los objetos anidados para hospital, user, medicine y pharmacy.
+            // Extraemos los IDs correspondientes
             Long idHospital = prescription.getHospital().getIdHospital();
             Long idUser = prescription.getUser().getIdUser();
             Long idMedicine = prescription.getMedicine().getIdMedicine();
@@ -124,13 +153,13 @@ public class PrescriptionHandler implements HttpHandler {
                 exchange.getResponseHeaders().set("Content-Type", "application/json");
                 byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
                 exchange.sendResponseHeaders(201, responseBytes.length);
-                try (OutputStream os = exchange.getResponseBody()) {
+                try(OutputStream os = exchange.getResponseBody()){
                     os.write(responseBytes);
                 }
             } else {
                 exchange.sendResponseHeaders(500, -1);
             }
-        } catch (Exception e) {
+        } catch(Exception e){
             e.printStackTrace();
             exchange.sendResponseHeaders(500, -1);
         }
@@ -145,7 +174,7 @@ public class PrescriptionHandler implements HttpHandler {
             exchange.getResponseHeaders().set("Content-Type", "application/json");
             byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
             exchange.sendResponseHeaders(200, responseBytes.length);
-            try (OutputStream os = exchange.getResponseBody()) {
+            try(OutputStream os = exchange.getResponseBody()){
                 os.write(responseBytes);
             }
         } else {

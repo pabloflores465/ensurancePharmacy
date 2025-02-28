@@ -59,6 +59,21 @@ public class TransactionsDAO {
         }
     }
 
+    public List<Transactions> findByUserId(Long idUser) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Query<Transactions> query = session.createQuery(
+                    "FROM Transactions t WHERE t.user.idUser = :idUser",
+                    Transactions.class
+            );
+            query.setParameter("idUser", idUser);
+            return query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
     public List<Transactions> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<Transactions> query = session.createQuery("FROM Transactions", Transactions.class);
