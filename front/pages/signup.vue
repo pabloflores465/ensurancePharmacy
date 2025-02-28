@@ -12,7 +12,8 @@ const address = ref("");
 const phone = ref("");
 const cui = ref("");
 const errorMessage = ref("");
-const ip = useIP();
+const config = useRuntimeConfig();
+const ip = config.public.ip;
 
 const createUser = async () => {
   try {

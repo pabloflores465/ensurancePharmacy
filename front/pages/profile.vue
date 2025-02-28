@@ -31,7 +31,8 @@ console.log(JSON.stringify(profile.value))
 const user = ref<User | null>(null);
 const isLoading = ref(false);
 const hasError = ref(false);
-const ip = useIP();
+const config = useRuntimeConfig();
+const ip = config.public.ip;
 
 const fetchUser = async () => {
   try {

@@ -36,7 +36,8 @@ const edit = useEdit();
 const search = useSearch();
 const getCategory: Ref<SelectedCategory | null> = getCurrentCategory();
 const services = ref<Service[]>([]);
-const ip = useIP();
+const config = useRuntimeConfig();
+const ip = config.public.ip;
 let temp: Service[] = [];
 
 const fetchService = async () => {

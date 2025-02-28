@@ -11,7 +11,8 @@ interface Pharmacy {
   enabled: number;
 }
 const pharmacies = ref<Pharmacy[]>([]);
-const ip = useIP();
+const config = useRuntimeConfig();
+const ip = config.public.ip;
 let pharmacyChanges: Pharmacy[] = [];
 
 const fetchPharmacy = async () => {

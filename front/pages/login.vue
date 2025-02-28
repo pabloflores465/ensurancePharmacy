@@ -11,10 +11,12 @@ const email = ref("");
 const password = ref("");
 const errorMessage = ref("");
 const router = useRouter();
-const ip = useIP();
+const config = useRuntimeConfig();
+const ip = config.public.ip;
 
 const handleLogin = async () => {
   try {
+    console.log(ip);
     notify({
       type: "loading",
       title: "Iniciando sesión",

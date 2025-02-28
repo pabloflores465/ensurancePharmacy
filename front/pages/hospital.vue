@@ -16,7 +16,8 @@ const hospitals = ref<Hospital[]>([]);
 
 // Add loading state if not already present
 const isLoading = ref(false);
-const ip = useIP();
+const config = useRuntimeConfig();
+const ip = config.public.ip;
 
 const fetchHospitals = async () => {
   try {

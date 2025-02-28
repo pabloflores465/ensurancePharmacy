@@ -2,11 +2,11 @@
 const slides: { image: string; alt: string }[] = [
   { image: "/attend.jpg", alt: "Seguro de Auto" },
   {
-    image: "https://source.unsplash.com/800x400/?insurance,home",
+    image: "https://images.pexels.com/photos/3760067/pexels-photo-3760067.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
     alt: "Seguro de Hogar",
   },
   {
-    image: "https://source.unsplash.com/800x400/?insurance,life",
+    image: "https://images.pexels.com/photos/928199/pexels-photo-928199.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
     alt: "Seguro de Vida",
   },
 ];

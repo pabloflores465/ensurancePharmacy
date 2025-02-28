@@ -14,7 +14,8 @@ interface Prescription {
   show: boolean;
 }
 const prescriptions: Ref<Prescription[]> = ref([]);
-const ip = useIP();
+const config = useRuntimeConfig();
+const ip = config.public.ip;
 const fetchTransactions = async () => {
   try {
     notify({

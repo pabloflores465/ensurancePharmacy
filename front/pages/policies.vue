@@ -12,7 +12,8 @@ interface Policy {
   enabled: number;
 }
 const policies = ref<Policy[]>([]);
-const ip = useIP();
+const config = useRuntimeConfig();
+const ip = config.public.ip;
 let policyChanges: Policy[] = [];
 const fetchPolicy = async () => {       
   try {

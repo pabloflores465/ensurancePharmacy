@@ -13,4 +13,10 @@ export default defineNuxtConfig({
       tailwindcss(),
     ],
   },
+  runtimeConfig: {
+    // Variables que quieras exponer al cliente deben ir dentro de `public`
+    public: {
+      ip: process.env.IP || '127.0.0.1',
+    },
+  },
 });

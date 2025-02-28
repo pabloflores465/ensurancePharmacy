@@ -30,7 +30,8 @@ interface Medicine {
 const medicines = ref<Medicine[]>([]);
 const isLoading = ref(false);
 const hasError = ref(false);
-const ip = useIP();
+const config = useRuntimeConfig();
+const ip = config.public.ip;
 let medicineChanges: Medicine[] = [];
 
 const fetchMedicines = async () => {
