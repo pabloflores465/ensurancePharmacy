@@ -6,7 +6,7 @@ interface Pharmacy {
   idPharmacy: number;
   name: string;
   address: string;
-  phone: string;
+  phone: number;
   email: string;
   enabled: number;
 }
@@ -42,16 +42,31 @@ const fetchPharmacy = async () => {
 };
 
 const addPharmacy = async () => {
+  notify({
+    type: "loading",
+    title: "Adding pharmacy",
+    description: "Please wait...",
+  });
   await axios.post(`http://${ip}:8080/api/pharmacy`, {
-    name: '',
-    address: '',
-    phone: '',
-    email: '',
+    name: 'juan',
+    address: 'pinula',
+    phone: 0,
+    email: 'juan@gmail.com',
     enabled: 1,
   }).then((response) => {
     console.log("Farmacia agregada:", response.data);
+    notify({
+      type: "success",
+      title: "Pharmacy added",
+      description: "Pharmacy added successfully",
+    });
   }).catch((error) => {
     console.error("Error al agregar farmacia:", error);
+    notify({
+      type: "error",
+      title: "Error adding pharmacy",
+      description: "Error adding pharmacy",
+    });
   });
 }
 
