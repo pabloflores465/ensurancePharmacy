@@ -1,5 +1,15 @@
 <script setup lang="ts">
 import axios from 'axios';
+
+interface Hospital {
+  idHospital: number;
+  name: string;
+  address: string;
+  phone: number;
+  email: string;
+  enabled: number;
+}
+
 interface Policy {
   idPolicy: number;
   percentage: number;
@@ -22,127 +32,47 @@ interface User {
   enabled: number;
   password: string;
 }
+
+interface Appointment {
+  idAppointment: number;
+  hospital: Hospital;
+  user: User;
+  appointmentDate: string; // "2024-01-12"
+  enabled: number;
+}
+
 const users: Ref<User[]> = ref([]);
+const appointments: Ref<Appointment[]> = ref([]);
 const config = useRuntimeConfig();
 const ip = config.public.ip;
 
-/*const users: Ref<
-User[]
-> = ref([
-  {
-    name: "John Doe",
-    cui: 123456789,
-    phone: "+1 (555) 123-4567",
-    email: "johndoe@example.com",
-    address: "123 Main Street, Springfield, USA",
-    birthdate: "1990-01-01",
-    role: "Administrator",
-    policy: "Standard User Policy",
-    prescriptions: [
-      {
-        id: 1,
-        hospital: "City Hospital",
-        doctor: "Dr. Smith",
-        patient: "John Doe",
-        pharmacy: "Pharmacy One",
-        date: "2023-04-01",
-        total: 150.0,
-        copay: 15.0,
-        comments: "Take twice daily",
-        medicines: ["Aspirin", "Ibuprofen"],
-        date_created: "2023-04-01T09:00:00Z",
-        secured: true,
-        minimun: 1,
-        auth_no: "123456789",
-        show: false,
-      },
-    ],
-    appointments: [
-      {
-        number: 1,
-        date: "2025-03-01",
-        doctor: "Dr. Ana López",
-        hospital: "Hospital Central",
-      },
-    ],
-  },
-  {
-    name: "Jane Smith",
-    cui: 987654321,
-    phone: "+1 (555) 987-6543",
-    email: "janesmith@example.com",
-    address: "456 Oak Avenue, Riverside, USA",
-    birthdate: "1988-05-15",
-    role: "Patient",
-    policy: "Premium Health Policy",
-    prescriptions: [
-      {
-        id: 2,
-        hospital: "General Hospital",
-        doctor: "Dr. Brown",
-        patient: "Jane Smith",
-        pharmacy: "Pharmacy Two",
-        date: "2023-04-15",
-        total: 200.0,
-        copay: 20.0,
-        comments: "Take with food",
-        medicines: ["Paracetamol"],
-        date_created: "2023-04-15T10:00:00Z",
-        secured: false,
-        minimun: 1,
-        auth_no: "987654321",
-        show: false,
-      },
-    ],
-    appointments: [
-      {
-        number: 2,
-        date: "2025-03-02",
-        doctor: "Dr. Carlos Pérez",
-        hospital: "Clínica del Sol",
-      },
-    ],
-  },
-  {
-    name: "Robert Johnson",
-    cui: 456789123,
-    phone: "+1 (555) 456-7890",
-    email: "robertjohnson@example.com",
-    address: "789 Pine Lane, Meadowville, USA",
-    birthdate: "1995-11-20",
-    role: "Doctor",
-    policy: "Medical Staff Policy",
-    prescriptions: [
-      {
-        id: 3,
-        hospital: "Mercy Hospital",
-        doctor: "Dr. Lee",
-        patient: "Robert Johnson",
-        pharmacy: "Pharmacy Three",
-        date: "2023-05-03",
-        total: 175.0,
-        copay: 17.5,
-        comments: "Apply cream to affected area",
-        medicines: ["Hydrocortisone"],
-        date_created: "2023-05-03T11:00:00Z",
-        secured: true,
-        minimun: 1,
-        auth_no: "456789123",
-        show: false,
-      },
-    ],
-    appointments: [
-      {
-        number: 3,
-        date: "2025-03-03",
-        doctor: "Dra. María Gómez",
-        hospital: "Hospital Santa María",
-      },
-    ],
-  },
-]);*/
+let appointmentChanges: Appointment[] = [];
+const fetchAppointments = async (userId: number) => {
+  try {
+    notify({
+      type: "loading",
+      title: "Loading policies",
+      description: "Please wait...",
+    });
+    const response = await axios.get(`http://${ip}:8080/api/appointment?user_id=${userId}`);
+    appointments.value = response.data;
+    appointmentChanges = response.data.map((appointment: Appointment) => ({ ...appointments }));
+    notify({
+      type: "success",
+      title: "Appointments loaded",
+      description: "Appointments loaded successfully",
+    });
+  } catch (error) {
+    console.error("Error al obtener appointments:", error);
+    notify({
+      type: "error",
+      title: "Error loading policies",
+      description: "Error loading policies",
+    });
+  }
+};
 
-let userChanges: Policy[] = [];
+let userChanges: User[] = [];
 const fetchUsers = async () => {
   try {
     notify({
@@ -181,6 +111,7 @@ function toggleViewMode() {
 
 function selectUser(user: typeof users.value[0]) {
   selectedUser.value = user;
+  fetchAppointments(user.idUser);
 }
 const search = useSearch();
 </script>
@@ -299,16 +230,16 @@ const search = useSearch();
               <div class="flex justify-between mb-2">
                 <h3 class="text-primary font-semibold">Appointments</h3>
                 <span class="bg-accent/20 text-primary px-2 py-1 rounded-full text-xs">
-                  {{ user.appointments.length }} total
+                  {{ appointments.length }} total
                 </span>
               </div>
 
               <!-- Appointment List (condensed) -->
-              <div v-for="appointment in user.appointments" :key="appointment.number"
+              <div v-for="appointment in appointments" :key="appointment.idAppointment"
                    class="text-secondary text-sm mb-2">
                 <div class="flex justify-between">
-                  <span>#{{ appointment.number }} - {{ appointment.doctor }}</span>
-                  <span>{{ appointment.date }}</span>
+                  <span>#{{ appointment.idAppointment }} - {{ appointment.hospital }}</span>
+                  <span>{{ appointment.appointmentDate }}</span>
                 </div>
               </div>
             </div>
@@ -440,22 +371,18 @@ const search = useSearch();
         <!-- User Appointments -->
         <div class="mb-6 border-t pt-4">
           <h3 class="text-primary font-semibold mb-4">Appointments</h3>
-          <div v-for="appointment in selectedUser.appointments" :key="appointment.number"
+          <div v-for="appointment in appointments" :key="appointment.idAppointment"
                class="bg-s-background hover:bg-h-secondary mb-4 rounded-lg px-4 py-2">
             <div class="text-primary mb-4 flex">
-              <div class="font-semibold me-2">Number: {{ appointment.number }}</div>
+              <div class="font-semibold me-2">Number: {{ appointment.idAppointment }}</div>
             </div>
             <div class="text-primary mb-4 flex">
               <p class="me-2 font-semibold">Date:</p>
-              {{ appointment.date }}
-            </div>
-            <div class="text-secondary mb-4 flex text-sm">
-              <p class="me-2 font-semibold">Doctor:</p>
-              {{ appointment.doctor }}
+              {{ appointment.appointmentDate }}
             </div>
             <div class="text-secondary mb-4 flex text-sm">
               <p class="me-2 font-semibold">Hospital:</p>
-              {{ appointment.hospital }}
+              {{ appointment.hospital.name }}
             </div>
           </div>
         </div>

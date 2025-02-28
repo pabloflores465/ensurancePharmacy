@@ -10,6 +10,54 @@ const duracion = ref(30);
 const notas = ref("");
 const appointments = ref([]);
 
+interface Hospital {
+  idHospital: number;
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+  enabled: boolean;
+}
+
+const hospitals = ref<Hospital[]>([]);
+
+// Add loading state if not already present
+const isLoading = ref(false);
+const config = useRuntimeConfig();
+const ip = config.public.ip;
+
+
+
+const fetchHospitals = async () => {
+  try {
+    notify({
+      type: "loading",
+      title: "Loading hospitals",
+      description: "Please wait...",
+    });
+    isLoading.value = true;
+    const response = await axios.get(`http://${ip}:8080/api/hospital`);
+    hospitals.value = response.data;
+    console.log("Hospitals obtenidos:", hospitals.value);
+    notify({
+      type: "success",
+      title: "Hospitals loaded",
+      description: "Hospitals loaded successfully",
+    });
+  } catch (error) {
+    console.error("Error al obtener hospitals:", error);
+    notify({
+      type: "error",
+      title: "Error loading hospitals",
+      description: "Error loading hospitals",
+    });
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+fetchHospitals();
+
 function getMonday(date) {
   const d = new Date(date);
   const day = d.getDay(); // domingo=0, lunes=1, etc.
@@ -151,11 +199,35 @@ function editAppointment(appointment) {
   showModal.value = true;
 }
 
+interface Policy {
+  idPolicy: number;
+  percentage: number;
+  creationDate: number;
+  expDate: number;
+  cost: number;
+  enabled: number;
+}
+
+interface User {
+  idUser: number;
+  name: string;
+  cui: number;
+  phone: string;
+  email: string;
+  address: string;
+  birthDate: number;
+  role: string;
+  policy: Policy;
+  enabled: number;
+  password: string;
+}
+
 interface Appointment {
-  hospital: string
-  user: id;
-  date: Date;
-  enabled: boolean;
+  idAppointment: number;
+  hospital: Hospital;
+  user: User;
+  appointmentDate: string; // Por ejemplo, "2024-01-12"
+  enabled: number;
 }
 
 const fetchAppointments = async () => {
