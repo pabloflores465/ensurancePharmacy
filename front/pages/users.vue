@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import axios from 'axios';
+import {toJSON} from "flatted";
 
 interface Hospital {
   idHospital: number;
@@ -109,29 +110,54 @@ interface Hospital {
   enabled: number;
 }
 
-interface Transaction {
-  idTransaction: number;
-  user: User;
+export interface Pharmacy {
+  idPharmacy: number;
+  name: string;
+  address: string;
+  phone: number;
+  email: string;
+  enabled: number;
+}
+
+export interface Medicine {
+  idMedicine: number;
+  name: string;
+  description: string;
+  price: number;
+  pharmacy: Pharmacy;
+  enabled: number;
+  activePrinciple: string;
+  presentation: string;
+  stock: number;
+  brand: string;
+  coverage: number | null;
+}
+
+export interface Prescription {
+  idPrescription: number;
   hospital: Hospital;
-  transDate: string;         // Formato: "YYYY-MM-DD"
+  user: User;
+  medicine: Medicine;
+  pharmacy: Pharmacy;
+  prescriptionDate: string;
   total: number;
   copay: number;
-  transactionComment: string;
-  result: string;
-  covered: number;
+  prescriptionComment: string;
+  secured: number;
   auth: string;
 }
-const transaction: Ref<Transaction[]> = ref([]);
-const fetchTransactions = async (userId : number) => {
+
+const prescriptions: Ref<Prescription[]> = ref([]);
+const fetchPrescription = async (userId : number) => {
   try {
     notify({
       type: "loading",
       title: "Loading services",
       description: "Please wait...",
     });
-    const response = await axios.get(`http://${ip}:8080/api/transactions?user_id?=${userId}`);
+    const response = await axios.get(`http://${ip}:8080/api/prescription?user_id=${userId}`);
     console.log("Prescriptions obtenidos:", response.data);
-    transaction.value = response.data;
+    prescriptions.value = response.data;
     notify({
       type: "success",
       title: "Services loaded",
@@ -159,7 +185,7 @@ function toggleViewMode() {
 function selectUser(user: typeof users.value[0]) {
   selectedUser.value = user;
   fetchAppointments(user.idUser);
-  fetchTransactions(user.idUser)
+  fetchPrescription(user.idUser)
 }
 const search = useSearch();
 </script>
@@ -259,15 +285,15 @@ const search = useSearch();
               <div class="flex justify-between mb-2">
                 <h3 class="text-primary font-semibold">Prescriptions</h3>
                 <span class="bg-accent/20 text-primary px-2 py-1 rounded-full text-xs">
-                  {{ user.prescriptions.length }} total
+                  {{ prescriptions.length }} total
                 </span>
               </div>
 
               <!-- Prescription List (condensed) -->
-              <div v-for="prescription in user.prescriptions" :key="prescription.id"
+              <div v-for="prescription in prescriptions" :key="prescription.idPrescription"
                    class="text-secondary text-sm mb-2">
                 <div class="flex justify-between">
-                  <span>#{{ prescription.id }} - {{ prescription.hospital }}</span>
+                  <span>#{{ prescription.idPrescription }} - {{ prescription.hospital.name }}</span>
                   <span>${{ prescription.total.toFixed(2) }}</span>
                 </div>
               </div>
@@ -365,32 +391,19 @@ const search = useSearch();
         <!-- User Prescriptions -->
         <div class="mb-6 border-t pt-4">
           <h3 class="text-primary font-semibold mb-4">Prescriptions</h3>
-          <div v-for="prescription in selectedUser.prescriptions" :key="prescription.id"
+          <div v-for="prescription in prescriptions" :key="prescription.idPrescription"
                class="bg-s-background hover:bg-h-secondary mb-4 rounded-lg px-4 py-2">
             <div class="text-primary mb-4 flex">
-              <div class="font-semibold me-2">ID: {{ prescription.id }}</div>
-              - {{ prescription.hospital }} ({{ prescription.date }})
-            </div>
-            <div class="text-secondary mb-4 flex text-sm">
-              <p class="me-2 font-semibold">Doctor:</p>
-              {{ prescription.doctor }}
+              <div class="font-semibold me-2">ID: {{ prescription.idPrescription }}</div>
+              - {{ prescription.hospital.name }} ({{ prescription.prescriptionDate }})
             </div>
             <div class="text-secondary mb-4 flex text-sm">
               <p class="me-2 font-semibold">Pharmacy:</p>
-              {{ prescription.pharmacy }}
-            </div>
-            <div class="text-success mb-4 flex">
-              <p class="me-2 font-semibold">Medicines:</p>
-              <div class="flex flex-wrap gap-2">
-                <span v-for="medicine in prescription.medicines"
-                      class="bg-accent/20 text-primary px-2 py-1 rounded-full text-xs">
-                  {{ medicine }}
-                </span>
-              </div>
+              {{ prescription.pharmacy.name }}
             </div>
             <div class="text-h-terciary mb-4 flex">
               <p class="me-2 font-semibold">Comments:</p>
-              <span class="italic text-terciary">{{ prescription.comments }}</span>
+              <span class="italic text-terciary">{{ prescription.prescriptionComment }}</span>
             </div>
             <div class="flex justify-between mt-4">
               <span class="text-error font-bold" v-if="!prescription.secured">
