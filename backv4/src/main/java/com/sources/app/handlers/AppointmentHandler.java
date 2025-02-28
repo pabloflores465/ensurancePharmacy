@@ -7,6 +7,7 @@ import com.sources.app.entities.Hospital;
 import com.sources.app.entities.User;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -63,24 +64,49 @@ public class AppointmentHandler implements HttpHandler {
 
     private void handleGet(HttpExchange exchange) throws IOException {
         String query = exchange.getRequestURI().getQuery();
-        if (query != null && query.contains("id=")) {
+        if (query != null) {
             Map<String, String> params = parseQuery(query);
-            try {
-                Long id = Long.parseLong(params.get("id"));
-                Appointment appointment = appointmentDAO.findById(id);
-                if (appointment != null) {
-                    String jsonResponse = objectMapper.writeValueAsString(appointment);
+            if (params.containsKey("id")) {
+                try {
+                    Long id = Long.parseLong(params.get("id"));
+                    Appointment appointment = appointmentDAO.findById(id);
+                    if (appointment != null) {
+                        String jsonResponse = objectMapper.writeValueAsString(appointment);
+                        exchange.getResponseHeaders().set("Content-Type", "application/json");
+                        byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
+                        exchange.sendResponseHeaders(200, responseBytes.length);
+                        try (OutputStream os = exchange.getResponseBody()) {
+                            os.write(responseBytes);
+                        }
+                    } else {
+                        exchange.sendResponseHeaders(404, -1);
+                    }
+                } catch (NumberFormatException e) {
+                    exchange.sendResponseHeaders(400, -1);
+                }
+            } else if (params.containsKey("user_id")) {
+                try {
+                    Long userId = Long.parseLong(params.get("user_id"));
+                    List<Appointment> appointments = appointmentDAO.findByUserId(userId);
+                    String jsonResponse = objectMapper.writeValueAsString(appointments);
                     exchange.getResponseHeaders().set("Content-Type", "application/json");
                     byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
                     exchange.sendResponseHeaders(200, responseBytes.length);
                     try (OutputStream os = exchange.getResponseBody()) {
                         os.write(responseBytes);
                     }
-                } else {
-                    exchange.sendResponseHeaders(404, -1);
+                } catch (NumberFormatException e) {
+                    exchange.sendResponseHeaders(400, -1);
                 }
-            } catch (NumberFormatException e) {
-                exchange.sendResponseHeaders(400, -1);
+            } else {
+                List<Appointment> appointments = appointmentDAO.findAll();
+                String jsonResponse = objectMapper.writeValueAsString(appointments);
+                exchange.getResponseHeaders().set("Content-Type", "application/json");
+                byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
+                exchange.sendResponseHeaders(200, responseBytes.length);
+                try (OutputStream os = exchange.getResponseBody()) {
+                    os.write(responseBytes);
+                }
             }
         } else {
             List<Appointment> appointments = appointmentDAO.findAll();
@@ -108,8 +134,8 @@ public class AppointmentHandler implements HttpHandler {
             }
 
             Appointment createdAppointment = appointmentDAO.create(
-                    hospital.getIdHospital(),  // Se asume que Hospital tiene getIdHospital()
-                    user.getIdUser(),          // Se asume que User tiene getIdUser()
+                    hospital.getIdHospital(),
+                    user.getIdUser(),
                     appointment.getAppointmentDate(),
                     appointment.getEnabled()
             );

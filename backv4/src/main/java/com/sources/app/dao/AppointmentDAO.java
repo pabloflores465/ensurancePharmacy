@@ -44,6 +44,19 @@ public class AppointmentDAO {
         }
         return appointment;
     }
+    public List<Appointment> findByUserId(Long idUser) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Query<Appointment> query = session.createQuery(
+                    "FROM Appointment a WHERE a.user.id = :userId", Appointment.class
+            );
+            query.setParameter("userId", idUser);
+            return query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 
     public Appointment findById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

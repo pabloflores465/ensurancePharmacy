@@ -26,8 +26,10 @@ public class UserDAO {
     // Método create modificado para asignar la relación con Policy
     public User create(String name, Long cui, String phone, String email, Date birthdate, String address, String password, Policy policy) {
         Transaction tx = null;
+        Session session = null;
         User user = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try {
+            session = HibernateUtil.getSessionFactory().openSession();
             tx = session.beginTransaction();
 
             // Creamos una instancia de User y asignamos los valores, incluyendo la relación Policy
@@ -48,8 +50,18 @@ public class UserDAO {
 
             tx.commit();
         } catch (Exception e) {
-            if (tx != null) tx.rollback();
+            if (tx != null && tx.getStatus().canRollback()) {
+                try {
+                    tx.rollback();
+                } catch (Exception rbEx) {
+                    rbEx.printStackTrace();
+                }
+            }
             e.printStackTrace();
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
         }
         return user;
     }
