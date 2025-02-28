@@ -333,6 +333,7 @@ const search = useSearch();
                   ['Medicine', 'Name', 'Code', 'Active Principle', 'Presentation', 'Units', 'Brand'],
                   medicine,
                   medicineChanges[index],
+                  'medicine'
                 );
               }
             ">

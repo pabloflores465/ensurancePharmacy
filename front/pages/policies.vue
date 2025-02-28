@@ -220,6 +220,7 @@ fetchPolicy();
                 ['Policy Id:', 'Percentage', 'Creation Date', 'Expire Date'],
                 policy,
                 policyChanges[index],
+                'policy'
               );
             }
           "

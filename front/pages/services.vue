@@ -36,6 +36,7 @@ const edit = useEdit();
 const search = useSearch();
 const getCategory: Ref<SelectedCategory | null> = getCurrentCategory();
 const services = ref<Service[]>([]);
+let serviceChanges: Service[] = [];
 const config = useRuntimeConfig();
 const ip = config.public.ip;
 let temp: Service[] = [];
@@ -50,6 +51,7 @@ const fetchService = async () => {
     const response = await axios.get(`http://${ip}:8080/api/service`);
     console.log(response.data);
     services.value = response.data;
+    serviceChanges = response.data.map((service: Service) => ({ ...service }));
     temp = response.data.map((service: Service) => ({ ...service }));
     console.log("Hospitals obtenidos:", services.value);
     notify({
@@ -128,16 +130,43 @@ watch(getCategory, () => {
         }}</textarea>
       </div>
 
-      <div v-if="edit" v-for="service in services" class="card">
+      <div v-if="edit" v-for="(service, index) in services" class="card">
         <span class="text-primary font-semibold">{{ service.name }}</span>
-        <input type="text" class="field mb-8" :defaultValue="service.name" />
+        <input type="text" class="field mb-8" :defaultValue="service.name" 
+        @input="
+            (event) => {
+              const target = event.target as HTMLInputElement;
+              serviceChanges[index].name = target.value;
+            }
+          "
+        />
         <span class="text-primary font-semibold">{{ service.hospital.name }}</span>
-        <input type="text" class="field mb-8" :defaultValue="service.hospital.name" />
+        <input type="text" class="field mb-8" :defaultValue="service.hospital.name" 
+        @input="
+            (event) => {
+              const target = event.target as HTMLInputElement;
+              serviceChanges[index].hospital.name = target.value;
+            }
+          "
+        />
         <span class="text-primary font-semibold">Price</span>
-        <input type="text" class="field mb-8" :defaultValue="service.cost.toString()" />
+        <input type="text" class="field mb-8" :defaultValue="service.cost.toString()" 
+        @input="
+            (event) => {
+              const target = event.target as HTMLInputElement;
+              serviceChanges[index].cost = parseInt(target.value);
+            }
+          "
+        />
         <Dropdown class="me-2 mb-6" />
         <span class="text-primary font-semibold">{{ service.description }}</span>
-        <textarea type="text" class="field mb-8" :defaultValue="service.description" />
+        <textarea type="text" class="field mb-8" :defaultValue="service.description" 
+        @input="
+            (event) => {
+              const target = event.target as HTMLInputElement;
+              serviceChanges[index].description = target.value;
+            }
+          " />
       </div>
     </div>
     <button v-if="edit" class="btn flex mx-auto justify-center mb-6" @click="() => {
