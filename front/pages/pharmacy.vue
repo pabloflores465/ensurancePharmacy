@@ -40,11 +40,25 @@ const fetchPharmacy = async () => {
     });
   }
 };
+
+const addPharmacy = async () => {
+  await axios.post(`http://${ip}:8080/api/pharmacy`, {
+    name: '',
+    address: '',
+    phone: '',
+    email: '',
+    enabled: 1,
+  }).then((response) => {
+    console.log("Farmacia agregada:", response.data);
+  }).catch((error) => {
+    console.error("Error al agregar farmacia:", error);
+  });
+}
+
 const edit = useEdit();
 const search = useSearch();
 fetchPharmacy();
 </script>
-
 <template>
   <div class="bg-image-[url('/medicine.jpg')]">
     <Search v-if="search" :fieldNames="['Nombre', 'Dirección', 'Teléfono', 'Email', 'Habilitado']"
@@ -142,23 +156,14 @@ fetchPharmacy();
 
       </div>
     </div>
-    <button v-if="edit" class="btn flex mx-auto my-auto mt-4 w-full" @click="() => {
-          pharmacies.push({
-            idPharmacy: 0,
-            name: '',
-            address: '',
-            phone: '',
-            email: '',
-            enabled: 1,
-          });
-        }">
-          <svg class="me-2" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
-            fill="currentColor">
-            <path
-              d="M440-280h80v-160h160v-80H520v-160h-80v160H280v80h160v160Zm40 200q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
-          </svg>
-          Add Pharmacy
-        </button>
+    <button v-if="edit" class="btn flex mx-auto my-auto mt-4 w-full" @click="addPharmacy()">
+      <svg class="me-2" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+        fill="currentColor">
+        <path
+          d="M440-280h80v-160h160v-80H520v-160h-80v160H280v80h160v160Zm40 200q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
+      </svg>
+      Add Pharmacy
+    </button>
 
   </div>
 </template>

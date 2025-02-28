@@ -49,6 +49,35 @@ const fetchHospitals = async () => {
   }
 };
 
+const addHospital = async () => {
+  notify({
+    type: "loading",
+    title: "Adding hospital",
+    description: "Please wait...",
+  });
+  await axios.post(`http://${ip}:8080/api/hospital`, {
+    idHospital: 90,
+    name: '',
+    address: '',
+    phone: '',
+    email: '',
+    enabled: 1,
+  }).then((response) => {
+    console.log("Hospital agregado:", response.data);
+    notify({
+      type: "success",
+      title: "Hospital added",
+      description: "Hospital added successfully",
+    });
+  }).catch((error) => {
+    console.error("Error al agregar hospital:", error);
+    notify({
+      type: "error",
+      title: "Error adding hospital",
+      description: "Error adding hospital",
+    });
+  });
+}
 interface Service {
   id_serv: number;
   id_hos: number;
@@ -68,7 +97,7 @@ const fetchService = async () => {
       title: "Loading services",
       description: "Please wait...",
     });
-    const response = await axios.get("http://localhost:8080/api/service");
+    const response = await axios.get(`http://${ip}:8080/api/service`);
     services.value = response.data;
     console.log("Hospitals obtenidos:", services.value);
     notify({
@@ -115,13 +144,13 @@ const isHospitalService = (service: Service) => {
       'E-Mail',
       'Enabled',
     ]" v-model:output="hospitals" :searchFields="[
-          'idHospital',
-          'name',
-          'address',
-          'phone',
-          'email',
-          'enabled',
-        ]" />
+      'idHospital',
+      'name',
+      'address',
+      'phone',
+      'email',
+      'enabled',
+    ]" />
     <div class="responsive-grid">
       <div v-if="!edit" v-for="(hospital, index) in hospitals" class="card">
         <h2 class="title mb-6">Hospital #{{ hospital.idHospital }}</h2>
@@ -206,13 +235,14 @@ const isHospitalService = (service: Service) => {
         <div class="mb-8">
           <Switch label="Enabled" />
         </div>
-        <button class="btn mx-auto flex" @click="()=>{
+        <button class="btn mx-auto flex" @click="() => {
           addChange(
             ['Hospital', 'Name', 'Address', 'Phone Number', 'E-Mail'],
             hospital,
             hospitalsChanges[index],
             'hospital'
-          );}">
+          );
+        }">
           <svg class="me-2" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
             fill="currentColor">
             <path
@@ -221,16 +251,7 @@ const isHospitalService = (service: Service) => {
           Save
         </button>
       </div>
-      <button v-if="edit" class="btn mx-auto flex justify-center mb-6" @click="() => {
-        hospitals.push({
-          idHospital: 0,
-          name: '',
-          address: '',
-          phone: '',
-          email: '',
-          enabled: true,
-        });
-      }">
+      <button v-if="edit" class="btn mx-auto flex justify-center mb-6" @click="addHospital()">
         Add Policy
       </button>
     </div>
