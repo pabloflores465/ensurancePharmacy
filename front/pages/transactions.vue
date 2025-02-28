@@ -1,19 +1,50 @@
 <script setup lang="ts">
 import axios from 'axios';
-interface Prescription {
-  id: number;
-  hospital: string;
-  patient: string;
-  date: string;
+interface Policy {
+  idPolicy: number;
+  percentage: number;
+  creationDate: string; // Formato: "YYYY-MM-DD"
+  expDate: string;      // Formato: "YYYY-MM-DD"
+  cost: number;
+  enabled: number;
+}
+
+interface User {
+  idUser: number;
+  name: string;
+  cui: number;
+  phone: string;
+  email: string;
+  address: string;
+  birthDate: string; // Formato: "YYYY-MM-DD"
+  role: string;
+  policy: Policy;
+  enabled: number;
+  password: string;
+}
+
+interface Hospital {
+  idHospital: number;
+  name: string;
+  address: string;
+  phone: number;
+  email: string;
+  enabled: number;
+}
+
+interface Transaction {
+  idTransaction: number;
+  user: User;
+  hospital: Hospital;
+  transDate: string;         // Formato: "YYYY-MM-DD"
   total: number;
   copay: number;
-  comments: string;
-  secured: boolean;
-  auth_no: string;
+  transactionComment: string;
   result: string;
-  show: boolean;
+  covered: number;
+  auth: string;
 }
-const prescriptions: Ref<Prescription[]> = ref([]);
+const transaction: Ref<Transaction[]> = ref([]);
 const config = useRuntimeConfig();
 const ip = config.public.ip;
 const fetchTransactions = async () => {
@@ -25,7 +56,7 @@ const fetchTransactions = async () => {
     });
     const response = await axios.get(`http://${ip}:8080/api/transactions`);
     console.log("Prescriptions obtenidos:", response.data);
-    prescriptions.value = response.data;
+    transaction.value = response.data;
     notify({
       type: "success",
       title: "Services loaded",
@@ -250,17 +281,17 @@ const search = useSearch();
     <Search v-if="search"
       :fieldNames="['Hospital', 'Patient', 'Date', 'Total', 'Copay', 'Comments', 'Secured', 'Auth No', 'Result']"
       :searchFields="['hospital', 'patient', 'date', 'total', 'copay', 'comments', 'secured', 'auth_no', 'result']"
-      v-model:output="prescriptions" />
-    <div v-if="!edit" v-for="prescription in prescriptions"
+      v-model:output="transaction" />
+    <div v-if="!edit" v-for="transactions in transaction"
       class="card lg:align-center gap-4 transition duration-300 hover:scale-105 max-sm:mx-2 max-sm:flex-col md:flex-row lg:align-middle">
-      <p class="text-title title mb-6">Number: {{ prescription.id }}</p>
+      <p class="text-title title mb-6">Number: {{ transactions.idTransaction }}</p>
       <p class="text-primary mb-3 flex text-lg">
         <svg class="me-2" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
           fill="currentColor">
           <path
             d="M420-280h120v-140h140v-120H540v-140H420v140H280v120h140v140ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0-560v560-560Z" />
         </svg>
-        <strong class="me-2">Hospital:</strong> {{ prescription.hospital }}
+        <strong class="me-2">Hospital:</strong> {{ transactions.hospital.name }}
       </p>
       <div class="text-md text-primary mb-4 flex">
         <svg class="me-2" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
@@ -270,7 +301,7 @@ const search = useSearch();
         </svg>
         <p class="me-2 font-semibold">Usuario:</p>
 
-        {{ prescription.patient }}
+        {{ transactions.user.name }}
       </div>
       <div class="text-secondary mb-6 flex text-sm">
         <svg class="me-2" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
@@ -279,18 +310,64 @@ const search = useSearch();
             d="m612-292 56-56-148-148v-184h-80v216l172 172ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-400Zm0 320q133 0 226.5-93.5T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160Z" />
         </svg>
         <p class="text-tertiary me-2 font-semibold">Date:</p>
-        {{ prescription.date }}
+        {{ transactions.transDate }}
       </div>
-      <button @click="() => (prescription.show = !prescription.show)" class="btn flex justify-center align-middle">
-        <svg class="me-2" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-          fill="currentColor">
+      <div class="text-secondary mb-6 flex text-sm">
+        <svg class="me-2" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+             fill="#e8eaed">
           <path
-            d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" />
+              d="m612-292 56-56-148-148v-184h-80v216l172 172ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-400Zm0 320q133 0 226.5-93.5T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160Z" />
         </svg>
-        See More Details
-      </button>
+        <p class="text-tertiary me-2 font-semibold">Comment:</p>
+        {{ transactions.transactionComment }}
+      </div>
+      <div class="text-secondary mb-6 flex text-sm">
+        <svg class="me-2" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+             fill="#e8eaed">
+          <path
+              d="m612-292 56-56-148-148v-184h-80v216l172 172ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-400Zm0 320q133 0 226.5-93.5T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160Z" />
+        </svg>
+        <p class="text-tertiary me-2 font-semibold">Copay:</p>
+        {{ transactions.copay }}
+      </div>
+      <div class="text-secondary mb-6 flex text-sm">
+        <svg class="me-2" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+             fill="#e8eaed">
+          <path
+              d="m612-292 56-56-148-148v-184h-80v216l172 172ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-400Zm0 320q133 0 226.5-93.5T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160Z" />
+        </svg>
+        <p class="text-tertiary me-2 font-semibold">Covered:</p>
+        {{ transactions.covered }}
+      </div>
+      <div class="text-secondary mb-6 flex text-sm">
+        <svg class="me-2" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+             fill="#e8eaed">
+          <path
+              d="m612-292 56-56-148-148v-184h-80v216l172 172ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-400Zm0 320q133 0 226.5-93.5T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160Z" />
+        </svg>
+        <p class="text-tertiary me-2 font-semibold">Auth:</p>
+        {{ transactions.auth }}
+      </div>
+      <div class="text-secondary mb-6 flex text-sm">
+        <svg class="me-2" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+             fill="#e8eaed">
+          <path
+              d="m612-292 56-56-148-148v-184h-80v216l172 172ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-400Zm0 320q133 0 226.5-93.5T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160Z" />
+        </svg>
+        <p class="text-tertiary me-2 font-semibold">Result:</p>
+        {{ transactions.result }}
+      </div>
+      <div class="text-secondary mb-6 flex text-sm">
+        <svg class="me-2" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+             fill="#e8eaed">
+          <path
+              d="m612-292 56-56-148-148v-184h-80v216l172 172ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-400Zm0 320q133 0 226.5-93.5T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160Z" />
+        </svg>
+        <p class="text-tertiary me-2 font-semibold">Total:</p>
+        {{ transactions.total }}
+      </div>
     </div>
-    <Modal v-for="prescription in prescriptions" v-model:show="prescription.show">
+    <Modal v-for="transactions in transaction">
       <p class="title mb-6">Number: {{ prescription.id }}</p>
       <p class="text-terciary mb-2 font-semibold">People</p>
       <div class="text-md text-primary mb-4 flex">
