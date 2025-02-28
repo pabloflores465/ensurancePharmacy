@@ -129,6 +129,7 @@ fetchPharmacy();
               ['Pharmacy', 'Name', 'Address', 'Phone', 'E-Mail'],
               pharmacy,
               pharmacyChanges[index],
+              'pharmacy'
             );
           }
         ">

@@ -455,6 +455,7 @@ const search = useSearch();
               ['Prescription', 'Number', 'Hospital', 'User', 'Date', 'Comment'],
               prescription,
               prescriptionChanges[index],
+              'prescription'
             );
           }
         ">

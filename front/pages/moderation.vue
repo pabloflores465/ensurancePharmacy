@@ -4,7 +4,7 @@ const changes = useChanges();
 
 <template>
   <div class="from-s-background to-sh-background h-full w-full bg-linear-65">
-    <div v-for="change in changes">
+    <div v-for="(change, index) in changes">
     <div class="responsive-grid">
       <div class="card outline-error/30 mb-6 outline-4">
         <div v-for="(key, index) in Object.keys(change.oldValue)" class="label mb-4 flex">
@@ -28,7 +28,7 @@ const changes = useChanges();
       </div>
     </div>
     <div class="flex justify-center mb-6">
-    <button class="btn me-2 flex">
+    <button class="btn me-2 flex" @click="applyChange(index)">
       <svg class="me-2" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
         fill="currentColor">
         <path
