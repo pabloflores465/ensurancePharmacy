@@ -99,6 +99,93 @@ const fetchTransactions = async () => {
     });
   }
 };
+
+const addPrescription = async () => {
+  notify({
+    type: "loading",
+    title: "Adding prescription",
+    description: "Please wait...",
+  });
+  await axios.post(`http://${ip}:8080/api/prescription`, {
+    hospital: {
+      idHospital: 1,
+      name: "Hospital La Pez",
+      address: "10A Calle 2-31 Ciudad de Ciudad de Guatemala, 01014",
+      phone: 2217,
+      email: "info@gruposermesa.com",
+      enabled: 1
+    },
+    user: {
+      idUser: 2,
+      name: "Pablo",
+      cui: 123121,
+      phone: "123121",
+      email: "pablo@gmail.com",
+      address: "asdas",
+      birthDate: "2024-01-12",
+      role: "admin",
+      policy: {
+        idPolicy: 1,
+        percentage: 70.0,
+        creationDate: "2023-04-01",
+        expDate: "2023-12-31",
+        cost: 300.5,
+        enabled: 1,
+      },
+      enabled: 1,
+      password: "123",
+    },
+      medicine: {
+      idMedicine: 1,
+      name: "Paracetamol",
+      description: "A medicine used to treat mild to moderate pain",
+      price: 120,
+      pharmacy: {
+        idPharmacy: 1,
+        name: "CRUZ VE",
+        address: "AVENIDA PRINCIPAL",
+        phone: 63517151,
+        email: "Cruzverde@gmail.com",
+        enabled: 1
+      },
+      enabled: 1,
+      activePrinciple: "Paracetamol",
+      presentation: "500MG",
+      stock: 25,
+      brand: "M",
+      coverage: null
+    },
+    pharmacy: {
+      idPharmacy: 1,
+      name: "CRUZ VE",
+      address: "AVENIDA PRINCIPAL",
+      phone: 63517151,
+      email: "Cruzverde@gmail.com",
+      enabled: 1
+    },
+    prescriptionDate: "2024-01-12",
+    total: 120,
+    copay: 12,
+    prescriptionComment: "succesful",
+    secured: 1,
+    auth: "AAAA"
+
+  }).then((response) => {
+    console.log("Farmacia agregada:", response.data);
+    notify({
+      type: "success",
+      title: "Prescription added",
+      description: "Prescription added successfully",
+    });
+  }).catch((error) => {
+    console.error("Error al agregar farmacia:", error);
+    notify({
+      type: "error",
+      title: "Error adding prescription",
+      description: "Error adding prescription",
+    });
+  });
+}
 fetchTransactions();
 
 let prescriptionChanges = prescriptions.value.map((prescription: Prescription) => ({ ...prescription }));
@@ -282,7 +369,7 @@ const search = useSearch();
           </svg>
           See More Details
         </button>
-        <button class="btn mx-auto flex justify-center" @click="
+        <button v-if="edit" class="btn mx-auto flex justify-center" @click="
           () => {
             addChange(
               ['Prescription', 'Number', 'Hospital', 'User', 'Date', 'Comment'],
@@ -299,25 +386,7 @@ const search = useSearch();
           </svg>Save
         </button>
       </div>
-      <button v-if="edit" class="btn mx-auto flex justify-center mb-6" @click="() => {
-        prescriptions.push({
-          id: 0,
-          hospital: '',
-          doctor: '',
-          patient: '',
-          pharmacy: '',
-          date: '',
-          total: 0,
-          copay: 0,
-          comments: '',
-          medicines: [],
-          date_created: '',
-          secured: false,
-          minimun: 0,
-          auth_no: '',
-          show: false,
-        });
-      }">
+      <button class="btn mx-auto flex justify-center mb-6" @click="addPrescription()">
         Add Prescription
       </button>
     </div>
