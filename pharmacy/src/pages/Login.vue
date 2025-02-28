@@ -58,7 +58,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 const ip = process.env.IP;
-console.log(ip);
+console.log("manitas calientes " + ip);
 
 // Manejo de rutas para la imagen de fondo
 
