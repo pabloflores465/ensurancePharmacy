@@ -61,5 +61,6 @@ public class App {
         server.setExecutor(null); // Usa el executor por defecto
         InetAddress ip = InetAddress.getLocalHost();
         System.out.println("Servidor iniciado en http://" + ip.getHostAddress() + ":8000/api");
+        Thread.currentThread().join();
     }
 }
