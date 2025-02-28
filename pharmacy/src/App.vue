@@ -1,6 +1,7 @@
 <template>
   <div id="app">
     <Header />
+    <Receta />
     <router-view /> <!-- Aquí se mostrarán las páginas según la ruta -->
     
   </div>
@@ -8,10 +9,11 @@
 
 <script>
 import Header from '@/components/Header.vue';
+// import Receta from '@/components/Receta.vue';
 
 export default {
   name: "App",
-  components: { Header  }
+  components: { Header }
 };
 </script>
 

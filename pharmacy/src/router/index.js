@@ -7,6 +7,7 @@ import Catalogo from '../pages/Catalogo.vue';
 import Aseguradoras from '@/pages/Aseguradoras.vue';
 import Ofertas from '@/pages/Ofertas.vue';
 import ProductoDetalle from '@/pages/ProductoDetalle.vue'; // new import
+import Receta from '@/components/Receta.vue';
 
 const routes = [
   { path: '/', component: Home },
@@ -17,6 +18,7 @@ const routes = [
   { path : '/aseguradoras', component: Aseguradoras },
   { path : '/ofertas', component: Ofertas },
   { path: '/producto/:id', name: 'ProductoDetalle', component: ProductoDetalle},
+  { path: '/receta', component: Receta},
   
 ];
 

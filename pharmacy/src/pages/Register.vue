@@ -10,6 +10,7 @@
       <img src="@/assets/logo.png" alt="Pharmacy Registration" class="logo" />
 
       <form @submit.prevent="register">
+        <!-- Nombre -->
         <div class="form-group">
           <label for="name">Nombre</label>
           <div class="input-group">
@@ -18,6 +19,25 @@
           </div>
         </div>
 
+        <!-- CUI -->
+        <div class="form-group">
+          <label for="cui">CUI</label>
+          <div class="input-group">
+            <input type="text" id="cui" v-model="cui" required />
+            <span class="icon">🆔</span>
+          </div>
+        </div>
+
+        <!-- Teléfono -->
+        <div class="form-group">
+          <label for="phone">Teléfono</label>
+          <div class="input-group">
+            <input type="tel" id="phone" v-model="phone" required />
+            <span class="icon">☎️</span>
+          </div>
+        </div>
+
+        <!-- Correo Electrónico -->
         <div class="form-group">
           <label for="email">Correo Electrónico</label>
           <div class="input-group">
@@ -26,6 +46,38 @@
           </div>
         </div>
 
+        <!-- Dirección -->
+        <div class="form-group">
+          <label for="address">Dirección</label>
+          <div class="input-group">
+            <input type="text" id="address" v-model="address" required />
+            <span class="icon">📍</span>
+          </div>
+        </div>
+
+        <!-- Fecha de Nacimiento -->
+        <div class="form-group">
+          <label for="birthdate">Fecha de Nacimiento</label>
+          <div class="input-group">
+            <input type="date" id="birthdate" v-model="birthdate" required />
+            <span class="icon">📅</span>
+          </div>
+        </div>
+
+
+
+        <!-- ID_POLICY (puede ser un número o texto según tu lógica) -->
+        <div class="form-group">
+          <label for="idPolicy">ID de Póliza</label>
+          <div class="input-group">
+            <input type="text" id="idPolicy" v-model="idPolicy" />
+            <span class="icon">📑</span>
+          </div>
+        </div>
+
+ 
+
+        <!-- Contraseña -->
         <div class="form-group">
           <label for="password">Contraseña</label>
           <div class="input-group">
@@ -54,17 +106,42 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
+
+// Campos
 const name = ref('');
+const cui = ref('');
+const phone = ref('');
 const email = ref('');
+const address = ref('');
+const birthdate = ref('');
+const role = ref('');
+const idPolicy = ref('');
+const enabled = ref(true);
 const password = ref('');
 
+// Manejo del registro
 const register = async () => {
-  console.log('Registrando:', name.value, email.value, password.value);
   // Aquí puedes manejar la lógica del registro
+  // por ejemplo, llamar a tu API enviando estos datos
+
+  console.log('Registrando:', {
+    name: name.value,
+    cui: cui.value,
+    phone: phone.value,
+    email: email.value,
+    address: address.value,
+    birthdate: birthdate.value,
+    role: role.value,
+    idPolicy: idPolicy.value,
+    enabled: enabled.value,
+    password: password.value
+  });
+
   // Después de registrar, redirigir al login
   router.push('/login');
 };
 
+// Función para ir a la pantalla de login
 const goToLogin = () => {
   router.push('/login');
 };
@@ -134,7 +211,7 @@ label {
   width: 100%;
 }
 
-input {
+input, select {
   width: 100%;
   padding: 12px 40px 12px 12px;
   border: 1px solid #ced4da;
