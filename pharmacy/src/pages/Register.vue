@@ -138,7 +138,7 @@ const register = async () => {
     });
 
     // Llamada al endpoint con Axios
-    const response = await axios.post(`http://${ip}:8000/api2/useer`, {
+    const response = await axios.post(`http://${ip}:8000/api2/users`, {
       name: name.value,
       cui: cui.value,
       phone: phone.value,
