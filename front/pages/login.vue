@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {setProfile} from "~/composables/useProfile";
+
 const dark = darkMode();
 
 import { ref } from "vue";
@@ -10,7 +11,7 @@ const email = ref("");
 const password = ref("");
 const errorMessage = ref("");
 const router = useRouter();
-
+const ip = useIP();
 
 const handleLogin = async () => {
   try {
@@ -20,7 +21,7 @@ const handleLogin = async () => {
       description: "Procesando tu solicitud, por favor espera...",
     });
     const response = await axios.post(
-      "http://localhost:8080/api/login", // URL de tu endpoint de login
+      `http://${ip}:8080/api/login`, // URL de tu endpoint de login
       {
         email: email.value,
         password: password.value,

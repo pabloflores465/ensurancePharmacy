@@ -17,7 +17,7 @@ export interface User {
 
 export const useProfile = () =>
     useState<User | null>('profile', (): User | null => {
-        if (process.client) {
+        if (import.meta.client) {
             const profile = localStorage.getItem('profile');
             if (profile) {
                 return JSON.parse(profile) as User;
@@ -27,7 +27,7 @@ export const useProfile = () =>
     });
 
 export const setProfile = (newProfile: User) => {
-    if (process.client) {
+    if (import.meta.client) {
         localStorage.setItem('profile', JSON.stringify(newProfile));
         const profileState = useProfile();
         profileState.value = newProfile;
