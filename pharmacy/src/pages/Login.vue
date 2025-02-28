@@ -1,168 +1,224 @@
-<!-- src/pages/LoginPage.vue -->
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="login-container">
-    <form @submit.prevent="handleLogin" class="login-form">
-      <h2>Iniciar Sesión</h2>
+    <!-- Sección izquierda con imagen de fondo -->
+    <div class="login-image"></div>
+
+    <!-- Sección derecha con formulario -->
+    <div class="login-box">
+      <div class="logo-container">
+        <img src="@/assets/logo.png" alt="Farmacia Logo" class="logo" />
+      </div>
+
+      <h2 class="text-2xl font-bold text-center text-blue-800 mb-4">Iniciar Sesión</h2>
+
+      <!-- Selector de tipo de usuario -->
+      <div class="mb-4">
+        <label class="block text-gray-700">Selecciona tu rol:</label>
+        <select v-model="role" class="w-full p-2 border rounded-lg">
+          <option value="user">Usuario</option>
+          <option value="employee">Empleado</option>
+          <option value="admin">Administrador</option>
+        </select>
+      </div>
+
+      <!-- Formulario de inicio de sesión -->
+      <form @submit.prevent="login">
+        <!-- Para usuarios y empleados -->
+        <div v-if="role === 'user' || role === 'employee'" class="mb-4">
+          <label class="block text-gray-700">
+            {{ role === 'user' ? "Número de Usuario" : "Número de Empleado" }}
+          </label>
+          <div class="input-group">
+            <input v-model="identifier" type="text" class="input-field" required />
+            <span class="icon">👤</span>
+          </div>
+          <div class="mb-4">
+            <label class="block text-gray-700">Contraseña</label>
+            <div class="input-group">
+              <input v-model="adminPassword" type="password" class="input-field" required />
+              <span class="icon">🔒</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Para administradores -->
+        <div v-if="role === 'admin'" class="mb-4">
+          <label class="block text-gray-700">Usuario Administrador</label>
+          <div class="input-group">
+            <input v-model="adminUsername" type="text" class="input-field" required />
+            <span class="icon">👤</span>
+          </div>
+          <div class="mb-4">
+            <label class="block text-gray-700">Contraseña</label>
+            <div class="input-group">
+              <input v-model="adminPassword" type="password" class="input-field" required />
+              <span class="icon">🔒</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mensaje de error -->
+        <div v-if="errorMessage" class="mb-4 text-red-600 text-center">
+          {{ errorMessage }}
+        </div>
+
+        <!-- Botón de inicio de sesión -->
+        <button type="submit" class="login-button">
+          Iniciar sesión →
+        </button>
+      </form>
+      <!-- Enlace para registrarse -->
+      <div class="text-center mt-4">
+        <router-link to="/register" class="text-blue-500 hover:underline">Regístrarse aquí</router-link>
+      </div>
       
-      <div class="form-group">
-        <input
-          v-model="username"
-          type="text"
-          placeholder="Usuario"
-          required
-          :class="{ 'error': errors.username }"
-        />
-        <span v-if="errors.username" class="error-message">{{ errors.username }}</span>
-      </div>
-
-      <div class="form-group">
-        <input
-          v-model="password"
-          type="password"
-          placeholder="Contraseña"
-          required
-          :class="{ 'error': errors.password }"
-        />
-        <span v-if="errors.password" class="error-message">{{ errors.password }}</span>
-      </div>
-
-      <div v-if="errorMessage" class="alert alert-danger">
-        {{ errorMessage }}
-      </div>
-
-      <button type="submit" :disabled="loading">
-        {{ loading ? 'Cargando...' : 'Iniciar Sesión' }}
-      </button>
-    </form>
+    </div>
   </div>
 </template>
 
-<script>
-import { authService } from '@/services/authService';
+<script setup>
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import axios from 'axios';
 
-export default {
-  name: 'LoginPage', // Nombre multi-palabra para cumplir con ESLint
-  data() {
-    return {
-      username: '',
-      password: '',
-      loading: false,
-      errorMessage: '',
-      errors: {
-        username: '',
-        password: ''
-      }
+// Asegúrate de tener definida la variable de entorno (p. ej., VUE_APP_IP)
+const ip = process.env.VUE_APP_IP;
+console.log("IP del servidor: " + ip);
+
+const router = useRouter();
+
+// Variables reactivas para los campos del formulario
+const role = ref('user'); 
+const identifier = ref('');
+const adminUsername = ref('');
+const adminPassword = ref('');
+const errorMessage = ref('');
+
+// Función de login que valida las credenciales llamando a la API
+const login = async () => {
+  errorMessage.value = '';
+
+  // Objeto payload que se enviará a la API
+  let payload = { role: role.value };
+
+  if (role.value === 'user' || role.value === 'employee') {
+    if (identifier.value.trim() === '' || adminPassword.value.trim() === '') {
+      errorMessage.value = "El número de usuario/empleado y la contraseña son obligatorios.";
+      return;
     }
-  },
-  methods: {
-    validateForm() {
-      let isValid = true;
-      this.errors = { username: '', password: '' };
-
-      if (!this.username) {
-        this.errors.username = 'El usuario es requerido';
-        isValid = false;
-      }
-
-// Ejemplo: permitir contraseñas de 3 caracteres
-if (!this.password) {
-  this.errors.password = 'La contraseña es requerida';
-  isValid = false;
-} else if (this.password.length < 3) {
-  this.errors.password = 'La contraseña debe tener al menos 3 caracteres';
-  isValid = false;
-}
-
-      return isValid;
-    },
-
-    async handleLogin() {
-      if (!this.validateForm()) return;
-
-      this.loading = true;
-      this.errorMessage = '';
-
-      try {
-        // Se realiza la conexión a la API enviando username y password
-        await authService.login({
-          username: this.username,
-          password: this.password
-        });
-        // Si el login es exitoso, redirige al dashboard u otra ruta
-        this.$router.push('/dashboard');
-      } catch (error) {
-        this.errorMessage = 'Usuario o contraseña incorrectos';
-      } finally {
-        this.loading = false;
-      }
+    payload.username = identifier.value;
+    payload.password = adminPassword.value;
+  } else if (role.value === 'admin') {
+    if (adminUsername.value.trim() === '' || adminPassword.value.trim() === '') {
+      errorMessage.value = "Usuario y contraseña son obligatorios.";
+      return;
     }
+    payload.username = adminUsername.value;
+    payload.password = adminPassword.value;
   }
-}
+
+  try {
+    // Llamada POST al endpoint /api2/login
+    const response = await axios.post(`http://${ip}:8000/api2/login`, payload);
+    console.log("Login exitoso:", response.data);
+    // Si la respuesta es exitosa, redirige al inicio o a la ruta deseada
+    router.push('/');
+  } catch (error) {
+    console.error("Error en el login:", error);
+    errorMessage.value = 'Credenciales incorrectas o error en el servidor.';
+  }
+};
 </script>
 
 <style scoped>
+/* Diseño de dos columnas */
 .login-container {
+  display: flex;
+  height: 100vh;
+  background-color: #f8f9fa;
+}
+
+/* Sección izquierda con imagen de fondo */
+.login-image {
+  flex: 1;
+  background-image: url(@/assets/farmacialog.jpg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Sección derecha (Formulario) */
+.login-box {
+  flex: 1;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 50px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  border-radius: 15px;
+}
+
+/* Logo */
+.logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.logo {
+  max-width: 150px;
+}
+
+/* Inputs estilizados */
+.input-group {
+  position: relative;
+  width: 100%;
+}
+.input-field {
+  width: 100%;
+  padding: 12px 40px 12px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+}
+.icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Botón estilizado */
+.login-button {
+  width: 100%;
+  background: #1e40af;
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  padding: 20px;
+}
+.login-button:hover {
+  background: #1e3a8a;
 }
 
-.login-form {
-  width: 100%;
-  max-width: 400px;
-  padding: 20px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  margin-bottom: 5px;
-}
-
-input.error {
-  border-color: #dc3545;
-}
-
-.error-message {
-  color: #dc3545;
-  font-size: 0.8em;
-}
-
-.alert {
-  padding: 10px;
-  margin-bottom: 15px;
-  border-radius: 4px;
-}
-
-.alert-danger {
-  background-color: #f8d7da;
-  border: 1px solid #f5c6cb;
-  color: #721c24;
-}
-
-button {
-  width: 100%;
-  padding: 10px;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-button:disabled {
-  background: #ccc;
-  cursor: not-allowed;
+/* Responsivo */
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+  }
+  .login-image {
+    display: none; /* Ocultar imagen en pantallas pequeñas */
+  }
 }
 </style>

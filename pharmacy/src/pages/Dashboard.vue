@@ -4,7 +4,7 @@ import { computed } from 'vue';
 import { useUserStore } from '@/stores/userStore';
 
 const userStore = useUserStore();
-
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
 // Computed para verificar el estado del usuario
 const isLoggedIn = computed(() => userStore.user !== null);
 const isAdmin = computed(() => userStore.user?.role === 'admin');

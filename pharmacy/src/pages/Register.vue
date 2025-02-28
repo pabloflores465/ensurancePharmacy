@@ -64,9 +64,7 @@
           </div>
         </div>
 
-
-
-        <!-- ID_POLICY (puede ser un número o texto según tu lógica) -->
+        <!-- ID_POLICY -->
         <div class="form-group">
           <label for="idPolicy">ID de Póliza</label>
           <div class="input-group">
@@ -74,8 +72,6 @@
             <span class="icon">📑</span>
           </div>
         </div>
-
- 
 
         <!-- Contraseña -->
         <div class="form-group">
@@ -104,6 +100,11 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import axios from 'axios';
+
+// Normalmente definimos el IP en una variable de entorno
+// Asegúrate de que esté configurado en tu .env
+const ip = process.env.VUE_APP_IP; 
 
 const router = useRouter();
 
@@ -114,31 +115,52 @@ const phone = ref('');
 const email = ref('');
 const address = ref('');
 const birthdate = ref('');
-const role = ref('');
+const role = ref('');        // Por si quieres asignar un rol
 const idPolicy = ref('');
-const enabled = ref(true);
+const enabled = ref(true);   // Por defecto true
 const password = ref('');
 
 // Manejo del registro
 const register = async () => {
-  // Aquí puedes manejar la lógica del registro
-  // por ejemplo, llamar a tu API enviando estos datos
+  // Aquí hacemos la llamada POST a /api2/login (aunque lo usual sería /api2/register)
+  try {
+    console.log('Registrando:', {
+      name: name.value,
+      cui: cui.value,
+      phone: phone.value,
+      email: email.value,
+      address: address.value,
+      birthdate: birthdate.value,
+      role: role.value,
+      idPolicy: idPolicy.value,
+      enabled: enabled.value,
+      password: password.value
+    });
 
-  console.log('Registrando:', {
-    name: name.value,
-    cui: cui.value,
-    phone: phone.value,
-    email: email.value,
-    address: address.value,
-    birthdate: birthdate.value,
-    role: role.value,
-    idPolicy: idPolicy.value,
-    enabled: enabled.value,
-    password: password.value
-  });
+    // Llamada al endpoint con Axios
+    const response = await axios.post(`http://${ip}:8000/api2/useer`, {
+      name: name.value,
+      cui: cui.value,
+      phone: phone.value,
+      email: email.value,
+      address: address.value,
+      birthdate: birthdate.value,
+      role: role.value,
+      idPolicy: idPolicy.value,
+      enabled: enabled.value,
+      password: password.value
+    });
 
-  // Después de registrar, redirigir al login
-  router.push('/login');
+    // Si todo sale bien, puedes mostrar un mensaje o redirigir
+    console.log('Registro exitoso:', response.data);
+
+    // Redirigir al login
+    router.push('/login');
+  } catch (error) {
+    console.error('Error al registrar:', error);
+    // Muestra algún mensaje de error al usuario si lo deseas
+    alert('Ocurrió un error al registrar. Revisa la consola para más detalles.');
+  }
 };
 
 // Función para ir a la pantalla de login
@@ -148,14 +170,13 @@ const goToLogin = () => {
 </script>
 
 <style scoped>
-/* Contenedor principal */
+/* Estilos del formulario */
 .register-container {
   display: flex;
   height: 100vh;
   background-color: #f8f9fa;
 }
 
-/* Sección izquierda con imagen */
 .register-image {
   flex: 1;
   background: url('@/assets/farmaciareg.jpeg') no-repeat center center;
@@ -165,7 +186,6 @@ const goToLogin = () => {
   justify-content: center;
 }
 
-/* Sección derecha con el formulario */
 .register-box {
   flex: 1;
   background: white;
@@ -178,13 +198,11 @@ const goToLogin = () => {
   border-radius: 15px;
 }
 
-/* Logo */
 .logo {
   max-width: 120px;
   margin-bottom: 20px;
 }
 
-/* Formulario */
 form {
   display: flex;
   flex-direction: column;
@@ -195,7 +213,6 @@ form {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Campos de entrada */
 .form-group {
   margin-bottom: 15px;
 }
@@ -205,7 +222,6 @@ label {
   color: #495057;
 }
 
-/* Input con iconos */
 .input-group {
   position: relative;
   width: 100%;
@@ -227,7 +243,6 @@ input, select {
   color: #6c757d;
 }
 
-/* Botón de registro */
 .register-button {
   width: 100%;
   background: #1e40af;
@@ -245,7 +260,6 @@ input, select {
   background: #1e3a8a;
 }
 
-/* Responsivo */
 @media (max-width: 768px) {
   .register-container {
     flex-direction: column;
