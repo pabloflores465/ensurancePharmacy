@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {setProfile, useProfile} from "~/composables/useProfile";
+import {setProfile, useProfile, initializeProfile} from "~/composables/useProfile";
 import axios from "axios";
 import {onMounted} from "vue";
 import { toRaw } from 'vue';
@@ -58,7 +58,9 @@ const fetchUser = async () => {
   }
 };
 onMounted(() => {
+  initializeProfile();
   fetchUser();
+  fetchAppointment();
 });
 const prescriptions: Ref<
   {
@@ -197,7 +199,7 @@ const fetchAppointment = async () => {
     isLoading.value = false;
   }
 };
-fetchAppointment();
+
 const edit = useEdit();
 console.log()
 </script>

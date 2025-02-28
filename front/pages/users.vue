@@ -1,39 +1,30 @@
 <script setup lang="ts">
 import axios from 'axios';
-interface User   {
-    name: string;
-    cui: number;
-    phone: string;
-    email: string;
-    address: string;
-    birthdate: string;
-    role: string;
-    policy: string;
-    prescriptions: {
-      id: number;
-      hospital: string;
-      doctor: string;
-      patient: string;
-      pharmacy: string;
-      date: string;
-      total: number;
-      copay: number;
-      comments: string;
-      medicines: string[];
-      date_created: string;
-      secured: boolean;
-      minimun: number;
-      auth_no: string;
-      show: boolean;
-    }[];
-    appointments: {
-      number: number;
-      date: string;
-      doctor: string;
-      hospital: string;
-    }[];
-  }
+interface Policy {
+  idPolicy: number;
+  percentage: number;
+  creationDate: number;
+  expDate: number;
+  cost: number;
+  enabled: number;
+}
+
+interface User {
+  idUser: number;
+  name: string;
+  cui: number;
+  phone: string;
+  email: string;
+  address: string;
+  birthDate: number;
+  role: string;
+  policy: Policy;
+  enabled: number;
+  password: string;
+}
   const users: Ref<User[]> = ref([]);
+  const config = useRuntimeConfig();
+  const ip = config.public.ip;
 
 /*const users: Ref<
 User[]
@@ -151,6 +142,35 @@ User[]
   },
 ]);*/
 
+let userChanges: Policy[] = [];
+const fetchUsers = async () => {
+  try {
+    notify({
+      type: "loading",
+      title: "Loading policies",
+      description: "Please wait...",
+    });
+    const response = await axios.get(`http://${ip}:8080/api/users`);
+    users.value = response.data;
+    userChanges = response.data.map((user: User) => ({ ...user }));
+    console.log(users.value);
+    notify({
+      type: "success",
+      title: "Policies loaded",
+      description: "Policies loaded successfully",
+    });
+  } catch (error) {
+    console.error("Error al obtener hospitals:", error);
+    notify({
+      type: "error",
+      title: "Error loading policies",
+      description: "Error loading policies",
+    });
+  }
+};
+fetchUsers();
+
+
 const viewMode = ref('basic'); // 'basic' or 'detail'
 const selectedUser: Ref<typeof users.value[0] | null> = ref(null);
 const edit = useEdit();
@@ -234,7 +254,7 @@ const search = useSearch();
                   d="M160-80q-17 0-28.5-11.5T120-120v-200q0-33 23.5-56.5T200-400v-160q0-33 23.5-56.5T280-640h160v-58q-18-12-29-29t-11-41q0-15 6-29.5t18-26.5l56-56 56 56q12 12 18 26.5t6 29.5q0 24-11 41t-29 29v58h160q33 0 56.5 23.5T760-560v160q33 0 56.5 23.5T840-320v200q0 17-11.5 28.5T800-80H160Zm120-320h400v-160H280v160Zm-80 240h560v-160H200v160Zm80-240h400-400Zm-80 240h560-560Z" />
               </svg>
               <p class="me-2 font-semibold">Birthday:</p>
-              {{ user.birthdate }}
+              {{ user.birthDate }}
             </div>
             <div class="text-secondary mb-4 flex text-sm">
               <svg class="me-2" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
@@ -252,7 +272,7 @@ const search = useSearch();
                   d="M280-280h280v-80H280v80Zm0-160h400v-160H280v160Zm0-160h400v-80H280v80Zm-80 480q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z" />
               </svg>
               <p class="me-2 font-semibold">Policy:</p>
-              {{ user.policy }}
+              {{ user.policy.percentage }}
             </div>
 
             <!-- Prescriptions Summary -->
@@ -346,7 +366,7 @@ const search = useSearch();
             </div>
             <div class="text-primary flex">
               <p class="me-2 font-semibold">Birthday:</p>
-              {{ selectedUser.birthdate }}
+              {{ selectedUser.birthDate }}
             </div>
             <div class="text-primary flex">
               <p class="me-2 font-semibold">CUI:</p>
@@ -358,7 +378,7 @@ const search = useSearch();
             </div>
             <div class="text-primary flex">
               <p class="me-2 font-semibold">Policy:</p>
-              {{ selectedUser.policy }}
+              {{ selectedUser.policy?.percentage  }}
             </div>
           </div>
         </div>
@@ -460,11 +480,11 @@ const search = useSearch();
         <span class="text-primary">Address</span>
         <input type="text" class="text-primary field mb-4" :placeholder="user.address" />
         <span class="text-primary">Birthdate</span>
-        <input type="text" class="text-primary field mb-4" :placeholder="user.birthdate" />
+        <input type="text" class="text-primary field mb-4" :placeholder="user.birthDate?.toString()" />
         <span class="text-primary">Role</span>
         <input type="text" class="text-primary field mb-4" :placeholder="user.role" />
         <span class="text-primary">Policy</span>
-        <input type="text" class="text-primary field mb-4" :placeholder="user.policy" />
+        <input type="text" class="text-primary field mb-4" :placeholder="user.policy?.percentage?.toString()" />
         <button class="btn">Save</button>
       </div>
     </div>
@@ -475,9 +495,16 @@ const search = useSearch();
         phone: '',
         email: '',
         address: '',
-        birthdate: '',
+        birthDate: 0,
         role: '',
-        policy: '',
+        policy: {
+            idPolicy: 0,
+  percentage: 0,
+  creationDate: 0,
+  expDate: 0,
+  cost: 0,
+  enabled: 0
+        },
         prescriptions: [],
         appointments: []
       });

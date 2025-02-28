@@ -15,16 +15,25 @@ export interface User {
     password: string;
 }
 
+// Crea el estado inicial sin leer localStorage, o con un valor por defecto.
 export const useProfile = () =>
-    useState<User | null>('profile', (): User | null => {
-        if (import.meta.client) {
-            const profile = localStorage.getItem('profile');
-            if (profile) {
-                return JSON.parse(profile) as User;
+    useState<User | null>('profile', () => null);
+
+// Método para inicializar (rehidratar) el perfil desde localStorage
+export const initializeProfile = () => {
+    if (import.meta.client) {
+        const storedProfile = localStorage.getItem('profile');
+        if (storedProfile) {
+            try {
+                const parsed = JSON.parse(storedProfile) as User;
+                const profileState = useProfile();
+                profileState.value = parsed;
+            } catch (error) {
+                console.error('Error al parsear el perfil desde localStorage', error);
             }
         }
-        return null;
-    });
+    }
+};
 
 export const setProfile = (newProfile: User) => {
     if (import.meta.client) {
