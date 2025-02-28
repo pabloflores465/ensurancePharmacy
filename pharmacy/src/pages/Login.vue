@@ -57,6 +57,8 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+const ip = process.env.IP;
+console.log(ip);
 
 // Manejo de rutas para la imagen de fondo
 
