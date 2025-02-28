@@ -5,6 +5,7 @@ import com.sources.app.handlers.*;
 import com.sources.app.util.HibernateUtil;
 import com.sun.net.httpserver.HttpServer;
 import org.hibernate.Session;
+import java.net.InetAddress;
 
 import java.net.InetSocketAddress;
 
@@ -42,7 +43,7 @@ public class App {
         }
 
         // Crear y configurar el servidor HTTP
-        HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
+        HttpServer server = HttpServer.create(new InetSocketAddress("0.0.0.0", 8080), 0);
         server.createContext("/api/login", new LoginHandler(userDAO));
         server.createContext("/api/users", new UserHandler(userDAO));
         server.createContext("/api/policy", new PolicyHandler(policyDAO));
@@ -63,6 +64,7 @@ public class App {
         server.createContext("/api/servicecategory", new ServiceCategoryHandler(serviceCategoryDAO));
         server.setExecutor(null); // Usa el executor por defecto
         server.start();
-        System.out.println("Servidor iniciado en http://localhost:8080/api");
+        InetAddress ip = InetAddress.getLocalHost();
+        System.out.println("Servidor iniciado en http://" + ip.getHostAddress() + ":8080/api");
     }
 }
