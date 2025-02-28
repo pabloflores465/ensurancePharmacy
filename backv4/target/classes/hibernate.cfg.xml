@@ -34,7 +34,6 @@
         <mapping class="com.sources.app.entities.AppointmentMade"/>
         <mapping class="com.sources.app.entities.Category"/>
         <mapping class="com.sources.app.entities.ConfigurableAmount"/>
-        <mapping class="com.sources.app.entities.CoveragePharmacy"/>
         <mapping class="com.sources.app.entities.Hospital"/>
         <mapping class="com.sources.app.entities.Medicine"/>
         <mapping class="com.sources.app.entities.MedicinePres"/>

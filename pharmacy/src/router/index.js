@@ -5,6 +5,8 @@ import Dashboard from '../pages/Dashboard.vue';
 import Register from '../pages/Register.vue';
 import Catalogo from '../pages/Catalogo.vue';
 import Aseguradoras from '@/pages/Aseguradoras.vue';
+import Ofertas from '@/pages/Ofertas.vue';
+import ProductoDetalle from '@/pages/ProductoDetalle.vue'; // new import
 
 const routes = [
   { path: '/', component: Home },
@@ -12,7 +14,10 @@ const routes = [
   { path: '/dashboard', component: Dashboard, meta: { requiresAuth: true } },
   { path : '/register', component: Register },
   { path : '/catalogo', component: Catalogo },
-  { path : '/aseguradoras', component: Aseguradoras }
+  { path : '/aseguradoras', component: Aseguradoras },
+  { path : '/ofertas', component: Ofertas },
+  { path: '/producto/:id', name: 'ProductoDetalle', component: ProductoDetalle},
+  
 ];
 
 const router = createRouter({

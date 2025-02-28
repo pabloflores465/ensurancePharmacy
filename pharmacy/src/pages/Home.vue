@@ -12,8 +12,12 @@
           <li>Equipo Médico</li>
           <router-link to="/aseguradoras" class="nav-item">Aseguradoras Afiliadas</router-link>
           <li>Canje de puntos</li>
+<<<<<<< HEAD
           <li>Pago en Cuotas</li>
           <Button />
+=======
+          <li>Pagos</li>
+>>>>>>> d7e63d2 (HOTFIX)
         </ul>
       </aside>
   

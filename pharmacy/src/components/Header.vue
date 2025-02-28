@@ -8,7 +8,7 @@
       <!-- Menú de Navegación -->
       <nav class="nav-links hidden md:flex">
         <router-link to="/" class="nav-item">Inicio</router-link>
-        <router-link to="/offers" class="nav-item">Ofertas</router-link>
+        <router-link to="/ofertas" class="nav-item">Ofertas</router-link>
         <router-link to="/catalogo" class="nav-item">Catálogo de Productos</router-link>
         <router-link to="/contact" class="nav-item">Contacto</router-link>
         <template v-if="isLoggedIn">

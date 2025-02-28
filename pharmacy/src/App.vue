@@ -2,6 +2,7 @@
   <div id="app">
     <Header />
     <router-view /> <!-- Aquí se mostrarán las páginas según la ruta -->
+    
   </div>
 </template>
 
@@ -10,7 +11,7 @@ import Header from '@/components/Header.vue';
 
 export default {
   name: "App",
-  components: { Header }
+  components: { Header  }
 };
 </script>
 
