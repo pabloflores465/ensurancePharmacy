@@ -1,22 +1,17 @@
-<script setup lang="ts">
+<script setup>
 import { onMounted, ref, watch } from 'vue';
 
-interface Props {
-  fieldNames: string[];
-  searchFields: (boolean | string | number)[];
-  output: Record<string, any>[];
-}
-const props = defineProps<Props>();
+const props = defineProps(['fieldNames', 'searchFields', 'output']);
 const emit = defineEmits(["update:output"]);
-const checkedFields = ref<boolean[]>([]);
-const textSearchFields: string[] = [];
-const searchValue = ref<string>("");
+const checkedFields = ref([]);
+const textSearchFields = ref([]);
+const searchValue = ref("");
 const initialValue = props.output;
 
 onMounted(() => {
   props.searchFields.forEach((element) => {
     checkedFields.value.push(false);
-    textSearchFields.push(element.toString());
+    textSearchFields.value.push(element.toString());
   });
 });
 
@@ -26,7 +21,7 @@ watch([searchValue, checkedFields], () => {
     return;
   }
 
-  const activeFields = textSearchFields.filter(
+  const activeFields = textSearchFields.value.filter(
     (_, i) => checkedFields.value[i],
   );
 
@@ -51,8 +46,8 @@ watch([searchValue, checkedFields], () => {
   emit("update:output", filtered);
 }, { deep: true });
 
-function updateSearchValue(event: Event) {
-  const target = event.target as HTMLInputElement;
+function updateSearchValue(event) {
+  const target = event.target;
   searchValue.value = target.value;
 }
 </script>
