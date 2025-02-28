@@ -6,6 +6,8 @@ import com.sources.app.util.HibernateUtil;
 import com.sun.net.httpserver.HttpServer;
 import org.hibernate.Session;
 import java.net.InetAddress;
+import java.net.*;
+import java.util.Enumeration;
 
 import java.net.InetSocketAddress;
 
@@ -28,6 +30,28 @@ public class App {
     private static final TransactionPolicyDAO transactionPolicyDAO = new TransactionPolicyDAO();
     private static final ServiceCategoryDAO serviceCategoryDAO = new ServiceCategoryDAO();
 
+    private static String getLocalExternalIp() {
+        try {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface iface = interfaces.nextElement();
+                // Ignora interfaces inactivas o de loopback
+                if (!iface.isUp() || iface.isLoopback()) continue;
+                Enumeration<InetAddress> addresses = iface.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    InetAddress addr = addresses.nextElement();
+                    // Solo direcciones IPv4 que no sean loopback o de enlace local
+                    if (addr instanceof Inet4Address && !addr.isLoopbackAddress() && !addr.isLinkLocalAddress()) {
+                        return addr.getHostAddress();
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+        return "127.0.0.1";
+    }
+
 
     public static void main(String[] args) throws Exception {
         // Prueba de conexión a la base de datos
@@ -42,8 +66,10 @@ public class App {
             e.printStackTrace();
         }
 
+        String ip = getLocalExternalIp();
+
         // Crear y configurar el servidor HTTP
-        HttpServer server = HttpServer.create(new InetSocketAddress("0.0.0.0", 8080), 0);
+        HttpServer server = HttpServer.create(new InetSocketAddress(ip, 8080), 0);
         server.createContext("/api/login", new LoginHandler(userDAO));
         server.createContext("/api/users", new UserHandler(userDAO));
         server.createContext("/api/policy", new PolicyHandler(policyDAO));
@@ -64,7 +90,6 @@ public class App {
         server.createContext("/api/servicecategory", new ServiceCategoryHandler(serviceCategoryDAO));
         server.setExecutor(null); // Usa el executor por defecto
         server.start();
-        InetAddress ip = InetAddress.getLocalHost();
-        System.out.println("Servidor iniciado en http://" + ip.getHostAddress() + ":8080/api");
+        System.out.println("Servidor iniciado en http://" + ip + ":8080/api");
     }
 }

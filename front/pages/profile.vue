@@ -2,6 +2,7 @@
 import {setProfile, useProfile} from "~/composables/useProfile";
 import axios from "axios";
 import {onMounted} from "vue";
+import { toRaw } from 'vue';
 
 interface Policy {
   idPolicy: number;
@@ -131,105 +132,72 @@ const prescriptions: Ref<
   }
 ]);
 
-const appointments: Ref<
-  {
-    number: number;
-    date: string;
-    doctor: string;
-    hospital: string;
-  }[]
-> = ref([
-  {
-    number: 1,
-    date: "2025-03-01",
-    doctor: "Dr. Ana López",
-    hospital: "Hospital Central",
-  },
-  {
-    number: 2,
-    date: "2025-03-02",
-    doctor: "Dr. Carlos Pérez",
-    hospital: "Clínica del Sol",
-  },
-  {
-    number: 3,
-    date: "2025-03-03",
-    doctor: "Dra. María Gómez",
-    hospital: "Hospital Santa María",
-  },
-  {
-    number: 4,
-    date: "2025-03-04",
-    doctor: "Dr. Juan Martínez",
-    hospital: "Centro Médico",
-  },
-  {
-    number: 5,
-    date: "2025-03-05",
-    doctor: "Dra. Elena Rodríguez",
-    hospital: "Hospital San Juan",
-  },
-  {
-    number: 6,
-    date: "2025-03-06",
-    doctor: "Dr. Luis Hernández",
-    hospital: "Clínica Los Ángeles",
-  },
-  {
-    number: 7,
-    date: "2025-03-07",
-    doctor: "Dra. Sofía García",
-    hospital: "Hospital General",
-  },
-  {
-    number: 8,
-    date: "2025-03-08",
-    doctor: "Dr. Pedro Ramírez",
-    hospital: "Clínica del Norte",
-  },
-  {
-    number: 9,
-    date: "2025-03-09",
-    doctor: "Dra. Marta Sánchez",
-    hospital: "Hospital Regional",
-  },
-  {
-    number: 10,
-    date: "2025-03-10",
-    doctor: "Dr. Jorge Castro",
-    hospital: "Clínica del Este",
-  },
-  {
-    number: 11,
-    date: "2025-03-11",
-    doctor: "Dra. Lucía Torres",
-    hospital: "Hospital Central",
-  },
-  {
-    number: 12,
-    date: "2025-03-12",
-    doctor: "Dr. Miguel Reyes",
-    hospital: "Centro Médico",
-  },
-  {
-    number: 13,
-    date: "2025-03-13",
-    doctor: "Dra. Laura Morales",
-    hospital: "Hospital San José",
-  },
-  {
-    number: 14,
-    date: "2025-03-14",
-    doctor: "Dr. Andrés Vega",
-    hospital: "Clínica del Valle",
-  },
-  {
-    number: 15,
-    date: "2025-03-15",
-    doctor: "Dra. Daniela Ruiz",
-    hospital: "Hospital de la Luz",
-  },
-]);
+interface Policy {
+  idPolicy: number;
+  percentage: number;
+  creationDate: number; // Representado en milisegundos
+  expDate: number;      // Representado en milisegundos
+  cost: number;
+  enabled: number;
+}
+
+interface User {
+  idUser: number;
+  name: string;
+  cui: number;
+  phone: string;
+  email: string;
+  address: string;
+  birthDate: number;    // Representado en milisegundos
+  role: string;
+  policy: Policy;
+  enabled: number;
+  password: string;
+}
+
+interface Hospital {
+  idHospital: number;
+  name: string;
+  address: string;
+  phone: number;
+  email: string;
+  enabled: number;
+}
+
+interface Appointment {
+  idAppointment: number;
+  hospital: Hospital;
+  user: User;
+  appointmentDate: number;  // Representado en milisegundos
+  enabled: number;
+}
+const appointments = ref<Appointment[]>([]);
+
+const fetchAppointment = async () => {
+  try {
+    isLoading.value = true;
+    hasError.value = false;
+
+    const storedUser = profile.value;
+    const id = storedUser?.idUser;
+
+    if (!id) {
+      throw new Error("No se encontró idUser en localStorage");
+    }
+
+    const response = await axios.get(`http://${ip}:8080/api/appointment?user_id=${id}`);
+
+    appointments.value = response.data;
+    console.log(id);
+    console.log(toRaw(appointments.value));
+  } catch (error) {
+    console.error("Error al cargar el perfil:", error);
+    hasError.value = true;
+  } finally {
+    isLoading.value = false;
+  }
+};
+fetchAppointment();
 const edit = useEdit();
 console.log()
 </script>
@@ -370,7 +338,7 @@ console.log()
                 />
               </svg>
               <div class="title me-2 text-lg font-semibold">
-                Number: {{ appointment.number }}
+                Number: {{ appointment.idAppointment }}
               </div>
             </div>
             <div class="text-primary mb-4 flex">
@@ -387,7 +355,7 @@ console.log()
                 />
               </svg>
               <div class="me-2 font-semibold">Date:</div>
-              {{ appointment.date }}
+              {{ appointment.appointmentDate }}
             </div>
             <div class="text-secondary mb-4 flex text-sm">
               <svg
@@ -402,8 +370,8 @@ console.log()
                   d="M694-120 552-262l57-56 85 85 170-170 56 57-226 226ZM540-80q-108 0-184-76t-76-184v-23q-86-14-143-80.5T80-600v-240h120v-40h80v160h-80v-40h-40v160q0 66 47 113t113 47q66 0 113-47t47-113v-160h-40v40h-80v-160h80v40h120v240q0 90-57 156.5T360-363v23q0 75 52.5 127.5T540-160v80Z"
                 />
               </svg>
-              <div class="me-2 font-semibold">Doctor:</div>
-              {{ appointment.doctor }}
+              <div class="me-2 font-semibold">Pacient:</div>
+              {{ appointment.user.name }}
             </div>
             <div class="text-secondary flex text-sm">
               <svg
@@ -419,7 +387,7 @@ console.log()
                 />
               </svg>
               <div class="me-2 font-semibold">hospital:</div>
-              {{ appointment.doctor }}
+              {{ appointment.hospital.name }}
             </div>
           </div>
         </div>
