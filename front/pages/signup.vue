@@ -12,6 +12,7 @@ const address = ref("");
 const phone = ref("");
 const cui = ref("");
 const errorMessage = ref("");
+const ip = useIP();
 
 const createUser = async () => {
   try {
@@ -23,7 +24,7 @@ const createUser = async () => {
     console.log(name, cui, phone, email, birthdate, address, password);
 
     const response = await axios.post(
-      "http://localhost:8080/api/users", // URL de tu endpoint de login
+      `http://${ip}:8080/api/users`, // URL de tu endpoint de login
       {
         name: name.value,
         cui: cui.value,

@@ -12,6 +12,7 @@ interface Policy {
   enabled: number;
 }
 const policies = ref<Policy[]>([]);
+const ip = useIP();
 let policyChanges: Policy[] = [];
 const fetchPolicy = async () => {       
   try {
@@ -20,7 +21,7 @@ const fetchPolicy = async () => {
       title: "Loading policies",
       description: "Please wait...",
     });
-    const response = await axios.get("http://localhost:8080/api/policy");
+    const response = await axios.get(`http://${ip}:8080/api/policy`);
     policies.value = response.data;
     policyChanges = response.data.map((policy: Policy) => ({ ...policy }));
     console.log("Hospitals obtenidos:", policies.value);  

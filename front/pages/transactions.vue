@@ -14,6 +14,7 @@ interface Prescription {
   show: boolean;
 }
 const prescriptions: Ref<Prescription[]> = ref([]);
+const ip = useIP();
 const fetchTransactions = async () => {
   try {
     notify({
@@ -21,7 +22,7 @@ const fetchTransactions = async () => {
       title: "Loading services",
       description: "Please wait...",
     });
-    const response = await axios.get("http://localhost:8080/api/transactions");
+    const response = await axios.get(`http://${ip}:8080/api/transactions`);
     console.log("Prescriptions obtenidos:", response.data);
     prescriptions.value = response.data;
     notify({

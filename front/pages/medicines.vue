@@ -30,6 +30,7 @@ interface Medicine {
 const medicines = ref<Medicine[]>([]);
 const isLoading = ref(false);
 const hasError = ref(false);
+const ip = useIP();
 let medicineChanges: Medicine[] = [];
 
 const fetchMedicines = async () => {
@@ -41,7 +42,7 @@ const fetchMedicines = async () => {
     });
     isLoading.value = true;
     hasError.value = false;
-    const response = await axios.get("http://localhost:8080/api/medicine");
+    const response = await axios.get(`http://${ip}:8080/api/medicine`);
     medicines.value = response.data;
     medicineChanges = response.data.map((medicine: Medicine) => ({ ...medicine }));
     console.log("Medicines obtenidas:", medicines.value);

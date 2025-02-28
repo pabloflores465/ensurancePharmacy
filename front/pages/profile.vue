@@ -31,6 +31,7 @@ console.log(JSON.stringify(profile.value))
 const user = ref<User | null>(null);
 const isLoading = ref(false);
 const hasError = ref(false);
+const ip = useIP();
 
 const fetchUser = async () => {
   try {
@@ -44,7 +45,7 @@ const fetchUser = async () => {
       throw new Error("No se encontró idUser en localStorage");
     }
 
-    const response = await axios.get(`http://localhost:8080/api/users/${id}`);
+    const response = await axios.get(`http://${ip}:8080/api/users/${id}`);
     user.value = response.data;
     setProfile(user.value!);
   } catch (error) {

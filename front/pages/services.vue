@@ -36,6 +36,7 @@ const edit = useEdit();
 const search = useSearch();
 const getCategory: Ref<SelectedCategory | null> = getCurrentCategory();
 const services = ref<Service[]>([]);
+const ip = useIP();
 let temp: Service[] = [];
 
 const fetchService = async () => {
@@ -45,7 +46,7 @@ const fetchService = async () => {
       title: "Loading services",
       description: "Please wait...",
     });
-    const response = await axios.get("http://localhost:8080/api/service");
+    const response = await axios.get(`http://${ip}:8080/api/service`);
     console.log(response.data);
     services.value = response.data;
     temp = response.data.map((service: Service) => ({ ...service }));

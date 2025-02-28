@@ -16,6 +16,7 @@ const hospitals = ref<Hospital[]>([]);
 
 // Add loading state if not already present
 const isLoading = ref(false);
+const ip = useIP();
 
 const fetchHospitals = async () => {
   try {
@@ -25,7 +26,7 @@ const fetchHospitals = async () => {
       description: "Please wait...",
     });
     isLoading.value = true;
-    const response = await axios.get("http://localhost:8080/api/hospital");
+    const response = await axios.get(`http://${ip}:8080/api/hospital`);
     hospitals.value = response.data;
     console.log("Hospitals obtenidos:", hospitals.value);
     notify({
