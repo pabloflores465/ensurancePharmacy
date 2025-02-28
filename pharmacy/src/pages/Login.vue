@@ -57,8 +57,8 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-const ip = process.env.IP;
-console.log("manitas calientes " + ip);
+const ip = process.env.VUE_APP_IP;
+console.log("tu puta madre " + ip);
 
 // Manejo de rutas para la imagen de fondo
 
