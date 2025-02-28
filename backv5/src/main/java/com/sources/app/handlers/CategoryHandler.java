@@ -2,6 +2,7 @@ package com.sources.app.handlers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sources.app.entities.Category;
+import com.sources.app.dao.CategoryDAO;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;

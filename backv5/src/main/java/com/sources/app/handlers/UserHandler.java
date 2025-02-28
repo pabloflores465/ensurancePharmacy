@@ -2,6 +2,7 @@ package com.sources.app.handlers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sources.app.entities.User;
+import com.sources.app.dao.UserDAO;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
