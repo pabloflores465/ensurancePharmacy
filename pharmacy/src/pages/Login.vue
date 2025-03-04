@@ -13,14 +13,7 @@
       <h2 class="text-2xl font-bold text-center text-blue-800 mb-4">Iniciar Sesión</h2>
 
       <!-- Selector de tipo de usuario -->
-      <div class="mb-4">
-        <label class="block text-gray-700">Selecciona tu rol:</label>
-        <select v-model="role" class="w-full p-2 border rounded-lg">
-          <option value="user">Usuario</option>
-          <option value="employee">Empleado</option>
-          <option value="admin">Administrador</option>
-        </select>
-      </div>
+     
 
       <!-- Formulario de inicio de sesión -->
       <form @submit.prevent="login">

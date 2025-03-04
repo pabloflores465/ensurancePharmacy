@@ -41,22 +41,29 @@
   
   <script setup>
   import { ref } from "vue";
+  // Import local images for the carousel
+  import carousel1 from '@/assets/botellas.jpg';
+  import carousel2 from '@/assets/farmacia.png';
+  import carousel3 from '@/assets/mas.jpeg';
+  
+  // Import local images for offers
+  import omronImage from '@/assets/muletas.jpg';
+  import sukrolImage from '@/assets/pastillas.jpg';
+  import isdinImage from '@/assets/botellas.jpg';
   
   // Lista de imágenes del carrusel (URLs)
   const carouselImages = ref([
-  "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.es%2Ffotos-vectores-gratis%2Fmedicamentos-dibujo&psig=AOvVaw0yIWmNY1b5NZT8f5l8AnK_&ust=1740680728122000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCLitqpX74YsDFQAAAAAdAAAAABAE",
-  "https://www.google.com/url?sa=i&url=https%3A%2F%2Fmedicamentos.mspas.gob.gt%2F&psig=AOvVaw0yIWmNY1b5NZT8f5l8AnK_&ust=1740680728122000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCLitqpX74YsDFQAAAAAdAAAAABAG",
-  "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.quironsalud.com%2Fblogs%2Fes%2Falergologia-infantil%2Falergia-medicamentos-infancia&psig=AOvVaw0yIWmNY1b5NZT8f5l8AnK_&ust=1740680728122000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCLitqpX74YsDFQAAAAAdAAAAABAN"
-]);
+    carousel1,
+    carousel2,
+    carousel3
+  ]);
   
   // Lista de ofertas con imágenes desde URL
   const offers = ref([
-  { title: "Omron - Presión Arterial", image: "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.latimes.com%2Fespanol%2Feeuu%2Farticulo%2F2024-12-23%2Fla-fda-afirma-que-muchos-medicamentos-para-el-resfriado-no-funcionan-hara-cambios&psig=AOvVaw0yIWmNY1b5NZT8f5l8AnK_&ust=1740680728122000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCLitqpX74YsDFQAAAAAdAAAAABAc" },
-  { title: "Sukrol - Suplemento Cerebral", image: "https://d2j6dbq0eux0bg.cloudfront.net/images/68223696/3347644729.jpg" },
-  { title: "10% Descuento en ISDIN", image: "https://www.isdin.com/assets/uploads/2021/09/fotoprotector-banner.jpg" }
-]);
-
-
+    { title: "Omron - Presión Arterial", image: omronImage },
+    { title: "Sukrol - Suplemento Cerebral", image: sukrolImage },
+    { title: "10% Descuento en ISDIN", image: isdinImage }
+  ]);
   
   // Estado del carrusel
   const currentImage = ref(0);
@@ -131,6 +138,8 @@
   
   .carousel-img {
     width: 100%;
+    height: 400px; /* Fixed height */
+    object-fit: cover;
     border-radius: 10px;
   }
   
@@ -180,6 +189,8 @@
   
   .offer-img {
     width: 100%;
+    height: 200px; /* Fixed height */
+    object-fit: cover;
     border-radius: 5px;
   }
   

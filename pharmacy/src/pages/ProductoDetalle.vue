@@ -20,6 +20,7 @@
         <p><strong>Ingrediente Activo:</strong> {{ product.activeIngredient }}</p>
         <p><strong>Descripción General:</strong> {{ product.generalDescription }}</p>
         <p><strong>Recomendación de Uso:</strong> {{ product.usageRecommendation }}</p>
+        <Comentarios :initialComments="productComments" />
       </div>
       <!-- Si no existe el producto, mostramos un mensaje de error -->
       <div v-else>
@@ -29,14 +30,23 @@
   </template>
   
   <script>
+  import Comentarios from '@/components/Comentarios.vue';
+
   export default {
     name: "ProductoDetalle",
+    components: {
+      Comentarios
+    },
     // Permite que el ID llegue como prop (asegúrate de que en el router usas props: true)
     props: ["id"],
     
     data() {
       return {
-        product: null
+        product: null,
+        productComments: [
+          { id: 1, author: 'Juan', text: 'Muy buen producto!' },
+          { id: 2, author: 'Maria', text: 'Me ayudó mucho, gracias!' }
+        ]
       };
     },
     
@@ -75,7 +85,7 @@
       ];
     
       // Se filtra el producto que coincida con el ID recibido en la ruta
-      this.product = productos.find(prod => prod.id === this.id);
+      this.product = productos.find(prod => prod.id === '1'); // Mostrar el detalle del producto 1
     }
   };
   </script>
