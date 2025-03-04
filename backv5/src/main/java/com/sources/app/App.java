@@ -5,10 +5,10 @@ import com.sources.app.handlers.*;
 import com.sources.app.util.HibernateUtil;
 import com.sun.net.httpserver.HttpServer;
 import org.hibernate.Session;
+import java.net.InetAddress;
 import java.net.*;
 import java.util.Enumeration;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 public class App {
@@ -50,11 +50,12 @@ public class App {
         return "127.0.0.1";
     }
 
+
     public static void main(String[] args) throws Exception {
         // Prueba de conexión a la base de datos
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             if (session.isConnected()) {
-                System.out.println("¡Conexión exitosa a la base de datos!");
+                System.out.println("Conexión exitosa a la base de datos!");
             } else {
                 System.err.println("No se pudo establecer conexión a la base de datos.");
             }
@@ -64,10 +65,8 @@ public class App {
         }
 
         String ip = getLocalExternalIp();
-        // Crear y configurar el servidor HTTP en el puerto 8080
-        HttpServer server = HttpServer.create(new InetSocketAddress(ip, 8000), 0);
 
-
+        HttpServer server = HttpServer.create(new InetSocketAddress(8081), 0);
 
         // Asignamos cada contexto con su respectivo Handler usando el prefijo "/api2"
         server.createContext("/api2/login", new LoginHandler(userDAO));
@@ -86,7 +85,7 @@ public class App {
         server.createContext("/api2/prescription_medicines", new PrescriptionMedicineHandler(prescriptionMedicineDAO));
         server.createContext("/api2/subcategories", new SubcategoryHandler(subcategoryDAO));
         server.setExecutor(null); // Usa el executor por defecto
-        System.out.println("Servidor iniciado en http://" + ip + ":8000/api");
-        Thread.currentThread().join();
+        server.start();
+        System.out.println("Servidor iniciado en http://" + ip + ":8081/api2");
     }
 }
