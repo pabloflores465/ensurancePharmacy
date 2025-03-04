@@ -7,3 +7,4 @@
 /.idea
 /front/.env
 /pharmacy/.env
+front/.nuxt/
