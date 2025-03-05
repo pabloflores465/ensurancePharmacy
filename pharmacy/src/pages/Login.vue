@@ -82,7 +82,6 @@ const ip = process.env.VUE_APP_IP;
 console.log("IP del servidor: " + ip);
 
 const router = useRouter();
-const userStore = useUserStore();
 
 // Campos reactivamente enlazados al formulario
 const email = ref('');
