@@ -8,3 +8,4 @@
 /front/.env
 /pharmacy/.env
 front/.nuxt/
+.env
