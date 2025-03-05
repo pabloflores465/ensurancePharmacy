@@ -1,71 +1,70 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="login-container">
-    <!-- Sección izquierda con imagen de fondo -->
     <div class="login-image"></div>
 
-    <!-- Sección derecha con formulario -->
     <div class="login-box">
       <div class="logo-container">
         <img src="@/assets/logo.png" alt="Farmacia Logo" class="logo" />
       </div>
 
-      <h2 class="text-2xl font-bold text-center text-blue-800 mb-4">Iniciar Sesión</h2>
+      <h2 class="text-2xl font-bold text-center text-blue-800 mb-4">
+        Iniciar Sesión
+      </h2>
 
-      <!-- Selector de tipo de usuario -->
-     
+      <!-- Mensaje de error si lo hay -->
+      <div v-if="errorMessage" class="mb-4 text-red-600 text-center">
+        {{ errorMessage }}
+      </div>
 
-      <!-- Formulario de inicio de sesión -->
+      <!-- Formulario -->
       <form @submit.prevent="login">
-        <!-- Para usuarios y empleados -->
-        <div v-if="role === 'user' || role === 'employee'" class="mb-4">
-          <label class="block text-gray-700">
-            {{ role === 'user' ? "E-mail" : "E-mail" }}
-          </label>
+        <!-- E-mail -->
+        <div class="mb-4">
+          <label class="block text-gray-700">E-mail</label>
           <div class="input-group">
-            <input v-model="identifier" type="text" class="input-field" required />
+            <input
+              v-model="email"
+              type="text"
+              class="input-field"
+              required
+            />
             <span class="icon">👤</span>
           </div>
-          <div class="mb-4">
-            <label class="block text-gray-700">Contraseña</label>
-            <div class="input-group">
-              <input v-model="adminPassword" type="password" class="input-field" required />
-              <span class="icon">🔒</span>
-            </div>
-          </div>
         </div>
-
-        <!-- Para administradores -->
-        <div v-if="role === 'admin'" class="mb-4">
-          <label class="block text-gray-700">Usuario Administrador</label>
+        
+        <!-- Contraseña -->
+        <div class="mb-4">
+          <label class="block text-gray-700">Contraseña</label>
           <div class="input-group">
-            <input v-model="adminUsername" type="text" class="input-field" required />
-            <span class="icon">👤</span>
+            <input
+              v-model="password"
+              type="password"
+              class="input-field"
+              required
+            />
+            <span class="icon">🔒</span>
           </div>
-          <div class="mb-4">
-            <label class="block text-gray-700">Contraseña</label>
-            <div class="input-group">
-              <input v-model="adminPassword" type="password" class="input-field" required />
-              <span class="icon">🔒</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Mensaje de error -->
-        <div v-if="errorMessage" class="mb-4 text-red-600 text-center">
-          {{ errorMessage }}
         </div>
 
         <!-- Botón de inicio de sesión -->
-        <button type="submit" class="login-button">
-          Iniciar sesión →
-        </button>
+        <button type="submit" class="login-button">Iniciar sesión →</button>
       </form>
+
       <!-- Enlace para registrarse -->
       <div class="text-center mt-4">
-        <router-link to="/register" class="text-blue-500 hover:underline">Regístrarse aquí</router-link>
+        <router-link to="/register" class="text-blue-500 hover:underline">
+          Regístrarse aquí
+        </router-link>
       </div>
-      
+    </div>
+  </div>
+
+  <!-- Modal para mostrar el tipo de usuario -->
+  <div v-if="showModal" class="modal">
+    <div class="modal-content">
+      <span class="close" @click="showModal = false">&times;</span>
+      <p>Tipo de usuario: {{ userType }}</p>
     </div>
   </div>
 </template>
@@ -75,47 +74,61 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 
-// Asegúrate de tener definida la variable de entorno (p. ej., VUE_APP_IP)
-const ip = process.env.VUE_APP_IP;
-console.log("IP del servidor: " + ip);
+// IMPORTA tu userStore
+import { useUserStore } from '@/stores/userStore';
+
+// Ejemplo: si usas variable de entorno para la IP
+// Si no, puedes poner la IP/PUERTO directamente en la URL
+const ip = process.env.VUE_APP_IP || 'localhost';
 
 const router = useRouter();
+const userStore = useUserStore();
 
-// Variables reactivas para los campos del formulario
-const role = ref('user'); 
-const identifier = ref('');
-const adminUsername = ref('');
-const adminPassword = ref('');
+// Campos reactivamente enlazados al formulario
+const email = ref('');
+const password = ref('');
 const errorMessage = ref('');
+const showModal = ref(false);
+const userType = ref('');
 
-// Función de login que valida las credenciales llamando a la API
+// Función principal de login
 const login = async () => {
   errorMessage.value = '';
-
-  // Objeto payload que se enviará a la API
-  let payload = {};
-
-  if (role.value === 'user' || role.value === 'employee') {
-    if (identifier.value.trim() === '' || adminPassword.value.trim() === '') {
-      errorMessage.value = "El número de usuario/empleado y la contraseña son obligatorios.";
-      return;
-    }
-    payload.email = identifier.value;
-    payload.password = adminPassword.value;
-  } else if (role.value === 'admin') {
-    if (adminUsername.value.trim() === '' || adminPassword.value.trim() === '') {
-      errorMessage.value = "Usuario y contraseña son obligatorios.";
-      return;
-    }
-    payload.email = adminUsername.value;
-    payload.password = adminPassword.value;
-  }
-
+  
   try {
-    // Llamada POST al endpoint /api2/login
-    const response = await axios.post(`http://${ip}:8081/api2/login`, payload);
+    // Petición POST al backend (ajusta la URL a la tuya)
+    const response = await axios.post(`http://${ip}:8081/api2/login`, {
+      email: email.value,
+      password: password.value
+    });
+    
+    // Supongamos que tu backend responde algo como:
+    // {
+    //   "Object": {
+    //       "idUser": 3,
+    //       "name": "Rodrigo",
+    //       "role": "admin",
+    //       ...
+    //   }
+    // }
+    // Ajusta a cómo venga tu data
     console.log("Login exitoso:", response.data);
-    // Si la respuesta es exitosa, redirige al inicio o a la ruta deseada
+
+    // Extrae el objeto que viene del backend
+    const userData = response.data.Object; 
+    // O si tu backend retorna directamente => const userData = response.data; 
+
+    // Verifica que exista userData
+    if (userData) {
+      // 1. Guarda en localStorage
+      localStorage.setItem('user', JSON.stringify(userData));
+      // 2. Guarda en el userStore (así isLoggedIn = true)
+      userStore.setUser(userData);
+      userType.value = userData.role;
+      showModal.value = true;
+    }
+
+    // Redirige a la página principal
     router.push('/');
   } catch (error) {
     console.error("Error en el login:", error);
@@ -125,26 +138,18 @@ const login = async () => {
 </script>
 
 <style scoped>
-/* Diseño de dos columnas */
+/* Ejemplo de estilos, ajusta a tu gusto. */
 .login-container {
   display: flex;
   height: 100vh;
   background-color: #f8f9fa;
 }
-
-/* Sección izquierda con imagen de fondo */
 .login-image {
   flex: 1;
   background-image: url(@/assets/farmacialog.jpg);
   background-position: center;
-  background-repeat: no-repeat;
   background-size: cover;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
-
-/* Sección derecha (Formulario) */
 .login-box {
   flex: 1;
   background: white;
@@ -153,21 +158,10 @@ const login = async () => {
   justify-content: center;
   align-items: center;
   padding: 50px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-  border-radius: 15px;
-}
-
-/* Logo */
-.logo-container {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
 }
 .logo {
   max-width: 150px;
 }
-
-/* Inputs estilizados */
 .input-group {
   position: relative;
   width: 100%;
@@ -185,8 +179,6 @@ const login = async () => {
   top: 50%;
   transform: translateY(-50%);
 }
-
-/* Botón estilizado */
 .login-button {
   width: 100%;
   background: #1e40af;
@@ -196,22 +188,37 @@ const login = async () => {
   font-size: 18px;
   font-weight: bold;
   cursor: pointer;
-  transition: 0.3s;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  margin-top: 1rem;
 }
 .login-button:hover {
   background: #1e3a8a;
 }
 
-/* Responsivo */
-@media (max-width: 768px) {
-  .login-container {
-    flex-direction: column;
-  }
-  .login-image {
-    display: none; /* Ocultar imagen en pantallas pequeñas */
-  }
+.modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  cursor: pointer;
 }
 </style>

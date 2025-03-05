@@ -13,11 +13,35 @@
         <router-link to="/receta" class="nav-item">Receta</router-link>
         <router-link to="/contact" class="nav-item">Contacto</router-link>
 
+        <!-- Enlace SOLO para administradores -->
+        <router-link
+          v-if="isLoggedIn && userStore.user.role === 'admin'"
+          to="/admin"
+          class="nav-item"
+        >
+          Agregar Productos
+        </router-link>
+
+        <router-link
+          v-if="isLoggedIn && userStore.user.role === 'admin'"
+          to="/admin/create-product"
+          class="nav-item"
+        >
+          Crear Producto
+        </router-link>
+
+        <router-link
+          to="/create-product"
+          class="nav-item"
+        >
+          Crear Producto
+        </router-link>
+
         <!-- Si el usuario está loggeado -->
         <template v-if="isLoggedIn">
           <!-- Muestra el rol -->
           <span class="logged-user-message">
-            Usted está loggeado como: {{ userRole }}
+            Rol: {{ userStore.user.role }}
           </span>
           <!-- Botón para cerrar sesión -->
           <button @click="logout" class="login-button">Cerrar Sesión</button>
@@ -29,7 +53,7 @@
         </template>
       </nav>
 
-      <!-- Botón de menú hamburguesa (móvil) -->
+      <!-- Botón de menú hamburguesa (versión móvil) -->
       <button @click="toggleMenu" class="menu-button md:hidden">☰</button>
     </div>
 
@@ -38,30 +62,44 @@
       <router-link to="/" class="mobile-item" @click="toggleMenu">Inicio</router-link>
       <router-link to="/ofertas" class="mobile-item" @click="toggleMenu">Ofertas</router-link>
       <router-link to="/catalogo" class="mobile-item" @click="toggleMenu">Catálogo de Productos</router-link>
+      <router-link to="/receta" class="mobile-item" @click="toggleMenu">Receta</router-link>
       <router-link to="/contact" class="mobile-item" @click="toggleMenu">Contacto</router-link>
 
-      <!-- Si está loggeado, muestra rol y botón de logout en el menú móvil -->
+      <!-- Enlace SOLO para administradores (móvil) -->
+      <router-link
+        v-if="isLoggedIn && userStore.user.role === 'admin'"
+        to="/admin"
+        class="mobile-item"
+        @click="toggleMenu"
+      >
+        Agregar Productos
+      </router-link>
+
+      <!-- Si está loggeado, muestra rol y logout (móvil) -->
       <template v-if="isLoggedIn">
         <span class="logged-user-message" style="color:white;">
-          Usted está loggeado como: {{ userRole }}
+          Rol: {{ userStore.user.role }}
         </span>
-        <button @click="logout; toggleMenu()" class="mobile-login">Cerrar Sesión</button>
+        <button @click="logout(); toggleMenu()" class="mobile-login">
+          Cerrar Sesión
+        </button>
       </template>
-      <!-- Si NO está loggeado, muestra botón de login en el menú móvil -->
+      <!-- Si NO está loggeado, login (móvil) -->
       <template v-else>
-        <router-link to="/login" class="mobile-login" @click="toggleMenu">🔑 Iniciar Sesión</router-link>
+        <router-link to="/login" class="mobile-login" @click="toggleMenu">
+          🔑 Iniciar Sesión
+        </router-link>
       </template>
     </div>
   </header>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useUserStore } from '@/stores/userStore';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
+import { useUserStore } from '@/stores/userStore';
 
-// Control del menú móvil
+// Menú móvil
 const mobileMenuOpen = ref(false);
 const toggleMenu = () => {
   mobileMenuOpen.value = !mobileMenuOpen.value;
@@ -71,53 +109,27 @@ const toggleMenu = () => {
 const userStore = useUserStore();
 const router = useRouter();
 
-// Verifica si hay usuario loggeado
+// Computado para saber si hay usuario loggeado
 const isLoggedIn = computed(() => userStore.user !== null);
-
-// Variable local para mostrar el rol del usuario
-const userRole = ref('');
-
-// Cuando se monta el componente, si el usuario está loggeado, llama al API para obtener el rol
-onMounted(() => {
-  if (isLoggedIn.value) {
-    getUserRole();
-  }
-});
-
-/**
- * Ejemplo de función que llama a la API para obtener el rol del usuario.
- * Ajusta la URL y la forma en que recibes el rol según tu backend.
- */
-async function getUserRole() {
-  try {
-    // Si tu backend requiere token, agrégalo en los headers
-    const response = await axios.get('http://localhost:8080/api2/getUserRole');
-    // Asume que la respuesta viene como { role: "admin" } o similar
-    userRole.value = response.data.role;
-  } catch (error) {
-    console.error('Error obteniendo rol del usuario:', error);
-    // En caso de error, podrías mostrar un mensaje o manejarlo según tu lógica
-  }
-}
 
 // Cerrar sesión
 const logout = () => {
   userStore.logout();
+  localStorage.removeItem('user'); // Si usas localStorage
   router.push('/');
 };
 </script>
 
 <style scoped>
-/* Estilos del Navbar */
+/* Ajusta estos estilos a tu gusto */
 .navbar {
-  background: #1e40af; /* Azul fuerte */
+  background: #1e40af;
   padding: 15px 30px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* Contenedor del navbar */
 .navbar-content {
   width: 100%;
   max-width: 1200px;
@@ -126,12 +138,10 @@ const logout = () => {
   align-items: center;
 }
 
-/* Logo */
 .logo {
   height: 50px;
 }
 
-/* Enlaces del menú */
 .nav-links {
   display: flex;
   gap: 20px;
@@ -149,30 +159,22 @@ const logout = () => {
   color: yellow;
 }
 
-/* Botón de iniciar sesión */
 .login-button {
   background: white;
   color: #1e40af;
   padding: 8px 15px;
   border-radius: 5px;
   font-weight: bold;
-  transition: background 0.3s, color 0.3s;
-  text-decoration: none;
   margin-left: 1rem;
+  text-decoration: none;
 }
 
-.login-button:hover {
-  background: #f3f3f3;
-}
-
-/* Mensaje de usuario logueado */
 .logged-user-message {
   color: white;
   font-weight: bold;
   margin-right: 1rem;
 }
 
-/* Menú hamburguesa */
 .menu-button {
   font-size: 24px;
   color: white;
@@ -181,14 +183,12 @@ const logout = () => {
   cursor: pointer;
 }
 
-/* Menú desplegable en móviles */
 .mobile-menu {
   background: #1e40af;
   position: absolute;
   top: 60px;
   left: 0;
   width: 100%;
-  display: flex;
   flex-direction: column;
   text-align: center;
   padding: 15px 0;
