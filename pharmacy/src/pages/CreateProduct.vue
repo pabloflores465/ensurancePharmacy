@@ -44,7 +44,7 @@
       <!-- Presentación -->
       <div class="mb-4">
         <label class="block text-gray-700">Presentación</label>
-        <input v-model="presentacion" type="date" class="input-field" required />
+        <input v-model="presentacion" type="text" class="input-field" required />
       </div>
 
       <!-- Stock -->
@@ -62,7 +62,7 @@
       <!-- Prescripción -->
       <div class="mb-4">
         <label class="block text-gray-700">Prescripción</label>
-        <input v-model="prescription" type="text" class="input-field" required />
+        <input type="checkbox" v-model="prescription" class="checkbox-field" />
       </div>
 
       <!-- Precio -->
@@ -80,6 +80,14 @@
       <!-- Botón de crear producto -->
       <button type="submit" class="create-button">Crear Producto</button>
     </form>
+
+    <!-- Modal de éxito -->
+    <div v-if="showModal" class="modal">
+      <div class="modal-content">
+        <span class="close" @click="showModal = false">&times;</span>
+        <p>Producto creado exitosamente.</p>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -96,10 +104,13 @@ const concentration = ref('');
 const presentacion = ref('');
 const stock = ref(0);
 const brand = ref('');
-const prescription = ref('');
+const prescription = ref(false);
 const price = ref(0.0);
 const soldUnits = ref(0);
 const errorMessage = ref('');
+const showModal = ref(false);
+
+const ip = process.env.VUE_APP_API_IP || 'localhost';
 
 // Función principal de crear producto
 const createProduct = async () => {
@@ -107,7 +118,7 @@ const createProduct = async () => {
 
   try {
     // Petición POST al backend (ajusta la URL a la tuya)
-    const response = await axios.post(`http://localhost:8081/api2/medicines`, {
+    const response = await axios.post(`http://${ip}:8081/api2/medicines`, {
       name: name.value,
       activeMedicament: activeMedicament.value,
       description: description.value,
@@ -122,7 +133,20 @@ const createProduct = async () => {
     });
 
     console.log("Producto creado exitosamente:", response.data);
-    // Redirige a la página principal o muestra un mensaje de éxito
+    // Mostrar modal de éxito
+    showModal.value = true;
+    // Limpiar campos del formulario
+    name.value = '';
+    activeMedicament.value = '';
+    description.value = '';
+    image.value = '';
+    concentration.value = '';
+    presentacion.value = '';
+    stock.value = 0;
+    brand.value = '';
+    prescription.value = false;
+    price.value = 0.0;
+    soldUnits.value = 0;
   } catch (error) {
     console.error("Error al crear el producto:", error);
     errorMessage.value = 'Error al crear el producto. Por favor, inténtelo de nuevo.';
@@ -150,6 +174,10 @@ const createProduct = async () => {
   margin-top: 8px;
 }
 
+.checkbox-field {
+  margin-top: 8px;
+}
+
 .create-button {
   width: 100%;
   background: #1e40af;
@@ -164,5 +192,33 @@ const createProduct = async () => {
 
 .create-button:hover {
   background: #1e3a8a;
+}
+
+.modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  cursor: pointer;
 }
 </style>

@@ -21,6 +21,7 @@ const routes = [
   { path : '/ofertas', component: Ofertas },
   { path: '/producto/:id', name: 'ProductoDetalle', component: ProductoDetalle},
   { path: '/receta', component: Receta},
+  { path: '/create-product', component: CreateProduct},
   {
     path: '/admin/create-product',
     name: 'CreateProduct',
