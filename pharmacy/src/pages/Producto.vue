@@ -3,7 +3,7 @@
   <div class="product-details-container">
     <div v-if="product">
       <h2 class="product-title">{{ product.name }}</h2>
-      <img :src="product.image" :alt="product.name" class="product-image" />
+      <!--<img :src="product.image" :alt="product.name" class="product-image" />-->
       <p class="product-description">{{ product.description }}</p>
       
       <!-- Botón para ver detalles adicionales -->
@@ -15,10 +15,10 @@
       <div v-if="showModal" class="modal-overlay">
         <div class="modal">
           <h3>Detalles del Producto</h3>
-          <p><strong>Inventario:</strong> {{ product.inventory }}</p>
-          <p><strong>Principio Activo:</strong> {{ product.activeIngredient }}</p>
-          <p><strong>Descripción General:</strong> {{ product.generalDescription }}</p>
-          <p><strong>Recomendación de Uso:</strong> {{ product.usageRecommendation }}</p>
+          <p><strong>Inventario:</strong> {{ product.stock }}</p>
+          <p><strong>Principio Activo:</strong> {{ product.activeMedicament }}</p>
+          <p><strong>Descripción General:</strong> {{ product.description}}</p>
+          <!--<p><strong>Recomendación de Uso:</strong> {{ product.usageRecommendation }}</p>-->
           <button @click="showModal = false" class="close-modal-btn">Cerrar</button>
         </div>
       </div>
@@ -53,28 +53,35 @@ import Header from '@/components/Header.vue';
 import axios from 'axios';
 
 const route = useRoute();
-const productId = route.params.id;
+const productId = route.params.id; // Se espera que el router pase el id como string
+const ip = process.env.VUE_APP_IP;
 
 const medicines = ref([]);
 
 const fetchMedicines = async () => {
   try {
-    const response = await axios.get('http://localhost:8080/api2/medicines');
-    this.medicines = response.data;
-    console.log(medicines.value);
+    const response = await axios.get(`http://${ip}:8081/api2/medicines`);
+    medicines.value = response.data;
+    console.log("Medicinas recibidas:", medicines.value);
   } catch (error) {
     console.error('Error fetching medicines:', error);
   }
 };
 fetchMedicines();
 
-const product = computed(() => products.find(p => p.id === productId));
+// Se busca el producto cuyo idMedicine coincida con productId
+const product = computed(() => {
+  return medicines.value.find(p => String(p.idMedicine) === productId) || {};
+});
 
 const newComment = ref('');
 const showModal = ref(false);
 
 const submitComment = () => {
   if (newComment.value.trim() && product.value) {
+    if (!product.value.comments) {
+      product.value.comments = [];
+    }
     product.value.comments.push({ id: Date.now(), text: newComment.value });
     newComment.value = '';
   }

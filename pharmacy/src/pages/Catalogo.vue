@@ -40,11 +40,11 @@
     <h2 class="title">🛒 Catálogo de Productos</h2>
   
     <div class="product-grid">
-      <div v-for="product in filteredProducts" :key="product.id" class="product-card">
-        <img :src="product.gallery[0]" :alt="product.name" class="product-image" />
+      <div v-for="product in filteredProducts" :key="product.idMedicine" class="product-card">
+        <!--<img :src="product.gallery[0]" :alt="product.name" class="product-image" />-->
         <h3 class="product-name">{{ product.name }}</h3>
-        <p class="product-price">💰 Q{{ product.numericPrice.toFixed(2) }}</p>
-        <router-link :to="`/producto/${product.id}`" class="buy-button">
+        <p class="product-price">💰 Q{{ product.price.toFixed(2) }}</p>
+        <router-link :to="`/producto/${product.idMedicine}`" class="buy-button">
           🛍️ Comprar
         </router-link>
         <button class="details-button" @click="openModal(product)">Ver detalles</button>
@@ -64,24 +64,24 @@
       <div class="modal-body">
         <!-- Columna con la galería de imágenes -->
         <div class="product-images">
-          <img
+          <!--<img
             v-for="(img, index) in selectedProduct.gallery"
             :key="index"
             :src="img"
             class="detail-image"
-          />
+          />-->
         </div>
 
         <!-- Columna con la información del producto -->
         <div class="product-info">
           <p><strong>Descripción:</strong> {{ selectedProduct.description }}</p>
-          <p><strong>Ingrediente Activo:</strong> {{ selectedProduct.activeIngredient }}</p>
+          <p><strong>Ingrediente Activo:</strong> {{ selectedProduct.activeMedicament }}</p>
           <p><strong>Marca:</strong> {{ selectedProduct.brand }}</p>
-          <p><strong>Precio:</strong> Q{{ selectedProduct.numericPrice }}</p>
+          <p><strong>Precio:</strong> Q{{ selectedProduct.price }}</p>
           <!-- Agrega más campos que necesites, por ejemplo inventario, recomendaciones, etc. -->
           
           <div class="actions">
-            <router-link :to="`/producto/${selectedProduct.id}`" class="buy-button">
+            <router-link :to="`/producto/${selectedProduct.idMedicine}`" class="buy-button">
               Comprar
             </router-link>
           </div>
@@ -95,87 +95,28 @@
 import { ref, computed } from 'vue';
 
 // 1. Importa tus imágenes locales
-import botellasImg from '@/assets/botellas.jpg'
+/*import botellasImg from '@/assets/botellas.jpg'
 import farmaciaImg from '@/assets/farmacia.png'
 import medicinaImg from '@/assets/medicina.png'
 import muletasImg from '@/assets/muletas.jpg'
 import pastillasImg from '@/assets/pastillas.jpg'
 import pildorasImg from '@/assets/pildoras.webp'
-import masImg from '@/assets/mas.jpeg'
+import masImg from '@/assets/mas.jpeg'*/
+import axios from "axios";
+const ip = process.env.VUE_APP_IP;
 
+const products = ref([]);
 // 2. Define tus productos utilizando las imágenes importadas
-const products = ref([
-  {
-    id: 1,
-    name: "Botellas Médicas",
-    numericPrice: 50.00,
-    image: botellasImg,
-    description: "Descripción de Botellas Médicas",
-    gallery: ["https://via.placeholder.com/300", "https://via.placeholder.com/300/ff0000"],
-    activeIngredient: "Paracetamol",
-    brand: "Acme"
-  },
-  {
-    id: 2,
-    name: "Farmacia General",
-    numericPrice: 150.00,
-    image: farmaciaImg,
-    description: "Descripción de Farmacia General",
-    gallery: ["https://via.placeholder.com/300", "https://via.placeholder.com/300/00ff00"],
-    activeIngredient: "Ibuprofeno",
-    brand: "MediCorp"
-  },
-  {
-    id: 3,
-    name: "Medicina Variada",
-    numericPrice: 30.00,
-    image: medicinaImg,
-    description: "Descripción de Medicina Variada",
-    gallery: ["https://via.placeholder.com/300", "https://via.placeholder.com/300/0000ff"],
-    activeIngredient: "Aspirina",
-    brand: "HealthPlus"
-  },
-  {
-    id: 4,
-    name: "Muletas Ortopédicas",
-    numericPrice: 250.00,
-    image: muletasImg,
-    description: "Descripción de Muletas Ortopédicas",
-    gallery: ["https://via.placeholder.com/300", "https://via.placeholder.com/300/ffff00"],
-    activeIngredient: "N/A",
-    brand: "OrthoCare"
-  },
-  {
-    id: 5,
-    name: "Pastillas",
-    numericPrice: 20.00,
-    image: pastillasImg,
-    description: "Descripción de Pastillas",
-    gallery: ["https://via.placeholder.com/300", "https://via.placeholder.com/300/ff00ff"],
-    activeIngredient: "Paracetamol",
-    brand: "Acme"
-  },
-  {
-    id: 6,
-    name: "Píldoras Premium",
-    numericPrice: 35.00,
-    image: pildorasImg,
-    description: "Descripción de Píldoras Premium",
-    gallery: ["https://via.placeholder.com/300", "https://via.placeholder.com/300/00ffff"],
-    activeIngredient: "Ibuprofeno",
-    brand: "MediCorp"
-  },
-  {
-    id: 7,
-    name: "Más Productos",
-    numericPrice: 0,
-    image: masImg,
-    description: "Descripción de Más Productos",
-    gallery: ["https://via.placeholder.com/300", "https://via.placeholder.com/300/cccccc"],
-    activeIngredient: "",
-    brand: ""
-  },
-]);
+const fetchProduct = async () => {
+  try {
+    const response = await axios.get(`http://${ip}:8081/api2/medicines`);
+    products.value = response.data;
+    console.log(products.value);
+  } catch (error) {
+    console.error('Error fetching medicines:', error);
+  }
+};
+fetchProduct();
 
 // Manejo de modal
 const showModal = ref(false);
@@ -200,10 +141,10 @@ const maxPrice = ref(1000);
 const filteredProducts = computed(() => {
   return products.value.filter((product) => {
     const matchesName = product.name.toLowerCase().includes(searchQuery.value.toLowerCase());
-    const matchesIngredient = product.activeIngredient.toLowerCase().includes(activeIngredientFilter.value.toLowerCase());
+    const matchesIngredient = product.activeMedicament.toLowerCase().includes(activeIngredientFilter.value.toLowerCase());
     const matchesBrand = product.brand.toLowerCase().includes(brandFilter.value.toLowerCase());
-    const matchesMinPrice = product.numericPrice >= (minPrice.value || 0);
-    const matchesMaxPrice = maxPrice.value ? product.numericPrice <= maxPrice.value : true;
+    const matchesMinPrice = product.price >= (minPrice.value || 0);
+    const matchesMaxPrice = maxPrice.value ? product.price <= maxPrice.value : true;
 
     return (
       matchesName &&

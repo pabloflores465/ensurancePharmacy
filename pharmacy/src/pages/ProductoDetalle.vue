@@ -14,12 +14,14 @@
           style="width: 200px; border-radius: 8px;"
         />
   
-        <p><strong>Precio:</strong> {{ product.price }}</p>
+        <p><strong>Precio:</strong> Q{{ product.price }}</p>
         <p><strong>Descripción:</strong> {{ product.description }}</p>
-        <p><strong>Inventario:</strong> {{ product.inventory }}</p>
-        <p><strong>Ingrediente Activo:</strong> {{ product.activeIngredient }}</p>
-        <p><strong>Descripción General:</strong> {{ product.generalDescription }}</p>
-        <p><strong>Recomendación de Uso:</strong> {{ product.usageRecommendation }}</p>
+        <p><strong>Inventario:</strong> {{ product.stock }} unidades</p>
+        <p><strong>Ingrediente Activo:</strong> {{ product.activeMedicament }}</p>
+        <p><strong>Descripción:</strong> {{ product.description }}</p>
+        <p><strong>Concentración:</strong> {{ product.concentration }}</p>
+        <p><strong>Presentación:</strong> {{ product.presentacion }}</p>
+        <p><strong>Marca:</strong> {{ product.brand }}</p>
         <Comentarios :initialComments="productComments" />
       </div>
       <!-- Si no existe el producto, mostramos un mensaje de error -->
@@ -31,61 +33,37 @@
   
   <script>
   import Comentarios from '@/components/Comentarios.vue';
+  import axios from "axios";
+  const ip = process.env.VUE_APP_IP;
 
   export default {
     name: "ProductoDetalle",
     components: {
       Comentarios
     },
-    // Permite que el ID llegue como prop (asegúrate de que en el router usas props: true)
+    // Se recibe el id del producto vía props (asegúrate de que el router lo pase correctamente)
     props: ["id"],
-    
     data() {
       return {
         product: null,
         productComments: [
-          { id: 1, author: 'Juan', text: 'Muy buen producto!' },
+          { id: 1, author: 'Juan', text: '¡Muy buen producto!' },
           { id: 2, author: 'Maria', text: 'Me ayudó mucho, gracias!' }
         ]
       };
     },
-    
     mounted() {
-      // Ejemplo local: array de productos “mock”
-      const productos = [
-        {
-          id: '1',
-          name: 'Botellas Médicas',
-          price: '$35.00',
-          images: [
-            require('@/assets/botellas.jpg'),
-            require('@/assets/medicina.png')
-          ],
-          description: 'Detalle de Botellas Médicas',
-          inventory: 100,
-          activeIngredient: 'Acetaminofén',
-          generalDescription: 'Producto para uso médico, etc.',
-          usageRecommendation: 'Recomendación de uso...'
-        },
-        {
-          id: '2',
-          name: 'Farmacia General',
-          price: '$25.00',
-          images: [
-            require('@/assets/farmacia.png'),
-            require('@/assets/mas.jpeg')
-          ],
-          description: 'Detalle de Farmacia General',
-          inventory: 50,
-          activeIngredient: 'Ibuprofeno',
-          generalDescription: 'Preparado para uso general en farmacias.',
-          usageRecommendation: 'Recomendado para el alivio del dolor.'
-        }
-        // Puedes agregar más productos según lo necesites
-      ];
-    
-      // Se filtra el producto que coincida con el ID recibido en la ruta
-      this.product = productos.find(prod => prod.id === '1'); // Mostrar el detalle del producto 1
+      const routeId = this.$route.params.id;
+      axios.get(`http://${ip}:8081/api2/medicines`)
+          .then(response => {
+            // Se asume que la API retorna un array de productos
+            const products = response.data;
+            console.log(this.$route.params.id);
+            this.product = products.find(prod => prod.idMedicine === Number(routeId));
+          })
+          .catch(error => {
+            console.error('Error fetching medicines:', error);
+          });
     }
   };
   </script>
