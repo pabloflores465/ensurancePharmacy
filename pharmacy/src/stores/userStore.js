@@ -9,8 +9,9 @@ export const useUserStore = defineStore('user', {
     // Por si más adelante necesitas un método de login dentro del store
     setUser(userData) {
       this.user = userData;
-      if (import.meta.client){
-        localStorage.setItem('session', JSON.stringify(userData))
+      console.log("Guardando sesión en localStorage:", userData);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('session', JSON.stringify(userData));
       }
     },
     getUser(){

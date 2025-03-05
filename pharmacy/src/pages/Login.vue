@@ -18,7 +18,7 @@
       </div>
 
       <!-- Formulario -->
-      <form @submit.prevent="login">
+      <form @submit.prevent="()=>login()">
         <!-- E-mail -->
         <div class="mb-4">
           <label class="block text-gray-700">E-mail</label>
@@ -48,7 +48,7 @@
         </div>
 
         <!-- Botón de inicio de sesión -->
-        <button type="submit" @click="()=>login()" class="login-button">
+        <button type="submit" class="login-button">
           Iniciar sesión →
         </button>
       </form>
@@ -76,6 +76,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { useUserStore } from '@/stores/userStore'
+const userStore = useUserStore();
 
 // Asegúrate de tener definida la variable de entorno (p. ej., VUE_APP_IP)
 const ip = process.env.VUE_APP_IP;
@@ -112,7 +113,7 @@ const login = async () => {
     // }
     // Ajusta a cómo venga tu data
     console.log("Login exitoso:", response.data);
-    useUserStore().setUser(response.data)
+    userStore.setUser(response.data)
     // Si la respuesta es exitosa, redirige al inicio o a la ruta deseada
     
     router.push('/');
