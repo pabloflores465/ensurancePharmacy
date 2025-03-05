@@ -50,47 +50,23 @@
 import { ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import Header from '@/components/Header.vue';
+import axios from 'axios';
 
 const route = useRoute();
 const productId = route.params.id;
 
-// Lista de productos dummy con campos adicionales
-const products = [
-  { 
-    id: '1', 
-    name: "Botellas Médicas", 
-    image: "@/src/assets/botellas.jpg", 
-    description: "Descripción de Botellas Médicas", 
-    inventory: 100,
-    activeIngredient: "Acetaminofén",
-    generalDescription: "Producto utilizado en diversas aplicaciones médicas.",
-    usageRecommendation: "Ideal para aliviar el dolor de muela, combatir infecciones y como jarabe.",
-    comments: [] 
-  },
-  { 
-    id: '2', 
-    name: "Farmacia General", 
-    image: "@/src/assets/farmacia.png", 
-    description: "Descripción de Farmacia General", 
-    inventory: 50,
-    activeIngredient: "Ibuprofeno",
-    generalDescription: "Preparado para uso general en farmacias.",
-    usageRecommendation: "Recomendado para el alivio del dolor y para tratar infecciones leves.",
-    comments: [] 
-  },
-  { 
-    id: '3', 
-    name: "Medicina Variada", 
-    image: "@/src/assets/medicina.png", 
-    description: "Descripción de Medicina Variada", 
-    inventory: 75,
-    activeIngredient: "Amoxicilina",
-    generalDescription: "Medicamento de amplio espectro.",
-    usageRecommendation: "Utilizable en casos de infecciones y para preparar jarabes.",
-    comments: [] 
+const medicines = ref([]);
+
+const fetchMedicines = async () => {
+  try {
+    const response = await axios.get('http://localhost:8080/api2/medicines');
+    this.medicines = response.data;
+    console.log(medicines.value);
+  } catch (error) {
+    console.error('Error fetching medicines:', error);
   }
-  // ...otros productos si es necesario...
-];
+};
+fetchMedicines();
 
 const product = computed(() => products.find(p => p.id === productId));
 

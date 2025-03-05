@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": " python3 getip.py && vue-cli-service serve ", 
+    "serve": " python3 getip.py && vue-cli-service serve ",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },

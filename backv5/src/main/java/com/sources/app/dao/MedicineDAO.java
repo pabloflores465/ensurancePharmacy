@@ -6,15 +6,14 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
-import java.util.Date;
 import java.util.List;
 
 public class MedicineDAO {
 
     // CREATE
     public Medicine create(String name, String activeMedicament, String description, String image,
-                           String concentration, Date presentacion, Integer stock, String brand,
-                           Character prescription, Double price, Integer soldUnits) {
+                           String concentration, String presentacion, Integer stock, String brand,
+                           Boolean prescription, Double price, Integer soldUnits) {
         Transaction tx = null;
         Medicine med = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

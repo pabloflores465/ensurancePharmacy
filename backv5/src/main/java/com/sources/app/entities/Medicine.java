@@ -1,7 +1,6 @@
 package com.sources.app.entities;
 
 import jakarta.persistence.*;
-import java.util.Date;
 
 @Entity
 @Table(name = "MEDICINE")
@@ -27,9 +26,8 @@ public class Medicine {
     @Column(name = "CONCENTRATION")
     private String concentration;
 
-    @Temporal(TemporalType.DATE)
     @Column(name = "PRESENTACION")
-    private Date presentacion;
+    private String presentacion;
 
     @Column(name = "STOCK")
     private Integer stock;
@@ -38,7 +36,7 @@ public class Medicine {
     private String brand;
 
     @Column(name = "PRESCRIPTION")
-    private Character prescription;
+    private Boolean prescription;
 
     @Column(name = "PRICE")
     private Double price;
@@ -52,8 +50,8 @@ public class Medicine {
 
     // Constructor con campos
     public Medicine(String name, String activeMedicament, String description, String image,
-                    String concentration, Date presentacion, Integer stock, String brand,
-                    Character prescription, Double price, Integer soldUnits) {
+                    String concentration, String presentacion, Integer stock, String brand,
+                    Boolean prescription, Double price, Integer soldUnits) {
         this.name = name;
         this.activeMedicament = activeMedicament;
         this.description = description;
@@ -67,7 +65,7 @@ public class Medicine {
         this.soldUnits = soldUnits;
     }
 
-    // Getters y setters
+    // Getters y Setters
     public Long getIdMedicine() {
         return idMedicine;
     }
@@ -116,11 +114,11 @@ public class Medicine {
         this.concentration = concentration;
     }
 
-    public Date getPresentacion() {
+    public String getPresentacion() {
         return presentacion;
     }
 
-    public void setPresentacion(Date presentacion) {
+    public void setPresentacion(String presentacion) {
         this.presentacion = presentacion;
     }
 
@@ -140,11 +138,11 @@ public class Medicine {
         this.brand = brand;
     }
 
-    public Character getPrescription() {
+    public Boolean getPrescription() {
         return prescription;
     }
 
-    public void setPrescription(Character prescription) {
+    public void setPrescription(Boolean prescription) {
         this.prescription = prescription;
     }
 
