@@ -14,7 +14,7 @@
         <div class="form-group">
           <label for="name">Nombre</label>
           <div class="input-group">
-            <input type="text" id="name" v-model="name" required />
+            <input type="text" id="name" v-model="namex" required />
             <span class="icon">👤</span>
           </div>
         </div>
@@ -109,7 +109,7 @@ const ip = process.env.VUE_APP_IP;
 const router = useRouter();
 
 // Campos
-const name = ref('');
+const namex = ref('');
 const cui = ref('');
 const phone = ref('');
 const email = ref('');
@@ -125,7 +125,7 @@ const register = async () => {
   // Aquí hacemos la llamada POST a /api2/login (aunque lo usual sería /api2/register)
   try {
     console.log('Registrando:', {
-      name: name.value,
+      name: namex.value,
       cui: cui.value,
       phone: phone.value,
       email: email.value,
@@ -136,18 +136,15 @@ const register = async () => {
       enabled: enabled.value,
       password: password.value
     });
-
+console.log( toString(namex.value),  cui.value, phone.value, email.value, address.value, birthdate.value, "usuario", password.value)
     // Llamada al endpoint con Axios
-    const response = await axios.post(`http://${ip}:8000/api2/users`, {
-      name: name.value,
+    const response = await axios.post(`http://${ip}:8081/api2/users`, {
+      name: namex.value,
       cui: cui.value,
       phone: phone.value,
       email: email.value,
       address: address.value,
-      birthdate: birthdate.value,
-      role: role.value,
-      idPolicy: idPolicy.value,
-      enabled: enabled.value,
+      birthDate: birthdate.value,
       password: password.value
     });
 

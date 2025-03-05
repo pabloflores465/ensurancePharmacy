@@ -2,9 +2,10 @@ package com.sources.app.entities;
 
 import jakarta.persistence.*;
 import java.util.Date;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Entity
-@Table(name = "\"User\"")
+@Table(name = "\"USERS\"")
 public class User {
 
     @Id
@@ -27,6 +28,7 @@ public class User {
     @Column(name = "ADDRESS")
     private String address;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     @Temporal(TemporalType.DATE)
     @Column(name = "BIRTHDATE")
     private Date birthDate;

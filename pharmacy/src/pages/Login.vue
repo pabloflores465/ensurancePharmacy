@@ -20,7 +20,7 @@
         <!-- Para usuarios y empleados -->
         <div v-if="role === 'user' || role === 'employee'" class="mb-4">
           <label class="block text-gray-700">
-            {{ role === 'user' ? "Número de Usuario" : "Número de Empleado" }}
+            {{ role === 'user' ? "E-mail" : "E-mail" }}
           </label>
           <div class="input-group">
             <input v-model="identifier" type="text" class="input-field" required />
@@ -93,27 +93,27 @@ const login = async () => {
   errorMessage.value = '';
 
   // Objeto payload que se enviará a la API
-  let payload = { role: role.value };
+  let payload = {};
 
   if (role.value === 'user' || role.value === 'employee') {
     if (identifier.value.trim() === '' || adminPassword.value.trim() === '') {
       errorMessage.value = "El número de usuario/empleado y la contraseña son obligatorios.";
       return;
     }
-    payload.username = identifier.value;
+    payload.email = identifier.value;
     payload.password = adminPassword.value;
   } else if (role.value === 'admin') {
     if (adminUsername.value.trim() === '' || adminPassword.value.trim() === '') {
       errorMessage.value = "Usuario y contraseña son obligatorios.";
       return;
     }
-    payload.username = adminUsername.value;
+    payload.email = adminUsername.value;
     payload.password = adminPassword.value;
   }
 
   try {
     // Llamada POST al endpoint /api2/login
-    const response = await axios.post(`http://${ip}:8000/api2/login`, payload);
+    const response = await axios.post(`http://${ip}:8081/api2/login`, payload);
     console.log("Login exitoso:", response.data);
     // Si la respuesta es exitosa, redirige al inicio o a la ruta deseada
     router.push('/');
