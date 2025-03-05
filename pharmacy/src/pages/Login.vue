@@ -48,7 +48,9 @@
         </div>
 
         <!-- Botón de inicio de sesión -->
-        <button type="submit" class="login-button">Iniciar sesión →</button>
+        <button type="submit" @click="()=>login()" class="login-button">
+          Iniciar sesión →
+        </button>
       </form>
 
       <!-- Enlace para registrarse -->
@@ -73,13 +75,11 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
+import { useUserStore } from '@/stores/userStore'
 
-// IMPORTA tu userStore
-import { useUserStore } from '@/stores/userStore';
-
-// Ejemplo: si usas variable de entorno para la IP
-// Si no, puedes poner la IP/PUERTO directamente en la URL
-const ip = process.env.VUE_APP_IP || 'localhost';
+// Asegúrate de tener definida la variable de entorno (p. ej., VUE_APP_IP)
+const ip = process.env.VUE_APP_IP;
+console.log("IP del servidor: " + ip);
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -113,22 +113,9 @@ const login = async () => {
     // }
     // Ajusta a cómo venga tu data
     console.log("Login exitoso:", response.data);
-
-    // Extrae el objeto que viene del backend
-    const userData = response.data.Object; 
-    // O si tu backend retorna directamente => const userData = response.data; 
-
-    // Verifica que exista userData
-    if (userData) {
-      // 1. Guarda en localStorage
-      localStorage.setItem('user', JSON.stringify(userData));
-      // 2. Guarda en el userStore (así isLoggedIn = true)
-      userStore.setUser(userData);
-      userType.value = userData.role;
-      showModal.value = true;
-    }
-
-    // Redirige a la página principal
+    useUserStore().setUser(response.data)
+    // Si la respuesta es exitosa, redirige al inicio o a la ruta deseada
+    
     router.push('/');
   } catch (error) {
     console.error("Error en el login:", error);

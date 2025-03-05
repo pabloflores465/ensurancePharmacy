@@ -147,7 +147,6 @@ console.log( toString(namex.value),  cui.value, phone.value, email.value, addres
       birthDate: birthdate.value,
       password: password.value
     });
-
     // Si todo sale bien, puedes mostrar un mensaje o redirigir
     console.log('Registro exitoso:', response.data);
 
