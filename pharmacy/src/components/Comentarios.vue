@@ -60,12 +60,15 @@ export default {
         }
       } catch (error) {
         console.error('Error al obtener comentarios', error);
+
       }
     });
 
     const topLevelComments = computed(() => {
-      const filtered = comments.value.filter(c => !c.prevComment);
-      console.log('Top level comments sin filtro:', filtered);
+      const filtered = comments.value.filter(c =>
+        !c.prevComment && c.medicine && Number(c.medicine.idMedicine) === Number(routeId)
+      );
+      console.log('Top level comments filtrados por producto:', filtered);
       return filtered;
     });
 
@@ -73,10 +76,14 @@ export default {
       if(newCommentText.value) {
         const payload = {
           user: userStore.user,
-          prevComment: replyComment.value,
           commentText: newCommentText.value,
-          medicine: { idMedicine: routeId }
+          medicine: { idMedicine: Number(routeId) }
         };
+
+        if (replyComment.value) {
+          payload.prevComment = replyComment.value;
+        }
+
         try {
           const res = await fetch(`http://${ip}:8081/api2/comments`, {
             method: 'POST',
@@ -90,6 +97,7 @@ export default {
             replyComment.value = null;
           } else {
             console.error('Error al crear comentario');
+            console.log(JSON.stringify((payload)))
           }
         } catch(error) {
           console.error('Error en la petición POST', error);

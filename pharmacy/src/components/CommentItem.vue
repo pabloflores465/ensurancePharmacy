@@ -1,6 +1,6 @@
 <template>
   <div class="comment-item">
-    <p><strong>{{ comment.user.name }}</strong>:</p>
+    <p><strong>{{ comment.user ? comment.user.name : 'Anónimo' }}</strong>:</p>
     <p>{{ comment.commentText }}</p>
     <button @click="$emit('reply', comment)">Responder</button>
     <div class="replies" v-if="childComments.length">
