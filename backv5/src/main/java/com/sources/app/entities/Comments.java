@@ -1,6 +1,7 @@
 package com.sources.app.entities;
 
 import jakarta.persistence.*;
+import com.sources.app.entities.Medicine;
 
 @Entity
 @Table(name = "COMMENTS")
@@ -23,6 +24,11 @@ public class Comments {
 
     @Column(name = "COMMENT_TEXT")
     private String commentText;
+
+    // Relación ManyToOne con la entidad Medicine
+    @ManyToOne
+    @JoinColumn(name = "ID_MEDICINE", referencedColumnName = "ID_MEDICINE")
+    private Medicine medicine;
 
     // Constructor vacío
     public Comments() {
@@ -66,5 +72,13 @@ public class Comments {
 
     public void setCommentText(String commentText) {
         this.commentText = commentText;
+    }
+
+    public Medicine getMedicine() {
+        return medicine;
+    }
+
+    public void setMedicine(Medicine medicine) {
+        this.medicine = medicine;
     }
 }

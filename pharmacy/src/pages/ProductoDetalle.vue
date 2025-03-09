@@ -34,6 +34,9 @@
   <script>
   import Comentarios from '@/components/Comentarios.vue';
   import axios from "axios";
+  //import { useUserStore } from '@/stores/userStore';
+ // const userStore = useUserStore();
+
   const ip = process.env.VUE_APP_IP;
 
   export default {
@@ -47,8 +50,8 @@
       return {
         product: null,
         productComments: [
-          { id: 1, author: 'Juan', text: '¡Muy buen producto!' },
-          { id: 2, author: 'Maria', text: 'Me ayudó mucho, gracias!' }
+          { idComments: 1, user: { name: 'Juan' }, commentText: '¡Muy buen producto!' },
+          { idComments: 2, user: { name: 'Maria' }, commentText: 'Me ayudó mucho, gracias!' }
         ]
       };
     },
@@ -56,7 +59,7 @@
       const routeId = this.$route.params.id;
       axios.get(`http://${ip}:8081/api2/medicines`)
           .then(response => {
-            // Se asume que la API retorna un array de productos
+ //           console.log("Usuario: ",user)
             const products = response.data;
             console.log(this.$route.params.id);
             this.product = products.find(prod => prod.idMedicine === Number(routeId));

@@ -38,7 +38,8 @@ public class CommentsHandler implements HttpHandler {
                 Comments comment = commentsDAO.create(
                         createComment.getUser(),
                         createComment.getPrevComment(),
-                        createComment.getCommentText()
+                        createComment.getCommentText(),
+                        createComment.getMedicine()
                 );
                 if(comment != null){
                     String jsonResponse = objectMapper.writeValueAsString(comment);

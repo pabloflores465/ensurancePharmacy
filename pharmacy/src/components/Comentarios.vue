@@ -1,29 +1,40 @@
-<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="comments-container">
     <h3>Comentarios</h3>
+    <div v-if="replyComment" class="reply-info">
+      Respondiendo a {{ replyComment.user.name }}
+      <button @click="cancelReply">Cancelar Respuesta</button>
+    </div>
     <div v-if="comments.length">
-      <div v-for="comment in comments" :key="comment.id" class="comment">
-        <p><strong>{{ comment.author }}</strong>:</p>
-        <p>{{ comment.text }}</p>
-      </div>
+      <CommentItem
+          v-for="comment in topLevelComments"
+          :key="comment.idComments"
+          :comment="comment"
+          :all-comments="comments"
+          @reply="setReply"
+      />
     </div>
     <div v-else>
       <p>No hay comentarios aún.</p>
     </div>
     <div class="add-comment">
-      <input v-model="newCommentAuthor" placeholder="Tu nombre" />
-      <textarea v-model="newCommentText" placeholder="Escribe un comentario..."></textarea>
+      <input v-model="newCommentText" placeholder="Escribe un comentario..." />
       <button @click="addComment">Agregar Comentario</button>
     </div>
   </div>
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+import { useUserStore } from "@/stores/userStore";
+import CommentItem from './CommentItem.vue';
+
+const ip = process.env.VUE_APP_IP;
 
 export default {
-  name: 'ProductComments', // Renamed from 'Comentarios ' to 'ProductComments'
+  name: 'ProductComments',
+  components: { CommentItem },
   props: {
     initialComments: {
       type: Array,
@@ -31,27 +42,77 @@ export default {
     }
   },
   setup(props) {
-    const comments = ref([...props.initialComments]);
-    const newCommentAuthor = ref('');
+    const userStore = useUserStore();
+    const route = useRoute();
+    const routeId = route.params.id;
+    const comments = ref(props.initialComments);
     const newCommentText = ref('');
+    const replyComment = ref(null);
 
-    const addComment = () => {
-      if (newCommentAuthor.value && newCommentText.value) {
-        comments.value.push({
-          id: Date.now(),
-          author: newCommentAuthor.value,
-          text: newCommentText.value
-        });
-        newCommentAuthor.value = '';
-        newCommentText.value = '';
+    onMounted(async () => {
+      try {
+        console.log(ip);
+        const res = await fetch(`http://${ip}:8081/api2/comments`);
+        if (res.ok) {
+          const data = await res.json();
+          console.log('Comentarios obtenidos:', data);
+          comments.value = data;
+        }
+      } catch (error) {
+        console.error('Error al obtener comentarios', error);
       }
+    });
+
+    const topLevelComments = computed(() => {
+      const filtered = comments.value.filter(c => !c.prevComment);
+      console.log('Top level comments sin filtro:', filtered);
+      return filtered;
+    });
+
+    const addComment = async () => {
+      if(newCommentText.value) {
+        const payload = {
+          user: userStore.user,
+          prevComment: replyComment.value,
+          commentText: newCommentText.value,
+          medicine: { idMedicine: routeId }
+        };
+        try {
+          const res = await fetch(`http://${ip}:8081/api2/comments`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if(res.ok) {
+            const newComment = await res.json();
+            comments.value.push(newComment);
+            newCommentText.value = '';
+            replyComment.value = null;
+          } else {
+            console.error('Error al crear comentario');
+          }
+        } catch(error) {
+          console.error('Error en la petición POST', error);
+        }
+      }
+    };
+
+    const setReply = (comment) => {
+      replyComment.value = comment;
+    };
+
+    const cancelReply = () => {
+      replyComment.value = null;
     };
 
     return {
       comments,
-      newCommentAuthor,
+      topLevelComments,
       newCommentText,
-      addComment
+      addComment,
+      replyComment,
+      setReply,
+      cancelReply
     };
   }
 };
@@ -62,9 +123,9 @@ export default {
   margin-top: 20px;
 }
 
-.comment {
-  background: #f9f9f9;
-  padding: 10px;
+.reply-info {
+  background: #eef;
+  padding: 5px 10px;
   border-radius: 5px;
   margin-bottom: 10px;
 }

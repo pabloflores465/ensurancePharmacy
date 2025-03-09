@@ -101,7 +101,7 @@ const login = async () => {
       email: email.value,
       password: password.value
     });
-    
+
     // Supongamos que tu backend responde algo como:
     // {
     //   "Object": {
