@@ -44,7 +44,7 @@ const userId = localStorage.getItem('userId') || 'defaultUserId'; // ajustar seg
 const fetchPrescriptions = async () => {
   try {
     // Se añade el parámetro userId a la URL para obtener solo las recetas del usuario actual
-    const response = await axios.get(`http://${ip}:8081/api2/prescriptions_medicines?userId=${userId}`);
+    const response = await axios.get(`http://${ip}:8081/api2/prescription_medicines?userId=${userId}`);
     prescriptions.value = response.data;
   } catch (error) {
     console.error("Error al obtener las recetas:", error);
