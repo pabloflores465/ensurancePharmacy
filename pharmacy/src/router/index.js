@@ -8,8 +8,6 @@ import Aseguradoras from '@/pages/Aseguradoras.vue';
 import Ofertas from '@/pages/Ofertas.vue';
 import ProductoDetalle from '@/pages/ProductoDetalle.vue'; // new import
 import Receta from '@/components/Receta.vue';
-import CreateProduct from '@/pages/CreateProduct.vue';
-import Prescriptions from '@/pages/Prescriptions.vue';
 import { authService } from '@/services/authService';
 
 const routes = [
@@ -22,26 +20,11 @@ const routes = [
   { path : '/ofertas', component: Ofertas },
   { path: '/producto/:id', name: 'ProductoDetalle', component: ProductoDetalle},
   { path: '/receta', component: Receta},
-  { path: '/create-product', component: CreateProduct},
-  {
-    path: '/admin/create-product',
-    name: 'CreateProduct',
-    component: CreateProduct,
-  },
-  {
-    path: '/create-product',
-    name: 'CreateProduct',
-    component: CreateProduct,
-  },
-  {
-    path: '/prescriptions',
-    name: 'Prescriptions',
-    component: Prescriptions,
-  },
+  
 ];
 
 const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
+  history: createWebHistory(),
   routes,
 });
 
@@ -55,5 +38,7 @@ router.beforeEach((to, from, next) => {
     next();
   }
 });
+
+
 
 export default router;
