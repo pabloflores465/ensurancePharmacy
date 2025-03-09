@@ -9,13 +9,15 @@
       <nav class="nav-links hidden md:flex">
         <router-link to="/" class="nav-item">Inicio</router-link>
         <router-link to="/ofertas" class="nav-item">Ofertas</router-link>
-        <router-link to="/catalogo" class="nav-item">Catálogo de Productos</router-link>
+        <router-link to="/catalogo" class="nav-item"
+          >Catálogo de Productos</router-link
+        >
         <router-link to="/receta" class="nav-item">Receta</router-link>
         <router-link to="/contact" class="nav-item">Contacto</router-link>
 
         <!-- Enlace SOLO para administradores -->
         <router-link
-          v-if="isLoggedIn && userStore.user.role === 'admin'"
+          v-if="isLoggedIn && userStore.getUser().role === 'admin'"
           to="/admin"
           class="nav-item"
         >
@@ -23,10 +25,7 @@
         </router-link>
 
         <router-link
-          v-if="isLoggedIn && userStore.user.role === 'admin'"
-
-
-   
+          v-if="isLoggedIn && userStore.getUser().role === 'admin'"
           to="/create-product"
           class="nav-item"
         >
@@ -41,7 +40,7 @@
         <template v-if="isLoggedIn">
           <!-- Muestra el rol -->
           <span class="logged-user-message">
-            Rol: {{ userStore.user.role }}
+            Rol: {{ userStore.getUser().role }}
           </span>
           <!-- Botón para cerrar sesión -->
           <button @click="logout" class="login-button">Cerrar Sesión</button>
@@ -49,7 +48,9 @@
 
         <!-- Si NO está loggeado, muestra el botón de Iniciar Sesión -->
         <template v-else>
-          <router-link to="/login" class="login-button">🔑 Iniciar Sesión</router-link>
+          <router-link to="/login" class="login-button"
+            >🔑 Iniciar Sesión</router-link
+          >
         </template>
       </nav>
 
@@ -59,15 +60,25 @@
 
     <!-- Menú desplegable en móviles -->
     <div v-if="mobileMenuOpen" class="mobile-menu">
-      <router-link to="/" class="mobile-item" @click="toggleMenu">Inicio</router-link>
-      <router-link to="/ofertas" class="mobile-item" @click="toggleMenu">Ofertas</router-link>
-      <router-link to="/catalogo" class="mobile-item" @click="toggleMenu">Catálogo de Productos</router-link>
-      <router-link to="/receta" class="mobile-item" @click="toggleMenu">Receta</router-link>
-      <router-link to="/contact" class="mobile-item" @click="toggleMenu">Contacto</router-link>
+      <router-link to="/" class="mobile-item" @click="toggleMenu"
+        >Inicio</router-link
+      >
+      <router-link to="/ofertas" class="mobile-item" @click="toggleMenu"
+        >Ofertas</router-link
+      >
+      <router-link to="/catalogo" class="mobile-item" @click="toggleMenu"
+        >Catálogo de Productos</router-link
+      >
+      <router-link to="/receta" class="mobile-item" @click="toggleMenu"
+        >Receta</router-link
+      >
+      <router-link to="/contact" class="mobile-item" @click="toggleMenu"
+        >Contacto</router-link
+      >
 
       <!-- Enlace SOLO para administradores (móvil) -->
       <router-link
-        v-if="isLoggedIn && userStore.user.role === 'admin'"
+        v-if="isLoggedIn && userStore.getUser().role === 'admin'"
         to="/admin"
         class="mobile-item"
         @click="toggleMenu"
@@ -77,10 +88,16 @@
 
       <!-- Si está loggeado, muestra rol y logout (móvil) -->
       <template v-if="isLoggedIn">
-        <span class="logged-user-message" style="color:white;">
+        <span class="logged-user-message" style="color: white">
           Rol: {{ userStore.user.role }}
         </span>
-        <button @click="logout(); toggleMenu()" class="mobile-login">
+        <button
+          @click="
+            logout();
+            toggleMenu();
+          "
+          class="mobile-login"
+        >
           Cerrar Sesión
         </button>
       </template>
@@ -95,9 +112,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { useUserStore } from '@/stores/userStore';
+import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
+import { useUserStore } from "@/stores/userStore";
 
 // Menú móvil
 const mobileMenuOpen = ref(false);
@@ -109,14 +126,16 @@ const toggleMenu = () => {
 const userStore = useUserStore();
 const router = useRouter();
 
-// Computado para saber si hay usuario loggeado
-const isLoggedIn = computed(() => userStore.user !== null);
+const isLoggedIn = computed(() => {
+  const user = userStore.getUser();
+  return Object.keys(user).length === 0 ? false : true;
+});
 
 // Cerrar sesión
 const logout = () => {
   userStore.logout();
-  localStorage.removeItem('user'); // Si usas localStorage
-  router.push('/');
+  localStorage.removeItem("session"); // Si usas localStorage
+  router.push("/");
 };
 </script>
 
