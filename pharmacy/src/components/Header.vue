@@ -37,6 +37,10 @@
           Crear Producto
         </router-link>
 
+        <router-link to="/prescriptions" class="nav-item">
+          Ver Recetas
+        </router-link>
+
         <!-- Si el usuario está loggeado -->
         <template v-if="isLoggedIn">
           <!-- Muestra el rol -->

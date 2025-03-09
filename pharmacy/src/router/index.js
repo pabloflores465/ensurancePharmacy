@@ -9,6 +9,7 @@ import Ofertas from '@/pages/Ofertas.vue';
 import ProductoDetalle from '@/pages/ProductoDetalle.vue'; // new import
 import Receta from '@/components/Receta.vue';
 import CreateProduct from '@/pages/CreateProduct.vue';
+import Prescriptions from '@/pages/Prescriptions.vue';
 import { authService } from '@/services/authService';
 
 const routes = [
@@ -31,6 +32,11 @@ const routes = [
     path: '/create-product',
     name: 'CreateProduct',
     component: CreateProduct,
+  },
+  {
+    path: '/prescriptions',
+    name: 'Prescriptions',
+    component: Prescriptions,
   },
 ];
 
