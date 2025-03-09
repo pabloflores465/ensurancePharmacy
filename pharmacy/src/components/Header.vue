@@ -12,30 +12,30 @@
         <router-link to="/catalogo" class="nav-item">Catálogo de Productos</router-link>
         <router-link to="/receta" class="nav-item">Receta</router-link>
         <router-link to="/contact" class="nav-item">Contacto</router-link>
-        <router-link to="/prescriptions" class="nav-item">Ver Recetas</router-link>
 
-        <!-- Dropdown de administración -->
-        <template v-if="isLoggedIn && userStore.user.role === 'admin'">
-          <div class="admin-dropdown">
-            <button class="dropbtn">Admin</button>
-            <div class="dropdown-content">
-              <router-link to="/admin">Gestionar Productos</router-link>
-              <router-link to="/admin/create-product">Crear Producto</router-link>
-              <!-- Agrega más enlaces admin aquí -->
-            </div>
-          </div>
-        </template>
+        <!-- Enlace SOLO para administradores -->
+        <router-link
+          v-if="isLoggedIn && userStore.user.role === 'admin'"
+          to="/admin"
+          class="nav-item"
+        >
+          Agregar Productos
+        </router-link>
 
-        <!-- Si el usuario no está loggeado, mostrar dropdown de invitado -->
-        <template v-else>
-          <div class="guest-dropdown">
-            <button class="dropbtn">Invitado</button>
-            <div class="dropdown-content">
-              <router-link to="/login">Iniciar Sesión</router-link>
-              <router-link to="/register">Registrarse</router-link>
-            </div>
-          </div>
-        </template>
+        <router-link
+          v-if="isLoggedIn && userStore.user.role === 'admin'"
+
+
+   
+          to="/create-product"
+          class="nav-item"
+        >
+          Crear Producto
+        </router-link>
+
+        <router-link to="/prescriptions" class="nav-item">
+          Ver Recetas
+        </router-link>
 
         <!-- Si el usuario está loggeado -->
         <template v-if="isLoggedIn">
@@ -212,84 +212,5 @@ const logout = () => {
   text-decoration: none;
   font-weight: bold;
   margin-top: 0.5rem;
-}
-
-/* Dropdown admin */
-.admin-dropdown {
-  position: relative;
-  display: inline-block;
-  margin-left: 1rem;
-}
-
-.dropbtn {
-  background: white;
-  color: #1e40af;
-  padding: 8px 15px;
-  border-radius: 5px;
-  font-weight: bold;
-  border: none;
-  cursor: pointer;
-}
-
-.admin-dropdown .dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #f9f9f9;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
-  z-index: 1;
-  border-radius: 5px;
-}
-
-.admin-dropdown .dropdown-content a {
-  color: #1e40af;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
-}
-
-.admin-dropdown .dropdown-content a:hover {
-  background-color: #ddd;
-}
-
-.admin-dropdown:hover .dropdown-content {
-  display: block;
-}
-
-/* Dropdown guest */
-.guest-dropdown {
-  position: relative;
-  display: inline-block;
-  margin-left: 1rem;
-}
-.guest-dropdown .dropbtn {
-  background: white;
-  color: #1e40af;
-  padding: 8px 15px;
-  border-radius: 5px;
-  font-weight: bold;
-  border: none;
-  cursor: pointer;
-}
-.guest-dropdown .dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #f9f9f9;
-  min-width: 140px;
-  box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
-  z-index: 1;
-  border-radius: 5px;
-}
-.guest-dropdown .dropdown-content a {
-  color: #1e40af;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
-}
-.guest-dropdown .dropdown-content a:hover {
-  background-color: #ddd;
-}
-.guest-dropdown:hover .dropdown-content {
-  display: block;
 }
 </style>

@@ -38,9 +38,13 @@ const prescriptions = ref([]);
 const errorMessage = ref('');
 const ip = process.env.VUE_APP_API_IP || 'localhost';
 
+// Nuevo: Obtener el ID del usuario actual, por ejemplo desde localStorage
+const userId = localStorage.getItem('userId') || 'defaultUserId'; // ajustar según implementación
+
 const fetchPrescriptions = async () => {
   try {
-    const response = await axios.get(`http://${ip}:8081/api2/prescriptions`);
+    // Se añade el parámetro userId a la URL para obtener solo las recetas del usuario actual
+    const response = await axios.get(`http://${ip}:8081/api2/prescriptions_medicines?userId=${userId}`);
     prescriptions.value = response.data;
   } catch (error) {
     console.error("Error al obtener las recetas:", error);
