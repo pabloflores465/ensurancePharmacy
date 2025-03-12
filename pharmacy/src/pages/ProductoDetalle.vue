@@ -5,23 +5,43 @@
   
       <!-- Si el producto existe, mostramos su información -->
       <div v-if="product">
-        <h2>{{ product.name }}</h2>
-        <!-- Mostrar imagen principal si existe -->
-        <img 
-          v-if="product.images && product.images.length" 
-          :src="product.images[0]" 
-          alt="Imagen principal del producto" 
-          style="width: 200px; border-radius: 8px;"
-        />
-  
-        <p><strong>Precio:</strong> Q{{ product.price }}</p>
-        <p><strong>Descripción:</strong> {{ product.description }}</p>
-        <p><strong>Inventario:</strong> {{ product.stock }} unidades</p>
-        <p><strong>Ingrediente Activo:</strong> {{ product.activeMedicament }}</p>
-        <p><strong>Descripción:</strong> {{ product.description }}</p>
-        <p><strong>Concentración:</strong> {{ product.concentration }}</p>
-        <p><strong>Presentación:</strong> {{ product.presentacion }}</p>
-        <p><strong>Marca:</strong> {{ product.brand }}</p>
+        <div class="product-container" style="display: flex;">
+          <div class="product-details" style="flex: 1;">
+            <h2>{{ product.name }}</h2>
+            <img
+              v-if="product.images && product.images.length"
+              :src="product.images[0]"
+              alt="Imagen principal del producto"
+              style="width: 200px; border-radius: 8px;"
+            />
+            <p><strong>Precio:</strong> Q{{ product.price }}</p>
+            <p><strong>Descripción:</strong> {{ product.description }}</p>
+            <p><strong>Inventario:</strong> {{ product.stock }} unidades</p>
+            <p><strong>Ingrediente Activo:</strong> {{ product.activeMedicament }}</p>
+            <p><strong>Descripción:</strong> {{ product.description }}</p>
+            <p><strong>Concentración:</strong> {{ product.concentration }}</p>
+            <p><strong>Presentación:</strong> {{ product.presentacion }}</p>
+            <p><strong>Marca:</strong> {{ product.brand }}</p>
+          </div>
+          <div class="purchase-section" style="margin-left: 20px;">
+            <label for="quantity">Cantidad:</label>
+            <input
+              type="number"
+              id="quantity"
+              v-model.number="quantity"
+              :min="1"
+              :max="product.stock"
+              style="width: 60px; margin-left: 10px;"
+            />
+            <button
+              @click="purchaseProduct"
+              :disabled="!quantity || quantity < 1 || quantity > product.stock"
+              style="margin-left: 10px;"
+            >
+              Comprar
+            </button>
+          </div>
+        </div>
         <Comentarios :initialComments="productComments" />
       </div>
       <!-- Si no existe el producto, mostramos un mensaje de error -->
@@ -30,7 +50,7 @@
       </div>
     </div>
   </template>
-  
+
   <script>
   import Comentarios from '@/components/Comentarios.vue';
   import axios from "axios";
@@ -49,6 +69,7 @@
     data() {
       return {
         product: null,
+        quantity: 1,
         productComments: [
           { idComments: 1, user: { name: 'Juan' }, commentText: '¡Muy buen producto!' },
           { idComments: 2, user: { name: 'Maria' }, commentText: 'Me ayudó mucho, gracias!' }
@@ -67,6 +88,21 @@
           .catch(error => {
             console.error('Error fetching medicines:', error);
           });
+    },
+    methods: {
+      purchaseProduct() {
+        // Realiza el post con axios; la configuración la dejas como está para luego modificarla si lo deseas
+        axios.post(`http://${ip}:8081/api2/purchase`, {
+          productId: this.product.idMedicine,
+          quantity: this.quantity
+        })
+        .then(response => {
+          console.log('Compra realizada:', response.data);
+        })
+        .catch(error => {
+          console.error('Error en la compra:', error);
+        });
+      }
     }
   };
   </script>

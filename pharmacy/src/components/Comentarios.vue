@@ -17,7 +17,7 @@
     <div v-else>
       <p>No hay comentarios aún.</p>
     </div>
-    <div class="add-comment">
+    <div class="add-comment" v-if="isLoggedIn">
       <input v-model="newCommentText" placeholder="Escribe un comentario..." />
       <button @click="addComment">Agregar Comentario</button>
     </div>
@@ -48,6 +48,9 @@ export default {
     const comments = ref(props.initialComments);
     const newCommentText = ref('');
     const replyComment = ref(null);
+    const isLoggedIn = computed(() => {
+      return !!(userStore.user && userStore.user.idUser);
+    });
 
     onMounted(async () => {
       try {
@@ -60,7 +63,6 @@ export default {
         }
       } catch (error) {
         console.error('Error al obtener comentarios', error);
-
       }
     });
 
@@ -120,7 +122,8 @@ export default {
       addComment,
       replyComment,
       setReply,
-      cancelReply
+      cancelReply,
+      isLoggedIn
     };
   }
 };

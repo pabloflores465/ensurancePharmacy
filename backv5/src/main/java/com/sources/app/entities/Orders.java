@@ -14,6 +14,10 @@ public class Orders {
     @Column(name = "STATUS")
     private String status;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_USER", nullable = false)
+    private User user;
+
     // Constructor vacío
     public Orders() {
     }
@@ -38,5 +42,13 @@ public class Orders {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

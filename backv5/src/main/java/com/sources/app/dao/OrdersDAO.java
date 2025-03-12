@@ -1,6 +1,7 @@
 package com.sources.app.dao;
 
 import com.sources.app.entities.Orders;
+import com.sources.app.entities.User;
 import com.sources.app.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -11,7 +12,7 @@ import java.util.List;
 public class OrdersDAO {
 
     // CREATE
-    public Orders create(String status) {
+    public Orders create(String status, Long idUser) {
         Transaction tx = null;
         Orders order = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -19,6 +20,8 @@ public class OrdersDAO {
 
             order = new Orders();
             order.setStatus(status);
+            User user = session.get(User.class, idUser);
+            order.setUser(user);
 
             session.save(order);
             tx.commit();

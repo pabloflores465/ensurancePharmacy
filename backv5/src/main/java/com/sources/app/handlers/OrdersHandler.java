@@ -38,7 +38,7 @@ public class OrdersHandler implements HttpHandler {
             try {
                 String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
                 Orders createOrder = objectMapper.readValue(requestBody, Orders.class);
-                Orders order = ordersDAO.create(createOrder.getStatus());
+                Orders order = ordersDAO.create(createOrder.getStatus(), createOrder.getUser().getIdUser());
                 if(order != null) {
                     String jsonResponse = objectMapper.writeValueAsString(order);
                     exchange.getResponseHeaders().set("Content-Type", "application/json");

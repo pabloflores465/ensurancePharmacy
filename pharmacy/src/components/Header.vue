@@ -128,14 +128,17 @@ const router = useRouter();
 
 const isLoggedIn = computed(() => {
   const user = userStore.getUser();
-  return Object.keys(user).length === 0 ? false : true;
+  return Object.keys(user).length !==0;
 });
 
 // Cerrar sesión
 const logout = () => {
   userStore.logout();
-  localStorage.removeItem("session"); // Si usas localStorage
+  localStorage.removeItem("session");
   router.push("/");
+  setTimeout(() => {
+    window.location.reload();
+  }, 100);
 };
 </script>
 
