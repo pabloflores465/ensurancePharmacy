@@ -12,7 +12,7 @@ public class MedicineDAO {
 
     // CREATE
     public Medicine create(String name, String activeMedicament, String description, String image,
-                           String concentration, String presentacion, Integer stock, String brand,
+                           String concentration, Double presentacion, Integer stock, String brand,
                            Boolean prescription, Double price, Integer soldUnits) {
         Transaction tx = null;
         Medicine med = null;

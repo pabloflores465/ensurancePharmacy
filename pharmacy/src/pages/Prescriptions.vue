@@ -41,7 +41,7 @@
             </tr>
           </tbody>
         </table>
-        <button>Comprar</button>
+        <button @click="$router.push({ name: 'PrescriptionPay', params: { id: group.prescription.idPrescription } })">Comprar</button>
       </div>
     </div>
 
@@ -87,10 +87,22 @@ const fetchPrescriptions = async () => {
         duracion: p.duracion
       });
     });
+    const groupsArray = Object.values(grouped);
+    const filteredGroups = [];
 
-    prescriptions.value = Object.values(grouped);
+    // Para cada receta, llamar a la API de orders y omitir si status es "Completado"
+    for (const group of groupsArray) {
+      const orderResponse = await axios.get(`http://${ip}:8081/api2/orders?id=${group.prescription.idPrescription}`);
+      if (orderResponse.data && orderResponse.data.status === "Completado") {
+        // Si la orden está completada, omitir la receta
+        continue;
+      } else {
+        filteredGroups.push(group);
+      }
+    }
 
-    console.log("RECETAS AGRUPADAS:", prescriptions.value, userStore.user.idUser);
+    prescriptions.value = filteredGroups;
+    console.log("RECETAS AGRUPADAS:", prescriptions.value);
   } catch (error) {
     console.error("Error al obtener las recetas:", error);
     errorMessage.value = 'Error al obtener las recetas. Por favor, inténtelo de nuevo.';

@@ -22,20 +22,20 @@ public class PrescriptionMedicine {
     private Medicine medicine;
 
     @Column(name = "DOSIS")
-    private String dosis;
+    private Double dosis;
 
     @Column(name = "FRECUENCIA")
-    private String frecuencia;
+    private Double frecuencia;
 
     @Column(name = "DURACION")
-    private String duracion;
+    private Double duracion;
 
     // Constructor vacío
     public PrescriptionMedicine() {
     }
 
     // Constructor con campos
-    public PrescriptionMedicine(Prescription prescription, Medicine medicine, String dosis, String frecuencia, String duracion) {
+    public PrescriptionMedicine(Prescription prescription, Medicine medicine, Double dosis, Double frecuencia, Double duracion) {
         this.prescription = prescription;
         this.medicine = medicine;
         this.dosis = dosis;
@@ -77,27 +77,27 @@ public class PrescriptionMedicine {
         id.setMedicineId(medicine.getIdMedicine());
     }
 
-    public String getDosis() {
+    public Double getDosis() {
         return dosis;
     }
 
-    public void setDosis(String dosis) {
+    public void setDosis(Double dosis) {
         this.dosis = dosis;
     }
 
-    public String getFrecuencia() {
+    public Double getFrecuencia() {
         return frecuencia;
     }
 
-    public void setFrecuencia(String frecuencia) {
+    public void setFrecuencia(Double frecuencia) {
         this.frecuencia = frecuencia;
     }
 
-    public String getDuracion() {
+    public Double getDuracion() {
         return duracion;
     }
 
-    public void setDuracion(String duracion) {
+    public void setDuracion(Double duracion) {
         this.duracion = duracion;
     }
 }

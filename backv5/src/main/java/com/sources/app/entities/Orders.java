@@ -14,7 +14,7 @@ public class Orders {
     @Column(name = "STATUS")
     private String status;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ID_USER", nullable = false)
     private User user;
 

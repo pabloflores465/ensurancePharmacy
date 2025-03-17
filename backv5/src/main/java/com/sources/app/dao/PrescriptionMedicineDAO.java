@@ -15,7 +15,7 @@ public class PrescriptionMedicineDAO {
 
     // CREATE
     public PrescriptionMedicine create(Prescription prescription, Medicine medicine,
-                                       String dosis, String frecuencia, String duracion) {
+                                       Double dosis, Double frecuencia, Double duracion) {
         Transaction tx = null;
         PrescriptionMedicine pm = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

@@ -27,7 +27,7 @@ public class Medicine {
     private String concentration;
 
     @Column(name = "PRESENTACION")
-    private String presentacion;
+    private Double presentacion;
 
     @Column(name = "STOCK")
     private Integer stock;
@@ -50,7 +50,7 @@ public class Medicine {
 
     // Constructor con campos
     public Medicine(String name, String activeMedicament, String description, String image,
-                    String concentration, String presentacion, Integer stock, String brand,
+                    String concentration, Double presentacion, Integer stock, String brand,
                     Boolean prescription, Double price, Integer soldUnits) {
         this.name = name;
         this.activeMedicament = activeMedicament;
@@ -114,11 +114,11 @@ public class Medicine {
         this.concentration = concentration;
     }
 
-    public String getPresentacion() {
+    public Double getPresentacion() {
         return presentacion;
     }
 
-    public void setPresentacion(String presentacion) {
+    public void setPresentacion(Double presentacion) {
         this.presentacion = presentacion;
     }
 
