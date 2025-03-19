@@ -2,7 +2,7 @@
 <template>
     <div>
       <h1>Detalle del Producto</h1>
-  
+
       <!-- Si el producto existe, mostramos su información -->
       <div v-if="product">
         <div class="product-container" style="display: flex;">
@@ -54,8 +54,8 @@
   <script>
   import Comentarios from '@/components/Comentarios.vue';
   import axios from "axios";
-  //import { useUserStore } from '@/stores/userStore';
- // const userStore = useUserStore();
+  import { useUserStore } from '@/stores/userStore';
+
 
   const ip = process.env.VUE_APP_IP;
 
@@ -80,7 +80,6 @@
       const routeId = this.$route.params.id;
       axios.get(`http://${ip}:8081/api2/medicines`)
           .then(response => {
- //           console.log("Usuario: ",user)
             const products = response.data;
             console.log(this.$route.params.id);
             this.product = products.find(prod => prod.idMedicine === Number(routeId));
@@ -91,22 +90,65 @@
     },
     methods: {
       purchaseProduct() {
-        // Realiza el post con axios; la configuración la dejas como está para luego modificarla si lo deseas
-        axios.post(`http://${ip}:8081/api2/purchase`, {
-          productId: this.product.idMedicine,
-          quantity: this.quantity
-        })
-        .then(response => {
-          console.log('Compra realizada:', response.data);
-        })
-        .catch(error => {
-          console.error('Error en la compra:', error);
-        });
+        const userStore = useUserStore();
+        const userId = userStore.user.idUser;
+
+        // Obtener todas las órdenes para el usuario
+        axios.get(`http://${ip}:8081/api2/orders?userId=${userId}`)
+          .then(response => {
+            console.log('Response from orders GET:', response.data);
+            const orders = response.data;
+            const orderInProgress = orders.find(order => order.status === 'En progreso');
+            if (orderInProgress) {
+              console.log('Found order in progress:', orderInProgress);
+              return orderInProgress;
+            } else {
+              return axios.post(`http://${ip}:8081/api2/orders`, {
+                user: { idUser: userId },
+                status: 'En progreso'
+              }).then(response => {
+                console.log('Response from orders POST:', response.data);
+                return response.data;
+              });
+            }
+          })
+          .then(order => {
+            console.log('ORDEN:', order);
+            return axios.get(`http://${ip}:8081/api2/order_medicines?id=${order.idOrder}%2C${this.product.idMedicine}`)
+                .then(response => {
+                  let items = response.data;
+                  if (!Array.isArray(items)) items = items ? [items] : [];
+                  return items;
+                })
+                .catch(error => {
+                  if (error.response?.status === 404) return [];    // no existe → crear
+                  throw error;
+                })
+                .then(orderMedicines => {
+                  const existing = orderMedicines.find(om => om.medicine.idMedicine === this.product.idMedicine);
+                  const payload = {
+                    orders: order,
+                    medicine: { idMedicine: this.product.idMedicine },
+                    quantity: this.quantity,
+                    cost: this.product.price,
+                    total: this.product.price * this.quantity
+                  };
+                  return existing
+                      ? axios.put(`http://${ip}:8081/api2/order_medicines`, payload)
+                      : axios.post(`http://${ip}:8081/api2/order_medicines`, payload);
+                });
+          })
+          .then(response => {
+            console.log('Orden y medicamento añadidos o actualizados:', response.data);
+          })
+          .catch(error => {
+            console.error('Error en el proceso de la orden:', error);
+          });
       }
     }
   };
   </script>
-  
+
   <style scoped>
   /* Estilos opcionales */
   </style>

@@ -46,6 +46,23 @@ public class OrderMedicineDAO {
             return null;
         }
     }
+    public boolean deleteById(OrderMedicineId id) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Transaction tx = session.beginTransaction();
+            OrderMedicine om = session.get(OrderMedicine.class, id);
+            if (om != null) {
+                session.delete(om);
+                tx.commit();
+                return true;
+            } else {
+                tx.rollback();
+                return false;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     // READ BY ID (clave compuesta)
     public OrderMedicine getById(OrderMedicineId id) {

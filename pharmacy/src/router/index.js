@@ -12,6 +12,7 @@ import CreateProduct from '@/pages/CreateProduct.vue';
 import Prescriptions from '@/pages/Prescriptions.vue';
 import { authService } from '@/services/authService';
 import PrescriptionPay from "@/pages/PrescriptionPay.vue";
+import Cart from "@/components/Cart.vue";
 
 // Rutas para usuarios públicos y autenticados
 const userRoutes = [
@@ -26,7 +27,8 @@ const userRoutes = [
   { path: '/create-product', name: 'CreateProduct', component: CreateProduct },
   { path: '/prescriptions', name: 'Prescriptions', component: Prescriptions },
   { path: '/dashboard', component: Dashboard, meta: { requiresAuth: true } },
-  { path: '/prescriptionpay/:id', name:'PrescriptionPay', component: PrescriptionPay}
+  { path: '/prescriptionpay/:id', name:'PrescriptionPay', component: PrescriptionPay},
+  {path: '/cart', name: 'Cart', component: Cart}
 ];
 
 // Rutas exclusivas para administradores

@@ -14,6 +14,7 @@
         >
         <router-link to="/receta" class="nav-item">Receta</router-link>
         <router-link to="/contact" class="nav-item">Contacto</router-link>
+        <router-link to="/cart" class="nav-item">Carrito</router-link>
 
         <!-- Enlace SOLO para administradores -->
         <router-link
@@ -115,6 +116,7 @@
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/userStore";
+
 
 // Menú móvil
 const mobileMenuOpen = ref(false);

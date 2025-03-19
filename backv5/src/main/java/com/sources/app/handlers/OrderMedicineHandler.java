@@ -24,7 +24,7 @@ public class OrderMedicineHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-        exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
         if("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())){
@@ -120,7 +120,33 @@ public class OrderMedicineHandler implements HttpHandler {
                 e.printStackTrace();
                 exchange.sendResponseHeaders(500, -1);
             }
-        } else {
+        }  else if("DELETE".equalsIgnoreCase(method)) {
+        try {
+            String query = exchange.getRequestURI().getQuery();
+            if(query != null && query.startsWith("id=")) {
+                String[] parts = query.substring(3).split(",");
+                if(parts.length == 2) {
+                    Long orderId = Long.parseLong(parts[0]);
+                    Long medicineId = Long.parseLong(parts[1]);
+                    OrderMedicineId id = new OrderMedicineId(orderId, medicineId);
+
+                    boolean deleted = orderMedicineDAO.deleteById(id); // Nuevo método en tu DAO
+                    if(deleted) {
+                        exchange.sendResponseHeaders(204, -1); // 204: Sin contenido
+                    } else {
+                        exchange.sendResponseHeaders(404, -1);
+                    }
+                } else {
+                    exchange.sendResponseHeaders(400, -1);
+                }
+            } else {
+                exchange.sendResponseHeaders(400, -1);
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+            exchange.sendResponseHeaders(500, -1);
+        }
+    } else {
             exchange.sendResponseHeaders(405, -1);
         }
     }
