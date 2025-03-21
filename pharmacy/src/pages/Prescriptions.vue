@@ -9,7 +9,6 @@
     <div v-if="errorMessage" class="mb-4 text-red-600 text-center">
       {{ errorMessage }}
     </div>
-
     <!-- Lista de recetas -->
     <div v-if="prescriptions.length > 0" class="prescriptions-list">
       <div v-for="group in prescriptions" :key="group.prescription.idPrescription" class="prescription-item">
@@ -21,24 +20,24 @@
         <!-- Tabla de Medicinas -->
         <table class="medicine-table">
           <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Concentración</th>
-              <th>Presentación</th>
-              <th>Dosis</th>
-              <th>Frecuencia</th>
-              <th>Duración</th>
-            </tr>
+          <tr>
+            <th>Nombre</th>
+            <th>Concentración</th>
+            <th>Presentación</th>
+            <th>Dosis</th>
+            <th>Frecuencia</th>
+            <th>Duración</th>
+          </tr>
           </thead>
           <tbody>
-            <tr v-for="medicineEntry in group.medicines" :key="medicineEntry.medicine.idMedicine">
-              <td>{{ medicineEntry.medicine.name }}</td>
-              <td>{{ medicineEntry.medicine.concentration }}</td>
-              <td>{{ medicineEntry.medicine.presentacion }}</td>
-              <td>{{ medicineEntry.dosis }}</td>
-              <td>{{ medicineEntry.frecuencia }}</td>
-              <td>{{ medicineEntry.duracion }} días</td>
-            </tr>
+          <tr v-for="medicineEntry in group.medicines" :key="medicineEntry.medicine.idMedicine">
+            <td>{{ medicineEntry.medicine.name }}</td>
+            <td>{{ medicineEntry.medicine.concentration }}</td>
+            <td>{{ medicineEntry.medicine.presentacion }}</td>
+            <td>{{ medicineEntry.dosis }}</td>
+            <td>{{ medicineEntry.frecuencia }}</td>
+            <td>{{ medicineEntry.duracion }} días</td>
+          </tr>
           </tbody>
         </table>
         <button @click="$router.push({ name: 'PrescriptionPay', params: { id: group.prescription.idPrescription } })">Comprar</button>
@@ -92,12 +91,20 @@ const fetchPrescriptions = async () => {
 
     // Para cada receta, llamar a la API de orders y omitir si status es "Completado"
     for (const group of groupsArray) {
-      const orderResponse = await axios.get(`http://${ip}:8081/api2/orders?id=${group.prescription.idPrescription}`);
-      if (orderResponse.data && orderResponse.data.status === "Completado") {
-        // Si la orden está completada, omitir la receta
-        continue;
-      } else {
+      try {
+        const orderResponse = await axios.get(`http://${ip}:8081/api2/orders?id=${group.prescription.idPrescription}`);
+        const orderData = Array.isArray(orderResponse.data) ? orderResponse.data[0] : orderResponse.data;
+        if (!orderData || orderData.status === 'Completado') {
+          continue;
+        }
         filteredGroups.push(group);
+      } catch (err) {
+        if (err.response?.status === 404) {
+          // No existe orden → incluir receta
+          filteredGroups.push(group);
+        } else {
+          throw err;
+        }
       }
     }
 
