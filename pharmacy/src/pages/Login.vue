@@ -96,27 +96,46 @@ const login = async () => {
   errorMessage.value = '';
   
   try {
-    // Petición POST al backend (ajusta la URL a la tuya)
+    console.log("Intentando iniciar sesión con:", email.value);
+    
+    // Petición POST al backend
     const response = await axios.post(`http://${ip}:8081/api2/login`, {
       email: email.value,
       password: password.value
     });
 
-    // Supongamos que tu backend responde algo como:
-    // {
-    //   "Object": {
-    //       "idUser": 3,
-    //       "name": "Rodrigo",
-    //       "role": "admin",
-    //       ...
-    //   }
-    // }
-    // Ajusta a cómo venga tu data
+    // Verificar si la respuesta tiene datos
+    if (!response.data) {
+      throw new Error("La respuesta no contiene datos");
+    }
+
+    // Después de la petición POST exitosa
     console.log("Login exitoso:", response.data);
-    userStore.setUser(response.data)
-    // Si la respuesta es exitosa, redirige al inicio o a la ruta deseada
+
+    // Guardar el usuario en el store y localStorage
+    const userData = response.data;
     
-    router.push('/');
+    // Sanitizar y verificar los datos
+    if (!userData.role) {
+      userData.role = 'user'; // Rol por defecto si no viene
+    }
+    
+    // Guardar en el store
+    userStore.setUser(userData);
+
+    // Guardar explícitamente en localStorage (respaldo adicional)
+    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('role', userData.role);
+    console.log("Usuario guardado en localStorage con rol:", userData.role);
+
+    // Verificar el rol y redirigir según corresponda
+    if (userData.role === 'admin') {
+      console.log("Redirigiendo a usuario admin a dashboard administrativo");
+      router.push('/admindash');
+    } else {
+      console.log("Redirigiendo a usuario regular a inicio");
+      router.push('/');
+    }
   } catch (error) {
     console.error("Error en el login:", error);
     errorMessage.value = 'Credenciales incorrectas o error en el servidor.';

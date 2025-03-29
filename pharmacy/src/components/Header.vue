@@ -19,6 +19,14 @@
         <!-- Enlace SOLO para administradores -->
         <router-link
           v-if="isLoggedIn && userStore.getUser().role === 'admin'"
+          to="/admindash"
+          class="nav-item admin-link"
+        >
+          📊 Dashboard Admin
+        </router-link>
+
+        <router-link
+          v-if="isLoggedIn && userStore.getUser().role === 'admin'"
           to="/admin"
           class="nav-item"
         >
@@ -80,6 +88,15 @@
       <!-- Enlace SOLO para administradores (móvil) -->
       <router-link
         v-if="isLoggedIn && userStore.getUser().role === 'admin'"
+        to="/admindash"
+        class="mobile-item admin-link"
+        @click="toggleMenu"
+      >
+        📊 Dashboard Admin
+      </router-link>
+
+      <router-link
+        v-if="isLoggedIn && userStore.getUser().role === 'admin'"
         to="/admin"
         class="mobile-item"
         @click="toggleMenu"
@@ -136,7 +153,12 @@ const isLoggedIn = computed(() => {
 // Cerrar sesión
 const logout = () => {
   userStore.logout();
+  // Limpiar todas las claves de sesión del localStorage
   localStorage.removeItem("session");
+  localStorage.removeItem("user");
+  localStorage.removeItem("role");
+  console.log("Sesión cerrada: localStorage limpiado");
+  
   router.push("/");
   setTimeout(() => {
     window.location.reload();
