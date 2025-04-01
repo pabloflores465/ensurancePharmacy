@@ -10,15 +10,16 @@
       {{ errorMessage }}
     </div>
     <!-- Lista de recetas -->
-    <div v-if="prescriptions.length > 0" class="prescriptions-list">
-      <div v-for="group in prescriptions" :key="group.prescription.idPrescription" class="prescription-item">
-        <h3 class="text-xl font-bold">{{ group.prescription.user.name }}</h3>
-        <p><strong>ID Receta:</strong> {{ group.prescription.idPrescription }}</p>
-        <p><strong>Diagnóstico:</strong> {{ group.prescription.diagnosis || 'No especificado' }}</p>
-        <p><strong>Fecha:</strong> {{ group.prescription.date || 'No disponible' }}</p>
+    <div v-if="recipes && recipes.length > 0" class="prescriptions-list">
+      <div v-for="recipe in recipes" :key="recipe._id" class="prescription-item">
+        <h3 class="text-xl font-bold">{{ recipe.patient && recipe.patient.username }}</h3>
+        <p v-if="recipe.patient && recipe.patient.email"><strong>Email:</strong> {{ recipe.patient.email }}</p>
+        <p><strong>ID Receta:</strong> {{ recipe._id }}</p>
+        <p><strong>Diagnóstico:</strong> {{ recipe.diagnostic || 'No especificado' }}</p>
+        <p v-if="recipe.created_at"><strong>Fecha:</strong> {{ recipe.created_at }}</p>
 
         <!-- Tabla de Medicinas -->
-        <table class="medicine-table">
+        <table class="medicine-table" v-if="recipe.medicines && recipe.medicines.length > 0">
           <thead>
           <tr>
             <th>Nombre</th>
@@ -30,17 +31,18 @@
           </tr>
           </thead>
           <tbody>
-          <tr v-for="medicineEntry in group.medicines" :key="medicineEntry.medicine.idMedicine">
-            <td>{{ medicineEntry.medicine.name }}</td>
-            <td>{{ medicineEntry.medicine.concentration }}</td>
-            <td>{{ medicineEntry.medicine.presentacion }}</td>
-            <td>{{ medicineEntry.dosis }}</td>
-            <td>{{ medicineEntry.frecuencia }}</td>
-            <td>{{ medicineEntry.duracion }} días</td>
+          <tr v-for="medicine in recipe.medicines" :key="medicine._id">
+            <td>{{ medicine.principioActivo }}</td>
+            <td>{{ medicine.concentracion }}</td>
+            <td>{{ medicine.presentacion }}</td>
+            <td>{{ medicine.dosis }}</td>
+            <td>{{ medicine.frecuencia }}</td>
+            <td>{{ medicine.duracion }}</td>
           </tr>
           </tbody>
         </table>
-        <button @click="$router.push({ name: 'PrescriptionPay', params: { id: group.prescription.idPrescription } })">Comprar</button>
+        <p v-if="recipe.has_insurance" class="insurance-info">Con seguro médico</p>
+        <button class="buy-button" @click="$router.push({ name: 'PrescriptionPay', params: { id: recipe._id } })">Comprar</button>
       </div>
     </div>
 
@@ -54,64 +56,48 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import { useUserStore } from "@/stores/userStore";
-const userStore = useUserStore();
 
-const prescriptions = ref([]);
+const recipes = ref([]);
 const errorMessage = ref('');
-const ip = process.env.VUE_APP_API_IP || 'localhost';
 
 const fetchPrescriptions = async () => {
   try {
-    const response = await axios.get(`http://${ip}:8081/api2/prescription_medicines`);
-    const allPrescriptions = response.data;
-
-    // Filtrar recetas que pertenecen al usuario actual
-    const userPrescriptions = allPrescriptions.filter(p => p.prescription.user.idUser == userStore.user.idUser);
-
-    // Agrupar recetas por prescriptionId
-    const grouped = {};
-    userPrescriptions.forEach(p => {
-      const prescId = p.id.prescriptionId;
-      if (!grouped[prescId]) {
-        grouped[prescId] = {
-          prescription: p.prescription,
-          medicines: []
-        };
-      }
-      grouped[prescId].medicines.push({
-        medicine: p.medicine,
-        dosis: p.dosis,
-        frecuencia: p.frecuencia,
-        duracion: p.duracion
-      });
-    });
-    const groupsArray = Object.values(grouped);
-    const filteredGroups = [];
-
-    // Para cada receta, llamar a la API de orders y omitir si status es "Completado"
-    for (const group of groupsArray) {
-      try {
-        const orderResponse = await axios.get(`http://${ip}:8081/api2/orders?id=${group.prescription.idPrescription}`);
-        const orderData = Array.isArray(orderResponse.data) ? orderResponse.data[0] : orderResponse.data;
-        if (!orderData || orderData.status === 'Completado') {
-          continue;
-        }
-        filteredGroups.push(group);
-      } catch (err) {
-        if (err.response?.status === 404) {
-          // No existe orden → incluir receta
-          filteredGroups.push(group);
+    // Obtener el nombre de usuario (mel) del localStorage
+    let username = 'mel'; // Valor por defecto
+    try {
+      const userData = JSON.parse(localStorage.getItem('user'));
+      if (userData && userData.name) {
+        username = userData.name; // Tomar el valor "mel" del campo name
+        console.log("Nombre de usuario obtenido:", username);
+      } else {
+        // Intentar obtener desde session
+        const sessionData = JSON.parse(localStorage.getItem('session'));
+        if (sessionData && sessionData.name) {
+          username = sessionData.name;
+          console.log("Nombre de usuario obtenido de session:", username);
         } else {
-          throw err;
+          console.warn("No se encontró el nombre de usuario en localStorage");
         }
       }
+    } catch (err) {
+      console.error("Error al obtener el usuario del localStorage:", err);
     }
 
-    prescriptions.value = filteredGroups;
-    console.log("RECETAS AGRUPADAS:", prescriptions.value);
+    // Consumir el API con el parámetro username (mel)
+    console.log(`Consultando recetas para el usuario: ${username}`);
+    const response = await axios.get(`http://127.0.0.1:8000/recipes?username=${username}`);
+    
+    if (response.data && response.data.recipes) {
+      recipes.value = response.data.recipes;
+      console.log("RECETAS OBTENIDAS:", recipes.value);
+    } else {
+      console.warn("La respuesta del API no tiene el formato esperado", response.data);
+      recipes.value = [];
+      errorMessage.value = 'No se encontraron recetas para este usuario.';
+    }
   } catch (error) {
     console.error("Error al obtener las recetas:", error);
+    recipes.value = [];
     errorMessage.value = 'Error al obtener las recetas. Por favor, inténtelo de nuevo.';
   }
 };
@@ -144,6 +130,7 @@ onMounted(() => {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
+  margin-bottom: 15px;
 }
 
 .medicine-table th, .medicine-table td {
@@ -155,5 +142,25 @@ onMounted(() => {
 .medicine-table th {
   background-color: #f4f4f4;
   font-weight: bold;
+}
+
+.insurance-info {
+  color: #4caf50;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.buy-button {
+  background-color: #4caf50;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: none;
+  font-weight: bold;
+}
+
+.buy-button:hover {
+  background-color: #45a049;
 }
 </style>
