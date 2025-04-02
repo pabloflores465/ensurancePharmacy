@@ -1,0 +1,44 @@
+version: "3"
+services:
+  backend1:
+    build:
+      context: .
+      dockerfile: Dockerfile.ensurance.backend
+    ports:
+      - "5170:8080"
+  backend2:
+    build:
+      context: .
+      dockerfile: Dockerfile.ensurance.backend
+    ports:
+      - "5171:8080"
+  backend3:
+    build:
+      context: .
+      dockerfile: Dockerfile.ensurance.backend
+    ports:
+      - "5172:8080"
+  frontend1:
+    build:
+      context: .
+      dockerfile: Dockerfile.ensurance.frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend1
+  frontend2:
+    build:
+      context: .
+      dockerfile: Dockerfile.ensurance.frontend
+    ports:
+      - "5174:5173"
+    depends_on:
+      - backend2
+  frontend3:
+    build:
+      context: .
+      dockerfile: Dockerfile.ensurance.frontend
+    ports:
+      - "5175:5173"
+    depends_on:
+      - backend3

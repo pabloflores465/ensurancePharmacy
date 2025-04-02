@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "python3 getIp.py && vite --host",
+    "dev": "python3 getip.py && vite --host",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview"
   },

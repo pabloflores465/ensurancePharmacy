@@ -1,0 +1,13 @@
+FROM openjdk:25-ea-16-jdk-oraclelinux9
+
+WORKDIR /app
+
+COPY backv4 /app
+
+RUN microdnf install maven -y
+
+RUN mvn clean install
+
+EXPOSE 8080
+
+CMD ["/bin/sh", "-c", "mvn clean install && mvn exec:java -Dexec.mainClass='com.sources.app.App'"]

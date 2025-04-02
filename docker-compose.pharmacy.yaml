@@ -1,0 +1,44 @@
+version: "3"
+services:
+  backend1:
+    build:
+      context: .
+      dockerfile: Dockerfile.pharmacy.backend
+    ports:
+      - "8080:8081"
+  backend2:
+    build:
+      context: .
+      dockerfile: Dockerfile.pharmacy.backend
+    ports:
+      - "8081:8081"
+  backend3:
+    build:
+      context: .
+      dockerfile: Dockerfile.pharmacy.backend
+    ports:
+      - "8082:8081"
+  frontend1:
+    build:
+      context: .
+      dockerfile: Dockerfile.pharmacy.frontend
+    ports:
+      - "8083:8080"
+    depends_on:
+      - backend1
+  frontend2:
+    build:
+      context: .
+      dockerfile: Dockerfile.pharmacy.frontend
+    ports:
+      - "8084:8080"
+    depends_on:
+      - backend2
+  frontend3:
+    build:
+      context: .
+      dockerfile: Dockerfile.pharmacy.frontend
+    ports:
+      - "8085:8080"
+    depends_on:
+      - backend3
