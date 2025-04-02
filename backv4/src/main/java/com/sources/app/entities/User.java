@@ -45,8 +45,14 @@ public class User {
     @Column(name = "PASSWORD", nullable = false)
     private String password;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "CREATED_AT")
+    private Date createdAt;  // Fecha de creación del usuario
+
     // Constructor sin argumentos
-    public User() {}
+    public User() {
+        this.createdAt = new Date(); // Inicializar con la fecha actual al crear un usuario
+    }
 
     // Constructor completo
     public User(String name, Long cui, String phone, String email, String address, Date birthDate, String role, Policy policy, Integer enabled, String password) {
@@ -60,6 +66,7 @@ public class User {
         this.policy = policy;
         this.enabled = enabled;
         this.password = password;
+        this.createdAt = new Date();
     }
 
     // Getters y Setters
@@ -95,4 +102,7 @@ public class User {
 
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+
+    public Date getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
 }

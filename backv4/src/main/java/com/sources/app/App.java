@@ -88,6 +88,7 @@ public class App {
         server.createContext("/api/transactions", new TransactionsHandler(transactionsDAO));
         server.createContext("/api/transactionpolicy", new TransactionPolicyHandler(transactionPolicyDAO));
         server.createContext("/api/servicecategory", new ServiceCategoryHandler(serviceCategoryDAO));
+        server.createContext("/api/notifications/email", new NotificationHandler());
         server.setExecutor(null); // Usa el executor por defecto
         server.start();
         System.out.println("Servidor iniciado en http://" + ip + ":8080/api");

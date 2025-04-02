@@ -16,15 +16,47 @@ public class UserDAO {
             Query<User> query = session.createQuery("FROM User WHERE email = :email AND password = :password", User.class);
             query.setParameter("email", email);
             query.setParameter("password", password);
-            return query.uniqueResult(); // Retorna null si no encuentra el usuario
+            User user = query.uniqueResult();
+            return user;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    // Método create modificado para asignar la relación con Policy
+    public boolean existsUserWithEmail(String email) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Query<Long> query = session.createQuery("SELECT COUNT(u) FROM User u WHERE u.email = :email", Long.class);
+            query.setParameter("email", email);
+            return query.uniqueResult() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean existsUserWithCUI(Long cui) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Query<Long> query = session.createQuery("SELECT COUNT(u) FROM User u WHERE u.cui = :cui", Long.class);
+            query.setParameter("cui", cui);
+            return query.uniqueResult() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public User create(String name, Long cui, String phone, String email, Date birthdate, String address, String password, Policy policy) {
+        if (existsUserWithEmail(email)) {
+            System.out.println("ERROR: Ya existe un usuario con el email: " + email);
+            return null;
+        }
+        
+        if (existsUserWithCUI(cui)) {
+            System.out.println("ERROR: Ya existe un usuario con el CUI: " + cui);
+            return null;
+        }
+        
         Transaction tx = null;
         Session session = null;
         User user = null;
@@ -32,7 +64,6 @@ public class UserDAO {
             session = HibernateUtil.getSessionFactory().openSession();
             tx = session.beginTransaction();
 
-            // Creamos una instancia de User y asignamos los valores, incluyendo la relación Policy
             user = new User();
             user.setName(name);
             user.setCui(cui);
@@ -41,11 +72,10 @@ public class UserDAO {
             user.setBirthDate(birthdate);
             user.setAddress(address);
             user.setPassword(password);
-            user.setRole("usuario");
-            user.setEnabled(1);
-            user.setPolicy(policy);  // Asignamos el objeto Policy
+            user.setRole(" ");
+            user.setEnabled(0);
+            user.setPolicy(policy);
 
-            // Guardamos el usuario en la base de datos
             session.save(user);
 
             tx.commit();
@@ -66,7 +96,6 @@ public class UserDAO {
         return user;
     }
 
-    // Método para obtener todos los usuarios (Read All)
     public List<User> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<User> query = session.createQuery("FROM User", User.class);
@@ -77,13 +106,61 @@ public class UserDAO {
         }
     }
 
-    // Método para obtener un usuario por su ID (Read by ID)
     public User findById(Long idUser) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(User.class, idUser);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public User update(User user) {
+        Transaction tx = null;
+        Session session = null;
+        try {
+            session = HibernateUtil.getSessionFactory().openSession();
+            tx = session.beginTransaction();
+
+            User existingUser = session.get(User.class, user.getIdUser());
+            if (existingUser == null) {
+                return null;
+            }
+
+            existingUser.setName(user.getName());
+            existingUser.setCui(user.getCui());
+            existingUser.setPhone(user.getPhone());
+            existingUser.setEmail(user.getEmail());
+            existingUser.setAddress(user.getAddress());
+            existingUser.setBirthDate(user.getBirthDate());
+            existingUser.setRole(user.getRole());
+            existingUser.setEnabled(user.getEnabled());
+            existingUser.setPassword(user.getPassword());
+
+            if (user.getPolicy() != null && 
+                (existingUser.getPolicy() == null || 
+                 !existingUser.getPolicy().getIdPolicy().equals(user.getPolicy().getIdPolicy()))) {
+                existingUser.setPolicy(user.getPolicy());
+            }
+
+            session.update(existingUser);
+            tx.commit();
+            
+            return existingUser;
+        } catch (Exception e) {
+            if (tx != null && tx.getStatus().canRollback()) {
+                try {
+                    tx.rollback();
+                } catch (Exception rbEx) {
+                    rbEx.printStackTrace();
+                }
+            }
+            e.printStackTrace();
+            return null;
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
         }
     }
 }

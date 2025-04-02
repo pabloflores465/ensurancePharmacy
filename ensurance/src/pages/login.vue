@@ -3,6 +3,9 @@ import { ref, onMounted } from "vue";
 import type { Ref } from "vue";
 import axios, { type AxiosResponse } from "axios";
 import router from "../router";
+import eventBus from '../eventBus';
+import { checkMissingRequiredFields } from "../utils/profile-utils";
+
 defineProps<{ msg: string }>();
 
 interface LoginResponse {
@@ -30,28 +33,34 @@ const login: () => Promise<void> = async (): Promise<void> => {
   try {
     loading.value = true;
     error.value = "";
-
-    const response: AxiosResponse<any> = await axios.post(
-      `http://${ip}:8080/api/login`,
-      {
-        email: email.value,
-        password: password.value,
-      }
-    );
-
-    console.log(response.data);
-
-    if (response.status === 200) {
-      user.value = response.data;
-      console.log(user.value);
+    
+    const response = await axios.post(`http://${ip}:8080/api/login`, {
+      email: email.value,
+      password: password.value,
+    });
+    
+    if (response.status === 200 && response.data) {
       localStorage.setItem("user", JSON.stringify(response.data));
-      router.push("/home");
+      
+      eventBus.emit('login');
+      
+      if (response.data.enabled !== 1) {
+        router.push("/inactive-account");
+      } else if (checkMissingRequiredFields(response.data)) {
+        router.push("/profile-completion");
+      } else {
+        router.push("/home");
+      }
     } else {
-      error.value = response.data.message || "Login failed";
+      error.value = "Error en el inicio de sesión. Por favor intente de nuevo.";
     }
   } catch (err: any) {
-    error.value =
-      err.response?.data?.message || "Connection error. Please try again.";
+    if (err.response?.status === 401) {
+      error.value = "Usuario o contraseña incorrectos";
+    } else {
+      error.value = "Error de conexión. Por favor intente de nuevo.";
+    }
+    
     console.error(err);
   } finally {
     loading.value = false;
@@ -59,8 +68,10 @@ const login: () => Promise<void> = async (): Promise<void> => {
 };
 
 onMounted(() => {
-  const profile = localStorage.getItem("user");
-  if (profile) {
+  const profileStr = localStorage.getItem("user");
+  const profile = profileStr ? JSON.parse(profileStr) : null;
+  
+  if (profile && profile !== null && profile !== "null") {
     router.push("/home");
   }
 });

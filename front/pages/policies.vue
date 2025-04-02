@@ -14,8 +14,7 @@ interface Policy {
 const policies = ref<Policy[]>([]);
 const config = useRuntimeConfig();
 const ip = config.public.ip;
-let policyChanges: Policy[] = [];
-const fetchPolicy = async () => {       
+const fetchPolicy = async () => {
   try {
     notify({
       type: "loading",
@@ -24,8 +23,7 @@ const fetchPolicy = async () => {
     });
     const response = await axios.get(`http://${ip}:8080/api/policy`);
     policies.value = response.data;
-    policyChanges = response.data.map((policy: Policy) => ({ ...policy }));
-    console.log("Hospitals obtenidos:", policies.value);  
+    console.log("Hospitals obtenidos:", policies.value);
     notify({
       type: "success",
       title: "Policies loaded",
@@ -38,6 +36,15 @@ const fetchPolicy = async () => {
       title: "Error loading policies",
       description: "Error loading policies",
     });
+  }
+};
+const updatePolicy = async (policy: Policy) => {
+  try {
+    await axios.put(`http://${ip}:8080/api/policy`, policy);
+    notify({ type: 'success', title: 'Policy updated', description: 'Successfully updated policy.' });
+  } catch (err) {
+    console.error('Error updating policy:', err);
+    notify({ type: 'error', title: 'Update failed', description: 'Failed to update policy.' });
   }
 };
 const edit = useEdit();
@@ -150,93 +157,23 @@ fetchPolicy();
         </div>
       </div>
       <div v-if="edit" class="card m-4" v-for="(policy, index) in policies">
-        <span class="text-primary font-semibold">Policy</span>
-        <input
-          type="number"
-          class="field mb-8"
-          :defaultValue="policy.percentage.toString()"
-          @input="
-            (event) => {
-              const target = event.target as HTMLInputElement;
-              policyChanges[index].percentage = parseInt(target.value);
-            }
-          "
-        />
-        <span class="text-primary font-semibold">Policy Code</span>
-        <input
-          type="number"
-          class="field mb-8"
-          :defaultValue="policy.idPolicy.toString()"
-          @input="
-            (event) => {
-              const target = event.target as HTMLInputElement;
-              policyChanges[index].idPolicy = parseInt(target.value);
-            }
-          "
-        />
         <span class="text-primary font-semibold">Discount Percentage</span>
-        <input type="number" class="field mb-8" :defaultValue="policy.percentage.toString()" />
+        <input type="number" class="field mb-8" v-model.number="policy.percentage" />
+
+        <span class="text-primary font-semibold">Policy Code</span>
+        <input type="number" class="field mb-8" v-model.number="policy.idPolicy" />
+
         <span class="text-primary font-semibold">Anual Price</span>
-        <input
-          type="number"
-          class="field mb-8"
-          :defaultValue="policy.cost.toString()"
-          @input="
-            (event) => {
-              const target = event.target as HTMLInputElement;
-              policyChanges[index].cost = parseInt(target.value);
-            }
-          "
-        />
+        <input type="number" class="field mb-8" v-model.number="policy.cost" />
+
         <span class="text-primary font-semibold">Creation Date</span>
-        <input
-          type="date"
-          class="field mb-8"
-          @input="
-            (event) => {
-              const target = event.target as HTMLInputElement;
-              policyChanges[index].creationDate = target.value;
-            }
-          "
-        />
+        <input type="date" class="field mb-8" v-model="policy.creationDate" />
+
         <span class="text-primary font-semibold">Expire Date</span>
-        <input
-          type="date"
-          class="field mb-8"
-          @input="
-            (event) => {
-              const target = event.target as HTMLInputElement;
-              policyChanges[index].expDate = target.value;
-            }
-          "
-        />
-        <button
-          class="btn mx-auto flex justify-center"
-          @click="
-            () => {
-              console.log(policy);
-              console.log(policyChanges[index]);
-              addChange(
-                ['Policy Id:', 'Percentage', 'Creation Date', 'Expire Date'],
-                policy,
-                policyChanges[index],
-                'policy'
-              );
-            }
-          "
-        >
-          <svg
-            class="me-2"
-            xmlns="http://www.w3.org/2000/svg"
-            height="24px"
-            viewBox="0 -960 960 960"
-            width="24px"
-            fill="currentColor"
-          >
-            <path
-              d="M840-680v480q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z"
-            /></svg
-          >Save
+        <input type="date" class="field mb-8" v-model="policy.expDate" />
+
+        <button class="btn mx-auto flex justify-center" @click="updatePolicy(policy)">
+          Save
         </button>
       </div>
       <button v-if="edit" class="btn mx-auto flex justify-center mb-6"

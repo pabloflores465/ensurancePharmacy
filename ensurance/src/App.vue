@@ -1,11 +1,36 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, provide, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import eventBus from './eventBus';
 
+const router = useRouter();
 const isLoggedIn = ref(false);
-const profile = JSON.parse(localStorage.getItem("user") || "null");
-console.log(profile);
-if (profile !== null) {
-  isLoggedIn.value = true;
+
+// Función para verificar el estado de autenticación
+const checkAuth = () => {
+  const profile = JSON.parse(localStorage.getItem("user") || "null");
+  isLoggedIn.value = profile !== null && profile !== "null";
+};
+
+// Verificar autenticación inicial
+checkAuth();
+
+// Escuchar eventos de login y logout
+onMounted(() => {
+  eventBus.on('login', () => {
+    checkAuth();
+  });
+  
+  eventBus.on('logout', () => {
+    checkAuth();
+  });
+});
+
+function logout() {
+  localStorage.removeItem("user");
+  isLoggedIn.value = false;
+  eventBus.emit('logout');
+  router.push("/login");
 }
 </script>
 <template>
@@ -28,6 +53,20 @@ if (profile !== null) {
           Register
         </router-link>
       </div>
+      <div v-if="isLoggedIn">
+        <router-link
+          to="/home"
+          class="px-4 py-2 me-2 bg-blue-600 text-white rounded hover:bg-blue-800 transition-colors"
+        >
+          Home
+        </router-link>
+        <button
+          @click="logout"
+          class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-800 transition-colors"
+        >
+          Logout
+        </button>
+      </div>
     </nav>
   </header>
   <main class="min-h-[calc(100vh-136px)] p-4">
@@ -36,6 +75,6 @@ if (profile !== null) {
   <footer
     class="py-4 px-8 text-center bg-gray-50 mt-auto border-t border-gray-200"
   >
-    <p>&copy; 2023 Ensurance. All rights reserved.</p>
+    <p>&copy; 2025 Ensurance. All rights reserved and lefts too.</p>
   </footer>
 </template>
