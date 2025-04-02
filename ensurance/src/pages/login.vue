@@ -6,7 +6,8 @@ import router from "../router";
 import eventBus from '../eventBus';
 import { checkMissingRequiredFields } from "../utils/profile-utils";
 
-defineProps<{ msg: string }>();
+// La prop msg es opcional
+const props = defineProps<{ msg?: string }>();
 
 interface LoginResponse {
   user: {
@@ -14,6 +15,7 @@ interface LoginResponse {
     name: string;
     email: string;
     role: string;
+    enabled: number;
   };
   success: boolean;
   message: string;
@@ -27,41 +29,78 @@ const user: Ref<LoginResponse["user"] | null> = ref<
   LoginResponse["user"] | null
 >(null);
 const ip = import.meta.env.VITE_IP;
-console.log(ip);
+console.log("IP del servidor:", ip);
 
 const login: () => Promise<void> = async (): Promise<void> => {
   try {
     loading.value = true;
     error.value = "";
     
+    console.log("Intentando login con:", email.value);
+    
     const response = await axios.post(`http://${ip}:8080/api/login`, {
       email: email.value,
       password: password.value,
     });
     
+    console.log("Respuesta del servidor:", response.data);
+    
     if (response.status === 200 && response.data) {
-      localStorage.setItem("user", JSON.stringify(response.data));
+      // Verificar si ya existe información de perfil completado para este usuario
+      const previousUserData = localStorage.getItem("user");
+      let profileCompletedFlag = false;
+      let profileData = null;
+      
+      if (previousUserData) {
+        try {
+          const prevUser = JSON.parse(previousUserData);
+          if (prevUser && prevUser.email === response.data.email && prevUser.profile_completed) {
+            profileCompletedFlag = true;
+            profileData = prevUser.profile_data || null;
+            console.log("Se encontró información de perfil completado para este usuario");
+          }
+        } catch (e) {
+          console.error("Error al parsear datos de usuario previo:", e);
+        }
+      }
+      
+      // Combinar datos del servidor con datos de perfil previos si existen
+      const userData = {
+        ...response.data,
+        ...(profileCompletedFlag ? { profile_completed: true } : {}),
+        ...(profileData ? { profile_data: profileData } : {})
+      };
+      
+      localStorage.setItem("user", JSON.stringify(userData));
+      console.log("Usuario guardado en localStorage:", userData);
+      console.log("Rol del usuario:", userData.role);
+      console.log("Estado de activación:", userData.enabled);
+      console.log("Estado de perfil completado:", userData.profile_completed);
       
       eventBus.emit('login');
       
-      if (response.data.enabled !== 1) {
+      if (userData.enabled !== 1) {
+        console.log("Redirigiendo a cuenta inactiva");
         router.push("/inactive-account");
-      } else if (checkMissingRequiredFields(response.data)) {
+      } else if (!profileCompletedFlag && checkMissingRequiredFields(userData)) {
+        console.log("Redirigiendo a completar perfil");
         router.push("/profile-completion");
       } else {
+        console.log("Redirigiendo a home");
         router.push("/home");
       }
     } else {
       error.value = "Error en el inicio de sesión. Por favor intente de nuevo.";
+      console.error("Error en login:", response);
     }
   } catch (err: any) {
+    console.error("Error en la petición:", err);
+    
     if (err.response?.status === 401) {
       error.value = "Usuario o contraseña incorrectos";
     } else {
       error.value = "Error de conexión. Por favor intente de nuevo.";
     }
-    
-    console.error(err);
   } finally {
     loading.value = false;
   }
@@ -69,16 +108,19 @@ const login: () => Promise<void> = async (): Promise<void> => {
 
 onMounted(() => {
   const profileStr = localStorage.getItem("user");
+  console.log("Profile en localStorage:", profileStr);
+  
   const profile = profileStr ? JSON.parse(profileStr) : null;
   
   if (profile && profile !== null && profile !== "null") {
+    console.log("Usuario ya logueado, redirigiendo a home");
     router.push("/home");
   }
 });
 </script>
 
 <template>
-  <h1 class="text-2xl font-bold mb-6">{{ msg }}</h1>
+  <h1 class="text-2xl font-bold mb-6">{{ msg || "Bienvenido a Ensurance" }}</h1>
 
   <div
     v-if="!user"

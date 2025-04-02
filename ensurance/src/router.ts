@@ -1,14 +1,19 @@
-import { createMemoryHistory, createRouter } from "vue-router";
+import { createMemoryHistory, createRouter, createWebHistory } from "vue-router";
 import type { RouteLocationNormalized, NavigationGuardNext } from "vue-router";
 import Login from "./pages/login.vue";
 import Home from "./pages/home.vue";
 import Register from "./pages/register.vue";
 import AdminUsers from "./pages/admin/users.vue";
+import InsuranceServices from "./pages/admin/insurance-services.vue";
+import HospitalServices from "./pages/admin/hospital-services.vue";
 import ProfileCompletion from "./pages/profile-completion.vue";
 import InactiveAccount from "./pages/inactive-account.vue";
+import CatalogInsuranceServices from "./pages/catalog/insurance-services.vue";
+import CatalogHospitals from "./pages/catalog/hospitals.vue";
+import CatalogHospitalServices from "./pages/catalog/hospital-services.vue";
 import { checkMissingRequiredFields } from "./utils/profile-utils";
 
-// Middleware para proteger rutas
+
 const requireAuth = (
   to: RouteLocationNormalized, 
   from: RouteLocationNormalized, 
@@ -23,36 +28,50 @@ const requireAuth = (
     // Usuario no activado
     next('/inactive-account');
   } else {
-    // Verificar si el usuario necesita completar su perfil
+    // COMENTADO: Verificar si el usuario necesita completar su perfil
+    // Ya no verificamos si faltan campos de perfil para evitar redirecciones indeseadas
+    /*
     const missingFields = checkMissingRequiredFields(profile);
     if (missingFields && to.path !== '/profile-completion') {
       next('/profile-completion');
     } else {
-      next(); // Usuario autenticado y con perfil completo, continuar
-    }
+    */
+      next(); // Usuario autenticado, continuar sin verificar perfil
+    //}
   }
 };
 
-// Middleware para rutas de administrador
 const requireAdmin = (
   to: RouteLocationNormalized, 
   from: RouteLocationNormalized, 
   next: NavigationGuardNext
 ) => {
   const profile = JSON.parse(localStorage.getItem("user") || "null");
+  console.log("Profile en requireAdmin:", profile);
   
   if (!profile || profile === "null") {
     // No autenticado, redirigir a login
+    console.log("No autenticado, redirigiendo a login");
     next('/login');
-  } else if (profile.role !== "ADMIN") {
+    return;
+  } 
+  
+  console.log("Role:", profile.role);
+  
+  // Verificar si es admin (en minúsculas, como lo envía el backend)
+  if (profile.role !== "admin") {
     // No es administrador, redirigir a home
+    console.log("No es admin, redirigiendo a home");
     next('/home');
-  } else {
-    next(); // Es administrador, continuar
+    return;
   }
+  
+  // Es administrador, continuar
+  console.log("Es admin, continuando");
+  next();
 };
 
-// Middleware para comprobar si el usuario tiene los datos completos
+
 const requireCompleteProfile = (
   to: RouteLocationNormalized, 
   from: RouteLocationNormalized, 
@@ -65,6 +84,11 @@ const requireCompleteProfile = (
     return;
   }
   
+  // Ya no verificamos campos faltantes en el perfil
+  // Permitir acceso a todas las rutas independientemente del estado del perfil
+  next();
+  
+  /* CÓDIGO ORIGINAL COMENTADO
   const missingFields = checkMissingRequiredFields(profile);
   
   if (missingFields) {
@@ -77,6 +101,7 @@ const requireCompleteProfile = (
   } else {
     next(); // Perfil completo, continuar
   }
+  */
 };
 
 // Middleware para usuarios inactivos
@@ -111,6 +136,16 @@ const routes = [
     beforeEnter: requireAdmin
   },
   {
+    path: "/admin/insurance-services",
+    component: InsuranceServices,
+    beforeEnter: requireAdmin
+  },
+  {
+    path: "/admin/hospital-services",
+    component: HospitalServices,
+    beforeEnter: requireAdmin
+  },
+  {
     path: "/profile-completion",
     component: ProfileCompletion,
     beforeEnter: requireCompleteProfile
@@ -119,11 +154,27 @@ const routes = [
     path: "/inactive-account",
     component: InactiveAccount,
     beforeEnter: inactiveUserOnly
+  },
+  // Nuevas rutas de catálogo
+  {
+    path: "/catalog/insurance-services",
+    component: CatalogInsuranceServices,
+    beforeEnter: requireAuth
+  },
+  {
+    path: "/catalog/hospitals",
+    component: CatalogHospitals,
+    beforeEnter: requireAuth
+  },
+  {
+    path: "/catalog/hospital-services",
+    component: CatalogHospitalServices,
+    beforeEnter: requireAuth
   }
 ];
 
 const router = createRouter({
-  history: createMemoryHistory(),
+  history: createWebHistory(),
   routes,
 });
 

@@ -29,6 +29,8 @@ public class App {
     private static final TransactionsDAO transactionsDAO = new TransactionsDAO();
     private static final TransactionPolicyDAO transactionPolicyDAO = new TransactionPolicyDAO();
     private static final ServiceCategoryDAO serviceCategoryDAO = new ServiceCategoryDAO();
+    private static final InsuranceServiceDAO insuranceServiceDAO = new InsuranceServiceDAO();
+    private static final HospitalInsuranceServiceDAO hospitalInsuranceServiceDAO = new HospitalInsuranceServiceDAO();
 
     private static String getLocalExternalIp() {
         try {
@@ -89,6 +91,9 @@ public class App {
         server.createContext("/api/transactionpolicy", new TransactionPolicyHandler(transactionPolicyDAO));
         server.createContext("/api/servicecategory", new ServiceCategoryHandler(serviceCategoryDAO));
         server.createContext("/api/notifications/email", new NotificationHandler());
+        // Nuevos endpoints para servicios de seguro y relaciones con hospitales
+        server.createContext("/api/insurance-services", new InsuranceServiceHandler(insuranceServiceDAO, categoryDAO));
+        server.createContext("/api/hospital-services", new HospitalInsuranceServiceHandler(hospitalInsuranceServiceDAO, hospitalDAO, insuranceServiceDAO));
         server.setExecutor(null); // Usa el executor por defecto
         server.start();
         System.out.println("Servidor iniciado en http://" + ip + ":8080/api");

@@ -1,16 +1,25 @@
 <script setup lang="ts">
-import { ref, provide, onMounted } from "vue";
+import { ref, provide, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import eventBus from './eventBus';
 
 const router = useRouter();
 const isLoggedIn = ref(false);
+const userProfile = ref<any>(null);
 
-// Función para verificar el estado de autenticación
+
 const checkAuth = () => {
   const profile = JSON.parse(localStorage.getItem("user") || "null");
   isLoggedIn.value = profile !== null && profile !== "null";
+  userProfile.value = profile;
+  console.log("Usuario:", profile);
+  console.log("Es admin:", isAdmin.value);
 };
+
+// Computed para verificar si el usuario es administrador
+const isAdmin = computed(() => {
+  return userProfile.value && userProfile.value.role === "admin";
+});
 
 // Verificar autenticación inicial
 checkAuth();
@@ -29,8 +38,29 @@ onMounted(() => {
 function logout() {
   localStorage.removeItem("user");
   isLoggedIn.value = false;
+  userProfile.value = null;
   eventBus.emit('logout');
   router.push("/login");
+}
+
+function navigateToUsers() {
+  router.push("/admin/users");
+}
+
+function navigateToServices() {
+  router.push("/admin/insurance-services");
+}
+
+function navigateToHospitals() {
+  router.push("/admin/hospital-services");
+}
+
+function navigateToInsuranceServicesCatalog() {
+  router.push("/catalog/insurance-services");
+}
+
+function navigateToHospitalsCatalog() {
+  router.push("/catalog/hospitals");
 }
 </script>
 <template>
@@ -53,16 +83,65 @@ function logout() {
           Register
         </router-link>
       </div>
-      <div v-if="isLoggedIn">
+      <div v-if="isLoggedIn" class="flex items-center">
         <router-link
           to="/home"
           class="px-4 py-2 me-2 bg-blue-600 text-white rounded hover:bg-blue-800 transition-colors"
         >
           Home
         </router-link>
+        
+        <!-- Menú de catálogos para todos los usuarios -->
+        <div class="relative mx-2 group">
+          <button class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-800 transition-colors flex items-center">
+            Catálogos ▼
+          </button>
+          <div class="absolute hidden group-hover:block bg-white mt-2 py-2 rounded shadow-lg z-10 w-64 right-0">
+            <button 
+              @click="navigateToInsuranceServicesCatalog" 
+              class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+            >
+              Servicios Cubiertos
+            </button>
+            <button 
+              @click="navigateToHospitalsCatalog" 
+              class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+            >
+              Hospitales Aprobados
+            </button>
+          </div>
+        </div>
+        
+        <!-- Menú de administración para admins -->
+        <div v-if="isAdmin" class="relative mx-2 group">
+          <button class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-800 transition-colors flex items-center">
+            Admin ▼
+          </button>
+          <div class="absolute hidden group-hover:block bg-white mt-2 py-2 rounded shadow-lg z-10 w-64 right-0">
+            <button 
+              @click="navigateToUsers" 
+              class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+            >
+              Gestión de Usuarios
+            </button>
+            <button 
+              @click="navigateToServices" 
+              class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+            >
+              Catálogo de Servicios
+            </button>
+            <button 
+              @click="navigateToHospitals" 
+              class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+            >
+              Hospitales y Servicios
+            </button>
+          </div>
+        </div>
+        
         <button
           @click="logout"
-          class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-800 transition-colors"
+          class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-800 transition-colors"
         >
           Logout
         </button>
@@ -78,3 +157,9 @@ function logout() {
     <p>&copy; 2025 Ensurance. All rights reserved and lefts too.</p>
   </footer>
 </template>
+
+<style>
+.group:hover .group-hover\:block {
+  display: block;
+}
+</style>
