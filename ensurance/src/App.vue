@@ -62,6 +62,19 @@ function navigateToInsuranceServicesCatalog() {
 function navigateToHospitalsCatalog() {
   router.push("/catalog/hospitals");
 }
+
+function navigateToPolicies() {
+  router.push("/admin/policies");
+}
+
+function navigateToRegisterClient() {
+  router.push("/employee/register-client");
+}
+
+// Computed para verificar si el usuario es empleado
+const isEmployee = computed(() => {
+  return userProfile.value && userProfile.value.role === "employee";
+});
 </script>
 <template>
   <header
@@ -112,6 +125,21 @@ function navigateToHospitalsCatalog() {
           </div>
         </div>
         
+        <!-- Menú de empleado -->
+        <div v-if="isEmployee || isAdmin" class="relative mx-2 group">
+          <button class="px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-800 transition-colors flex items-center">
+            Clientes ▼
+          </button>
+          <div class="absolute hidden group-hover:block bg-white mt-2 py-2 rounded shadow-lg z-10 w-64 right-0">
+            <button 
+              @click="navigateToRegisterClient" 
+              class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+            >
+              Registrar Nuevo Cliente
+            </button>
+          </div>
+        </div>
+        
         <!-- Menú de administración para admins -->
         <div v-if="isAdmin" class="relative mx-2 group">
           <button class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-800 transition-colors flex items-center">
@@ -135,6 +163,12 @@ function navigateToHospitalsCatalog() {
               class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
             >
               Hospitales y Servicios
+            </button>
+            <button 
+              @click="navigateToPolicies" 
+              class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+            >
+              Gestión de Pólizas
             </button>
           </div>
         </div>

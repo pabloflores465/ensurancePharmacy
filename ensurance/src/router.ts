@@ -11,6 +11,8 @@ import InactiveAccount from "./pages/inactive-account.vue";
 import CatalogInsuranceServices from "./pages/catalog/insurance-services.vue";
 import CatalogHospitals from "./pages/catalog/hospitals.vue";
 import CatalogHospitalServices from "./pages/catalog/hospital-services.vue";
+import Policies from "./pages/admin/policies.vue";
+import RegisterClient from "./pages/employee/register-client.vue";
 import { checkMissingRequiredFields } from "./utils/profile-utils";
 
 
@@ -121,6 +123,18 @@ const inactiveUserOnly = (
   }
 };
 
+// Middleware para requerir rol de empleado o admin
+const requireEmployeeOrAdmin = (to, from, next) => {
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+  if (!user) {
+    next('/login');
+  } else if (user.role === 'employee' || user.role === 'admin') {
+    next();
+  } else {
+    next('/home');
+  }
+};
+
 const routes = [
   { path: "/", redirect: "/login" },
   { path: "/login", component: Login },
@@ -143,6 +157,11 @@ const routes = [
   {
     path: "/admin/hospital-services",
     component: HospitalServices,
+    beforeEnter: requireAdmin
+  },
+  {
+    path: "/admin/policies",
+    component: Policies,
     beforeEnter: requireAdmin
   },
   {
@@ -170,6 +189,11 @@ const routes = [
     path: "/catalog/hospital-services",
     component: CatalogHospitalServices,
     beforeEnter: requireAuth
+  },
+  {
+    path: '/employee/register-client',
+    component: RegisterClient,
+    beforeEnter: requireEmployeeOrAdmin
   }
 ];
 

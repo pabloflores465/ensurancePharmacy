@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import type { Ref } from "vue";
 import axios, { type AxiosResponse } from "axios";
 import router from "../router";
@@ -37,29 +37,59 @@ const address: Ref<string> = ref<string>("");
 const birthDate: Ref<string> = ref<string>("");
 const password: Ref<string> = ref<string>("");
 const confirmPassword: Ref<string> = ref<string>("");
+const selectedPolicyType: Ref<number> = ref<number>(70); // Por defecto 70%
 const loading: Ref<boolean> = ref<boolean>(false);
 const error: Ref<string> = ref<string>("");
 const success: Ref<boolean> = ref<boolean>(false);
+const availablePolicies: Ref<PolicyData[]> = ref<PolicyData[]>([]);
 const ip = import.meta.env.VITE_IP;
 
-// Póliza básica
+// Cargar pólizas disponibles
+const fetchPolicies = async () => {
+  try {
+    const response = await axios.get(`http://${ip}:8080/api/policy`);
+    // Filtrar solo pólizas activas
+    availablePolicies.value = response.data.filter((policy: PolicyData) => policy.enabled === 1);
+  } catch (error) {
+    console.error("Error al cargar pólizas:", error);
+  }
+};
+
+// Póliza según el tipo seleccionado
 const createDefaultPolicy = (): PolicyData => {
   const today = new Date();
   const expDate = new Date(today);
   expDate.setFullYear(today.getFullYear() + 1);
   
+  // Calcular el costo basado en el porcentaje seleccionado
+  const cost = selectedPolicyType.value === 90 ? 400 : 300;
+  
   return {
-    percentage: 80, // Cobertura
+    percentage: selectedPolicyType.value,
     creationDate: today.toISOString().split('T')[0],
     expDate: expDate.toISOString().split('T')[0],
-    cost: 100, // Costo
+    cost: cost,
     enabled: 1
   };
 }
 
+// Verificar si ya existe una póliza del porcentaje seleccionado
+const findExistingPolicy = (): PolicyData | undefined => {
+  return availablePolicies.value.find(policy => 
+    policy.percentage === selectedPolicyType.value && policy.enabled === 1
+  );
+};
+
 // Crear póliza
 const createPolicy = async (policyData: PolicyData): Promise<number | null> => {
   try {
+    // Primero verificar si ya existe una póliza con el mismo porcentaje
+    const existingPolicy = findExistingPolicy();
+    if (existingPolicy && existingPolicy.idPolicy) {
+      return existingPolicy.idPolicy;
+    }
+    
+    // Si no existe, crear una nueva
     const response = await axios.post(`http://${ip}:8080/api/policy`, policyData);
     if (response.status === 201 && response.data && response.data.idPolicy) {
       return response.data.idPolicy;
@@ -77,13 +107,13 @@ const sendWelcomeEmail = async (userEmail: string, userName: string): Promise<bo
     await axios.post(`http://${ip}:8080/api/notifications/email`, {
       to: userEmail,
       subject: "Bienvenido a Ensurance",
-      body: `Hola ${userName}, gracias por registrarte en nuestro sistema. Tu cuenta será revisada por un administrador para su activación.`
+      body: `Hola ${userName}, gracias por registrarte en nuestro sistema. Tu cuenta será revisada por un administrador para su activación. Has elegido una póliza con cobertura del ${selectedPolicyType.value}%.`
     });
     
     await axios.post(`http://${ip}:8080/api/notifications/email`, {
       to: userEmail,
       subject: "Nuevo registro de usuario - Notificación de administrador",
-      body: `Notificación de administrador: El usuario ${userName} (${userEmail}) se ha registrado en el sistema y está pendiente de activación.`
+      body: `Notificación de administrador: El usuario ${userName} (${userEmail}) se ha registrado en el sistema con una póliza del ${selectedPolicyType.value}% y está pendiente de activación.`
     });
     
     console.log(`Email enviado: ${userEmail}`);
@@ -112,7 +142,7 @@ const register: () => Promise<void> = async (): Promise<void> => {
     loading.value = true;
     error.value = "";
 
-    // Crear póliza
+    // Crear póliza o usar existente
     const policyData = createDefaultPolicy();
     const policyId = await createPolicy(policyData);
     
@@ -165,6 +195,11 @@ const register: () => Promise<void> = async (): Promise<void> => {
     loading.value = false;
   }
 };
+
+// Inicializar
+onMounted(() => {
+  fetchPolicies();
+});
 </script>
 
 <template>
@@ -264,6 +299,35 @@ const register: () => Promise<void> = async (): Promise<void> => {
           required
           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
         />
+      </div>
+      
+      <div>
+        <label for="policyType" class="block text-sm font-medium text-gray-700">
+          Tipo de Póliza
+        </label>
+        <div class="mt-1 grid grid-cols-2 gap-4">
+          <div
+            @click="selectedPolicyType = 70"
+            class="cursor-pointer border rounded-md p-4 text-center transition-colors"
+            :class="selectedPolicyType === 70 ? 'bg-blue-50 border-blue-500' : 'border-gray-300 hover:bg-gray-50'"
+          >
+            <div class="font-semibold text-lg">70%</div>
+            <div class="text-sm text-gray-600">Cobertura Básica</div>
+            <div class="mt-2 font-medium">Q300 / mes</div>
+          </div>
+          <div
+            @click="selectedPolicyType = 90"
+            class="cursor-pointer border rounded-md p-4 text-center transition-colors"
+            :class="selectedPolicyType === 90 ? 'bg-green-50 border-green-500' : 'border-gray-300 hover:bg-gray-50'"
+          >
+            <div class="font-semibold text-lg">90%</div>
+            <div class="text-sm text-gray-600">Cobertura Premium</div>
+            <div class="mt-2 font-medium">Q400 / mes</div>
+          </div>
+        </div>
+        <div class="mt-2 text-sm text-gray-600">
+          <p>Selecciona el porcentaje de cobertura para tus gastos médicos. A mayor cobertura, mayor costo mensual.</p>
+        </div>
       </div>
 
       <div>
