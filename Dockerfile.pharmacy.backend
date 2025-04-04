@@ -1,13 +1,13 @@
-FROM openjdk:25-ea-16-jdk-oraclelinux9
+FROM container-registry.oracle.com/java/jdk:24-oraclelinux9
 
 WORKDIR /app
 
 COPY backv5 /app
 
-RUN microdnf install maven -y
+RUN dnf install maven -y
 
-RUN mvn clean install
+RUN mvn clean install -DskipTests
 
 EXPOSE 8081
 
-CMD ["/bin/sh", "-c", "mvn clean install && mvn exec:java -Dexec.mainClass='com.sources.app.App'"]
+CMD ["/bin/sh", "-c", "mvn clean compile exec:java -Dexec.mainClass='com.sources.app.App'"]

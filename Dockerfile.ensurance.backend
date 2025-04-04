@@ -10,4 +10,4 @@ RUN mvn clean install
 
 EXPOSE 8080
 
-CMD ["/bin/sh", "-c", "mvn clean install && mvn exec:java -Dexec.mainClass='com.sources.app.App'"]
+CMD ["/bin/sh", "-c", "mvn clean compile exec:java -Dexec.mainClass='com.sources.app.App'"]
