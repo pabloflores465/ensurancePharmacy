@@ -1,10 +1,10 @@
-FROM openjdk:25-ea-16-jdk-oraclelinux9
+FROM container-registry.oracle.com/java/jdk:24-oraclelinux9
 
 WORKDIR /app
 
 COPY backv4 /app
 
-RUN microdnf install maven -y
+RUN dnf install maven -y
 
 RUN mvn clean install
 
