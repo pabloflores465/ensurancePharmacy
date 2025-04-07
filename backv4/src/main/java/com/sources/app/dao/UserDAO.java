@@ -163,4 +163,20 @@ public class UserDAO {
             }
         }
     }
+
+    /**
+     * Busca un usuario por su correo electrónico
+     * @param email Correo electrónico del usuario
+     * @return Usuario encontrado o null si no existe
+     */
+    public User findByEmail(String email) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Query<User> query = session.createQuery("FROM User WHERE email = :email", User.class);
+            query.setParameter("email", email);
+            return query.uniqueResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

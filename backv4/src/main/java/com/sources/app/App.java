@@ -96,6 +96,8 @@ public class App {
         server.createContext("/api/hospital-services", new HospitalInsuranceServiceHandler(hospitalInsuranceServiceDAO, hospitalDAO, insuranceServiceDAO));
         // Nuevo handler para la integración con el hospital
         server.createContext("/api/hospital-integration", new HospitalRedirectHandler());
+        // Registrar el nuevo handler para buscar usuarios por email
+        server.createContext("/api/users/by-email", new UserByEmailHandler(userDAO));
         server.setExecutor(null); // Usa el executor por defecto
         server.start();
         System.out.println("Servidor iniciado en http://" + ip + ":8080/api");
