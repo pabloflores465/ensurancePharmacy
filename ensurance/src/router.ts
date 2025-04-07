@@ -6,6 +6,7 @@ import Register from "./pages/register.vue";
 import AdminUsers from "./pages/admin/users.vue";
 import InsuranceServices from "./pages/admin/insurance-services.vue";
 import HospitalServices from "./pages/admin/hospital-services.vue";
+import HospitalServicesImport from "./pages/admin/hospital-services-import.vue";
 import ProfileCompletion from "./pages/profile-completion.vue";
 import InactiveAccount from "./pages/inactive-account.vue";
 import CatalogInsuranceServices from "./pages/catalog/insurance-services.vue";
@@ -157,6 +158,11 @@ const routes = [
   {
     path: "/admin/hospital-services",
     component: HospitalServices,
+    beforeEnter: requireAdmin
+  },
+  {
+    path: "/admin/hospital-services-import",
+    component: HospitalServicesImport,
     beforeEnter: requireAdmin
   },
   {

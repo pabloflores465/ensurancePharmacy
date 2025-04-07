@@ -94,6 +94,8 @@ public class App {
         // Nuevos endpoints para servicios de seguro y relaciones con hospitales
         server.createContext("/api/insurance-services", new InsuranceServiceHandler(insuranceServiceDAO, categoryDAO));
         server.createContext("/api/hospital-services", new HospitalInsuranceServiceHandler(hospitalInsuranceServiceDAO, hospitalDAO, insuranceServiceDAO));
+        // Nuevo handler para la integración con el hospital
+        server.createContext("/api/hospital-integration", new HospitalRedirectHandler());
         server.setExecutor(null); // Usa el executor por defecto
         server.start();
         System.out.println("Servidor iniciado en http://" + ip + ":8080/api");

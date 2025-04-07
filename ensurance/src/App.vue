@@ -55,6 +55,10 @@ function navigateToHospitals() {
   router.push("/admin/hospital-services");
 }
 
+function navigateToHospitalServicesImport() {
+  router.push("/admin/hospital-services-import");
+}
+
 function navigateToInsuranceServicesCatalog() {
   router.push("/catalog/insurance-services");
 }
@@ -163,6 +167,12 @@ const isEmployee = computed(() => {
               class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
             >
               Hospitales y Servicios
+            </button>
+            <button 
+              @click="navigateToHospitalServicesImport" 
+              class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+            >
+              Importar Servicios Hospital
             </button>
             <button 
               @click="navigateToPolicies" 

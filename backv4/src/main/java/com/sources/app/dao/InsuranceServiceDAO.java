@@ -139,4 +139,19 @@ public class InsuranceServiceDAO {
             }
         }
     }
+
+    // Buscar por ID externo
+    public List<InsuranceService> findByExternalId(String externalId) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Query<InsuranceService> query = session.createQuery(
+                "FROM InsuranceService WHERE externalId = :externalId",
+                InsuranceService.class
+            );
+            query.setParameter("externalId", externalId);
+            return query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 } 

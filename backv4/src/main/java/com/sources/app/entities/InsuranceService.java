@@ -17,6 +17,9 @@ public class InsuranceService {
     @Column(name = "DESCRIPTION", nullable = false, length = 255)
     private String description;
 
+    @Column(name = "EXTERNAL_ID", length = 100)
+    private String externalId;
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "ID_CATEGORY", nullable = false)
     private Category category;
@@ -60,6 +63,14 @@ public class InsuranceService {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getExternalId() {
+        return externalId;
+    }
+
+    public void setExternalId(String externalId) {
+        this.externalId = externalId;
     }
 
     public Category getCategory() {
