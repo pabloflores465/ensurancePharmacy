@@ -1,5 +1,5 @@
 services:
-  ensurance-db1:
+  ensurance-db:
     build:
       context: .
       dockerfile: Dockerfile.ensurance.db
@@ -7,55 +7,37 @@ services:
       - "5170:1521"
       - "5171:5500"
     volumes:
-      - db-data1:/app/oracle/oradata
-  ensurance-db2:
-    build:
-      context: .
-      dockerfile: Dockerfile.ensurance.db
-    ports:
-      - "5172:1521"
-      - "5173:5500"
-    volumes:
       - db-data2:/app/oracle/oradata
-  ensurance-db3:
-    build:
-      context: .
-      dockerfile: Dockerfile.ensurance.db
-    ports:
-      - "5174:1521"
-      - "5175:5500"
-    volumes:
-      - db-data3:/app/oracle/oradata
   ensurance-backend1:
     build:
       context: .
       dockerfile: Dockerfile.ensurance.backend
     ports:
-      - "5176:8080"
+      - "5172:8080"
     depends_on:
-      - ensurance-db1
+      - ensurance-db
   ensurance-backend2:
     build:
       context: .
       dockerfile: Dockerfile.ensurance.backend
     ports:
-      - "5177:8080"
+      - "5173:8080"
     depends_on:
-      - ensurance-db2
+      - ensurance-db
   ensurance-backend3:
     build:
       context: .
       dockerfile: Dockerfile.ensurance.backend
     ports:
-      - "5178:8080"
+      - "5174:8080"
     depends_on:
-      - ensurance-db3
+      - ensurance-db
   ensurance-frontend1:
     build:
       context: .
       dockerfile: Dockerfile.ensurance.frontend
     ports:
-      - "5179:5173"
+      - "5175:5173"
     depends_on:
       - ensurance-backend1
   ensurance-frontend2:
@@ -63,7 +45,7 @@ services:
       context: .
       dockerfile: Dockerfile.ensurance.frontend
     ports:
-      - "5180:5173"
+      - "5176:5173"
     depends_on:
       - ensurance-backend2
   ensurance-frontend3:
@@ -71,10 +53,8 @@ services:
       context: .
       dockerfile: Dockerfile.ensurance.frontend
     ports:
-      - "5181:5173"
+      - "5177:5173"
     depends_on:
       - ensurance-backend3
 volumes:
-  db-data1:
   db-data2:
-  db-data3:

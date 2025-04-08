@@ -1,5 +1,5 @@
 services:
-  pharmacy-db1:
+  pharmacy-db:
     build:
       context: .
       dockerfile: Dockerfile.pharmacy.db
@@ -7,25 +7,7 @@ services:
       - "8080:1521"
       - "8081:5500"
     volumes:
-      - db-data4:/app/oracle/oradata
-  pharmacy-db2:
-    build:
-      context: .
-      dockerfile: Dockerfile.pharmacy.db
-    ports:
-      - "8082:1521"
-      - "8083:5500"
-    volumes:
-      - db-data5:/app/oracle/oradata
-  pharmacy-db3:
-    build:
-      context: .
-      dockerfile: Dockerfile.pharmacy.db
-    ports:
-      - "8084:1521"
-      - "8085:5500"
-    volumes:
-      - db-data6:/app/oracle/oradata
+      - db-data2:/app/oracle/oradata
   pharmacy-backend1:
     build:
       context: .
@@ -33,7 +15,7 @@ services:
     ports:
       - "8086:8080"
     depends_on:
-      - pharmacy-db1
+      - pharmacy-db
   pharmacy-backend2:
     build:
       context: .
@@ -41,7 +23,7 @@ services:
     ports:
       - "8087:8080"
     depends_on:
-      - pharmacy-db2
+      - pharmacy-db
   pharmacy-backend3:
     build:
       context: .
@@ -49,7 +31,7 @@ services:
     ports:
       - "8088:8080"
     depends_on:
-      - pharmacy-db3
+      - pharmacy-db
   pharmacy-frontend1:
     build:
       context: .
@@ -76,6 +58,4 @@ services:
       - pharmacy-backend3
 
 volumes:
-  db-data4:
-  db-data5:
-  db-data6:
+  db-data2:
