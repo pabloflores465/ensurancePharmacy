@@ -14,6 +14,7 @@ import CatalogHospitals from "./pages/catalog/hospitals.vue";
 import CatalogHospitalServices from "./pages/catalog/hospital-services.vue";
 import Policies from "./pages/admin/policies.vue";
 import RegisterClient from "./pages/employee/register-client.vue";
+import Appointments from "./pages/appointments.vue";
 import { checkMissingRequiredFields } from "./utils/profile-utils";
 
 
@@ -125,7 +126,11 @@ const inactiveUserOnly = (
 };
 
 // Middleware para requerir rol de empleado o admin
-const requireEmployeeOrAdmin = (to, from, next) => {
+const requireEmployeeOrAdmin = (
+  to: RouteLocationNormalized, 
+  from: RouteLocationNormalized, 
+  next: NavigationGuardNext
+) => {
   const user = JSON.parse(localStorage.getItem("user") || "null");
   if (!user) {
     next('/login');
@@ -200,6 +205,12 @@ const routes = [
     path: '/employee/register-client',
     component: RegisterClient,
     beforeEnter: requireEmployeeOrAdmin
+  },
+  // Nueva ruta para citas
+  {
+    path: '/appointments',
+    component: Appointments,
+    beforeEnter: requireAuth
   }
 ];
 

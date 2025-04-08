@@ -46,5 +46,6 @@
         <mapping class="com.sources.app.entities.TransactionPolicy"/>
         <mapping class="com.sources.app.entities.InsuranceService"/>
         <mapping class="com.sources.app.entities.HospitalInsuranceService"/>
+        <mapping class="com.sources.app.entities.EnsuranceAppointment"/>
     </session-factory>
 </hibernate-configuration>

@@ -75,6 +75,10 @@ function navigateToRegisterClient() {
   router.push("/employee/register-client");
 }
 
+function navigateToAppointments() {
+  router.push("/appointments");
+}
+
 // Computed para verificar si el usuario es empleado
 const isEmployee = computed(() => {
   return userProfile.value && userProfile.value.role === "employee";
@@ -128,6 +132,14 @@ const isEmployee = computed(() => {
             </button>
           </div>
         </div>
+
+        <!-- Enlace a Citas -->
+        <button 
+          @click="navigateToAppointments" 
+          class="px-4 py-2 mx-2 bg-amber-600 text-white rounded hover:bg-amber-800 transition-colors"
+        >
+          Citas Médicas
+        </button>
         
         <!-- Menú de empleado -->
         <div v-if="isEmployee || isAdmin" class="relative mx-2 group">

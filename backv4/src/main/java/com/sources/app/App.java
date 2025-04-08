@@ -31,6 +31,7 @@ public class App {
     private static final ServiceCategoryDAO serviceCategoryDAO = new ServiceCategoryDAO();
     private static final InsuranceServiceDAO insuranceServiceDAO = new InsuranceServiceDAO();
     private static final HospitalInsuranceServiceDAO hospitalInsuranceServiceDAO = new HospitalInsuranceServiceDAO();
+    private static final EnsuranceAppointmentDAO ensuranceAppointmentDAO = new EnsuranceAppointmentDAO();
 
     private static String getLocalExternalIp() {
         try {
@@ -98,6 +99,8 @@ public class App {
         server.createContext("/api/hospital-integration", new HospitalRedirectHandler());
         // Registrar el nuevo handler para buscar usuarios por email
         server.createContext("/api/users/by-email", new UserByEmailHandler(userDAO));
+        // Nuevo handler para las citas de seguro
+        server.createContext("/api/ensurance-appointments", new EnsuranceAppointmentHandler(ensuranceAppointmentDAO));
         server.setExecutor(null); // Usa el executor por defecto
         server.start();
         System.out.println("Servidor iniciado en http://" + ip + ":8080/api");
