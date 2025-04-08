@@ -42,6 +42,13 @@ public class User {
     @Column(name = "PASSWORD")
     private String password;
 
+    @ManyToOne
+    @JoinColumn(name = "ID_POLICY", referencedColumnName = "ID_POLICY")
+    private Policy policy;
+    
+    @Column(name = "STATUS")
+    private String status;
+
     // Constructor vacío (requerido por JPA)
     public User() {
     }
@@ -119,5 +126,21 @@ public class User {
     }
     public void setPassword(String password) {
         this.password = password;
+    }
+    
+    public Policy getPolicy() {
+        return policy;
+    }
+    
+    public void setPolicy(Policy policy) {
+        this.policy = policy;
+    }
+    
+    public String getStatus() {
+        return status;
+    }
+    
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

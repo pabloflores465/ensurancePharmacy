@@ -1,6 +1,7 @@
 package com.sources.app.entities;
 
 import jakarta.persistence.*;
+import java.util.Date;
 
 @Entity
 @Table(name = "POLICY")
@@ -16,6 +17,10 @@ public class Policy {
 
     @Column(name = "ENABLED")
     private Character enabled;
+
+    @Temporal(TemporalType.DATE)
+    @Column(name = "EXPIRATION_DATE")
+    private Date expirationDate;
 
     // Constructor vacío
     public Policy() {
@@ -50,5 +55,17 @@ public class Policy {
 
     public void setEnabled(Character enabled) {
         this.enabled = enabled;
+    }
+
+    public Date getExpirationDate() {
+        return expirationDate;
+    }
+
+    public void setExpirationDate(Date expirationDate) {
+        this.expirationDate = expirationDate;
+    }
+
+    public Double getCoveragePercentage() {
+        return percentage;
     }
 }

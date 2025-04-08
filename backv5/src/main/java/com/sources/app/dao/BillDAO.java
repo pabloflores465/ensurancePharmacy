@@ -34,6 +34,21 @@ public class BillDAO {
         return bill;
     }
 
+    // CREATE with Bill object
+    public Bill create(Bill bill) {
+        Transaction tx = null;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            tx = session.beginTransaction();
+            session.save(bill);
+            tx.commit();
+            return bill;
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     // READ ALL
     public List<Bill> getAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -49,6 +64,19 @@ public class BillDAO {
     public Bill getById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Bill.class, id);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    // READ BY PRESCRIPTION ID
+    public Bill findByPrescriptionId(Long prescriptionId) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Query<Bill> query = session.createQuery(
+                "FROM Bill WHERE prescription.idPrescription = :prescriptionId", Bill.class);
+            query.setParameter("prescriptionId", prescriptionId);
+            return query.uniqueResult();
         } catch (Exception e) {
             e.printStackTrace();
             return null;

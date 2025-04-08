@@ -54,6 +54,11 @@ public class PrescriptionDAO {
         }
     }
 
+    // Alias method for getById - to match method called in InsuranceIntegrationHandler
+    public Prescription findById(Long id) {
+        return getById(id);
+    }
+
     // UPDATE
     public Prescription update(Prescription prescription) {
         Transaction tx = null;

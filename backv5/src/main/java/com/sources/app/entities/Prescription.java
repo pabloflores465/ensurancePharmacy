@@ -67,4 +67,17 @@ public class Prescription {
     public void setApproved(Character approved) {
         this.approved = approved;
     }
+
+    /**
+     * Calculate the total amount of the prescription.
+     * This is a placeholder implementation - the actual implementation would depend on your business logic.
+     * @return The total amount of the prescription
+     */
+    public double calculateTotal() {
+        // In a real implementation, this would calculate based on medication items associated with the prescription
+        // For example: return prescriptionItems.stream().mapToDouble(item -> item.getPrice() * item.getQuantity()).sum();
+        
+        // Placeholder implementation - returns a fixed value
+        return 1000.0;
+    }
 }
