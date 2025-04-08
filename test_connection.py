@@ -10,8 +10,8 @@ try:
 
     cursor = connection.cursor()
     
-    cursor.execute("ALTER SESSION SET CURRENT_SCHEMA = USUARIO;")
-    cursor.execute("SELECT * FROM tu_tabla")
+    cursor.execute('ALTER SESSION SET CURRENT_SCHEMA = "USUARIO"')
+    cursor.execute("SELECT * FROM MEDICINE")
     for row in cursor:
         print(row)
     
