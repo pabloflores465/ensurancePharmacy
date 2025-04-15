@@ -27,7 +27,8 @@ public class App {
     private static final PrescriptionDAO prescriptionDAO = new PrescriptionDAO();
     private static final PrescriptionMedicineDAO prescriptionMedicineDAO = new PrescriptionMedicineDAO();
     private static final SubcategoryDAO subcategoryDAO = new SubcategoryDAO();
-
+    private static final ExternalMedicineDAO externalMedicineDAO = new ExternalMedicineDAO();
+    
     private static String getLocalExternalIp() {
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
@@ -84,6 +85,8 @@ public class App {
         server.createContext("/api2/prescriptions", new PrescriptionHandler(prescriptionDAO));
         server.createContext("/api2/prescription_medicines", new PrescriptionMedicineHandler(prescriptionMedicineDAO));
         server.createContext("/api2/subcategories", new SubcategoryHandler(subcategoryDAO));
+        server.createContext("/api2/external_medicines", new ExternalMedicineHandler(externalMedicineDAO));
+        server.createContext("/api2/verification", new VerificationHandler());
         server.setExecutor(null); // Usa el executor por defecto
         server.start();
         System.out.println("Servidor iniciado en http://" + ip + ":8081/api2");
