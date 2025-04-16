@@ -83,6 +83,15 @@ function navigateToAppointments() {
 const isEmployee = computed(() => {
   return userProfile.value && userProfile.value.role === "employee";
 });
+
+// Añadir nuevas funciones de navegación
+function navigateToClientManagement() {
+  router.push("/admin/client-management");
+}
+
+function navigateToUserServices() {
+  router.push("/user-services");
+}
 </script>
 <template>
   <header
@@ -192,8 +201,22 @@ const isEmployee = computed(() => {
             >
               Gestión de Pólizas
             </button>
+            <button 
+              @click="navigateToClientManagement" 
+              class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+            >
+              Gestión de Clientes
+            </button>
           </div>
         </div>
+        
+        <!-- Añadir enlace a servicios del usuario -->
+        <button 
+          @click="navigateToUserServices" 
+          class="px-4 py-2 mx-2 bg-indigo-600 text-white rounded hover:bg-indigo-800 transition-colors"
+        >
+          Mis Servicios
+        </button>
         
         <button
           @click="logout"

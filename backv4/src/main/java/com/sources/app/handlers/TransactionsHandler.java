@@ -65,11 +65,17 @@ public class TransactionsHandler implements HttpHandler {
         String query = exchange.getRequestURI().getQuery();
         if (query != null) {
             Map<String, String> params = parseQuery(query);
-            if (params.containsKey("user_id")) {
+            if (params.containsKey("userId") || params.containsKey("user_id")) {
                 // Buscar transacciones por ID de usuario (cliente)
                 try {
-                    Long userId = Long.parseLong(params.get("user_id"));
+                    // Intentar con ambos formatos de parámetro (userId y user_id)
+                    String userIdParam = params.containsKey("userId") ? params.get("userId") : params.get("user_id");
+                    Long userId = Long.parseLong(userIdParam);
+                    
+                    System.out.println("Buscando transacciones para usuario con ID: " + userId);
                     List<Transactions> list = transactionsDAO.findByUserId(userId);
+                    System.out.println("Encontradas " + list.size() + " transacciones");
+                    
                     String jsonResponse = objectMapper.writeValueAsString(list);
                     exchange.getResponseHeaders().set("Content-Type", "application/json");
                     byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
@@ -78,6 +84,7 @@ public class TransactionsHandler implements HttpHandler {
                         os.write(responseBytes);
                     }
                 } catch (NumberFormatException e) {
+                    System.err.println("Error al convertir ID de usuario: " + e.getMessage());
                     exchange.sendResponseHeaders(400, -1);
                 }
             } else if (params.containsKey("id")) {

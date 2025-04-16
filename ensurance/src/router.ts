@@ -15,6 +15,8 @@ import CatalogHospitalServices from "./pages/catalog/hospital-services.vue";
 import Policies from "./pages/admin/policies.vue";
 import RegisterClient from "./pages/employee/register-client.vue";
 import Appointments from "./pages/appointments.vue";
+import ClientManagement from "./pages/admin/client-management.vue";
+import UserServices from "./pages/user-services.vue";
 import { checkMissingRequiredFields } from "./utils/profile-utils";
 
 
@@ -210,6 +212,16 @@ const routes = [
   {
     path: '/appointments',
     component: Appointments,
+    beforeEnter: requireAuth
+  },
+  {
+    path: '/admin/client-management',
+    component: ClientManagement,
+    beforeEnter: requireAdmin
+  },
+  {
+    path: '/user-services',
+    component: UserServices,
     beforeEnter: requireAuth
   }
 ];
