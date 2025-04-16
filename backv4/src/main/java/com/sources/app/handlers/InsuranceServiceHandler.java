@@ -24,7 +24,7 @@ public class InsuranceServiceHandler implements HttpHandler {
     private final CategoryDAO categoryDAO;
     private final ObjectMapper objectMapper;
     private static final String ENDPOINT = "/api/insurance-services";
-    private static final String HOSPITAL_API_BASE_URL = "http://localhost:8000/api";
+    private static final String HOSPITAL_API_BASE_URL = "http://0.0.0.0:5050/api";
 
     public InsuranceServiceHandler(InsuranceServiceDAO insuranceServiceDAO, CategoryDAO categoryDAO) {
         this.insuranceServiceDAO = insuranceServiceDAO;
@@ -119,76 +119,149 @@ public class InsuranceServiceHandler implements HttpHandler {
 
     private void handleGetHospitalServices(HttpExchange exchange) throws IOException {
         try {
-            // Obtener servicios del hospital
-            String servicesJson = HttpClientUtil.get(HOSPITAL_API_BASE_URL + "/services/");
+            System.out.println("Intentando obtener servicios del hospital...");
+            
+            // Lista de posibles URLs a intentar
+            String[] possibleUrls = {
+                "http://0.0.0.0:5050/api/services/",
+                "http://0.0.0.0:5050/api/services",
+                "http://localhost:5050/api/services/",
+                "http://localhost:5050/api/services",
+                "http://127.0.0.1:5050/api/services/",
+                "http://127.0.0.1:5050/api/services",
+                "http://192.168.0.4:5052/api/services/",
+                "http://192.168.0.4:5052/api/services",
+                "http://192.168.0.4:5050/api/services/",
+                "http://192.168.0.4:5050/api/services"
+            };
+            
+            // Obtener servicios del hospital intentando todas las URLs
+            String servicesJson = null;
+            String successUrl = "";
+            
+            for (String url : possibleUrls) {
+                System.out.println("Intentando obtener servicios desde: " + url);
+                servicesJson = HttpClientUtil.get(url);
+                if (servicesJson != null) {
+                    System.out.println("Éxito con URL: " + url);
+                    successUrl = url;
+                    break;
+                }
+            }
             
             if (servicesJson == null) {
-                sendResponse(exchange, 500, "{\"error\":\"No se pudieron obtener los servicios del hospital\"}");
+                System.err.println("No se pudieron obtener los servicios del hospital con ninguna URL.");
+                sendResponse(exchange, 503, "{\"error\":\"No se pudieron obtener los servicios del hospital. Servicio no disponible.\",\"details\":\"Se intentaron múltiples URLs sin éxito.\"}");
                 return;
             }
             
-            // Procesar la respuesta JSON
-            JsonNode servicesNode = objectMapper.readTree(servicesJson);
-            JsonNode servicesArray = servicesNode.get("services");
+            // Almacenar la URL exitosa para futuros usos
+            System.out.println("URL exitosa para futuras referencias: " + successUrl);
             
-            if (servicesArray == null || !servicesArray.isArray()) {
+            // Procesar la respuesta JSON
+            JsonNode servicesNode;
+            try {
+                servicesNode = objectMapper.readTree(servicesJson);
+            } catch (Exception e) {
+                System.err.println("Error al parsear la respuesta JSON: " + e.getMessage());
+                System.err.println("Contenido de la respuesta: " + servicesJson);
                 sendResponse(exchange, 500, "{\"error\":\"Formato de respuesta del hospital inválido\"}");
                 return;
+            }
+            
+            JsonNode servicesArray = servicesNode.has("services") ? servicesNode.get("services") : servicesNode;
+            
+            if (servicesArray == null || !servicesArray.isArray()) {
+                System.err.println("La respuesta no contiene un array de servicios. Contenido: " + servicesJson);
+                // Si el nodo principal es un array, usarlo directamente
+                if (servicesNode.isArray()) {
+                    servicesArray = servicesNode;
+                } else {
+                    sendResponse(exchange, 500, "{\"error\":\"Formato de respuesta del hospital inválido - no se encontró array de servicios\"}");
+                    return;
+                }
             }
             
             List<Map<String, Object>> responseList = new ArrayList<>();
             
             // Procesar cada servicio
             for (JsonNode serviceNode : servicesArray) {
-                Map<String, Object> serviceMap = new HashMap<>();
-                serviceMap.put("hospitalServiceId", serviceNode.get("_id").asText());
-                serviceMap.put("name", serviceNode.get("name").asText());
-                
-                // Verificar si el servicio ya está importado
-                boolean isImported = false;
-                String externalId = serviceNode.get("_id").asText();
-                List<InsuranceService> existingServices = insuranceServiceDAO.findByExternalId(externalId);
-                if (existingServices != null && !existingServices.isEmpty()) {
-                    isImported = true;
-                    serviceMap.put("insuranceServiceId", existingServices.get(0).getIdInsuranceService());
-                }
-                
-                serviceMap.put("imported", isImported);
-                
-                // Añadir información adicional
-                if (serviceNode.has("copay")) serviceMap.put("copay", serviceNode.get("copay").asDouble());
-                if (serviceNode.has("pay")) serviceMap.put("pay", serviceNode.get("pay").asDouble());
-                if (serviceNode.has("total")) serviceMap.put("total", serviceNode.get("total").asDouble());
-                
-                // Añadir categorías
-                if (serviceNode.has("categories") && serviceNode.get("categories").isArray()) {
-                    List<String> categories = new ArrayList<>();
-                    for (JsonNode catNode : serviceNode.get("categories")) {
-                        categories.add(catNode.asText());
+                try {
+                    Map<String, Object> serviceMap = new HashMap<>();
+                    
+                    // Extraer ID de servicio, manejando diferentes formatos
+                    String serviceId;
+                    if (serviceNode.has("_id")) {
+                        serviceId = serviceNode.get("_id").asText();
+                    } else if (serviceNode.has("id")) {
+                        serviceId = serviceNode.get("id").asText();
+                    } else {
+                        System.err.println("Servicio sin ID, saltando: " + serviceNode);
+                        continue;
                     }
-                    serviceMap.put("categories", categories);
-                }
-                
-                // Añadir subcategorías
-                if (serviceNode.has("subcategories") && serviceNode.get("subcategories").isArray()) {
-                    List<String> subcategories = new ArrayList<>();
-                    for (JsonNode subNode : serviceNode.get("subcategories")) {
-                        subcategories.add(subNode.asText());
+                    
+                    serviceMap.put("hospitalServiceId", serviceId);
+                    
+                    // Extraer nombre del servicio con fallback
+                    if (serviceNode.has("name")) {
+                        serviceMap.put("name", serviceNode.get("name").asText());
+                    } else if (serviceNode.has("nombre")) {
+                        serviceMap.put("name", serviceNode.get("nombre").asText());
+                    } else {
+                        serviceMap.put("name", "Servicio " + serviceId);
                     }
-                    serviceMap.put("subcategories", subcategories);
+                    
+                    // Verificar si el servicio ya está importado
+                    boolean isImported = false;
+                    List<InsuranceService> existingServices = insuranceServiceDAO.findByExternalId(serviceId);
+                    if (existingServices != null && !existingServices.isEmpty()) {
+                        isImported = true;
+                        serviceMap.put("insuranceServiceId", existingServices.get(0).getIdInsuranceService());
+                    }
+                    
+                    serviceMap.put("imported", isImported);
+                    
+                    // Añadir información adicional con manejo seguro de tipos
+                    addSafeFieldToMap(serviceMap, serviceNode, "copay", "copay");
+                    addSafeFieldToMap(serviceMap, serviceNode, "pay", "pay");
+                    addSafeFieldToMap(serviceMap, serviceNode, "total", "total");
+                    addSafeFieldToMap(serviceMap, serviceNode, "price", "price");
+                    addSafeFieldToMap(serviceMap, serviceNode, "cost", "cost");
+                    
+                    // Añadir categorías si existen
+                    if (serviceNode.has("categories") && serviceNode.get("categories").isArray()) {
+                        List<String> categories = new ArrayList<>();
+                        for (JsonNode catNode : serviceNode.get("categories")) {
+                            categories.add(catNode.asText());
+                        }
+                        serviceMap.put("categories", categories);
+                    }
+                    
+                    // Añadir subcategorías si existen
+                    if (serviceNode.has("subcategories") && serviceNode.get("subcategories").isArray()) {
+                        List<String> subcategories = new ArrayList<>();
+                        for (JsonNode subNode : serviceNode.get("subcategories")) {
+                            subcategories.add(subNode.asText());
+                        }
+                        serviceMap.put("subcategories", subcategories);
+                    }
+                    
+                    responseList.add(serviceMap);
+                } catch (Exception e) {
+                    System.err.println("Error al procesar servicio: " + e.getMessage());
+                    // Continuar con el siguiente servicio
                 }
-                
-                responseList.add(serviceMap);
             }
             
             String response = objectMapper.writeValueAsString(responseList);
             sendResponse(exchange, 200, response);
         } catch (Exception e) {
             e.printStackTrace();
+            System.err.println("Error al obtener servicios del hospital: " + e.getMessage());
             sendResponse(exchange, 500, "{\"error\":\"" + e.getMessage().replace("\"", "'") + "\"}");
         }
     }
-    
+
     private void handleApproveHospitalService(HttpExchange exchange) throws IOException {
         try {
             String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
@@ -210,49 +283,151 @@ public class InsuranceServiceHandler implements HttpHandler {
             
             System.out.println("Procesando aprobación para servicio del hospital con ID: " + hospitalServiceId);
             
-            // Obtener detalles del servicio del hospital - asegurarnos que la URL termine con /
-            String serviceUrl = HOSPITAL_API_BASE_URL + "/services/" + hospitalServiceId + "/";
-            System.out.println("URL para obtener servicio: " + serviceUrl);
-            String serviceJson = HttpClientUtil.get(serviceUrl);
+            // Obtener detalles del servicio del hospital
+            String serviceJson = null;
             
-            if (serviceJson == null) {
-                System.err.println("No se pudo obtener información del servicio con ID: " + hospitalServiceId);
-                sendResponse(exchange, 500, "{\"error\":\"No se pudo obtener el detalle del servicio del hospital\"}");
-                return;
+            // Probar varias variantes de URL para obtener detalles del servicio
+            String[] urlVariants = {
+                "http://0.0.0.0:5050/api/services/" + hospitalServiceId + "/",
+                "http://0.0.0.0:5050/api/services/" + hospitalServiceId,
+                "http://0.0.0.0:5050/api/service/" + hospitalServiceId + "/",
+                "http://0.0.0.0:5050/api/service/" + hospitalServiceId,
+                "http://localhost:5050/api/services/" + hospitalServiceId + "/",
+                "http://localhost:5050/api/services/" + hospitalServiceId,
+                "http://127.0.0.1:5050/api/services/" + hospitalServiceId + "/",
+                "http://127.0.0.1:5050/api/services/" + hospitalServiceId,
+                "http://192.168.0.4:5052/api/services/" + hospitalServiceId + "/",
+                "http://192.168.0.4:5052/api/services/" + hospitalServiceId
+            };
+            
+            for (String serviceUrl : urlVariants) {
+                System.out.println("Intentando obtener servicio desde: " + serviceUrl);
+                serviceJson = HttpClientUtil.get(serviceUrl);
+                if (serviceJson != null) {
+                    System.out.println("Éxito con URL: " + serviceUrl);
+                    break;
+                }
             }
             
-            // Procesar la respuesta JSON
-            System.out.println("Respuesta del hospital: " + serviceJson);
-            JsonNode serviceNode;
-            try {
-                serviceNode = objectMapper.readTree(serviceJson);
-            } catch (Exception e) {
-                System.err.println("Error al procesar JSON del servicio: " + serviceJson);
-                e.printStackTrace();
-                sendResponse(exchange, 500, "{\"error\":\"Error al procesar la respuesta del hospital\"}");
-                return;
-            }
-            
-            // Crear o actualizar el servicio en nuestra base de datos
             InsuranceService service = null;
-            List<InsuranceService> existingServices = insuranceServiceDAO.findByExternalId(hospitalServiceId);
             
-            if (existingServices != null && !existingServices.isEmpty()) {
-                // Actualizar servicio existente
-                service = existingServices.get(0);
-                System.out.println("Actualizando servicio existente con ID: " + service.getIdInsuranceService());
+            // Si no pudimos obtener detalles del servicio, continuar con los datos que ya tenemos
+            if (serviceJson == null) {
+                System.err.println("No se pudo obtener información detallada del servicio con ID: " + hospitalServiceId);
+                System.out.println("Continuando con datos básicos proporcionados en la solicitud...");
+                
+                // Buscar si el servicio ya existe
+                List<InsuranceService> existingServices = insuranceServiceDAO.findByExternalId(hospitalServiceId);
+                
+                if (existingServices != null && !existingServices.isEmpty()) {
+                    // Actualizar servicio existente
+                    service = existingServices.get(0);
+                    System.out.println("Actualizando servicio existente con ID: " + service.getIdInsuranceService());
+                } else {
+                    // Crear nuevo servicio
+                    service = new InsuranceService();
+                    service.setExternalId(hospitalServiceId);
+                    System.out.println("Creando nuevo servicio con datos básicos");
+                }
+                
+                // Configurar datos básicos del servicio
+                String serviceName = data.containsKey("name") ? (String) data.get("name") : "Servicio del hospital " + hospitalServiceId;
+                service.setName(serviceName);
+                service.setDescription(data.containsKey("description") ? 
+                    (String) data.get("description") : "Servicio importado del hospital");
+                
+                // Establecer precio desde los datos proporcionados si está disponible
+                if (data.containsKey("price")) {
+                    try {
+                        double price = Double.parseDouble(data.get("price").toString());
+                        service.setPrice(price);
+                    } catch (Exception e) {
+                        service.setPrice(0.0); // Valor por defecto
+                    }
+                } else if (data.containsKey("total")) {
+                    try {
+                        double price = Double.parseDouble(data.get("total").toString());
+                        service.setPrice(price);
+                    } catch (Exception e) {
+                        service.setPrice(0.0); // Valor por defecto
+                    }
+                } else {
+                    service.setPrice(0.0); // Valor por defecto
+                }
             } else {
-                // Crear nuevo servicio
-                service = new InsuranceService();
-                service.setExternalId(hospitalServiceId);
-                System.out.println("Creando nuevo servicio");
+                // Si tenemos datos del servicio, procesarlos
+                JsonNode serviceNode;
+                try {
+                    serviceNode = objectMapper.readTree(serviceJson);
+                } catch (Exception e) {
+                    System.err.println("Error al procesar JSON del servicio: " + serviceJson);
+                    e.printStackTrace();
+                    sendResponse(exchange, 500, "{\"error\":\"Error al procesar la respuesta del hospital\"}");
+                    return;
+                }
+                
+                // Crear o actualizar el servicio en nuestra base de datos
+                List<InsuranceService> existingServices = insuranceServiceDAO.findByExternalId(hospitalServiceId);
+                
+                if (existingServices != null && !existingServices.isEmpty()) {
+                    // Actualizar servicio existente
+                    service = existingServices.get(0);
+                    System.out.println("Actualizando servicio existente con ID: " + service.getIdInsuranceService());
+                } else {
+                    // Crear nuevo servicio
+                    service = new InsuranceService();
+                    service.setExternalId(hospitalServiceId);
+                    System.out.println("Creando nuevo servicio con datos detallados");
+                }
+                
+                // Configurar datos del servicio según el formato de respuesta
+                if (serviceNode.has("name")) {
+                    service.setName(serviceNode.get("name").asText());
+                } else if (serviceNode.has("nombre")) {
+                    service.setName(serviceNode.get("nombre").asText());
+                } else {
+                    service.setName("Servicio del hospital " + hospitalServiceId);
+                }
+                
+                service.setDescription(data.containsKey("description") ? 
+                    (String) data.get("description") : "Servicio importado del hospital");
+                
+                // Establecer precio
+                double price = 0.0;
+                if (serviceNode.has("total") && !serviceNode.get("total").isNull()) {
+                    try {
+                        price = serviceNode.get("total").asDouble();
+                    } catch (Exception e) {
+                        try {
+                            price = Double.parseDouble(serviceNode.get("total").asText());
+                        } catch (Exception ex) {
+                            // Si falla, continuar con 0
+                        }
+                    }
+                } else if (serviceNode.has("price") && !serviceNode.get("price").isNull()) {
+                    try {
+                        price = serviceNode.get("price").asDouble();
+                    } catch (Exception e) {
+                        try {
+                            price = Double.parseDouble(serviceNode.get("price").asText());
+                        } catch (Exception ex) {
+                            // Si falla, continuar con 0
+                        }
+                    }
+                } else if (serviceNode.has("cost") && !serviceNode.get("cost").isNull()) {
+                    try {
+                        price = serviceNode.get("cost").asDouble();
+                    } catch (Exception e) {
+                        try {
+                            price = Double.parseDouble(serviceNode.get("cost").asText());
+                        } catch (Exception ex) {
+                            // Si falla, continuar con 0
+                        }
+                    }
+                }
+                
+                service.setPrice(price);
             }
-            
-            // Configurar datos del servicio
-            service.setName(serviceNode.has("name") ? 
-                serviceNode.get("name").asText() : "Servicio del hospital");
-            service.setDescription(data.containsKey("description") ? 
-                (String) data.get("description") : "Servicio importado del hospital");
             
             // Establecer categoría y subcategoría
             Category category = categoryDAO.findById(categoryId);
@@ -265,16 +440,6 @@ public class InsuranceServiceHandler implements HttpHandler {
             
             service.setCategory(category);
             service.setSubcategory(subcategory);
-            
-            // Establecer precio y cobertura
-            double price = 0.0;
-            if (serviceNode.has("total") && !serviceNode.get("total").isNull()) {
-                price = serviceNode.get("total").asDouble();
-            } else if (serviceNode.has("price") && !serviceNode.get("price").isNull()) {
-                price = serviceNode.get("price").asDouble();
-            }
-            
-            service.setPrice(price);
             service.setCoveragePercentage(coveragePercentage);
             service.setEnabled(1); // Activado por defecto
             
@@ -466,6 +631,27 @@ public class InsuranceServiceHandler implements HttpHandler {
         
         try (OutputStream os = exchange.getResponseBody()) {
             os.write(responseBytes);
+        }
+    }
+
+    private void addSafeFieldToMap(Map<String, Object> map, JsonNode node, String jsonField, String mapKey) {
+        try {
+            if (node.has(jsonField) && !node.get(jsonField).isNull()) {
+                if (node.get(jsonField).isNumber()) {
+                    map.put(mapKey, node.get(jsonField).asDouble());
+                } else {
+                    String value = node.get(jsonField).asText();
+                    try {
+                        // Intentar convertir a número si es posible
+                        map.put(mapKey, Double.parseDouble(value));
+                    } catch (NumberFormatException e) {
+                        // Si no es un número, guardar como string
+                        map.put(mapKey, value);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error al procesar campo " + jsonField + ": " + e.getMessage());
         }
     }
 } 

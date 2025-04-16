@@ -120,7 +120,7 @@ import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 
 // Variables globales
-const HOSPITAL_API_URL = 'http://192.168.0.4:5052';
+const HOSPITAL_API_URL = 'http://0.0.0.0:5050';
 // Usamos getip.py para determinar la IP del backend
 const INSURANCE_API_URL = 'http://192.168.0.4:8080/api';
 

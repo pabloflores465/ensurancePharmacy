@@ -17,7 +17,7 @@ import java.util.concurrent.Executors;
  */
 public class ExternalServiceClient {
     
-    private static final String HOSPITAL_BASE_URL = "http://localhost:8000/api";
+    private static final String HOSPITAL_BASE_URL = "http://localhost:5051/api";
     private static final String PHARMACY_BASE_URL = "http://localhost:8080/api";
     private static final ExecutorService executor = Executors.newFixedThreadPool(5);
     private static final ObjectMapper objectMapper = new ObjectMapper();

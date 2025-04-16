@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 
 public class HttpClientUtil {
     
-    private static final int TIMEOUT = 10000; // 10 segundos
+    private static final int TIMEOUT = 5000; // 5 segundos
     
     /**
      * Realiza una petición GET a la URL especificada
@@ -42,9 +42,18 @@ public class HttpClientUtil {
                                   ", Respuesta: " + errorResponse);
                 return null;
             }
+        } catch (java.net.SocketTimeoutException e) {
+            System.err.println("Timeout al conectar con " + urlString + " - La conexión tardó más de " + TIMEOUT + "ms");
+            return null;
+        } catch (java.net.ConnectException e) {
+            System.err.println("Error de conexión a " + urlString + " - " + e.getMessage());
+            return null;
+        } catch (java.net.UnknownHostException e) {
+            System.err.println("Host desconocido: " + urlString + " - " + e.getMessage());
+            return null;
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println("Excepción al realizar GET a " + urlString + ": " + e.getMessage());
+            System.err.println("Excepción al realizar GET a " + urlString + ": " + e.getMessage() + " (" + e.getClass().getName() + ")");
             return null;
         } finally {
             if (connection != null) {
