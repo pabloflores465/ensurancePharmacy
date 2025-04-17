@@ -26,7 +26,19 @@ const categories = ref<Category[]>([]);
 const loading = ref(true);
 const error = ref("");
 const success = ref("");
-const ip = import.meta.env.VITE_IP || "localhost";
+
+// Configuración de IPs para la conexión con el backend
+const envIP = import.meta.env.VITE_IP;
+const possibleIPs = [
+  // Priorizar la IP del archivo .env si existe
+  ...(envIP ? [envIP] : []),
+  "localhost", 
+  "127.0.0.1", 
+  "192.168.0.4", 
+  "192.168.0.10", 
+  "172.20.10.2"
+];
+const HOSPITAL_API_URL = 'http://0.0.0.0:5050';
 
 // Estado del modal de aprobación
 const showApprovalModal = ref(false);
@@ -52,14 +64,55 @@ const filteredServices = computed(() => {
   );
 });
 
+// Función para probar múltiples IPs (similar a client-management.vue)
+async function tryMultipleIPs(endpoint: string, method: string, data: any = null) {
+  // Intentar con IP guardada primero si existe
+  const savedIP = localStorage.getItem('successful_insurance_ip');
+  if (savedIP) {
+    possibleIPs.unshift(savedIP);
+  }
+  
+  for (const serverIP of possibleIPs) {
+    try {
+      const url = `http://${serverIP}:8080/api${endpoint}`;
+      console.log(`Intentando ${method} a ${url}`);
+      
+      if (method === 'GET') {
+        const response = await axios.get(url, { timeout: 3000 });
+        localStorage.setItem('successful_insurance_ip', serverIP);
+        return response;
+      } else if (method === 'POST') {
+        const response = await axios.post(url, data, { 
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 3000
+        });
+        localStorage.setItem('successful_insurance_ip', serverIP);
+        return response;
+      } else if (method === 'PUT') {
+        const response = await axios.put(url, data, { 
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 3000
+        });
+        localStorage.setItem('successful_insurance_ip', serverIP);
+        return response;
+      }
+    } catch (error: any) {
+      console.error(`Error con IP ${serverIP}:`, error.message);
+    }
+  }
+  
+  throw new Error("No se pudo conectar con ningún servidor disponible");
+}
+
 // Cargar datos
 const fetchHospitalServices = async () => {
   try {
     loading.value = true;
     error.value = "";
     
-    const response = await axios.get(`http://${ip}:8080/api/insurance-services/hospital-services`);
+    const response = await tryMultipleIPs('/insurance-services/hospital-services', 'GET');
     hospitalServices.value = response.data || [];
+    console.log("Servicios obtenidos:", hospitalServices.value);
   } catch (err) {
     console.error("Error al cargar servicios del hospital:", err);
     error.value = "Error al cargar servicios del hospital. Por favor, intente nuevamente.";
@@ -71,7 +124,7 @@ const fetchHospitalServices = async () => {
 
 const fetchCategories = async () => {
   try {
-    const response = await axios.get(`http://${ip}:8080/api/category`);
+    const response = await tryMultipleIPs('/category', 'GET');
     categories.value = response.data || [];
   } catch (err) {
     console.error("Error al cargar categorías:", err);
@@ -116,7 +169,7 @@ const approveService = async () => {
       description: serviceDescription.value || `Servicio importado del hospital: ${selectedService.value.name}`
     };
     
-    await axios.post(`http://${ip}:8080/api/insurance-services/approve-hospital-service`, serviceData);
+    await tryMultipleIPs('/insurance-services/approve-hospital-service', 'POST', serviceData);
     
     // Actualizar la lista de servicios
     await fetchHospitalServices();
@@ -178,6 +231,17 @@ onMounted(async () => {
     <!-- Mensaje cuando no hay servicios -->
     <div v-else-if="hospitalServices.length === 0" class="text-center py-8">
       <p class="text-gray-600">No se encontraron servicios en el hospital.</p>
+      <div v-if="error" class="mt-4 max-w-2xl mx-auto">
+        <p class="text-sm text-red-600">
+          <strong>Sugerencias de solución:</strong>
+        </p>
+        <ul class="list-disc ml-5 text-sm text-red-600 mt-2">
+          <li>Verifique que el servidor backend esté ejecutándose (en puerto 8080)</li>
+          <li>Verifique que el servidor del hospital esté ejecutándose (en puerto 5050)</li>
+          <li>Verifique su conexión a internet</li>
+          <li>Intente recargar la página</li>
+        </ul>
+      </div>
     </div>
     
     <!-- Lista de servicios -->

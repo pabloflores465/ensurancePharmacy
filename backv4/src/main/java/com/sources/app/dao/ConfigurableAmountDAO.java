@@ -65,4 +65,18 @@ public class ConfigurableAmountDAO {
             return null;
         }
     }
+
+    // Método para obtener la configuración actual (asumimos que solo hay una fila)
+    public ConfigurableAmount findCurrentConfig() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Query<ConfigurableAmount> query = session.createQuery("FROM ConfigurableAmount", ConfigurableAmount.class);
+            query.setMaxResults(1); // Solo nos interesa la primera fila
+            return query.uniqueResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Si no existe, crear una con valor por defecto
+            System.out.println("No se encontró configuración, creando una por defecto con Q250.00");
+            return create(new BigDecimal("250.00"));
+        }
+    }
 }

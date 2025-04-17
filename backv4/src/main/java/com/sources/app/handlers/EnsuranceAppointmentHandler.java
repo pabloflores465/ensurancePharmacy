@@ -45,53 +45,47 @@ public class EnsuranceAppointmentHandler implements HttpHandler {
             return;
         }
 
+        String method = exchange.getRequestMethod();
         String path = exchange.getRequestURI().getPath();
         String query = exchange.getRequestURI().getQuery();
 
-        // Manejar diferentes rutas
-        if (path.equals(ENDPOINT)) {
-            switch (exchange.getRequestMethod().toUpperCase()) {
+        try {
+            switch (method) {
                 case "GET":
-                    if (query != null && query.contains("userId=")) {
-                        handleGetByUserId(exchange, query);
-                    } else if (query != null && query.contains("hospitalId=")) {
+                    if (query != null && query.contains("hospitalId=")) {
+                        // Solicitud para buscar cita por ID de hospital
                         handleGetByHospitalId(exchange, query);
+                    } else if (query != null && query.contains("today=true")) {
+                        // Solicitud para obtener citas de hoy
+                        handleGetTodayAppointments(exchange);
+                    } else if (query != null && query.contains("date=")) {
+                        // Solicitud para obtener citas por fecha específica
+                        handleGetByDate(exchange, query);
+                    } else if (query != null && query.contains("userId=")) {
+                        // Solicitud para obtener citas por ID de usuario
+                        handleGetByUserId(exchange, query);
                     } else {
+                        // Obtener todas las citas
                         handleGetAll(exchange);
                     }
                     break;
                 case "POST":
                     handlePost(exchange);
                     break;
-                case "PUT":
-                    handlePut(exchange);
-                    break;
                 case "DELETE":
-                    handleDelete(exchange);
+                    if (query != null && query.contains("hospitalId=")) {
+                        // Eliminar cita por ID de hospital
+                        handleDeleteByHospitalId(exchange, query);
+                    } else {
+                        exchange.sendResponseHeaders(400, -1); // Bad Request
+                    }
                     break;
                 default:
-                    exchange.sendResponseHeaders(405, -1); // Method not allowed
+                    exchange.sendResponseHeaders(405, -1); // Method Not Allowed
             }
-        } else if (path.startsWith(ENDPOINT + "/")) {
-            // Obtener ID desde la URL
-            String idStr = path.substring(ENDPOINT.length() + 1);
-            try {
-                Long id = Long.parseLong(idStr);
-                switch (exchange.getRequestMethod().toUpperCase()) {
-                    case "GET":
-                        handleGetById(exchange, id);
-                        break;
-                    case "DELETE":
-                        handleDeleteById(exchange, id);
-                        break;
-                    default:
-                        exchange.sendResponseHeaders(405, -1); // Method not allowed
-                }
-            } catch (NumberFormatException e) {
-                exchange.sendResponseHeaders(400, -1); // Bad request
-            }
-        } else {
-            exchange.sendResponseHeaders(404, -1); // Not found
+        } catch (Exception e) {
+            e.printStackTrace();
+            exchange.sendResponseHeaders(500, -1); // Internal Server Error
         }
     }
 
@@ -234,34 +228,24 @@ public class EnsuranceAppointmentHandler implements HttpHandler {
     }
 
     /**
-     * Maneja las solicitudes DELETE con parámetros de consulta
+     * Maneja solicitudes DELETE para eliminar citas por ID del hospital
      */
-    private void handleDelete(HttpExchange exchange) throws IOException {
-        String query = exchange.getRequestURI().getQuery();
-        if (query != null) {
-            Map<String, String> params = parseQuery(query);
-            if (params.containsKey("hospitalId")) {
-                String hospitalId = params.get("hospitalId");
-                boolean deleted = appointmentDAO.deleteByHospitalAppointmentId(hospitalId);
-                if (deleted) {
-                    sendJsonResponse(exchange, 200, "{\"deleted\": true}");
-                    return;
-                }
-            } else if (params.containsKey("id")) {
-                try {
-                    Long id = Long.parseLong(params.get("id"));
-                    boolean deleted = appointmentDAO.delete(id);
-                    if (deleted) {
-                        sendJsonResponse(exchange, 200, "{\"deleted\": true}");
-                        return;
-                    }
-                } catch (NumberFormatException e) {
-                    exchange.sendResponseHeaders(400, -1); // Bad request
-                    return;
-                }
-            }
+    private void handleDeleteByHospitalId(HttpExchange exchange, String query) throws IOException {
+        Map<String, String> params = parseQueryParams(query);
+        String hospitalId = params.get("hospitalId");
+        
+        if (hospitalId == null || hospitalId.trim().isEmpty()) {
+            exchange.sendResponseHeaders(400, -1); // Bad Request
+            return;
         }
-        exchange.sendResponseHeaders(404, -1); // Not found
+        
+        boolean deleted = appointmentDAO.deleteByHospitalAppointmentId(hospitalId);
+        
+        if (deleted) {
+            exchange.sendResponseHeaders(204, -1); // No Content
+        } else {
+            exchange.sendResponseHeaders(404, -1); // Not Found
+        }
     }
 
     /**
@@ -299,5 +283,86 @@ public class EnsuranceAppointmentHandler implements HttpHandler {
                         param -> param[0],
                         param -> param.length > 1 ? param[1] : ""
                 ));
+    }
+
+    /**
+     * Maneja solicitudes GET para obtener citas del día actual
+     */
+    private void handleGetTodayAppointments(HttpExchange exchange) throws IOException {
+        List<EnsuranceAppointment> appointments = appointmentDAO.findTodayAppointments();
+        
+        if (appointments != null) {
+            // Obtener información adicional de cada usuario para las citas
+            appointments = enrichAppointmentsWithUserInfo(appointments);
+            
+            String response = objectMapper.writeValueAsString(appointments);
+            sendJsonResponse(exchange, 200, response);
+        } else {
+            exchange.sendResponseHeaders(500, -1); // Internal Server Error
+        }
+    }
+    
+    /**
+     * Maneja solicitudes GET para obtener citas por fecha específica
+     */
+    private void handleGetByDate(HttpExchange exchange, String query) throws IOException {
+        Map<String, String> params = parseQueryParams(query);
+        String dateStr = params.get("date");
+        
+        if (dateStr == null) {
+            exchange.sendResponseHeaders(400, -1); // Bad Request
+            return;
+        }
+        
+        try {
+            Date date = new SimpleDateFormat("yyyy-MM-dd").parse(dateStr);
+            List<EnsuranceAppointment> appointments = appointmentDAO.findByDate(date);
+            
+            if (appointments != null) {
+                // Obtener información adicional de cada usuario para las citas
+                appointments = enrichAppointmentsWithUserInfo(appointments);
+                
+                String response = objectMapper.writeValueAsString(appointments);
+                sendJsonResponse(exchange, 200, response);
+            } else {
+                exchange.sendResponseHeaders(500, -1); // Internal Server Error
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            exchange.sendResponseHeaders(400, -1); // Bad Request
+        }
+    }
+    
+    /**
+     * Enriquece las citas con información del usuario
+     */
+    private List<EnsuranceAppointment> enrichAppointmentsWithUserInfo(List<EnsuranceAppointment> appointments) {
+        // Aquí podríamos obtener información adicional de cada usuario
+        // como nombre, email, etc. desde la base de datos
+        // Por ahora simplemente devuelve la lista original
+        return appointments;
+    }
+    
+    /**
+     * Parsea los parámetros de la URL
+     */
+    private Map<String, String> parseQueryParams(String query) {
+        Map<String, String> params = new HashMap<>();
+        
+        if (query == null || query.isEmpty()) {
+            return params;
+        }
+        
+        String[] pairs = query.split("&");
+        for (String pair : pairs) {
+            int idx = pair.indexOf("=");
+            if (idx > 0) {
+                String key = pair.substring(0, idx);
+                String value = pair.substring(idx + 1);
+                params.put(key, value);
+            }
+        }
+        
+        return params;
     }
 } 

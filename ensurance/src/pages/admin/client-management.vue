@@ -13,6 +13,11 @@ interface User {
   birthDate: string;
   role: string;
   enabled: number;
+  paidService: boolean | null;
+  expirationDate: string;
+  policyId: number | null;
+  policy: Policy | null;
+  password?: string;
 }
 
 interface Transaction {
@@ -23,6 +28,7 @@ interface Transaction {
   transactionComment: string;
   result: string;
   covered: number;
+  completed: boolean;
   auth: string;
   hospital: {
     idHospital: number;
@@ -38,6 +44,15 @@ interface HospitalService {
   date: string;
 }
 
+interface Policy {
+  idPolicy: number;
+  percentage: number;
+  creationDate: string;
+  expDate: string;
+  cost: number;
+  enabled: number;
+}
+
 // Estado
 const users = ref<User[]>([]);
 const selectedUser = ref<User | null>(null);
@@ -48,13 +63,15 @@ const success = ref("");
 const searchQuery = ref("");
 const hospitalServices = ref<HospitalService[]>([]);
 const hospitalUserDetails = ref<any>(null);
+const availablePolicies = ref<Policy[]>([]);
+const loadingPolicies = ref(false);
 
 // Estado del modal
 const showUserModal = ref(false);
 const activeTab = ref("profile");
 
 // Configuración de IPs
-const possibleIPs = ["localhost", "127.0.0.1", "192.168.0.4", "192.168.0.10"];
+const possibleIPs = ["localhost", "127.0.0.1", "192.168.0.4", "192.168.0.10", "172.20.10.2"];
 const HOSPITAL_API_URL = 'http://0.0.0.0:5050';
 
 // Función para probar múltiples IPs
@@ -104,6 +121,30 @@ const fetchUsers = async () => {
     const response = await tryMultipleIPs('/users', 'GET');
     users.value = response.data.filter((user: User) => 
       user.role === 'patient' || !user.role || user.role.trim() === '');
+    
+    // Verificar expiración de servicios para todos los usuarios
+    users.value.forEach(user => {
+      checkServiceExpiration(user);
+    });
+    
+    // Si algún usuario ha cambiado, actualizar en el backend
+    const usersToUpdate = users.value.filter(user => {
+      // Si el servicio estaba pagado pero ha expirado
+      if (user.paidService === false && user.expirationDate && new Date(user.expirationDate) < new Date()) {
+        return true;
+      }
+      return false;
+    });
+    
+    // Actualizar usuarios expirados en el backend
+    for (const user of usersToUpdate) {
+      try {
+        await tryMultipleIPs(`/users/${user.idUser}`, 'PUT', user);
+        console.log(`Usuario ${user.name} actualizado: servicio expirado`);
+      } catch (updateErr) {
+        console.error(`Error al actualizar servicio expirado del usuario ${user.idUser}:`, updateErr);
+      }
+    }
   } catch (err: any) {
     error.value = "Error al cargar la lista de usuarios";
     console.error(err);
@@ -112,9 +153,27 @@ const fetchUsers = async () => {
   }
 };
 
+// Verificar estado de pago del servicio
+const checkServiceExpiration = (user: User) => {
+  // Si no tiene fecha de expiración o el servicio no está definido como pagado, no hay nada que verificar
+  if (!user.expirationDate || user.paidService !== true) return;
+  
+  const today = new Date();
+  const expiration = new Date(user.expirationDate);
+  
+  if (expiration < today) {
+    user.paidService = false;
+    user.policyId = null;
+  }
+};
+
 // Abrir modal para gestionar un usuario
 const openUserModal = async (user: User) => {
   selectedUser.value = { ...user };
+  
+  // Verificar si el servicio ha expirado
+  checkServiceExpiration(selectedUser.value);
+  
   showUserModal.value = true;
   activeTab.value = "profile";
   
@@ -200,7 +259,26 @@ const saveUserProfile = async () => {
   
   try {
     loading.value = true;
-    const response = await tryMultipleIPs(`/users/${selectedUser.value.idUser}`, 'PUT', selectedUser.value);
+    
+    // Crear un objeto para enviar al servidor sin el campo policyId
+    const userToSend = {
+      idUser: selectedUser.value.idUser,
+      name: selectedUser.value.name,
+      cui: selectedUser.value.cui,
+      phone: selectedUser.value.phone,
+      email: selectedUser.value.email,
+      address: selectedUser.value.address,
+      birthDate: selectedUser.value.birthDate,
+      role: selectedUser.value.role,
+      enabled: selectedUser.value.enabled,
+      paidService: selectedUser.value.paidService,
+      expirationDate: selectedUser.value.expirationDate,
+      // Si hay policyId, incluir el objeto policy
+      policy: selectedUser.value.policyId ? { idPolicy: selectedUser.value.policyId } : null,
+      password: selectedUser.value.password
+    };
+    
+    const response = await tryMultipleIPs(`/users/${userToSend.idUser}`, 'PUT', userToSend);
     
     // Actualizar la lista de usuarios
     const index = users.value.findIndex(u => u.idUser === selectedUser.value?.idUser);
@@ -241,6 +319,11 @@ const filteredUsers = computed(() => {
   );
 });
 
+// Filtrar transacciones completadas
+const filteredTransactions = computed(() => {
+  return userTransactions.value.filter(transaction => transaction.completed === true);
+});
+
 // Formatear fecha
 const formatDate = (dateString: string) => {
   if (!dateString) return "N/A";
@@ -257,9 +340,61 @@ const getCoveredStatusText = (covered: number) => {
   return covered === 1 ? 'Cubierto' : 'No cubierto';
 };
 
+// Obtener color para estatus de servicio
+const getServiceStatusColor = (paidService: boolean | null) => {
+  if (paidService === true) return 'bg-green-100 text-green-800';
+  if (paidService === false) return 'bg-red-100 text-red-800';
+  return 'bg-gray-100 text-gray-800'; // Para valor null
+};
+
+// Obtener texto para estatus de servicio
+const getServiceStatusText = (paidService: boolean | null) => {
+  if (paidService === true) return 'Activo';
+  if (paidService === false) return 'Inactivo';
+  return 'No definido'; // Para valor null
+};
+
+// Función para cargar pólizas disponibles
+const fetchPolicies = async () => {
+  try {
+    loadingPolicies.value = true;
+    error.value = "";
+    
+    const response = await tryMultipleIPs('/policy', 'GET');
+    availablePolicies.value = response.data || [];
+    
+    console.log("Pólizas disponibles:", availablePolicies.value);
+  } catch (err) {
+    console.error("Error al cargar pólizas:", err);
+    error.value = "Error al cargar la lista de pólizas";
+  } finally {
+    loadingPolicies.value = false;
+  }
+};
+
+// Obtener la póliza seleccionada actual
+const selectedPolicy = computed(() => {
+  if (!selectedUser.value || !selectedUser.value.policyId) return null;
+  return availablePolicies.value.find(policy => policy.idPolicy === selectedUser.value?.policyId) || null;
+});
+
+// Formatear precio
+const formatPrice = (price: number): string => {
+  return `Q${price.toFixed(2)}`;
+};
+
+// Seleccionar póliza
+const selectPolicy = (policyId: number | null) => {
+  if (selectedUser.value) {
+    selectedUser.value.policyId = policyId;
+    selectedUser.value.policy = policyId ? availablePolicies.value.find(p => p.idPolicy === policyId) || null : null;
+  }
+};
+
 // Cargar datos al iniciar
 onMounted(() => {
   fetchUsers();
+  fetchPolicies();
 });
 </script>
 
@@ -290,21 +425,33 @@ onMounted(() => {
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CUI</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teléfono</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Servicio</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
           <tr v-if="loading">
-            <td colspan="5" class="px-6 py-4 text-center">Cargando...</td>
+            <td colspan="6" class="px-6 py-4 text-center">Cargando...</td>
           </tr>
           <tr v-else-if="filteredUsers.length === 0">
-            <td colspan="5" class="px-6 py-4 text-center">No se encontraron usuarios</td>
+            <td colspan="6" class="px-6 py-4 text-center">No se encontraron usuarios</td>
           </tr>
           <tr v-for="user in filteredUsers" :key="user.idUser" class="hover:bg-gray-100">
             <td class="px-6 py-4 whitespace-nowrap">{{ user.name }}</td>
             <td class="px-6 py-4 whitespace-nowrap">{{ user.email }}</td>
             <td class="px-6 py-4 whitespace-nowrap">{{ user.cui }}</td>
             <td class="px-6 py-4 whitespace-nowrap">{{ user.phone }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span 
+                :class="getServiceStatusColor(user.paidService)"
+                class="px-2 py-1 rounded-full text-xs font-medium"
+              >
+                {{ getServiceStatusText(user.paidService) }}
+              </span>
+              <span v-if="user.paidService && user.expirationDate" class="ml-2 text-xs text-gray-500">
+                Vence: {{ formatDate(user.expirationDate) }}
+              </span>
+            </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <button
                 @click="openUserModal(user)"
@@ -437,6 +584,106 @@ onMounted(() => {
                   <option :value="0">Inactivo</option>
                 </select>
               </div>
+              
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Servicio pagado</label>
+                <div class="flex items-center space-x-6">
+                  <div class="flex items-center">
+                    <input
+                      type="radio" 
+                      :value="true"
+                      v-model="selectedUser.paidService"
+                      id="service-active"
+                      class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    />
+                    <label for="service-active" class="ml-2 text-sm text-gray-600">Activo</label>
+                  </div>
+                  <div class="flex items-center">
+                    <input
+                      type="radio" 
+                      :value="false"
+                      v-model="selectedUser.paidService"
+                      id="service-inactive"
+                      class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    />
+                    <label for="service-inactive" class="ml-2 text-sm text-gray-600">Inactivo</label>
+                  </div>
+                  <div class="flex items-center">
+                    <input
+                      type="radio" 
+                      :value="null"
+                      v-model="selectedUser.paidService"
+                      id="service-undefined"
+                      class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    />
+                    <label for="service-undefined" class="ml-2 text-sm text-gray-600">No definido</label>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="mb-4" v-if="selectedUser.paidService === true">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de expiración del servicio</label>
+                <input
+                  v-model="selectedUser.expirationDate"
+                  type="date"
+                  :min="new Date().toISOString().split('T')[0]"
+                  class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                />
+                <p class="mt-1 text-sm text-gray-500">
+                  Al vencer esta fecha, el servicio se desactivará automáticamente.
+                </p>
+              </div>
+              
+              <div class="mb-4" v-if="selectedUser.paidService === true">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Póliza</label>
+                
+                <!-- Indicador de carga para las pólizas -->
+                <div v-if="loadingPolicies" class="flex items-center text-gray-500 py-2 px-4 border border-gray-300 rounded-md">
+                  <div class="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-blue-600 mr-2"></div>
+                  <span>Cargando pólizas disponibles...</span>
+                </div>
+                
+                <!-- Mensaje si no hay pólizas -->
+                <div v-else-if="availablePolicies.length === 0" class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+                  <p class="text-yellow-800">
+                    No hay pólizas disponibles. Contacte con un administrador.
+                  </p>
+                  <button 
+                    @click="fetchPolicies" 
+                    class="mt-2 px-3 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-md hover:bg-yellow-200"
+                  >
+                    Recargar Pólizas
+                  </button>
+                </div>
+                
+                <!-- Lista de pólizas disponibles -->
+                <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                  <div 
+                    v-for="policy in availablePolicies" 
+                    :key="policy.idPolicy"
+                    @click="selectPolicy(policy.idPolicy)"
+                    class="cursor-pointer border rounded-lg p-3 transition-colors"
+                    :class="selectedUser.policyId === policy.idPolicy ? 
+                      'bg-blue-50 border-blue-500' : 
+                      'border-gray-300 hover:bg-gray-50'"
+                  >
+                    <div class="flex justify-between items-center">
+                      <div>
+                        <div class="font-semibold">
+                          {{ policy.percentage }}% 
+                          <span class="text-sm font-normal text-gray-600">
+                            <span v-if="policy.enabled === 0" class="text-red-500">(Inactiva)</span>
+                          </span>
+                        </div>
+                        <div class="text-sm text-gray-600">Vence: {{ formatDate(policy.expDate) }}</div>
+                      </div>
+                      <div class="font-medium">
+                        {{ formatPrice(policy.cost) }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             
             <div class="flex justify-end mt-6">
@@ -457,8 +704,8 @@ onMounted(() => {
               <p>Cargando transacciones...</p>
             </div>
             
-            <div v-else-if="userTransactions.length === 0" class="bg-gray-100 p-6 text-center rounded-md">
-              <p>No se encontraron transacciones para este usuario.</p>
+            <div v-else-if="filteredTransactions.length === 0" class="bg-gray-100 p-6 text-center rounded-md">
+              <p>No se encontraron transacciones completadas para este usuario.</p>
             </div>
             
             <div v-else class="overflow-x-auto">
@@ -475,7 +722,7 @@ onMounted(() => {
                   </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                  <tr v-for="transaction in userTransactions" :key="transaction.idTransaction" class="hover:bg-gray-50">
+                  <tr v-for="transaction in filteredTransactions" :key="transaction.idTransaction" class="hover:bg-gray-50">
                     <td class="px-4 py-3 whitespace-nowrap">{{ formatDate(transaction.transDate) }}</td>
                     <td class="px-4 py-3 whitespace-nowrap">{{ transaction.hospital?.name || 'N/A' }}</td>
                     <td class="px-4 py-3 whitespace-nowrap">Q{{ transaction.total.toFixed(2) }}</td>

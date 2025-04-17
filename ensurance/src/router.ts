@@ -16,6 +16,9 @@ import Policies from "./pages/admin/policies.vue";
 import RegisterClient from "./pages/employee/register-client.vue";
 import Appointments from "./pages/appointments.vue";
 import ClientManagement from "./pages/admin/client-management.vue";
+import DailyAppointments from "./pages/admin/daily-appointments.vue";
+import PrescriptionApprovals from "./pages/admin/prescription-approvals.vue";
+import SystemConfiguration from "./pages/admin/system-configuration.vue";
 import UserServices from "./pages/user-services.vue";
 import { checkMissingRequiredFields } from "./utils/profile-utils";
 
@@ -178,6 +181,26 @@ const routes = [
     beforeEnter: requireAdmin
   },
   {
+    path: '/admin/client-management',
+    component: ClientManagement,
+    beforeEnter: requireAdmin
+  },
+  {
+    path: '/admin/daily-appointments',
+    component: DailyAppointments,
+    beforeEnter: requireAdmin
+  },
+  {
+    path: '/admin/prescription-approvals',
+    component: PrescriptionApprovals,
+    beforeEnter: requireEmployeeOrAdmin // Permitir a empleados y admins
+  },
+  {
+    path: '/admin/configuration',
+    component: SystemConfiguration,
+    beforeEnter: requireEmployeeOrAdmin // Permitir a empleados y admins
+  },
+  {
     path: "/profile-completion",
     component: ProfileCompletion,
     beforeEnter: requireCompleteProfile
@@ -213,11 +236,6 @@ const routes = [
     path: '/appointments',
     component: Appointments,
     beforeEnter: requireAuth
-  },
-  {
-    path: '/admin/client-management',
-    component: ClientManagement,
-    beforeEnter: requireAdmin
   },
   {
     path: '/user-services',

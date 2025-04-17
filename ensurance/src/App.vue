@@ -89,6 +89,18 @@ function navigateToClientManagement() {
   router.push("/admin/client-management");
 }
 
+function navigateToDailyAppointments() {
+  router.push("/admin/daily-appointments");
+}
+
+function navigateToPrescriptionApprovals() {
+  router.push("/admin/prescription-approvals");
+}
+
+function navigateToConfiguration() {
+  router.push("/admin/configuration");
+}
+
 function navigateToUserServices() {
   router.push("/user-services");
 }
@@ -206,6 +218,24 @@ function navigateToUserServices() {
               class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
             >
               Gestión de Clientes
+            </button>
+            <button 
+              @click="navigateToDailyAppointments" 
+              class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+            >
+              Citas Diarias
+            </button>
+            <button 
+              @click="navigateToPrescriptionApprovals" 
+              class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+            >
+              Aprobaciones de Recetas
+            </button>
+            <button 
+              @click="navigateToConfiguration" 
+              class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+            >
+              Configuración del Sistema
             </button>
           </div>
         </div>

@@ -34,9 +34,9 @@ public class User {
     @Column(name = "ROL", nullable = false)
     private String role;  // Rol del usuario
 
-    // Relación ManyToOne obligatoria con Policy
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "ID_POLICY", nullable = false)
+    // Relación ManyToOne opcional con Policy (ya no es obligatoria)
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "ID_POLICY", nullable = true)
     private Policy policy;
 
     @Column(name = "ENABLED", nullable = false)
@@ -45,6 +45,13 @@ public class User {
     @Column(name = "PASSWORD", nullable = false)
     private String password;
 
+    @Column(name = "PAID_SERVICE")
+    private Boolean paidService;  // Ahora puede ser nulo
+
+    @Temporal(TemporalType.DATE)
+    @Column(name = "EXPIRATION_DATE")
+    private Date expirationDate;  // Fecha de expiración del servicio
+
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "CREATED_AT")
     private Date createdAt;  // Fecha de creación del usuario
@@ -52,10 +59,11 @@ public class User {
     // Constructor sin argumentos
     public User() {
         this.createdAt = new Date(); // Inicializar con la fecha actual al crear un usuario
+        this.paidService = null; // Inicialmente no definido
     }
 
     // Constructor completo
-    public User(String name, Long cui, String phone, String email, String address, Date birthDate, String role, Policy policy, Integer enabled, String password) {
+    public User(String name, Long cui, String phone, String email, String address, Date birthDate, String role, Policy policy, Integer enabled, String password, Boolean paidService, Date expirationDate) {
         this.name = name;
         this.cui = cui;
         this.phone = phone;
@@ -66,6 +74,8 @@ public class User {
         this.policy = policy;
         this.enabled = enabled;
         this.password = password;
+        this.paidService = paidService; // Puede ser null
+        this.expirationDate = expirationDate;
         this.createdAt = new Date();
     }
 
@@ -105,4 +115,10 @@ public class User {
 
     public Date getCreatedAt() { return createdAt; }
     public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
+
+    public Boolean getPaidService() { return paidService; }
+    public void setPaidService(Boolean paidService) { this.paidService = paidService; }
+
+    public Date getExpirationDate() { return expirationDate; }
+    public void setExpirationDate(Date expirationDate) { this.expirationDate = expirationDate; }
 }

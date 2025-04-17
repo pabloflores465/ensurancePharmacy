@@ -225,6 +225,16 @@ public class UserHandler implements HttpHandler {
             // Asegurarse de que el ID sea el mismo
             updatedUser.setIdUser(userId);
             
+            // Reglas de negocio para la actualización
+            // 1. Si paidService es false, policy debe ser null
+            if (updatedUser.getPaidService() != null && !updatedUser.getPaidService()) {
+                updatedUser.setPolicy(null);
+                updatedUser.setExpirationDate(null);
+            }
+            
+            // 2. Si paidService es true y expirationDate es null, se podría establecer una fecha predeterminada
+            // (esta lógica se maneja en UserDAO)
+            
             // Actualizar el usuario
             User result = userDAO.update(updatedUser);
             

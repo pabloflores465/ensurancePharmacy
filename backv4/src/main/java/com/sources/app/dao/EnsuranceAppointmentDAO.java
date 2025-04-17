@@ -6,6 +6,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -191,5 +192,47 @@ public class EnsuranceAppointmentDAO {
             e.printStackTrace();
             return false;
         }
+    }
+
+    /**
+     * Obtiene todas las citas para una fecha específica
+     * @param date Fecha para la cual buscar citas
+     * @return Lista de citas para esa fecha
+     */
+    public List<EnsuranceAppointment> findByDate(Date date) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            // Crear una fecha de inicio (00:00:00) y fin (23:59:59) para el día especificado
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            calendar.set(Calendar.HOUR_OF_DAY, 0);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+            Date startDate = calendar.getTime();
+            
+            calendar.set(Calendar.HOUR_OF_DAY, 23);
+            calendar.set(Calendar.MINUTE, 59);
+            calendar.set(Calendar.SECOND, 59);
+            Date endDate = calendar.getTime();
+            
+            Query<EnsuranceAppointment> query = session.createQuery(
+                "FROM EnsuranceAppointment WHERE appointmentDate BETWEEN :startDate AND :endDate",
+                EnsuranceAppointment.class
+            );
+            query.setParameter("startDate", startDate);
+            query.setParameter("endDate", endDate);
+            
+            return query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    /**
+     * Obtiene todas las citas para la fecha actual
+     * @return Lista de citas para hoy
+     */
+    public List<EnsuranceAppointment> findTodayAppointments() {
+        return findByDate(new Date());
     }
 } 

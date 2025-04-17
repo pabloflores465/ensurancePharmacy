@@ -32,6 +32,7 @@ public class App {
     private static final InsuranceServiceDAO insuranceServiceDAO = new InsuranceServiceDAO();
     private static final HospitalInsuranceServiceDAO hospitalInsuranceServiceDAO = new HospitalInsuranceServiceDAO();
     private static final EnsuranceAppointmentDAO ensuranceAppointmentDAO = new EnsuranceAppointmentDAO();
+    private static final PrescriptionApprovalDAO prescriptionApprovalDAO = new PrescriptionApprovalDAO();
 
     private static String getLocalExternalIp() {
         try {
@@ -71,6 +72,24 @@ public class App {
 
         String ip = getLocalExternalIp();
 
+        // Verificar servicios expirados al iniciar
+        System.out.println("Verificando servicios expirados...");
+        int updatedUsers = userDAO.checkAllUsersServiceExpiration();
+        System.out.println("Se actualizaron " + updatedUsers + " usuarios con servicios expirados.");
+        
+        // Programar tarea para verificar servicios expirados cada día
+        java.util.Timer timer = new java.util.Timer(true);
+        timer.scheduleAtFixedRate(new java.util.TimerTask() {
+            @Override
+            public void run() {
+                System.out.println("Ejecutando verificación programada de servicios expirados...");
+                int count = userDAO.checkAllUsersServiceExpiration();
+                System.out.println("Verificación programada: se actualizaron " + count + " usuarios con servicios expirados.");
+            }
+        }, 
+        // Ejecutar cada 24 horas (en milisegundos)
+        86400000, 86400000);
+
         // Crear y configurar el servidor HTTP
         HttpServer server = HttpServer.create(new InetSocketAddress(ip, 8080), 0);
         server.createContext("/api/login", new LoginHandler(userDAO));
@@ -101,6 +120,11 @@ public class App {
         server.createContext("/api/users/by-email", new UserByEmailHandler(userDAO));
         // Nuevo handler para las citas de seguro
         server.createContext("/api/ensurance-appointments", new EnsuranceAppointmentHandler(ensuranceAppointmentDAO));
+        // Handler para aprobaciones de recetas
+        server.createContext("/api/prescriptions/", new PrescriptionApprovalHandler(prescriptionApprovalDAO, userDAO, configurableAmountDAO));
+        // Actualizar handler para monto configurable
+        server.createContext("/api/configurable-amount/", new ConfigurableAmountHandler(configurableAmountDAO));
+        
         server.setExecutor(null); // Usa el executor por defecto
         server.start();
         System.out.println("Servidor iniciado en http://" + ip + ":8080/api");
