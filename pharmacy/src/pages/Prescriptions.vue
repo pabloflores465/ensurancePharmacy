@@ -85,7 +85,7 @@ const fetchPrescriptions = async () => {
 
     // Consumir el API con el parámetro username (mel)
     console.log(`Consultando recetas para el usuario: ${username}`);
-    const response = await axios.get(`http://127.0.0.1:8000/recipes?username=${username}`);
+    const response = await axios.get(` http://172.20.10.3:5051/recipes?username=${username}`);
     
     if (response.data && response.data.recipes) {
       recipes.value = response.data.recipes;
