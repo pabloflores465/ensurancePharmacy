@@ -15,26 +15,21 @@ const updating = ref(false);
 const error = ref("");
 const success = ref("");
 
-// Configuración de IPs (Asumimos que ya existe tryMultipleIPs)
-const possibleIPs = ["localhost", "127.0.0.1", "192.168.0.4", "192.168.0.10", "172.20.10.2"];
+// Configuración de IPs
+const possibleIPs = [import.meta.env.VITE_IP || "localhost"];
 
 // Función para probar múltiples IPs
 async function tryMultipleIPs(endpoint: string, method: string = 'GET', data: any = null) {
-  const savedIP = localStorage.getItem('successful_insurance_ip');
-  const ipsToTry = savedIP ? [savedIP, ...possibleIPs.filter(ip => ip !== savedIP)] : possibleIPs;
-
-  for (const serverIP of ipsToTry) {
-    try {
-      const url = `http://${serverIP}:8080/api${endpoint}`;
-      console.log(`Intentando ${method} a ${url}`);
-      const response = await axios({ method, url, data, timeout: 3000 });
-      localStorage.setItem('successful_insurance_ip', serverIP);
-      return response;
-    } catch (error: any) {
-      console.error(`Error con IP ${serverIP}:`, error.message);
-    }
+  const serverIP = import.meta.env.VITE_IP || "localhost";
+  try {
+    const url = `http://${serverIP}:8080/api${endpoint}`;
+    console.log(`Intentando ${method} a ${url}`);
+    const response = await axios({ method, url, data, timeout: 3000 });
+    return response;
+  } catch (error: any) {
+    console.error(`Error con IP ${serverIP}:`, error.message);
+    throw new Error("No se pudo conectar con el servidor");
   }
-  throw new Error("No se pudo conectar con ningún servidor disponible");
 }
 
 // Cargar configuración actual

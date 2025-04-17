@@ -135,14 +135,15 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { testCorsHospital, testCorsInsurance } from '../utils/api-integration';
 
-// Environment variables
+// Constantes de configuración
 const INSURANCE_IP = import.meta.env.VITE_IP || 'localhost';
-const HOSPITAL_IP = 'localhost'; // Forzar el uso de localhost para hospital
+const HOSPITAL_IP = import.meta.env.VITE_IP || 'localhost';
 const PHARMACY_IP = import.meta.env.VITE_IP || 'localhost';
 
+// URLs de las APIs
 const INSURANCE_API_URL = `http://${INSURANCE_IP}:8080/api`;
-const HOSPITAL_API_URL = `http://localhost:8000`; // Usar localhost explícitamente
-const PHARMACY_API_URL = `http://${PHARMACY_IP}:8081/api`;
+const HOSPITAL_API_URL = `http://${HOSPITAL_IP}:5050`;
+const PHARMACY_API_URL = `http://${PHARMACY_IP}:8080/api`;
 
 // Readable URLs for display
 const insuranceUrl = INSURANCE_API_URL;

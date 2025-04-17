@@ -36,40 +36,21 @@ const error = ref("");
 const activeTab = ref("insurance");
 
 // Configuración de IPs
-const possibleIPs = ["localhost", "127.0.0.1", "192.168.0.4", "192.168.0.10"];
-const HOSPITAL_API_URL = 'http://0.0.0.0:5050';
+const possibleIPs = [import.meta.env.VITE_IP || "localhost"];
+const HOSPITAL_API_URL = `http://${import.meta.env.VITE_IP || "localhost"}:5050`;
 
 // Función para probar múltiples IPs
-async function tryMultipleIPs(endpoint: string, method: string, data: any = null) {
-  // Intentar con IP guardada primero si existe
-  const savedIP = localStorage.getItem('successful_insurance_ip');
-  if (savedIP) {
-    possibleIPs.unshift(savedIP);
+async function tryMultipleIPs(endpoint: string, method: string = 'GET', data: any = null) {
+  const serverIP = import.meta.env.VITE_IP || "localhost";
+  try {
+    const url = `http://${serverIP}:8080/api${endpoint}`;
+    console.log(`Intentando ${method} a ${url}`);
+    const response = await axios({ method, url, data, timeout: 3000 });
+    return response;
+  } catch (error: any) {
+    console.error(`Error con IP ${serverIP}:`, error.message);
+    throw new Error("No se pudo conectar con el servidor");
   }
-  
-  for (const serverIP of possibleIPs) {
-    try {
-      const url = `http://${serverIP}:8080/api${endpoint}`;
-      console.log(`Intentando ${method} a ${url}`);
-      
-      if (method === 'GET') {
-        const response = await axios.get(url, { timeout: 3000 });
-        localStorage.setItem('successful_insurance_ip', serverIP);
-        return response;
-      } else if (method === 'POST') {
-        const response = await axios.post(url, data, { 
-          headers: { 'Content-Type': 'application/json' },
-          timeout: 3000
-        });
-        localStorage.setItem('successful_insurance_ip', serverIP);
-        return response;
-      }
-    } catch (error: any) {
-      console.error(`Error con IP ${serverIP}:`, error.message);
-    }
-  }
-  
-  throw new Error("No se pudo conectar con ningún servidor disponible");
 }
 
 // Cargar transacciones del usuario

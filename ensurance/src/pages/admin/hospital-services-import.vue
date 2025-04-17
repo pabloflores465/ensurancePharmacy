@@ -28,17 +28,10 @@ const error = ref("");
 const success = ref("");
 
 // Configuración de IPs para la conexión con el backend
-const envIP = import.meta.env.VITE_IP;
-const possibleIPs = [
-  // Priorizar la IP del archivo .env si existe
-  ...(envIP ? [envIP] : []),
-  "localhost", 
-  "127.0.0.1", 
-  "192.168.0.4", 
-  "192.168.0.10", 
-  "172.20.10.2"
-];
-const HOSPITAL_API_URL = 'http://0.0.0.0:5050';
+const primaryIP = import.meta.env.VITE_IP || "localhost";
+const fallbackIPs = ["localhost", "127.0.0.1", "192.168.0.4"];
+const possibleIPs = [primaryIP, ...fallbackIPs.filter(ip => ip !== primaryIP)];
+const HOSPITAL_API_URL = `http://${primaryIP}:5050`;
 
 // Estado del modal de aprobación
 const showApprovalModal = ref(false);
@@ -64,44 +57,49 @@ const filteredServices = computed(() => {
   );
 });
 
-// Función para probar múltiples IPs (similar a client-management.vue)
-async function tryMultipleIPs(endpoint: string, method: string, data: any = null) {
-  // Intentar con IP guardada primero si existe
-  const savedIP = localStorage.getItem('successful_insurance_ip');
-  if (savedIP) {
-    possibleIPs.unshift(savedIP);
-  }
+// Estado de conexión
+const connectionIP = ref<string | null>(null);
+
+// Función para probar múltiples IPs con fallback
+async function tryMultipleIPs(endpoint: string, method: string = 'GET', data: any = null) {
+  // Primero intentar con IP configurada en .env
+  let lastError = null;
   
   for (const serverIP of possibleIPs) {
     try {
+      console.log(`Intentando ${method} a http://${serverIP}:8080/api${endpoint}`);
       const url = `http://${serverIP}:8080/api${endpoint}`;
-      console.log(`Intentando ${method} a ${url}`);
+      const response = await axios({ 
+        method, 
+        url, 
+        data, 
+        timeout: 10000, // 10 segundos
+        headers: method !== 'GET' ? { 'Content-Type': 'application/json' } : undefined
+      });
       
-      if (method === 'GET') {
-        const response = await axios.get(url, { timeout: 3000 });
-        localStorage.setItem('successful_insurance_ip', serverIP);
-        return response;
-      } else if (method === 'POST') {
-        const response = await axios.post(url, data, { 
-          headers: { 'Content-Type': 'application/json' },
-          timeout: 3000
-        });
-        localStorage.setItem('successful_insurance_ip', serverIP);
-        return response;
-      } else if (method === 'PUT') {
-        const response = await axios.put(url, data, { 
-          headers: { 'Content-Type': 'application/json' },
-          timeout: 3000
-        });
-        localStorage.setItem('successful_insurance_ip', serverIP);
-        return response;
+      // Si llegamos aquí, la conexión fue exitosa
+      if (!connectionIP.value) {
+        connectionIP.value = serverIP;
+        console.log(`Conexión exitosa a ${serverIP}`);
       }
+      
+      return response;
     } catch (error: any) {
+      lastError = error;
       console.error(`Error con IP ${serverIP}:`, error.message);
     }
   }
   
-  throw new Error("No se pudo conectar con ningún servidor disponible");
+  // Si llegamos aquí, ninguna IP funcionó
+  if (lastError?.code === 'ECONNABORTED') {
+    throw new Error(`Tiempo de espera agotado al conectar con los servidores. Verifique que al menos un servidor esté ejecutándose.`);
+  } else if (lastError?.response) {
+    throw new Error(`El servidor respondió con un error: ${lastError.response.status} - ${lastError.response.statusText}`);
+  } else if (lastError?.request) {
+    throw new Error(`No se recibió respuesta de ningún servidor. Verifique la conectividad de red y que al menos un servidor esté ejecutándose.`);
+  } else {
+    throw new Error(`Error al configurar la solicitud: ${lastError?.message || 'Error desconocido'}`);
+  }
 }
 
 // Cargar datos
@@ -189,6 +187,42 @@ const approveService = async () => {
   }
 };
 
+// Test connection to all possible servers
+const testConnection = async () => {
+  testingConnection.value = true;
+  connectionStatus.value = null;
+  const results: Record<string, boolean> = {};
+  
+  // Probar cada IP por separado
+  for (const ip of possibleIPs) {
+    try {
+      // Intenta un endpoint simple o healthcheck
+      await axios.get(`http://${ip}:8080/api/healthcheck`, {
+        timeout: 3000
+      });
+      results[ip] = true;
+    } catch (err) {
+      try {
+        // Intentar con otro endpoint como fallback
+        await axios.get(`http://${ip}:8080/api/users/count`, {
+          timeout: 3000
+        });
+        results[ip] = true;
+      } catch (err2) {
+        results[ip] = false;
+      }
+    }
+  }
+  
+  // Actualizar UI con resultados
+  connectionTestResults.value = results;
+  
+  // Si al menos un servidor está disponible, considerar la prueba exitosa
+  connectionStatus.value = Object.values(results).some(r => r) ? 'success' : 'error';
+  
+  testingConnection.value = false;
+};
+
 // Cargar datos iniciales
 onMounted(async () => {
   try {
@@ -198,6 +232,12 @@ onMounted(async () => {
     error.value = "Error al cargar datos. Por favor, recargue la página.";
   }
 });
+
+const testingConnection = ref(false);
+const connectionStatus = ref<'success' | 'error' | null>(null);
+
+// Estado para resultados de pruebas de conexión
+const connectionTestResults = ref<Record<string, boolean>>({});
 </script>
 
 <template>
@@ -210,6 +250,60 @@ onMounted(async () => {
     
     <div v-if="error" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
       <p>{{ error }}</p>
+      
+      <!-- Información de diagnóstico -->
+      <div class="mt-3 text-sm">
+        <p class="font-semibold">Información de diagnóstico:</p>
+        <ul class="list-disc pl-5 mt-1">
+          <li>IP principal (VITE_IP): {{ primaryIP }}</li>
+          <li>URL de API del seguro: http://[servidor]:8080/api</li>
+          <li>URL de API del hospital: {{ HOSPITAL_API_URL }}</li>
+          <li v-if="connectionIP">Servidor conectado actualmente: {{ connectionIP }}</li>
+        </ul>
+        
+        <div class="mt-3">
+          <button 
+            @click="testConnection" 
+            class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+            :disabled="testingConnection"
+          >
+            {{ testingConnection ? 'Probando servidores...' : 'Probar conexión a servidores' }}
+          </button>
+          
+          <div v-if="Object.keys(connectionTestResults).length > 0" class="mt-2 p-2 bg-gray-50 rounded">
+            <p class="font-medium">Resultados por servidor:</p>
+            <ul class="mt-1">
+              <li v-for="(result, ip) in connectionTestResults" :key="ip" class="flex items-center">
+                <span :class="result ? 'text-green-600' : 'text-red-600'" class="mr-2">
+                  {{ result ? '✅' : '❌' }}
+                </span>
+                <span>{{ ip }}:8080 - {{ result ? 'Conectado' : 'No disponible' }}</span>
+              </li>
+            </ul>
+          </div>
+          
+          <div v-if="connectionStatus" class="mt-2">
+            <p v-if="connectionStatus === 'success'" class="text-green-600">✅ Al menos un servidor está disponible</p>
+            <p v-else-if="connectionStatus === 'error'" class="text-red-600">❌ No se pudo conectar a ningún servidor</p>
+          </div>
+        </div>
+        
+        <div class="mt-3">
+          <p>Sugerencias:</p>
+          <ul class="list-disc pl-5 mt-1">
+            <li>Verifique que el servidor backend esté ejecutándose en el puerto 8080</li>
+            <li>Compruebe que la IP en el archivo .env sea correcta (actual: {{ primaryIP }})</li>
+            <li>Revise los logs del servidor backend para detectar posibles errores</li>
+            <li>Compruebe su conexión de red</li>
+            <li>Intente reiniciar el servidor backend si está disponible</li>
+          </ul>
+          
+          <div class="mt-2 p-2 bg-yellow-50 text-yellow-800 rounded">
+            <p class="font-medium">Nota:</p>
+            <p>El sistema intentará automáticamente conectarse a servidores alternativos si no puede conectarse al principal.</p>
+          </div>
+        </div>
+      </div>
     </div>
     
     <!-- Filtro de búsqueda -->
@@ -231,16 +325,20 @@ onMounted(async () => {
     <!-- Mensaje cuando no hay servicios -->
     <div v-else-if="hospitalServices.length === 0" class="text-center py-8">
       <p class="text-gray-600">No se encontraron servicios en el hospital.</p>
-      <div v-if="error" class="mt-4 max-w-2xl mx-auto">
-        <p class="text-sm text-red-600">
-          <strong>Sugerencias de solución:</strong>
-        </p>
-        <ul class="list-disc ml-5 text-sm text-red-600 mt-2">
-          <li>Verifique que el servidor backend esté ejecutándose (en puerto 8080)</li>
-          <li>Verifique que el servidor del hospital esté ejecutándose (en puerto 5050)</li>
-          <li>Verifique su conexión a internet</li>
-          <li>Intente recargar la página</li>
-        </ul>
+      <div class="mt-4 max-w-2xl mx-auto">
+        <button 
+          @click="testConnection" 
+          class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 mr-2"
+          :disabled="testingConnection"
+        >
+          {{ testingConnection ? 'Probando...' : 'Diagnosticar conexión' }}
+        </button>
+        <button 
+          @click="fetchHospitalServices" 
+          class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+        >
+          Intentar nuevamente
+        </button>
       </div>
     </div>
     
