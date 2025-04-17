@@ -72,7 +72,7 @@ public class InsuranceIntegrationHandler implements HttpHandler {
         String approvalCode = (String) data.get("approvalCode");
         
         // Buscar la receta
-        Prescription prescription = prescriptionDAO.findById(prescriptionId);
+        Prescription prescription = prescriptionDAO.getById(prescriptionId);
         
         if (prescription == null) {
             sendNotFound(exchange, "Receta no encontrada");
@@ -80,7 +80,7 @@ public class InsuranceIntegrationHandler implements HttpHandler {
         }
         
         // Si ya existe una factura para esta receta, retornar error
-        Bill existingBill = billDAO.findByPrescriptionId(prescriptionId);
+        Bill existingBill = billDAO.getByPrescriptionId(prescriptionId);
         if (existingBill != null) {
             sendResponse(exchange, 400, objectMapper.writeValueAsString(Map.of(
                 "success", false,
@@ -118,7 +118,13 @@ public class InsuranceIntegrationHandler implements HttpHandler {
                 bill.setCreatedAt(new Date());
                 bill.setStatus("PENDING");
                 
-                Bill savedBill = billDAO.create(bill);
+                // Asignando los valores requeridos por el método create de billDAO
+                Double taxes = totalAmount * 0.07; // Ejemplo: 7% de impuestos
+                Double subtotal = totalAmount - taxes;
+                Double copay = bill.getPatientAmount();
+                String totalStr = String.valueOf(totalAmount);
+                
+                Bill savedBill = billDAO.create(prescription, taxes, subtotal, copay, totalStr);
                 
                 if (savedBill != null) {
                     Map<String, Object> response = new HashMap<>(insuranceResponse);

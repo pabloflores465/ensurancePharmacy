@@ -55,6 +55,21 @@ public class BillDAO {
         }
     }
 
+    // READ BY PRESCRIPTION ID
+    public Bill getByPrescriptionId(Long prescriptionId) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Query<Bill> query = session.createQuery(
+                "FROM Bill b WHERE b.prescription.id = :prescriptionId", 
+                Bill.class
+            );
+            query.setParameter("prescriptionId", prescriptionId);
+            return query.uniqueResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     // UPDATE
     public Bill update(Bill bill) {
         Transaction tx = null;
