@@ -3,38 +3,54 @@ package com.sources.app.entities;
 import jakarta.persistence.*;
 import com.sources.app.entities.Medicine;
 
+/**
+ * Entidad que representa un comentario en el sistema.
+ * Mapea a la tabla "COMMENTS". Asociado a un usuario, un medicamento y opcionalmente
+ * a un comentario previo para formar hilos.
+ */
 @Entity
 @Table(name = "COMMENTS")
 public class Comments {
 
+    /** Identificador único del comentario. Generado automáticamente. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID_COMMENTS")
     private Long idComments;
 
-    // Relación ManyToOne con la entidad User
+    /** Usuario que realizó el comentario. */
     @ManyToOne
     @JoinColumn(name = "ID_USER", referencedColumnName = "ID_USER")
     private User user;
 
-    // Relación ManyToOne con la misma entidad para el comentario previo (self reference)
+    /** Comentario al que responde este comentario (para hilos). Puede ser nulo. */
     @ManyToOne
     @JoinColumn(name = "ID_PREV_COMMENT", referencedColumnName = "ID_COMMENTS")
     private Comments prevComment;
 
+    /** Texto del comentario. */
     @Column(name = "COMMENT_TEXT")
     private String commentText;
 
-    // Relación ManyToOne con la entidad Medicine
+    /** Medicamento sobre el cual se realiza el comentario. */
     @ManyToOne
     @JoinColumn(name = "ID_MEDICINE", referencedColumnName = "ID_MEDICINE")
     private Medicine medicine;
 
-    // Constructor vacío
+    /**
+     * Constructor por defecto requerido por JPA.
+     */
     public Comments() {
     }
 
-    // Constructor con campos
+    /**
+     * Constructor para crear un nuevo comentario.
+     * Nota: Este constructor no inicializa el campo 'medicine'.
+     *
+     * @param user El usuario que realiza el comentario.
+     * @param prevComment El comentario previo (puede ser nulo).
+     * @param commentText El texto del comentario.
+     */
     public Comments(User user, Comments prevComment, String commentText) {
         this.user = user;
         this.prevComment = prevComment;

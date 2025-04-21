@@ -9,16 +9,41 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Manejador HTTP para gestionar las solicitudes de inicio de sesión de usuarios.
+ * Responde a solicitudes POST en el endpoint "/api2/login".
+ * Espera un cuerpo JSON con "email" y "password".
+ * Utiliza UserDAO para verificar las credenciales.
+ */
 public class LoginHandler implements HttpHandler {
     private final UserDAO userDAO;
     private final ObjectMapper objectMapper;
     private static final String ENDPOINT = "/api2/login";
 
+    /**
+     * Constructor para LoginHandler.
+     *
+     * @param userDAO El DAO para acceder a los datos de los usuarios y verificar credenciales.
+     */
     public LoginHandler(UserDAO userDAO) {
         this.userDAO = userDAO;
         this.objectMapper = new ObjectMapper();
     }
 
+    /**
+     * Maneja las solicitudes HTTP entrantes para el endpoint de login.
+     * Configura las cabeceras CORS.
+     * Solo procesa solicitudes POST. Verifica la ruta y el método.
+     * Extrae email y contraseña del cuerpo JSON, llama a userDAO.login().
+     * Si la autenticación es exitosa, responde con 200 OK y los datos del usuario en JSON.
+     * Si la autenticación falla, responde con 401 Unauthorized.
+     * Responde con 404 Not Found si la ruta no es correcta.
+     * Responde con 405 Method Not Allowed para métodos diferentes de POST y OPTIONS.
+     * Responde con 500 Internal Server Error si ocurre una excepción.
+     *
+     * @param exchange El objeto HttpExchange que representa la solicitud y respuesta.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         // Encabezados CORS

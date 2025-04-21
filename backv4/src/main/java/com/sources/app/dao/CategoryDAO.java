@@ -8,8 +8,19 @@ import org.hibernate.query.Query;
 
 import java.util.List;
 
+/**
+ * Data Access Object (DAO) para gestionar las entidades Category (Categoría).
+ * Proporciona métodos para operaciones CRUD (Crear, Leer, Actualizar) sobre las categorías.
+ */
 public class CategoryDAO {
 
+    /**
+     * Crea una nueva categoría en la base de datos.
+     *
+     * @param name Nombre de la categoría.
+     * @param enabled Estado de habilitación (1 habilitado, 0 deshabilitado).
+     * @return El objeto Category creado, o null si ocurre un error.
+     */
     public Category create(String name, Integer enabled) {
         Transaction tx = null;
         Category category = null;
@@ -31,6 +42,12 @@ public class CategoryDAO {
         return category;
     }
 
+    /**
+     * Busca una categoría por su ID único.
+     *
+     * @param id El ID de la categoría a buscar.
+     * @return El objeto Category encontrado, o null si no se encuentra o si ocurre un error.
+     */
     public Category findById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Category.class, id);
@@ -40,6 +57,11 @@ public class CategoryDAO {
         }
     }
 
+    /**
+     * Recupera todas las categorías de la base de datos.
+     *
+     * @return Una lista de todos los objetos Category, o null si ocurre un error.
+     */
     public List<Category> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<Category> query = session.createQuery("FROM Category", Category.class);
@@ -50,6 +72,12 @@ public class CategoryDAO {
         }
     }
 
+    /**
+     * Actualiza una categoría existente en la base de datos.
+     *
+     * @param category El objeto Category con los datos actualizados.
+     * @return El objeto Category actualizado, o null si ocurre un error.
+     */
     public Category update(Category category) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

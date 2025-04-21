@@ -2,23 +2,35 @@ package com.sources.app.entities;
 
 import jakarta.persistence.*;
 
+/**
+ * Entidad que representa una subcategoría, posiblemente anidada dentro de una categoría.
+ * Mapea a la tabla "SUBCATEGORY".
+ */
 @Entity
 @Table(name = "SUBCATEGORY")
 public class Subcategory {
 
+    /** Identificador único de la subcategoría. Generado automáticamente. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID_SUBCATEGORY")
     private Long idSubcategory;
 
+    /** Nombre de la subcategoría. */
     @Column(name = "NAME")
     private String name;
 
-    // Constructor vacío
+    /**
+     * Constructor por defecto requerido por JPA.
+     */
     public Subcategory() {
     }
 
-    // Constructor con campos
+    /**
+     * Constructor para crear una nueva subcategoría con un nombre.
+     *
+     * @param name El nombre de la subcategoría.
+     */
     public Subcategory(String name) {
         this.name = name;
     }

@@ -11,8 +11,26 @@ import org.hibernate.query.Query;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Data Access Object (DAO) para gestionar las entidades de Transacciones.
+ * Proporciona métodos para crear, buscar, actualizar y listar transacciones.
+ */
 public class TransactionsDAO {
 
+    /**
+     * Crea una nueva transacción en la base de datos.
+     *
+     * @param idUser ID del usuario asociado a la transacción.
+     * @param idHospital ID del hospital asociado a la transacción.
+     * @param transDate Fecha de la transacción.
+     * @param total Monto total de la transacción.
+     * @param copay Monto del copago.
+     * @param transactionComment Comentario sobre la transacción.
+     * @param result Resultado de la transacción.
+     * @param covered Indicador de si la transacción está cubierta (1) o no (0).
+     * @param auth Código de autorización.
+     * @return El objeto Transactions creado, o null si ocurre un error.
+     */
     public Transactions create(Long idUser, Long idHospital, Date transDate, Double total,
                                Double copay, String transactionComment, String result,
                                Integer covered, String auth) {
@@ -50,6 +68,12 @@ public class TransactionsDAO {
         return t;
     }
 
+    /**
+     * Busca una transacción por su ID único.
+     *
+     * @param id El ID de la transacción a buscar.
+     * @return El objeto Transactions encontrado, o null si no se encuentra o si ocurre un error.
+     */
     public Transactions findById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Transactions.class, id);
@@ -59,6 +83,12 @@ public class TransactionsDAO {
         }
     }
 
+    /**
+     * Busca todas las transacciones asociadas a un ID de usuario específico.
+     *
+     * @param idUser El ID del usuario cuyas transacciones se quieren buscar.
+     * @return Una lista de objetos Transactions asociados al usuario, o null si ocurre un error.
+     */
     public List<Transactions> findByUserId(Long idUser) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<Transactions> query = session.createQuery(
@@ -74,6 +104,11 @@ public class TransactionsDAO {
     }
 
 
+    /**
+     * Recupera todas las transacciones existentes en la base de datos.
+     *
+     * @return Una lista de todos los objetos Transactions, o null si ocurre un error.
+     */
     public List<Transactions> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<Transactions> query = session.createQuery("FROM Transactions", Transactions.class);
@@ -84,6 +119,12 @@ public class TransactionsDAO {
         }
     }
 
+    /**
+     * Actualiza una transacción existente en la base de datos.
+     *
+     * @param t El objeto Transactions con los datos actualizados.
+     * @return El objeto Transactions actualizado, o null si ocurre un error.
+     */
     public Transactions update(Transactions t) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

@@ -10,8 +10,22 @@ import org.hibernate.query.Query;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Data Access Object (DAO) para gestionar las entidades Appointment (Cita).
+ * Representa una cita médica programada en un hospital por un usuario.
+ * Proporciona métodos para operaciones CRUD (Crear, Leer, Actualizar).
+ */
 public class AppointmentDAO {
 
+    /**
+     * Crea una nueva cita en la base de datos.
+     *
+     * @param idHospital ID del hospital donde se programa la cita.
+     * @param idUser ID del usuario que programa la cita.
+     * @param appointmentDate Fecha y hora de la cita.
+     * @param enabled Estado de habilitación (1 habilitado, 0 deshabilitado/cancelado).
+     * @return El objeto Appointment creado, o null si ocurre un error (p. ej., hospital o usuario no encontrados).
+     */
     public Appointment create(Long idHospital, Long idUser, Date appointmentDate, Integer enabled) {
         Transaction tx = null;
         Appointment appointment = null;
@@ -44,6 +58,13 @@ public class AppointmentDAO {
         }
         return appointment;
     }
+
+    /**
+     * Busca todas las citas asociadas a un ID de usuario específico.
+     *
+     * @param idUser El ID del usuario cuyas citas se quieren buscar.
+     * @return Una lista de objetos Appointment asociados al usuario, o null si ocurre un error.
+     */
     public List<Appointment> findByUserId(Long idUser) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<Appointment> query = session.createQuery(
@@ -57,7 +78,12 @@ public class AppointmentDAO {
         }
     }
 
-
+    /**
+     * Busca una cita por su ID único.
+     *
+     * @param id El ID de la cita a buscar.
+     * @return El objeto Appointment encontrado, o null si no se encuentra o si ocurre un error.
+     */
     public Appointment findById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Appointment.class, id);
@@ -67,6 +93,11 @@ public class AppointmentDAO {
         }
     }
 
+    /**
+     * Recupera todas las citas de la base de datos.
+     *
+     * @return Una lista de todos los objetos Appointment, o null si ocurre un error.
+     */
     public List<Appointment> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<Appointment> query = session.createQuery("FROM Appointment", Appointment.class);
@@ -77,6 +108,12 @@ public class AppointmentDAO {
         }
     }
 
+    /**
+     * Actualiza una cita existente en la base de datos.
+     *
+     * @param appointment El objeto Appointment con los datos actualizados.
+     * @return El objeto Appointment actualizado, o null si ocurre un error.
+     */
     public Appointment update(Appointment appointment) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

@@ -10,9 +10,22 @@ import org.hibernate.query.Query;
 import java.util.List;
 import java.util.Date;
 
+/**
+ * Data Access Object (DAO) para gestionar la relación entre Hospitales y Servicios de Seguro.
+ * Proporciona métodos para aprobar, revocar, buscar y eliminar relaciones hospital-servicio de seguro.
+ */
 public class HospitalInsuranceServiceDAO {
 
-    // Aprobar un servicio para un hospital
+    /**
+     * Aprueba un servicio de seguro para un hospital específico. Si la relación
+     * ya existe, actualiza el estado de aprobación y las notas. De lo contrario, crea
+     * un nuevo registro de relación.
+     *
+     * @param hospital El hospital que aprueba el servicio.
+     * @param service El servicio de seguro que se aprueba.
+     * @param notes Notas opcionales sobre la aprobación.
+     * @return La relación HospitalInsuranceService actualizada o recién creada, o null si ocurre un error.
+     */
     public HospitalInsuranceService approveService(Hospital hospital, InsuranceService service, String notes) {
         Transaction tx = null;
         Session session = null;
@@ -59,7 +72,14 @@ public class HospitalInsuranceServiceDAO {
         }
     }
     
-    // Revocar aprobación de un servicio para un hospital
+    /**
+     * Revoca la aprobación de un servicio de seguro para un hospital específico.
+     * Establece el estado 'approved' a 0.
+     *
+     * @param hospital El hospital que revoca la aprobación.
+     * @param service El servicio de seguro cuya aprobación se revoca.
+     * @return true si la aprobación se revocó con éxito, false en caso contrario (p. ej., relación no encontrada o error).
+     */
     public boolean revokeApproval(Hospital hospital, InsuranceService service) {
         Transaction tx = null;
         Session session = null;
@@ -98,7 +118,12 @@ public class HospitalInsuranceServiceDAO {
         }
     }
     
-    // Obtener servicios aprobados para un hospital
+    /**
+     * Busca todos los servicios de seguro aprobados para un hospital específico.
+     *
+     * @param hospital El hospital para el cual buscar servicios aprobados.
+     * @return Una lista de objetos HospitalInsuranceService que representan los servicios aprobados, o null si ocurre un error.
+     */
     public List<HospitalInsuranceService> findApprovedByHospital(Hospital hospital) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<HospitalInsuranceService> query = session.createQuery(
@@ -113,7 +138,12 @@ public class HospitalInsuranceServiceDAO {
         }
     }
     
-    // Obtener hospitales que ofrecen un servicio específico
+    /**
+     * Busca todos los hospitales que ofrecen un servicio de seguro específico aprobado.
+     *
+     * @param service El servicio de seguro a buscar.
+     * @return Una lista de objetos HospitalInsuranceService que representan los hospitales que ofrecen el servicio, o null si ocurre un error.
+     */
     public List<HospitalInsuranceService> findHospitalsByService(InsuranceService service) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<HospitalInsuranceService> query = session.createQuery(
@@ -128,7 +158,12 @@ public class HospitalInsuranceServiceDAO {
         }
     }
     
-    // Buscar por ID
+    /**
+     * Busca una relación HospitalInsuranceService por su ID único.
+     *
+     * @param id El ID de la relación a buscar.
+     * @return El objeto HospitalInsuranceService si se encuentra, null en caso contrario o si ocurre un error.
+     */
     public HospitalInsuranceService findById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(HospitalInsuranceService.class, id);
@@ -138,7 +173,12 @@ public class HospitalInsuranceServiceDAO {
         }
     }
     
-    // Eliminar relación
+    /**
+     * Elimina una relación HospitalInsuranceService por su ID único.
+     *
+     * @param id El ID de la relación a eliminar.
+     * @return true si la relación se eliminó con éxito, false en caso contrario (p. ej., relación not found or error occurred).
+     */
     public boolean delete(Long id) {
         Transaction tx = null;
         Session session = null;

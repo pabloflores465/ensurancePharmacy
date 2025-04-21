@@ -2,40 +2,63 @@ package com.sources.app.entities;
 
 import jakarta.persistence.*;
 
+/**
+ * Entidad de enlace que representa un ítem de medicamento dentro de una factura.
+ * Mapea a la tabla "BILL_MEDICINE" y utiliza una clave compuesta {@link BillMedicineId}.
+ */
 @Entity
 @Table(name = "BILL_MEDICINE")
 public class BillMedicine {
 
+    /** Clave primaria compuesta embebida (ID de factura y ID de medicamento). */
     @EmbeddedId
     private BillMedicineId id;
 
-    // Relación ManyToOne a Bill
+    /** Factura a la que pertenece este ítem. Parte de la clave compuesta. */
     @ManyToOne
-    @MapsId("billId")
+    @MapsId("billId") // Mapea el atributo 'billId' de BillMedicineId
     @JoinColumn(name = "ID_BILL", referencedColumnName = "ID_BILL")
     private Bill bill;
 
-    // Relación ManyToOne a Medicine
+    /** Medicamento incluido en la factura. Parte de la clave compuesta. */
     @ManyToOne
-    @MapsId("medicineId")
+    @MapsId("medicineId") // Mapea el atributo 'medicineId' de BillMedicineId
     @JoinColumn(name = "ID_MEDICINE", referencedColumnName = "ID_MEDICINE")
     private Medicine medicine;
 
+    /** Cantidad del medicamento incluida en la factura. */
     @Column(name = "QUANTITY")
     private Integer quantity;
 
+    /** Costo unitario del medicamento en esta factura. */
     @Column(name = "COST")
     private Double cost;
 
+    /** Copago específico para este medicamento en esta factura (si aplica). */
     @Column(name = "COPAY")
     private Double copay;
 
+    /** Costo total para este ítem (cantidad * costo). Como String, revisar necesidad. */
     @Column(name = "TOTAL")
-    private String total;
+    private String total; // TODO: Considerar si este campo es redundante o debería ser Double
 
+    /**
+     * Constructor por defecto requerido por JPA.
+     */
     public BillMedicine() {
     }
 
+    /**
+     * Constructor para crear un nuevo ítem de factura-medicamento.
+     * Inicializa la clave compuesta a partir de las entidades Bill y Medicine.
+     *
+     * @param bill La factura asociada.
+     * @param medicine El medicamento asociado.
+     * @param quantity La cantidad del medicamento.
+     * @param cost El costo unitario.
+     * @param copay El copago (si aplica).
+     * @param total El costo total para este ítem (String).
+     */
     public BillMedicine(Bill bill, Medicine medicine, Integer quantity, Double cost, Double copay, String total) {
         this.bill = bill;
         this.medicine = medicine;

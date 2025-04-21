@@ -2,34 +2,51 @@ package com.sources.app.entities;
 
 import jakarta.persistence.*;
 
+/**
+ * Entidad de enlace que representa la asociación entre un Medicamento,
+ * una Categoría y una Subcategoría.
+ * Mapea a la tabla "MEDICINE_CATSUBCAT" y utiliza una clave compuesta {@link MedicineCatSubcatId}.
+ */
 @Entity
 @Table(name = "MEDICINE_CATSUBCAT")
 public class MedicineCatSubcat {
 
+    /** Clave primaria compuesta embebida (ID de medicamento, ID de categoría, ID de subcategoría). */
     @EmbeddedId
     private MedicineCatSubcatId id;
 
-    // Relación ManyToOne a Medicine
+    /** Medicamento asociado. Parte de la clave compuesta. */
     @ManyToOne
-    @MapsId("medicineId")
+    @MapsId("medicineId") // Mapea el atributo 'medicineId' de MedicineCatSubcatId
     @JoinColumn(name = "ID_MEDICINE", referencedColumnName = "ID_MEDICINE")
     private Medicine medicine;
 
-    // Relación ManyToOne a Category
+    /** Categoría asociada. Parte de la clave compuesta. */
     @ManyToOne
-    @MapsId("categoryId")
+    @MapsId("categoryId") // Mapea el atributo 'categoryId' de MedicineCatSubcatId
     @JoinColumn(name = "ID_CATEGORY", referencedColumnName = "ID_CATEGORY")
     private Category category;
 
-    // Relación ManyToOne a Subcategory
+    /** Subcategoría asociada. Parte de la clave compuesta. */
     @ManyToOne
-    @MapsId("subcategoryId")
+    @MapsId("subcategoryId") // Mapea el atributo 'subcategoryId' de MedicineCatSubcatId
     @JoinColumn(name = "ID_SUBCATEGORY", referencedColumnName = "ID_SUBCATEGORY")
     private Subcategory subcategory;
 
+    /**
+     * Constructor por defecto requerido por JPA.
+     */
     public MedicineCatSubcat() {
     }
 
+    /**
+     * Constructor para crear una nueva asociación medicamento-categoría-subcategoría.
+     * Inicializa la clave compuesta a partir de las entidades proporcionadas.
+     *
+     * @param medicine El medicamento asociado.
+     * @param category La categoría asociada.
+     * @param subcategory La subcategoría asociada.
+     */
     public MedicineCatSubcat(Medicine medicine, Category category, Subcategory subcategory) {
         this.medicine = medicine;
         this.category = category;

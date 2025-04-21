@@ -10,11 +10,21 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Manejador HTTP para servir una lista estática de medicamentos en formato XML.
+ * Los datos de los medicamentos están codificados directamente en la clase como una cadena JSON.
+ * Responde a solicitudes GET en el endpoint "/api2/static-medicines-xml".
+ */
 public class StaticXMLMedicineHandler implements HttpHandler {
     private static final String ENDPOINT = "/api2/static-medicines-xml";
     private final List<Medicine> medicines;
     private final ObjectMapper objectMapper;
 
+    /**
+     * Constructor para StaticXMLMedicineHandler.
+     * Inicializa el ObjectMapper y parsea la cadena JSON estática para crear la lista de medicamentos.
+     * Lanza una RuntimeException si ocurre un error durante el parseo del JSON.
+     */
     public StaticXMLMedicineHandler() {
         this.objectMapper = new ObjectMapper();
         
@@ -28,6 +38,13 @@ public class StaticXMLMedicineHandler implements HttpHandler {
         }
     }
 
+    /**
+     * Maneja las solicitudes HTTP entrantes.
+     * Configura las cabeceras CORS y delega el manejo a handleGet si el método es GET.
+     *
+     * @param exchange El objeto HttpExchange que representa la solicitud y respuesta.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
@@ -58,6 +75,13 @@ public class StaticXMLMedicineHandler implements HttpHandler {
         }
     }
 
+    /**
+     * Maneja las solicitudes GET.
+     * Convierte la lista estática de medicamentos a formato XML y la envía como respuesta.
+     *
+     * @param exchange El objeto HttpExchange.
+     * @throws IOException Si ocurre un error de entrada/salida al enviar la respuesta.
+     */
     private void handleGet(HttpExchange exchange) throws IOException {
         // Convert the static list of medicines to XML format
         String xmlResponse = convertToXml(medicines);
@@ -73,6 +97,12 @@ public class StaticXMLMedicineHandler implements HttpHandler {
         }
     }
 
+    /**
+     * Convierte una lista de objetos Medicine a una cadena de texto en formato XML.
+     *
+     * @param medicines La lista de medicamentos a convertir.
+     * @return Una cadena String que representa la lista de medicamentos en formato XML.
+     */
     private String convertToXml(List<Medicine> medicines) {
         StringBuilder xml = new StringBuilder();
         xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -99,6 +129,13 @@ public class StaticXMLMedicineHandler implements HttpHandler {
         return xml.toString();
     }
     
+    /**
+     * Escapa caracteres especiales XML en una cadena de texto.
+     * Reemplaza &, <, >, ", ' con sus entidades XML correspondientes.
+     *
+     * @param input La cadena de texto a escapar.
+     * @return La cadena de texto con los caracteres especiales escapados, o una cadena vacía si la entrada es nula.
+     */
     private String escapeXml(String input) {
         if (input == null) {
             return "";

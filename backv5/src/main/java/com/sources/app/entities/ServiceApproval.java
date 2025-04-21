@@ -3,65 +3,91 @@ package com.sources.app.entities;
 import jakarta.persistence.*;
 import java.util.Date;
 
+/**
+ * Entidad que representa la aprobación de un servicio (posiblemente por un seguro).
+ * Contiene información sobre el servicio, costos, cobertura, usuario, hospital y estado de aprobación.
+ * Mapea a la tabla "SERVICE_APPROVALS".
+ */
 @Entity
 @Table(name = "SERVICE_APPROVALS")
 public class ServiceApproval {
 
+    /** Identificador único de la aprobación. Generado automáticamente. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID_APPROVAL")
     private Long idApproval;
 
+    /** Código único de aprobación asignado por el sistema externo (e.g., seguro). */
     @Column(name = "APPROVAL_CODE", length = 20, nullable = false, unique = true)
     private String approvalCode;
 
+    /** Usuario asociado a la aprobación del servicio. */
     @ManyToOne
     @JoinColumn(name = "ID_USER", nullable = false)
     private User user;
 
+    /** Hospital donde se proveerá el servicio aprobado. */
     @ManyToOne
     @JoinColumn(name = "ID_HOSPITAL", nullable = false)
     private Hospital hospital;
 
+    /** Identificador del servicio específico aprobado (e.g., código de procedimiento). */
     @Column(name = "SERVICE_ID", nullable = false)
     private String serviceId;
 
+    /** Nombre del servicio aprobado. */
     @Column(name = "SERVICE_NAME", nullable = false)
     private String serviceName;
 
+    /** Descripción adicional del servicio aprobado. */
     @Column(name = "SERVICE_DESCRIPTION")
     private String serviceDescription;
 
+    /** Costo total estimado o real del servicio. */
     @Column(name = "SERVICE_COST", nullable = false)
     private Double serviceCost;
 
+    /** Monto cubierto por el seguro u otra entidad. */
     @Column(name = "COVERED_AMOUNT", nullable = false)
     private Double coveredAmount;
 
+    /** Monto a pagar por el paciente (copago u otros). */
     @Column(name = "PATIENT_AMOUNT", nullable = false)
     private Double patientAmount;
 
+    /** Identificador de la prescripción asociada (si aplica). Puede ser un ID externo o interno. */
     @Column(name = "PRESCRIPTION_ID")
     private String prescriptionId;
     
+    /** Costo total de la prescripción asociada (si aplica). */
     @Column(name = "PRESCRIPTION_TOTAL")
     private Double prescriptionTotal;
     
+    /** Estado actual de la aprobación (e.g., "APPROVED", "REJECTED", "PENDING", "COMPLETED"). */
     @Column(name = "STATUS", nullable = false, length = 20)
-    private String status; // "APPROVED", "REJECTED", "PENDING", "COMPLETED"
+    private String status;
     
+    /** Razón del rechazo (si el estado es "REJECTED"). */
     @Column(name = "REJECTION_REASON")
     private String rejectionReason;
     
+    /** Fecha en que se registró la aprobación o el último cambio de estado significativo. */
     @Column(name = "APPROVAL_DATE", nullable = false)
     private Date approvalDate;
     
+    /** Fecha en que el servicio asociado se completó (si aplica). */
     @Column(name = "COMPLETED_DATE")
     private Date completedDate;
     
+    /** Fecha de creación del registro de aprobación en el sistema. */
     @Column(name = "CREATED_AT", nullable = false)
     private Date createdAt;
     
+    /**
+     * Método invocado por JPA antes de persistir la entidad por primera vez.
+     * Establece las fechas de creación y aprobación iniciales a la fecha actual.
+     */
     @PrePersist
     protected void onCreate() {
         createdAt = new Date();

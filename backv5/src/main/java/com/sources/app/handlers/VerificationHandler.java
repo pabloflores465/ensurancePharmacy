@@ -12,14 +12,35 @@ import org.json.simple.parser.ParseException;
 import java.io.IOException;
 import com.sources.app.dao.VerificationDAO;
 
+/**
+ * Manejador HTTP para verificar el estado de verificación de un usuario por su correo electrónico.
+ * Responde a solicitudes GET en el endpoint "/api2/verification?email={email}".
+ */
 public class VerificationHandler implements HttpHandler {
     private final VerificationDAO verificationDAO;
     private static final String ENDPOINT = "/api2/verification";
     
+    /**
+     * Constructor para VerificationHandler.
+     * Inicializa el VerificationDAO.
+     */
     public VerificationHandler() {
         this.verificationDAO = new VerificationDAO();
     }
     
+    /**
+     * Maneja las solicitudes HTTP entrantes.
+     * Configura las cabeceras CORS.
+     * Para solicitudes GET, extrae el parámetro 'email' de la query string,
+     * utiliza VerificationDAO para comprobar el estado de verificación del usuario,
+     * y responde con "1" si está verificado o "0" si no lo está (o si falta el email).
+     * Responde con 405 Method Not Allowed para métodos distintos de GET y OPTIONS.
+     * Responde con 404 Not Found si la ruta no coincide con el ENDPOINT.
+     * Responde con 400 Bad Request si falta el parámetro 'email'.
+     *
+     * @param exchange El objeto HttpExchange que representa la solicitud y respuesta.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         // Encabezados CORS

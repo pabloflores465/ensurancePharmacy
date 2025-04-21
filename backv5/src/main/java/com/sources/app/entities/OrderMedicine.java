@@ -2,37 +2,58 @@ package com.sources.app.entities;
 
 import jakarta.persistence.*;
 
+/**
+ * Entidad de enlace que representa un ítem de medicamento dentro de un pedido (Order).
+ * Mapea a la tabla "ORDERS_MEDICINE" y utiliza una clave compuesta {@link OrderMedicineId}.
+ */
 @Entity
 @Table(name = "ORDERS_MEDICINE")
 public class OrderMedicine {
 
+    /** Clave primaria compuesta embebida (ID de pedido y ID de medicamento). */
     @EmbeddedId
     private OrderMedicineId id;
 
-    // Relación ManyToOne a Orders
+    /** Pedido al que pertenece este ítem. Parte de la clave compuesta. */
     @ManyToOne
-    @MapsId("orderId")
+    @MapsId("orderId") // Mapea el atributo 'orderId' de OrderMedicineId
     @JoinColumn(name = "ID_ORDER", referencedColumnName = "ID_ORDER")
     private Orders orders;
 
-    // Relación ManyToOne a Medicine
+    /** Medicamento incluido en el pedido. Parte de la clave compuesta. */
     @ManyToOne
-    @MapsId("medicineId")
+    @MapsId("medicineId") // Mapea el atributo 'medicineId' de OrderMedicineId
     @JoinColumn(name = "ID_MEDICINE", referencedColumnName = "ID_MEDICINE")
     private Medicine medicine;
 
+    /** Cantidad del medicamento incluida en el pedido. */
     @Column(name = "QUANTITY")
     private Integer quantity;
 
+    /** Costo unitario del medicamento en este pedido. */
     @Column(name = "COST")
     private Double cost;
 
+    /** Costo total para este ítem (cantidad * costo). Como String, revisar necesidad. */
     @Column(name = "TOTAL")
-    private String total;
+    private String total; // TODO: Considerar si este campo es redundante o debería ser Double
 
+    /**
+     * Constructor por defecto requerido por JPA.
+     */
     public OrderMedicine() {
     }
 
+    /**
+     * Constructor para crear un nuevo ítem de pedido-medicamento.
+     * Inicializa la clave compuesta a partir de las entidades Orders y Medicine.
+     *
+     * @param orders El pedido asociado.
+     * @param medicine El medicamento asociado.
+     * @param quantity La cantidad del medicamento.
+     * @param cost El costo unitario.
+     * @param total El costo total para este ítem (String).
+     */
     public OrderMedicine(Orders orders, Medicine medicine, Integer quantity, Double cost, String total) {
         this.orders = orders;
         this.medicine = medicine;

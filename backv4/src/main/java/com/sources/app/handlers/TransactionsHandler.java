@@ -14,18 +14,53 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Manejador HTTP para las operaciones CRUD (Crear, Leer, Actualizar)
+ * sobre la entidad {@link Transactions}, que representa transacciones asociadas a usuarios y hospitales.
+ * Gestiona las solicitudes para el endpoint "/api/transactions".
+ *
+ * <p>Endpoints manejados:</p>
+ * <ul>
+ *   <li>{@code GET /api/transactions}: Obtiene la lista de todas las transacciones.</li>
+ *   <li>{@code GET /api/transactions?id={id}}: Obtiene una transacción específica por su ID.</li>
+ *   <li>{@code GET /api/transactions?userId={id}} o {@code GET /api/transactions?user_id={id}}: Obtiene todas las transacciones para un usuario específico.</li>
+ *   <li>{@code POST /api/transactions}: Crea una nueva transacción. Requiere `user` (con `idUser`) y `hospital` (con `idHospital`) en el cuerpo JSON, además de otros campos de la transacción.</li>
+ *   <li>{@code PUT /api/transactions}: Actualiza una transacción existente. Requiere el ID de la transacción (`idTransaction`) dentro del cuerpo JSON.</li>
+ *   <li>(DELETE no está implementado en este manejador).</li>
+ * </ul>
+ */
 public class TransactionsHandler implements HttpHandler {
 
+    /** DAO para acceder a los datos de la entidad Transactions. */
     private final TransactionsDAO transactionsDAO;
+    /** ObjectMapper para la serialización/deserialización JSON, configurado con formato de fecha yyyy-MM-dd. */
     private final ObjectMapper objectMapper;
+    /** Ruta base para las solicitudes gestionadas por este manejador. */
     private static final String ENDPOINT = "/api/transactions";
 
+    /**
+     * Constructor del manejador de transacciones.
+     * Inicializa el DAO de transacciones y el ObjectMapper, configurando un formato específico
+     * para la serialización/deserialización de fechas ("yyyy-MM-dd").
+     *
+     * @param transactionsDAO El DAO para interactuar con la tabla de transacciones.
+     */
     public TransactionsHandler(TransactionsDAO transactionsDAO) {
         this.transactionsDAO = transactionsDAO;
         this.objectMapper = new ObjectMapper();
         this.objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
     }
 
+    /**
+     * Punto de entrada principal para manejar las solicitudes HTTP entrantes dirigidas al endpoint de transacciones.
+     * Configura las cabeceras CORS, maneja solicitudes OPTIONS (preflight),
+     * valida que la ruta coincida con {@link #ENDPOINT}, y enruta las solicitudes
+     * GET, POST y PUT a sus respectivos métodos de manejo. Cualquier otro método resulta
+     * en un error 405 (Method Not Allowed).
+     *
+     * @param exchange El objeto {@link HttpExchange} que encapsula la solicitud y la respuesta HTTP.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         // Configuración de CORS
@@ -61,6 +96,18 @@ public class TransactionsHandler implements HttpHandler {
         }
     }
 
+    /**
+     * Maneja las solicitudes GET a {@code /api/transactions}.
+     * Permite filtrar por ID de transacción (`?id=...`) o por ID de usuario (`?userId=...` o `?user_id=...`).
+     * Si se proporciona `id`, busca y devuelve esa transacción específica.
+     * Si se proporciona `userId` o `user_id`, busca y devuelve todas las transacciones para ese usuario.
+     * Si no se proporcionan filtros válidos, devuelve la lista completa de todas las transacciones.
+     * Responde con 404 si se busca por un ID específico y no se encuentra.
+     * Responde con 400 si el formato del ID (transacción o usuario) es inválido.
+     *
+     * @param exchange El objeto {@link HttpExchange}.
+     * @throws IOException Si ocurre un error al enviar la respuesta.
+     */
     private void handleGet(HttpExchange exchange) throws IOException {
         String query = exchange.getRequestURI().getQuery();
         if (query != null) {
@@ -130,6 +177,21 @@ public class TransactionsHandler implements HttpHandler {
         }
     }
 
+    /**
+     * Maneja las solicitudes POST a {@code /api/transactions} para crear una nueva transacción.
+     * Lee el cuerpo JSON, esperando una estructura que incluya objetos anidados para `user` y `hospital`,
+     * cada uno conteniendo su respectivo ID (`idUser`, `idHospital`), además de otros campos como
+     * `transDate`, `total`, `copay`, etc.
+     * Valida que los IDs de usuario y hospital estén presentes.
+     * Llama a {@link TransactionsDAO#create(Long, Long, java.util.Date, Double, Double, String, String, String, String)}
+     * para guardar la nueva transacción.
+     * Responde con 201 (Created) y el objeto de la transacción creada si tiene éxito.
+     * Responde con 400 si faltan IDs requeridos o si el JSON es inválido.
+     * Responde con 500 si ocurre un error interno durante la creación en la base de datos.
+     *
+     * @param exchange El objeto {@link HttpExchange}.
+     * @throws IOException Si ocurre un error al leer el cuerpo de la solicitud o al enviar la respuesta.
+     */
     private void handlePost(HttpExchange exchange) throws IOException {
         try {
             String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
@@ -167,6 +229,18 @@ public class TransactionsHandler implements HttpHandler {
         }
     }
 
+    /**
+     * Maneja las solicitudes PUT a {@code /api/transactions} para actualizar una transacción existente.
+     * Lee el cuerpo JSON de la solicitud, que *debe* contener el ID primario (`idTransaction`) de la transacción a actualizar.
+     * Llama a {@link TransactionsDAO#update(Transactions)} para aplicar los cambios.
+     * Responde con 200 (OK) y el objeto de la transacción actualizada si tiene éxito.
+     * Responde con 400 si el JSON es inválido (no valida explícitamente la presencia del ID aquí).
+     * Responde con 500 si la actualización falla en el DAO (podría ser porque el ID no existe o por un error interno).
+     * Nota: Sería más robusto validar la presencia del ID y devolver 400/404 apropiadamente.
+     *
+     * @param exchange El objeto {@link HttpExchange}.
+     * @throws IOException Si ocurre un error al leer el cuerpo de la solicitud o al enviar la respuesta.
+     */
     private void handlePut(HttpExchange exchange) throws IOException {
         String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
         Transactions t = objectMapper.readValue(requestBody, Transactions.class);
@@ -184,6 +258,15 @@ public class TransactionsHandler implements HttpHandler {
         }
     }
 
+    /**
+     * Parsea los parámetros de una cadena de consulta (query string) de una URL en un mapa de clave-valor.
+     * Maneja claves sin valor y parámetros mal formados. Ignora claves duplicadas, manteniendo la primera aparición.
+     * Nota: A diferencia de otros parseQuery, este usa split("=") directamente, lo que podría fallar si un valor contiene "=".
+     * Un enfoque más seguro sería usar split("=", 2).
+     *
+     * @param query La cadena de consulta (ej: "userId=1&limit=10"). Puede ser {@code null} o vacía.
+     * @return Un {@link Map} que contiene los parámetros de consulta. Devuelve un mapa vacío si la consulta es nula o vacía.
+     */
     private Map<String, String> parseQuery(String query) {
         return Arrays.stream(query.split("&"))
                 .map(param -> param.split("="))

@@ -10,8 +10,21 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import java.util.List;
 
+/**
+ * Data Access Object (DAO) para gestionar la entidad de relación MedicinePres.
+ * Representa la asociación entre Medicamentos (Medicine) y Recetas (Prescription).
+ * Indica qué medicamentos están incluidos en qué recetas.
+ * Proporciona métodos para crear, buscar y actualizar estas relaciones.
+ */
 public class MedicinePresDAO {
 
+    /**
+     * Crea una nueva relación entre un medicamento y una receta.
+     *
+     * @param idPrescription El ID de la receta.
+     * @param idMedicine El ID del medicamento.
+     * @return El objeto MedicinePres creado, o null si ocurre un error (p. ej., la receta o el medicamento no existen).
+     */
     public MedicinePres create(Long idPrescription, Long idMedicine) {
         Transaction tx = null;
         MedicinePres medPres = null;
@@ -40,6 +53,13 @@ public class MedicinePresDAO {
         return medPres;
     }
 
+    /**
+     * Busca una relación MedicinePres por su ID compuesto (ID de receta e ID de medicamento).
+     *
+     * @param idPrescription El ID de la receta.
+     * @param idMedicine El ID del medicamento.
+     * @return El objeto MedicinePres encontrado, o null si no se encuentra o si ocurre un error.
+     */
     public MedicinePres findById(Long idPrescription, Long idMedicine) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             MedicinePresId key = new MedicinePresId(idPrescription, idMedicine);
@@ -50,6 +70,11 @@ public class MedicinePresDAO {
         }
     }
 
+    /**
+     * Recupera todas las relaciones MedicinePres de la base de datos.
+     *
+     * @return Una lista de todos los objetos MedicinePres, o null si ocurre un error.
+     */
     public List<MedicinePres> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<MedicinePres> query = session.createQuery("FROM MedicinePres", MedicinePres.class);
@@ -60,6 +85,15 @@ public class MedicinePresDAO {
         }
     }
 
+    /**
+     * Actualiza una relación MedicinePres existente.
+     * Nota: Dado que la clave primaria es compuesta y define la relación,
+     * generalmente no hay atributos adicionales en MedicinePres para actualizar.
+     * Este método podría ser útil si se añaden más campos a la tabla de unión.
+     *
+     * @param medPres El objeto MedicinePres con los datos actualizados.
+     * @return El objeto MedicinePres actualizado, o null si ocurre un error.
+     */
     public MedicinePres update(MedicinePres medPres) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

@@ -12,8 +12,22 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Data Access Object (DAO) para gestionar las entidades TransactionPolicy.
+ * Representa las transacciones asociadas al pago de pólizas por parte de los usuarios.
+ * Proporciona métodos para crear, buscar y actualizar estas transacciones.
+ */
 public class TransactionPolicyDAO {
 
+    /**
+     * Crea un nuevo registro de transacción de póliza.
+     *
+     * @param idPolicy El ID de la póliza asociada a la transacción.
+     * @param idUser El ID del usuario que realiza la transacción.
+     * @param payDate La fecha en que se realizó el pago.
+     * @param total El monto total de la transacción.
+     * @return El objeto TransactionPolicy creado, o null si ocurre un error (p. ej., la póliza o el usuario no existen).
+     */
     public TransactionPolicy create(Long idPolicy, Long idUser, Date payDate, BigDecimal total) {
         Transaction tx = null;
         TransactionPolicy tp = null;
@@ -44,6 +58,12 @@ public class TransactionPolicyDAO {
         return tp;
     }
 
+    /**
+     * Busca un registro de TransactionPolicy por su ID único.
+     *
+     * @param id El ID del registro TransactionPolicy a buscar.
+     * @return El objeto TransactionPolicy encontrado, o null si no se encuentra o si ocurre un error.
+     */
     public TransactionPolicy findById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(TransactionPolicy.class, id);
@@ -53,6 +73,11 @@ public class TransactionPolicyDAO {
         }
     }
 
+    /**
+     * Recupera todos los registros de TransactionPolicy de la base de datos.
+     *
+     * @return Una lista de todos los objetos TransactionPolicy, o null si ocurre un error.
+     */
     public List<TransactionPolicy> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<TransactionPolicy> query = session.createQuery("FROM TransactionPolicy", TransactionPolicy.class);
@@ -63,6 +88,12 @@ public class TransactionPolicyDAO {
         }
     }
 
+    /**
+     * Actualiza un registro existente de TransactionPolicy en la base de datos.
+     *
+     * @param tp El objeto TransactionPolicy con los datos actualizados.
+     * @return El objeto TransactionPolicy actualizado, o null si ocurre un error.
+     */
     public TransactionPolicy update(TransactionPolicy tp) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

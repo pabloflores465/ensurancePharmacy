@@ -5,21 +5,39 @@ import java.util.Objects;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
+/**
+ * Clase que representa la clave primaria compuesta para la entidad {@link MedicineCatSubcat}.
+ * Contiene los identificadores del medicamento, categoría y subcategoría.
+ * Debe implementar Serializable y sobrescribir equals() y hashCode().
+ */
 @Embeddable
 public class MedicineCatSubcatId implements Serializable {
 
+    /** ID del medicamento (Medicine). */
     @Column(name = "ID_MEDICINE")
     private Long medicineId;
 
+    /** ID de la categoría (Category). */
     @Column(name = "ID_CATEGORY")
     private Long categoryId;
 
+    /** ID de la subcategoría (Subcategory). */
     @Column(name = "ID_SUBCATEGORY")
     private Long subcategoryId;
 
+    /**
+     * Constructor por defecto requerido.
+     */
     public MedicineCatSubcatId() {
     }
 
+    /**
+     * Constructor con los IDs de la clave compuesta.
+     *
+     * @param medicineId El ID del medicamento.
+     * @param categoryId El ID de la categoría.
+     * @param subcategoryId El ID de la subcategoría.
+     */
     public MedicineCatSubcatId(Long medicineId, Long categoryId, Long subcategoryId) {
         this.medicineId = medicineId;
         this.categoryId = categoryId;

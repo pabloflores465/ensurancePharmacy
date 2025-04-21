@@ -11,9 +11,25 @@ import org.hibernate.query.Query;
 
 import java.util.List;
 
+/**
+ * Data Access Object (DAO) para gestionar entidades {@link PrescriptionMedicine}.
+ * Esta clase proporciona métodos para realizar operaciones CRUD en registros PrescriptionMedicine,
+ * que representan la relación entre una {@link Prescription} y un {@link Medicine},
+ * incluyendo detalles como dosis y frecuencia. Utiliza Hibernate para interacciones con la base de datos.
+ */
 public class PrescriptionMedicineDAO {
 
-    // CREATE
+    /**
+     * Crea un nuevo registro PrescriptionMedicine en la base de datos.
+     * Este método vincula un medicamento específico a una receta con detalles de dosificación.
+     *
+     * @param prescription La entidad {@link Prescription} a enlazar.
+     * @param medicine La entidad {@link Medicine} a enlazar.
+     * @param dosis La dosis del medicamento prescrito.
+     * @param frecuencia La frecuencia con la que debe tomarse el medicamento.
+     * @param duracion La duración durante la cual debe tomarse el medicamento.
+     * @return La entidad {@link PrescriptionMedicine} recién creada, o null si ocurrió un error.
+     */
     public PrescriptionMedicine create(Prescription prescription, Medicine medicine,
                                        Double dosis, Double frecuencia, Double duracion) {
         Transaction tx = null;
@@ -37,7 +53,11 @@ public class PrescriptionMedicineDAO {
         return pm;
     }
 
-    // READ ALL
+    /**
+     * Recupera todos los registros PrescriptionMedicine de la base de datos.
+     *
+     * @return Una lista de todas las entidades {@link PrescriptionMedicine}, o null si ocurrió un error.
+     */
     public List<PrescriptionMedicine> getAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<PrescriptionMedicine> query = session.createQuery("FROM PrescriptionMedicine", PrescriptionMedicine.class);

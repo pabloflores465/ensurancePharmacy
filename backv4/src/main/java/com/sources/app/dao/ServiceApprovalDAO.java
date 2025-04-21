@@ -11,12 +11,18 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * DAO para las operaciones de aprobaciones de servicios médicos
+ * Data Access Object (DAO) para gestionar las entidades ServiceApproval (Aprobación de Servicio).
+ * Representa la aprobación de un servicio médico para un usuario en un hospital específico.
+ * Proporciona métodos para crear, actualizar y buscar aprobaciones.
  */
 public class ServiceApprovalDAO {
 
     /**
-     * Crea una nueva aprobación de servicio
+     * Crea un nuevo registro de aprobación de servicio.
+     * Genera automáticamente un código de aprobación único y establece la fecha de aprobación si no se proporcionan.
+     *
+     * @param approval El objeto ServiceApproval a crear.
+     * @return El objeto ServiceApproval creado, o null si ocurre un error.
      */
     public ServiceApproval create(ServiceApproval approval) {
         Transaction transaction = null;
@@ -47,7 +53,10 @@ public class ServiceApprovalDAO {
     }
     
     /**
-     * Actualiza una aprobación de servicio existente y devuelve el objeto actualizado
+     * Actualiza un registro de aprobación de servicio existente.
+     *
+     * @param approval El objeto ServiceApproval con los datos actualizados.
+     * @return El objeto ServiceApproval actualizado, o null si ocurre un error.
      */
     public ServiceApproval update(ServiceApproval approval) {
         Transaction transaction = null;
@@ -66,7 +75,12 @@ public class ServiceApprovalDAO {
     }
     
     /**
-     * Actualiza la información de receta en una aprobación existente
+     * Actualiza la información de la receta asociada a una aprobación existente, buscándola por su código de aprobación.
+     *
+     * @param approvalCode El código de la aprobación a actualizar.
+     * @param prescriptionId El nuevo ID de la receta asociada.
+     * @param prescriptionTotal El nuevo monto total de la receta asociada.
+     * @return El objeto ServiceApproval actualizado, o null si no se encuentra la aprobación o si ocurre un error.
      */
     public ServiceApproval updatePrescriptionInfo(String approvalCode, Long prescriptionId, Double prescriptionTotal) {
         try {
@@ -86,7 +100,14 @@ public class ServiceApprovalDAO {
     }
     
     /**
-     * Actualiza el estado de una aprobación
+     * Actualiza el estado de una aprobación existente, buscándola por su código.
+     * Si el nuevo estado es "REJECTED", también actualiza el motivo del rechazo.
+     * Si el nuevo estado es "COMPLETED", establece la fecha de finalización.
+     *
+     * @param approvalCode El código de la aprobación a actualizar.
+     * @param newStatus El nuevo estado (p. ej., "APPROVED", "REJECTED", "COMPLETED").
+     * @param rejectionReason El motivo del rechazo (solo relevante si newStatus es "REJECTED").
+     * @return El objeto ServiceApproval actualizado, o null si no se encuentra la aprobación o si ocurre un error.
      */
     public ServiceApproval updateStatus(String approvalCode, String newStatus, String rejectionReason) {
         try {
@@ -113,7 +134,10 @@ public class ServiceApprovalDAO {
     }
     
     /**
-     * Obtiene una aprobación por su ID
+     * Obtiene una aprobación de servicio por su ID único.
+     *
+     * @param id El ID de la aprobación a buscar.
+     * @return El objeto ServiceApproval encontrado, o null si no se encuentra o si ocurre un error.
      */
     public ServiceApproval getById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -125,7 +149,10 @@ public class ServiceApprovalDAO {
     }
     
     /**
-     * Obtiene una aprobación por su código
+     * Obtiene una aprobación de servicio por su código de aprobación único.
+     *
+     * @param approvalCode El código de la aprobación a buscar.
+     * @return El objeto ServiceApproval encontrado, o null si no se encuentra o si ocurre un error.
      */
     public ServiceApproval getByApprovalCode(String approvalCode) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -140,7 +167,10 @@ public class ServiceApprovalDAO {
     }
     
     /**
-     * Obtiene todas las aprobaciones de un usuario
+     * Obtiene todas las aprobaciones de servicio asociadas a un ID de usuario específico, ordenadas por fecha descendente.
+     *
+     * @param userId El ID del usuario cuyas aprobaciones se quieren buscar.
+     * @return Una lista de objetos ServiceApproval asociados al usuario, o null si ocurre un error.
      */
     public List<ServiceApproval> getByUserId(Long userId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -155,7 +185,10 @@ public class ServiceApprovalDAO {
     }
     
     /**
-     * Obtiene todas las aprobaciones de un hospital
+     * Obtiene todas las aprobaciones de servicio asociadas a un ID de hospital específico, ordenadas por fecha descendente.
+     *
+     * @param hospitalId El ID del hospital cuyas aprobaciones se quieren buscar.
+     * @return Una lista de objetos ServiceApproval asociados al hospital, o null si ocurre un error.
      */
     public List<ServiceApproval> getByHospitalId(Long hospitalId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -170,7 +203,9 @@ public class ServiceApprovalDAO {
     }
     
     /**
-     * Obtiene todas las aprobaciones
+     * Obtiene todos los registros de aprobación de servicio de la base de datos, ordenados por fecha descendente.
+     *
+     * @return Una lista de todos los objetos ServiceApproval, o null si ocurre un error.
      */
     public List<ServiceApproval> getAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -184,7 +219,10 @@ public class ServiceApprovalDAO {
     }
     
     /**
-     * Generar un código de aprobación único
+     * Genera un código de aprobación único utilizando UUID.
+     * Formato: "AP" seguido de 8 caracteres hexadecimales en mayúsculas.
+     *
+     * @return Un código de aprobación único generado.
      */
     private String generateApprovalCode() {
         // Generar un UUID y tomar los primeros 8 caracteres
@@ -193,21 +231,29 @@ public class ServiceApprovalDAO {
     }
 
     /**
-     * Obtiene todas las aprobaciones (alias para getAll para mantener compatibilidad)
+     * Obtiene todas las aprobaciones. Alias para `getAll()` por compatibilidad.
+     *
+     * @return Una lista de todos los objetos ServiceApproval, o null si ocurre un error.
      */
     public List<ServiceApproval> findAll() {
         return getAll();
     }
 
     /**
-     * Obtiene una aprobación por su código (alias para getByApprovalCode para mantener compatibilidad)
+     * Obtiene una aprobación por su código. Alias para `getByApprovalCode()` por compatibilidad.
+     *
+     * @param approvalCode El código de la aprobación a buscar.
+     * @return El objeto ServiceApproval encontrado, o null si no se encuentra o si ocurre un error.
      */
     public ServiceApproval findByApprovalCode(String approvalCode) {
         return getByApprovalCode(approvalCode);
     }
 
     /**
-     * Obtiene una aprobación por su ID de receta
+     * Obtiene una aprobación de servicio por el ID de la receta asociada.
+     *
+     * @param prescriptionId El ID de la receta a buscar.
+     * @return El objeto ServiceApproval asociado a esa receta, o null si no se encuentra o si ocurre un error.
      */
     public ServiceApproval findByPrescriptionId(long prescriptionId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

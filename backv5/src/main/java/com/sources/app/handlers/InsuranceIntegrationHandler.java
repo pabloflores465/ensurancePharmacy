@@ -17,22 +17,39 @@ import java.util.Map;
 import java.util.Date;
 
 /**
- * Manejador para integrar la farmacia con el seguro
+ * Manejador HTTP para la integración con el sistema de seguros.
+ * Gestiona la validación de recetas y la verificación de cobertura
+ * interactuando con un servicio externo de seguros.
  */
 public class InsuranceIntegrationHandler implements HttpHandler {
     private final PrescriptionDAO prescriptionDAO;
     private final BillDAO billDAO;
     private final ObjectMapper objectMapper;
     private static final String ENDPOINT = "/api2/insurance";
-    private static final String INSURANCE_API_BASE_URL = "http://localhost:8080/api/pharmacy-insurance";
-    private static final ExternalServiceClient externalServiceClient = new ExternalServiceClient();
+    private static final String INSURANCE_API_BASE_URL = "http://localhost:8080/api/pharmacy-insurance"; // URL base del servicio externo de seguros
+    private static final ExternalServiceClient externalServiceClient = new ExternalServiceClient(); // Cliente para llamadas HTTP externas
 
+    /**
+     * Constructor para InsuranceIntegrationHandler.
+     *
+     * @param prescriptionDAO DAO para acceder a los datos de las prescripciones.
+     * @param billDAO DAO para acceder a los datos de las facturas.
+     */
     public InsuranceIntegrationHandler(PrescriptionDAO prescriptionDAO, BillDAO billDAO) {
         this.prescriptionDAO = prescriptionDAO;
         this.billDAO = billDAO;
         this.objectMapper = new ObjectMapper();
     }
 
+    /**
+     * Maneja las solicitudes HTTP entrantes.
+     * Dirige las solicitudes POST a los endpoints /validate-prescription y /check-coverage
+     * a sus respectivos métodos de manejo. Responde con 405 Method Not Allowed para otros métodos
+     * y 404 Not Found para otras rutas.
+     *
+     * @param exchange El objeto HttpExchange que representa la solicitud y respuesta.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getPath();
@@ -56,7 +73,14 @@ public class InsuranceIntegrationHandler implements HttpHandler {
     }
 
     /**
-     * Maneja la validación de una receta con el seguro
+     * Maneja la solicitud POST para validar una prescripción con el seguro.
+     * Extrae el ID de la prescripción y el código de aprobación del cuerpo de la solicitud.
+     * Busca la prescripción, verifica si ya ha sido facturada, calcula el total,
+     * llama al servicio externo del seguro para validar y, si es exitoso,
+     * crea una factura en la base de datos.
+     *
+     * @param exchange El objeto HttpExchange.
+     * @throws IOException Si ocurre un error de entrada/salida o durante la comunicación con el seguro.
      */
     private void handleValidatePrescription(HttpExchange exchange) throws IOException {
         String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
@@ -150,7 +174,12 @@ public class InsuranceIntegrationHandler implements HttpHandler {
     }
     
     /**
-     * Verifica la cobertura de una receta
+     * Maneja la solicitud POST para verificar la cobertura de una prescripción con el seguro.
+     * Extrae el ID de la prescripción del cuerpo de la solicitud y llama al servicio externo
+     * del seguro para obtener la información de cobertura.
+     *
+     * @param exchange El objeto HttpExchange.
+     * @throws IOException Si ocurre un error de entrada/salida o durante la comunicación con el seguro.
      */
     private void handleCheckCoverage(HttpExchange exchange) throws IOException {
         String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
@@ -181,10 +210,23 @@ public class InsuranceIntegrationHandler implements HttpHandler {
         }
     }
     
+    /**
+     * Envía una respuesta HTTP 405 Method Not Allowed.
+     *
+     * @param exchange El objeto HttpExchange.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
     private void sendMethodNotAllowed(HttpExchange exchange) throws IOException {
         exchange.sendResponseHeaders(405, -1);
     }
     
+    /**
+     * Envía una respuesta HTTP 400 Bad Request con un mensaje de error.
+     *
+     * @param exchange El objeto HttpExchange.
+     * @param message El mensaje de error a incluir en la respuesta JSON.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
     private void sendBadRequest(HttpExchange exchange, String message) throws IOException {
         sendResponse(exchange, 400, objectMapper.writeValueAsString(Map.of(
             "success", false,
@@ -192,6 +234,13 @@ public class InsuranceIntegrationHandler implements HttpHandler {
         )));
     }
     
+    /**
+     * Envía una respuesta HTTP 404 Not Found con un mensaje de error.
+     *
+     * @param exchange El objeto HttpExchange.
+     * @param message El mensaje de error a incluir en la respuesta JSON.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
     private void sendNotFound(HttpExchange exchange, String message) throws IOException {
         sendResponse(exchange, 404, objectMapper.writeValueAsString(Map.of(
             "success", false,
@@ -199,6 +248,15 @@ public class InsuranceIntegrationHandler implements HttpHandler {
         )));
     }
     
+    /**
+     * Envía una respuesta HTTP con el código de estado y cuerpo de respuesta especificados.
+     * Establece la cabecera Content-Type a application/json.
+     *
+     * @param exchange El objeto HttpExchange.
+     * @param statusCode El código de estado HTTP para la respuesta.
+     * @param response El cuerpo de la respuesta como una cadena String (se asume JSON).
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
     private void sendResponse(HttpExchange exchange, int statusCode, String response) throws IOException {
         exchange.getResponseHeaders().set("Content-Type", "application/json");
         byte[] responseBytes = response.getBytes(StandardCharsets.UTF_8);

@@ -9,8 +9,20 @@ import org.hibernate.query.Query;
 import java.util.List;
 import java.util.Date;
 
+/**
+ * Data Access Object (DAO) para gestionar las entidades de Usuario (User).
+ * Proporciona métodos para operaciones CRUD (Crear, Leer, Actualizar, Eliminar)
+ * y otras operaciones relacionadas con los usuarios, como inicio de sesión y validaciones.
+ */
 public class UserDAO {
 
+    /**
+     * Autentica a un usuario basado en su correo electrónico y contraseña.
+     *
+     * @param email El correo electrónico del usuario.
+     * @param password La contraseña del usuario.
+     * @return El objeto User si la autenticación es exitosa, null en caso contrario o si ocurre un error.
+     */
     public User login(String email, String password) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<User> query = session.createQuery("FROM User WHERE email = :email AND password = :password", User.class);
@@ -24,6 +36,12 @@ public class UserDAO {
         }
     }
 
+    /**
+     * Verifica si ya existe un usuario con el correo electrónico proporcionado.
+     *
+     * @param email El correo electrónico a verificar.
+     * @return true si existe un usuario con ese email, false en caso contrario.
+     */
     public boolean existsUserWithEmail(String email) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<Long> query = session.createQuery("SELECT COUNT(u) FROM User u WHERE u.email = :email", Long.class);
@@ -35,6 +53,12 @@ public class UserDAO {
         }
     }
 
+    /**
+     * Verifica si ya existe un usuario con el CUI (Código Único de Identificación) proporcionado.
+     *
+     * @param cui El CUI a verificar.
+     * @return true si existe un usuario con ese CUI, false en caso contrario.
+     */
     public boolean existsUserWithCUI(Long cui) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<Long> query = session.createQuery("SELECT COUNT(u) FROM User u WHERE u.cui = :cui", Long.class);
@@ -46,6 +70,20 @@ public class UserDAO {
         }
     }
 
+    /**
+     * Crea un nuevo usuario en la base de datos.
+     * Verifica previamente si ya existe un usuario con el mismo email o CUI.
+     *
+     * @param name Nombre del usuario.
+     * @param cui CUI del usuario.
+     * @param phone Teléfono del usuario.
+     * @param email Correo electrónico del usuario.
+     * @param birthdate Fecha de nacimiento del usuario.
+     * @param address Dirección del usuario.
+     * @param password Contraseña del usuario.
+     * @param policy Póliza asociada al usuario.
+     * @return El objeto User creado, o null si ya existe un usuario con el mismo email/CUI o si ocurre un error.
+     */
     public User create(String name, Long cui, String phone, String email, Date birthdate, String address, String password, Policy policy) {
         if (existsUserWithEmail(email)) {
             System.out.println("ERROR: Ya existe un usuario con el email: " + email);
@@ -100,6 +138,11 @@ public class UserDAO {
         return user;
     }
 
+    /**
+     * Recupera todos los usuarios de la base de datos.
+     *
+     * @return Una lista de todos los objetos User, o null si ocurre un error.
+     */
     public List<User> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<User> query = session.createQuery("FROM User", User.class);
@@ -110,6 +153,12 @@ public class UserDAO {
         }
     }
 
+    /**
+     * Busca un usuario por su ID único.
+     *
+     * @param idUser El ID del usuario a buscar.
+     * @return El objeto User encontrado, o null si no se encuentra o si ocurre un error.
+     */
     public User findById(Long idUser) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(User.class, idUser);
@@ -119,6 +168,13 @@ public class UserDAO {
         }
     }
 
+    /**
+     * Actualiza la información de un usuario existente en la base de datos.
+     * También verifica y actualiza el estado de expiración del servicio pagado.
+     *
+     * @param user El objeto User con la información actualizada.
+     * @return El objeto User actualizado, o null si el usuario no existe o si ocurre un error.
+     */
     public User update(User user) {
         Transaction tx = null;
         Session session = null;
@@ -187,6 +243,9 @@ public class UserDAO {
     
     /**
      * Verifica si el servicio del usuario ha expirado y actualiza su estado
+     * si paidService es true y la expirationDate es anterior a la fecha actual.
+     * Si expira, establece paidService a false y policy a null.
+     * 
      * @param user Usuario a verificar
      */
     private void checkServiceExpiration(User user) {
@@ -208,8 +267,11 @@ public class UserDAO {
     }
     
     /**
-     * Verifica y actualiza el estado de expiración de todos los usuarios
-     * @return Número de usuarios actualizados
+     * Verifica y actualiza el estado de expiración del servicio para todos los usuarios.
+     * Busca usuarios con `paidService = true` y `expirationDate` anterior a hoy,
+     * y para ellos, establece `paidService = false` y `policy = null`.
+     *
+     * @return El número de usuarios cuyo estado de servicio fue actualizado a expirado.
      */
     public int checkAllUsersServiceExpiration() {
         int updatedCount = 0;
@@ -257,9 +319,10 @@ public class UserDAO {
     }
 
     /**
-     * Busca un usuario por su correo electrónico
-     * @param email Correo electrónico del usuario
-     * @return Usuario encontrado o null si no existe
+     * Busca un usuario por su correo electrónico.
+     *
+     * @param email El correo electrónico del usuario a buscar.
+     * @return El objeto User encontrado, o null si no se encuentra o si ocurre un error.
      */
     public User findByEmail(String email) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

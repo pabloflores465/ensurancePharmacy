@@ -7,8 +7,22 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import java.util.List;
 
+/**
+ * Data Access Object (DAO) para gestionar las entidades Hospital.
+ * Proporciona métodos para operaciones CRUD (Crear, Leer, Actualizar) sobre los hospitales.
+ */
 public class HospitalDAO {
 
+    /**
+     * Crea un nuevo hospital en la base de datos.
+     *
+     * @param name Nombre del hospital.
+     * @param address Dirección del hospital.
+     * @param phone Número de teléfono del hospital.
+     * @param email Correo electrónico del hospital.
+     * @param enabled Estado de habilitación (1 habilitado, 0 deshabilitado).
+     * @return El objeto Hospital creado, o null si ocurre un error.
+     */
     public Hospital create(String name, String address, Long phone, String email, Integer enabled) {
         Transaction tx = null;
         Hospital hospital = null;
@@ -43,6 +57,12 @@ public class HospitalDAO {
         return hospital;
     }
 
+    /**
+     * Busca un hospital por su ID único.
+     *
+     * @param id El ID del hospital a buscar.
+     * @return El objeto Hospital encontrado, o null si no se encuentra o si ocurre un error.
+     */
     public Hospital findById(Long id) {
         Session session = null;
         try {
@@ -58,6 +78,11 @@ public class HospitalDAO {
         }
     }
 
+    /**
+     * Recupera todos los hospitales de la base de datos.
+     *
+     * @return Una lista de todos los objetos Hospital, o null si ocurre un error.
+     */
     public List<Hospital> findAll() {
         Session session = null;
         try {
@@ -74,6 +99,12 @@ public class HospitalDAO {
         }
     }
 
+    /**
+     * Actualiza un hospital existente en la base de datos.
+     *
+     * @param hospital El objeto Hospital con los datos actualizados.
+     * @return El objeto Hospital actualizado, o null si ocurre un error.
+     */
     public Hospital update(Hospital hospital) {
         Transaction tx = null;
         Session session = null;

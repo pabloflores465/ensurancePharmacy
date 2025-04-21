@@ -5,18 +5,34 @@ import java.util.Objects;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
+/**
+ * Clase que representa la clave primaria compuesta para la entidad {@link BillMedicine}.
+ * Contiene los identificadores de la factura (Bill) y del medicamento (Medicine).
+ * Debe implementar Serializable y sobrescribir equals() y hashCode().
+ */
 @Embeddable
 public class BillMedicineId implements Serializable {
 
+    /** ID de la factura (Bill). */
     @Column(name = "ID_BILL")
     private Long billId;
 
+    /** ID del medicamento (Medicine). */
     @Column(name = "ID_MEDICINE")
     private Long medicineId;
 
+    /**
+     * Constructor por defecto requerido.
+     */
     public BillMedicineId() {
     }
 
+    /**
+     * Constructor con los IDs de la clave compuesta.
+     *
+     * @param billId El ID de la factura.
+     * @param medicineId El ID del medicamento.
+     */
     public BillMedicineId(Long billId, Long medicineId) {
         this.billId = billId;
         this.medicineId = medicineId;

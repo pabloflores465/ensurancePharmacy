@@ -2,53 +2,85 @@ package com.sources.app.entities;
 
 import jakarta.persistence.*;
 
+/**
+ * Entidad que representa un medicamento en la base de datos.
+ * Mapea a la tabla "MEDICINE".
+ */
 @Entity
 @Table(name = "MEDICINE")
 public class Medicine {
 
+    /** Identificador único del medicamento. Generado automáticamente. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID_MEDICINE")
     private Long idMedicine;
 
+    /** Nombre comercial del medicamento. */
     @Column(name = "NAME")
     private String name;
 
+    /** Principio activo del medicamento. */
     @Column(name = "ACTIVE_MEDICAMENT")
     private String activeMedicament;
 
+    /** Descripción del medicamento. */
     @Column(name = "DESCRIPTION")
     private String description;
 
+    /** URL o ruta de la imagen del medicamento. */
     @Column(name = "IMAGE")
     private String image;
 
+    /** Concentración del principio activo. */
     @Column(name = "CONCENTRATION")
     private String concentration;
 
+    /** Presentación del medicamento (e.g., cantidad por envase, volumen). */
     @Column(name = "PRESENTACION")
     private Double presentacion;
 
+    /** Cantidad disponible en stock. */
     @Column(name = "STOCK")
     private Integer stock;
 
+    /** Marca o fabricante del medicamento. */
     @Column(name = "BRAND")
     private String brand;
 
+    /** Indica si el medicamento requiere prescripción médica. */
     @Column(name = "PRESCRIPTION")
     private Boolean prescription;
 
+    /** Precio unitario del medicamento. */
     @Column(name = "PRICE")
     private Double price;
 
+    /** Número de unidades vendidas. */
     @Column(name = "SOLD_UNITS")
     private Integer soldUnits;
 
-    // Constructor vacío
+    /**
+     * Constructor por defecto requerido por JPA.
+     */
     public Medicine() {
     }
 
-    // Constructor con campos
+    /**
+     * Constructor con todos los campos excepto el ID (que es autogenerado).
+     *
+     * @param name Nombre comercial.
+     * @param activeMedicament Principio activo.
+     * @param description Descripción.
+     * @param image URL de la imagen.
+     * @param concentration Concentración.
+     * @param presentacion Presentación.
+     * @param stock Stock disponible.
+     * @param brand Marca.
+     * @param prescription Requiere prescripción.
+     * @param price Precio.
+     * @param soldUnits Unidades vendidas.
+     */
     public Medicine(String name, String activeMedicament, String description, String image,
                     String concentration, Double presentacion, Integer stock, String brand,
                     Boolean prescription, Double price, Integer soldUnits) {

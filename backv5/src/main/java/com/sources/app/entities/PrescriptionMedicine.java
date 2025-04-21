@@ -2,39 +2,59 @@ package com.sources.app.entities;
 
 import jakarta.persistence.*;
 
+/**
+ * Entidad de enlace que representa un medicamento específico dentro de una prescripción.
+ * Mapea a la tabla "PRESCRIPTION_MEDICINE" y utiliza una clave compuesta {@link PrescriptionMedicineId}.
+ * Contiene detalles como dosis, frecuencia y duración.
+ */
 @Entity
 @Table(name = "PRESCRIPTION_MEDICINE")
 public class PrescriptionMedicine {
 
+    /** Clave primaria compuesta embebida (ID de prescripción y ID de medicamento). */
     @EmbeddedId
     private PrescriptionMedicineId id;
 
-    // Relación ManyToOne con Prescription
+    /** Prescripción a la que pertenece este ítem. Parte de la clave compuesta. */
     @ManyToOne
-    @MapsId("prescriptionId")
+    @MapsId("prescriptionId") // Mapea el atributo 'prescriptionId' de PrescriptionMedicineId
     @JoinColumn(name = "ID_PRESCRIPTION", referencedColumnName = "ID_PRESCRIPTION")
     private Prescription prescription;
 
-    // Relación ManyToOne con Medicine
+    /** Medicamento incluido en la prescripción. Parte de la clave compuesta. */
     @ManyToOne
-    @MapsId("medicineId")
+    @MapsId("medicineId") // Mapea el atributo 'medicineId' de PrescriptionMedicineId
     @JoinColumn(name = "ID_MEDICINE", referencedColumnName = "ID_MEDICINE")
     private Medicine medicine;
 
+    /** Dosis prescrita del medicamento. */
     @Column(name = "DOSIS")
     private Double dosis;
 
+    /** Frecuencia de administración prescrita. */
     @Column(name = "FRECUENCIA")
     private Double frecuencia;
 
+    /** Duración del tratamiento prescrito. */
     @Column(name = "DURACION")
     private Double duracion;
 
-    // Constructor vacío
+    /**
+     * Constructor por defecto requerido por JPA.
+     */
     public PrescriptionMedicine() {
     }
 
-    // Constructor con campos
+    /**
+     * Constructor para crear un nuevo ítem de prescripción-medicamento.
+     * Inicializa la clave compuesta a partir de las entidades Prescription y Medicine.
+     *
+     * @param prescription La prescripción asociada.
+     * @param medicine El medicamento asociado.
+     * @param dosis La dosis prescrita.
+     * @param frecuencia La frecuencia de administración.
+     * @param duracion La duración del tratamiento.
+     */
     public PrescriptionMedicine(Prescription prescription, Medicine medicine, Double dosis, Double frecuencia, Double duracion) {
         this.prescription = prescription;
         this.medicine = medicine;

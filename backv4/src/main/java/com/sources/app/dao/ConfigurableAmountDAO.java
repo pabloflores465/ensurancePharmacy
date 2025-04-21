@@ -9,8 +9,22 @@ import org.hibernate.query.Query;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * Data Access Object (DAO) para gestionar la entidad ConfigurableAmount.
+ * Esta entidad almacena montos configurables, como el monto máximo para recetas.
+ * Se asume que normalmente habrá una sola fila de configuración.
+ * Proporciona métodos para crear, buscar, actualizar y obtener la configuración actual.
+ */
 public class ConfigurableAmountDAO {
 
+    /**
+     * Crea un nuevo registro de monto configurable.
+     * Dado que se espera una única configuración, este método podría usarse 
+     * principalmente para la inicialización si no existe ninguna configuración.
+     *
+     * @param prescriptionAmount El monto máximo configurable para las recetas.
+     * @return El objeto ConfigurableAmount creado, o null si ocurre un error.
+     */
     public ConfigurableAmount create(BigDecimal prescriptionAmount) {
         Transaction tx = null;
         ConfigurableAmount confAmount = null;
@@ -31,6 +45,13 @@ public class ConfigurableAmountDAO {
         return confAmount;
     }
 
+    /**
+     * Busca un registro de ConfigurableAmount por su ID único.
+     * Generalmente se usará `findCurrentConfig` en lugar de este método.
+     *
+     * @param id El ID del registro a buscar.
+     * @return El objeto ConfigurableAmount encontrado, o null si no se encuentra o si ocurre un error.
+     */
     public ConfigurableAmount findById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(ConfigurableAmount.class, id);
@@ -40,6 +61,12 @@ public class ConfigurableAmountDAO {
         }
     }
 
+    /**
+     * Recupera todos los registros de ConfigurableAmount. 
+     * Usualmente solo debería haber uno.
+     *
+     * @return Una lista de todos los objetos ConfigurableAmount, o null si ocurre un error.
+     */
     public List<ConfigurableAmount> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<ConfigurableAmount> query = session.createQuery("FROM ConfigurableAmount", ConfigurableAmount.class);
@@ -50,6 +77,12 @@ public class ConfigurableAmountDAO {
         }
     }
 
+    /**
+     * Actualiza un registro existente de ConfigurableAmount.
+     *
+     * @param confAmount El objeto ConfigurableAmount con los datos actualizados.
+     * @return El objeto ConfigurableAmount actualizado, o null si ocurre un error.
+     */
     public ConfigurableAmount update(ConfigurableAmount confAmount) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

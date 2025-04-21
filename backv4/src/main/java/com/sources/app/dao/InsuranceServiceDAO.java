@@ -8,9 +8,19 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import java.util.List;
 
+/**
+ * Data Access Object (DAO) para gestionar las entidades InsuranceService (Servicio de Seguro).
+ * Proporciona métodos para operaciones CRUD (Crear, Leer, Actualizar, Eliminar) sobre los servicios de seguro,
+ * así como búsquedas por categoría, subcategoría e ID externo.
+ */
 public class InsuranceServiceDAO {
 
-    // Crear un servicio de seguro
+    /**
+     * Crea un nuevo servicio de seguro en la base de datos.
+     *
+     * @param service El objeto InsuranceService a crear.
+     * @return El objeto InsuranceService creado, o null si ocurre un error.
+     */
     public InsuranceService create(InsuranceService service) {
         Transaction tx = null;
         Session session = null;
@@ -35,7 +45,11 @@ public class InsuranceServiceDAO {
         }
     }
 
-    // Obtener todos los servicios
+    /**
+     * Recupera todos los servicios de seguro de la base de datos.
+     *
+     * @return Una lista de todos los objetos InsuranceService, o null si ocurre un error.
+     */
     public List<InsuranceService> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<InsuranceService> query = session.createQuery("FROM InsuranceService", InsuranceService.class);
@@ -46,7 +60,12 @@ public class InsuranceServiceDAO {
         }
     }
 
-    // Obtener servicios por categoría
+    /**
+     * Busca servicios de seguro por su categoría principal.
+     *
+     * @param category La categoría principal (objeto Category).
+     * @return Una lista de objetos InsuranceService que pertenecen a esa categoría, o null si ocurre un error.
+     */
     public List<InsuranceService> findByCategory(Category category) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<InsuranceService> query = session.createQuery(
@@ -61,7 +80,12 @@ public class InsuranceServiceDAO {
         }
     }
 
-    // Obtener servicios por subcategoría
+    /**
+     * Busca servicios de seguro por su subcategoría.
+     *
+     * @param subcategory La subcategoría (objeto Category).
+     * @return Una lista de objetos InsuranceService que pertenecen a esa subcategoría, o null si ocurre un error.
+     */
     public List<InsuranceService> findBySubcategory(Category subcategory) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<InsuranceService> query = session.createQuery(
@@ -76,7 +100,12 @@ public class InsuranceServiceDAO {
         }
     }
 
-    // Obtener un servicio por ID
+    /**
+     * Busca un servicio de seguro por su ID único.
+     *
+     * @param idService El ID del servicio a buscar.
+     * @return El objeto InsuranceService encontrado, o null si no se encuentra o si ocurre un error.
+     */
     public InsuranceService findById(Long idService) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(InsuranceService.class, idService);
@@ -86,7 +115,12 @@ public class InsuranceServiceDAO {
         }
     }
 
-    // Actualizar un servicio
+    /**
+     * Actualiza un servicio de seguro existente en la base de datos.
+     *
+     * @param service El objeto InsuranceService a actualizar.
+     * @return El objeto InsuranceService actualizado, o null si ocurre un error.
+     */
     public InsuranceService update(InsuranceService service) {
         Transaction tx = null;
         Session session = null;
@@ -111,7 +145,12 @@ public class InsuranceServiceDAO {
         }
     }
 
-    // Eliminar un servicio
+    /**
+     * Eliminar un servicio de seguro existente en la base de datos.
+     *
+     * @param idService El ID del servicio a eliminar.
+     * @return true si el servicio se elimina correctamente, false si ocurre un error.
+     */
     public boolean delete(Long idService) {
         Transaction tx = null;
         Session session = null;
@@ -140,7 +179,12 @@ public class InsuranceServiceDAO {
         }
     }
 
-    // Buscar por ID externo
+    /**
+     * Busca servicios de seguro por su ID externo.
+     *
+     * @param externalId El ID externo del servicio a buscar.
+     * @return Una lista de objetos InsuranceService que coinciden con el ID externo, o null si ocurre un error.
+     */
     public List<InsuranceService> findByExternalId(String externalId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<InsuranceService> query = session.createQuery(

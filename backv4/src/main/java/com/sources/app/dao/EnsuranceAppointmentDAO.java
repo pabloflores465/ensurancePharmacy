@@ -11,18 +11,20 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * DAO para operaciones CRUD en la entidad EnsuranceAppointment
+ * Data Access Object (DAO) para gestionar las entidades EnsuranceAppointment (Citas de Seguro).
+ * Proporciona métodos para operaciones CRUD (Crear, Leer, Actualizar, Eliminar) sobre las citas.
  */
 public class EnsuranceAppointmentDAO {
 
     /**
-     * Crea una nueva cita en el sistema de seguros
-     * @param hospitalAppointmentId ID de la cita en el sistema del hospital
-     * @param idUser ID del usuario en el sistema de seguros
-     * @param appointmentDate Fecha de la cita
-     * @param doctorName Nombre del doctor (opcional)
-     * @param reason Motivo de la cita (opcional)
-     * @return La cita creada o null si hubo un error
+     * Crea una nueva cita de seguro en la base de datos.
+     *
+     * @param hospitalAppointmentId ID de la cita en el sistema del hospital (puede ser diferente al ID interno).
+     * @param idUser ID del usuario asociado a la cita.
+     * @param appointmentDate Fecha y hora de la cita.
+     * @param doctorName Nombre del doctor (opcional).
+     * @param reason Motivo de la cita (opcional).
+     * @return El objeto EnsuranceAppointment creado, o null si ocurre un error.
      */
     public EnsuranceAppointment create(String hospitalAppointmentId, Long idUser, Date appointmentDate, String doctorName, String reason) {
         Transaction tx = null;
@@ -49,9 +51,10 @@ public class EnsuranceAppointmentDAO {
     }
 
     /**
-     * Busca una cita por su ID interno
-     * @param id ID de la cita en el sistema de seguros
-     * @return La cita encontrada o null si no existe
+     * Busca una cita de seguro por su ID interno único.
+     *
+     * @param id El ID interno de la cita a buscar.
+     * @return El objeto EnsuranceAppointment encontrado, o null si no se encuentra o si ocurre un error.
      */
     public EnsuranceAppointment findById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -63,9 +66,10 @@ public class EnsuranceAppointmentDAO {
     }
 
     /**
-     * Busca una cita por su ID en el sistema del hospital
-     * @param hospitalAppointmentId ID de la cita en el sistema del hospital
-     * @return La cita encontrada o null si no existe
+     * Busca una cita de seguro por el ID que tiene asignado en el sistema del hospital.
+     *
+     * @param hospitalAppointmentId El ID de la cita en el sistema del hospital.
+     * @return El objeto EnsuranceAppointment encontrado, o null si no se encuentra o si ocurre un error.
      */
     public EnsuranceAppointment findByHospitalAppointmentId(String hospitalAppointmentId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -82,9 +86,10 @@ public class EnsuranceAppointmentDAO {
     }
 
     /**
-     * Busca todas las citas de un usuario
-     * @param idUser ID del usuario en el sistema de seguros
-     * @return Lista de citas del usuario
+     * Busca todas las citas de seguro asociadas a un ID de usuario específico, ordenadas por fecha descendente.
+     *
+     * @param idUser El ID del usuario cuyas citas se quieren buscar.
+     * @return Una lista de objetos EnsuranceAppointment asociados al usuario, o null si ocurre un error.
      */
     public List<EnsuranceAppointment> findByUserId(Long idUser) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -101,8 +106,9 @@ public class EnsuranceAppointmentDAO {
     }
 
     /**
-     * Obtiene todas las citas
-     * @return Lista de todas las citas
+     * Recupera todas las citas de seguro de la base de datos, ordenadas por fecha descendente.
+     *
+     * @return Una lista de todos los objetos EnsuranceAppointment, o null si ocurre un error.
      */
     public List<EnsuranceAppointment> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -118,9 +124,10 @@ public class EnsuranceAppointmentDAO {
     }
 
     /**
-     * Actualiza una cita existente
-     * @param appointment Cita a actualizar
-     * @return La cita actualizada o null si hubo un error
+     * Actualiza una cita de seguro existente en la base de datos.
+     *
+     * @param appointment El objeto EnsuranceAppointment con los datos actualizados.
+     * @return El objeto EnsuranceAppointment actualizado, o null si ocurre un error.
      */
     public EnsuranceAppointment update(EnsuranceAppointment appointment) {
         Transaction tx = null;
@@ -139,9 +146,10 @@ public class EnsuranceAppointmentDAO {
     }
 
     /**
-     * Elimina una cita por su ID
-     * @param id ID de la cita a eliminar
-     * @return true si se eliminó correctamente, false en caso contrario
+     * Elimina una cita de seguro de la base de datos por su ID interno.
+     *
+     * @param id El ID interno de la cita a eliminar.
+     * @return true si la cita fue eliminada con éxito, false en caso contrario.
      */
     public boolean delete(Long id) {
         Transaction tx = null;
@@ -164,9 +172,10 @@ public class EnsuranceAppointmentDAO {
     }
 
     /**
-     * Elimina una cita por su ID en el sistema del hospital
-     * @param hospitalAppointmentId ID de la cita en el sistema del hospital
-     * @return true si se eliminó correctamente, false en caso contrario
+     * Elimina una cita de seguro de la base de datos utilizando el ID del sistema del hospital.
+     *
+     * @param hospitalAppointmentId El ID de la cita en el sistema del hospital.
+     * @return true si la cita fue eliminada con éxito, false en caso contrario (p. ej., no se encontró la cita).
      */
     public boolean deleteByHospitalAppointmentId(String hospitalAppointmentId) {
         Transaction tx = null;
@@ -195,9 +204,10 @@ public class EnsuranceAppointmentDAO {
     }
 
     /**
-     * Obtiene todas las citas para una fecha específica
-     * @param date Fecha para la cual buscar citas
-     * @return Lista de citas para esa fecha
+     * Busca todas las citas de seguro que ocurren en una fecha específica (considerando el día completo).
+     *
+     * @param date La fecha para la cual buscar citas.
+     * @return Una lista de objetos EnsuranceAppointment para la fecha dada, o null si ocurre un error.
      */
     public List<EnsuranceAppointment> findByDate(Date date) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -229,8 +239,10 @@ public class EnsuranceAppointmentDAO {
     }
     
     /**
-     * Obtiene todas las citas para la fecha actual
-     * @return Lista de citas para hoy
+     * Busca todas las citas de seguro programadas para el día de hoy.
+     * Es un método de conveniencia que llama a findByDate con la fecha actual.
+     *
+     * @return Una lista de objetos EnsuranceAppointment para hoy, o null si ocurre un error.
      */
     public List<EnsuranceAppointment> findTodayAppointments() {
         return findByDate(new Date());

@@ -11,8 +11,21 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Data Access Object (DAO) para gestionar las entidades de TotalPharmacy.
+ * Representa los totales diarios para cada farmacia.
+ * Proporciona métodos para crear, buscar y actualizar estos totales.
+ */
 public class TotalPharmacyDAO {
 
+    /**
+     * Crea un nuevo registro de total diario para una farmacia específica.
+     *
+     * @param idPharmacy El ID de la farmacia para la cual se registra el total.
+     * @param totalDate La fecha a la que corresponde el total.
+     * @param total El monto total registrado para esa fecha.
+     * @return El objeto TotalPharmacy creado, o null si ocurre un error (p. ej., la farmacia no existe).
+     */
     public TotalPharmacy create(Long idPharmacy, Date totalDate, BigDecimal total) {
         Transaction tx = null;
         TotalPharmacy tp = null;
@@ -41,6 +54,12 @@ public class TotalPharmacyDAO {
         return tp;
     }
 
+    /**
+     * Busca un registro de TotalPharmacy por su ID único.
+     *
+     * @param id El ID del registro TotalPharmacy a buscar.
+     * @return El objeto TotalPharmacy encontrado, o null si no se encuentra o si ocurre un error.
+     */
     public TotalPharmacy findById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(TotalPharmacy.class, id);
@@ -50,6 +69,11 @@ public class TotalPharmacyDAO {
         }
     }
 
+    /**
+     * Recupera todos los registros de TotalPharmacy de la base de datos.
+     *
+     * @return Una lista de todos los objetos TotalPharmacy, o null si ocurre un error.
+     */
     public List<TotalPharmacy> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<TotalPharmacy> query = session.createQuery("FROM TotalPharmacy", TotalPharmacy.class);
@@ -60,6 +84,12 @@ public class TotalPharmacyDAO {
         }
     }
 
+    /**
+     * Actualiza un registro existente de TotalPharmacy en la base de datos.
+     *
+     * @param tp El objeto TotalPharmacy con los datos actualizados.
+     * @return El objeto TotalPharmacy actualizado, o null si ocurre un error.
+     */
     public TotalPharmacy update(TotalPharmacy tp) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

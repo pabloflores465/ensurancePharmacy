@@ -7,10 +7,20 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import java.util.List;
 
+/**
+ * Data Access Object (DAO) para gestionar la configuración del sistema (SystemConfig).
+ * Almacena pares clave-valor para parámetros de configuración.
+ * Proporciona métodos para guardar, obtener, eliminar y convertir configuraciones.
+ */
 public class SystemConfigDAO {
 
     /**
-     * Guarda o actualiza una configuración
+     * Guarda una nueva configuración o actualiza una existente si la clave ya existe.
+     *
+     * @param key La clave única de la configuración.
+     * @param value El valor de la configuración.
+     * @param description Una descripción opcional de la configuración.
+     * @return El objeto SystemConfig guardado o actualizado, o null si ocurre un error.
      */
     public SystemConfig saveOrUpdate(String key, String value, String description) {
         Transaction transaction = null;
@@ -48,7 +58,10 @@ public class SystemConfigDAO {
     }
     
     /**
-     * Obtiene una configuración por su clave
+     * Obtiene un registro de configuración completo por su clave.
+     *
+     * @param key La clave de la configuración a buscar.
+     * @return El objeto SystemConfig encontrado, o null si no existe o si ocurre un error.
      */
     public SystemConfig getByKey(String key) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -63,7 +76,11 @@ public class SystemConfigDAO {
     }
     
     /**
-     * Obtiene el valor de una configuración como String
+     * Obtiene el valor de una configuración como String, devolviendo un valor por defecto si no se encuentra.
+     *
+     * @param key La clave de la configuración.
+     * @param defaultValue El valor a devolver si la clave no existe.
+     * @return El valor de la configuración como String, o el valor por defecto.
      */
     public String getConfigValue(String key, String defaultValue) {
         SystemConfig config = getByKey(key);
@@ -71,7 +88,11 @@ public class SystemConfigDAO {
     }
     
     /**
-     * Obtiene el valor de una configuración como Integer
+     * Obtiene el valor de una configuración como Integer, devolviendo un valor por defecto si no se encuentra o no se puede convertir.
+     *
+     * @param key La clave de la configuración.
+     * @param defaultValue El valor a devolver si la clave no existe o el valor no es un entero válido.
+     * @return El valor de la configuración como Integer, o el valor por defecto.
      */
     public Integer getConfigValueAsInt(String key, Integer defaultValue) {
         String value = getConfigValue(key, null);
@@ -87,7 +108,11 @@ public class SystemConfigDAO {
     }
     
     /**
-     * Obtiene el valor de una configuración como Double
+     * Obtiene el valor de una configuración como Double, devolviendo un valor por defecto si no se encuentra o no se puede convertir.
+     *
+     * @param key La clave de la configuración.
+     * @param defaultValue El valor a devolver si la clave no existe o el valor no es un número decimal válido.
+     * @return El valor de la configuración como Double, o el valor por defecto.
      */
     public Double getConfigValueAsDouble(String key, Double defaultValue) {
         String value = getConfigValue(key, null);
@@ -103,7 +128,12 @@ public class SystemConfigDAO {
     }
     
     /**
-     * Obtiene el valor de una configuración como Boolean
+     * Obtiene el valor de una configuración como Boolean, devolviendo un valor por defecto si no se encuentra.
+     * Considera "true", "1", "yes" (ignorando mayúsculas/minúsculas) como verdadero.
+     *
+     * @param key La clave de la configuración.
+     * @param defaultValue El valor a devolver si la clave no existe.
+     * @return El valor de la configuración como Boolean, o el valor por defecto.
      */
     public Boolean getConfigValueAsBoolean(String key, Boolean defaultValue) {
         String value = getConfigValue(key, null);
@@ -115,7 +145,10 @@ public class SystemConfigDAO {
     }
     
     /**
-     * Elimina una configuración
+     * Elimina una configuración de la base de datos por su clave.
+     *
+     * @param key La clave de la configuración a eliminar.
+     * @return true si la configuración fue eliminada con éxito, false en caso contrario.
      */
     public boolean delete(String key) {
         Transaction transaction = null;
@@ -138,7 +171,9 @@ public class SystemConfigDAO {
     }
     
     /**
-     * Obtiene todas las configuraciones
+     * Obtiene todos los registros de configuración de la base de datos, ordenados por clave.
+     *
+     * @return Una lista de todos los objetos SystemConfig, o null si ocurre un error.
      */
     public List<SystemConfig> getAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
