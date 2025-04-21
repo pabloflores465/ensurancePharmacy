@@ -162,7 +162,7 @@ public class OrdersHandler implements HttpHandler {
         String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
         Orders updateOrder = objectMapper.readValue(requestBody, Orders.class);
         
-        if (updateOrder.getId() == null) {
+        if (updateOrder.getIdOrder() == null) {
              sendResponse(exchange, 400, "{\"error\": \"Order ID is required for update\"}");
              return;
         }

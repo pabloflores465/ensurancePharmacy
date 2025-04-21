@@ -82,7 +82,7 @@ public class CommentsHandler implements HttpHandler {
         Comments createComment = objectMapper.readValue(requestBody, Comments.class);
         
         // Validaciones básicas
-        if (createComment.getUser() == null || createComment.getUser().getId() == null) {
+        if (createComment.getUser() == null || createComment.getUser().getIdUser() == null) {
             sendResponse(exchange, 400, "{\"error\": \"User ID is required\"}");
             return;
         }
@@ -169,7 +169,7 @@ public class CommentsHandler implements HttpHandler {
         Comments updateComment = objectMapper.readValue(requestBody, Comments.class);
         
         // Validaciones básicas
-        if (updateComment.getIdComment() == null) {
+        if (updateComment.getIdComments() == null) {
              sendResponse(exchange, 400, "{\"error\": \"Comment ID is required for update\"}");
              return;
         }

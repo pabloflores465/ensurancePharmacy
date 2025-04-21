@@ -88,7 +88,7 @@ public class OrderMedicineHandler implements HttpHandler {
         // Validar IDs y datos requeridos
         Orders order = createOM.getOrders();
         Medicine medicine = createOM.getMedicine();
-        if (order == null || order.getId() == null || medicine == null || medicine.getIdMedicine() == null) {
+        if (order == null || order.getIdOrder() == null || medicine == null || medicine.getIdMedicine() == null) {
             sendResponse(exchange, 400, "{\"error\": \"Order ID and Medicine ID are required\"}");
             return;
         }

@@ -86,7 +86,7 @@ public class BillMedicineHandler implements HttpHandler {
         Medicine medicine = createBM.getMedicine(); // Asegurar que el JSON incluye al menos medicine.id
         
         // Validar IDs
-        if (bill == null || bill.getId() == null || medicine == null || medicine.getId() == null) {
+        if (bill == null || bill.getIdBill() == null || medicine == null || medicine.getIdMedicine() == null) {
             sendResponse(exchange, 400, "{\"error\": \"Bill ID and Medicine ID are required\"}");
             return;
         }

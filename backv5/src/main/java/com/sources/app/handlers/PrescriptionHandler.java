@@ -161,7 +161,7 @@ public class PrescriptionHandler implements HttpHandler {
         String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
         Prescription updatePres = objectMapper.readValue(requestBody, Prescription.class);
         
-        if (updatePres.getId() == null) {
+        if (updatePres.getIdPrescription() == null) {
              sendResponse(exchange, 400, "{\"error\": \"Prescription ID is required for update\"}");
              return;
         }

@@ -82,7 +82,7 @@ public class BillHandler implements HttpHandler {
         Prescription prescription = createBill.getPrescription(); // Asegurarse que el JSON incluye al menos prescription.id
         
         // Validar que la prescripción no sea nula y tenga ID
-        if (prescription == null || prescription.getId() == null) {
+        if (prescription == null || prescription.getIdPrescription() == null) {
              sendResponse(exchange, 400, "{\"error\": \"Prescription ID is required\"}");
              return;
         }
@@ -140,7 +140,7 @@ public class BillHandler implements HttpHandler {
         String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
         Bill updateBill = objectMapper.readValue(requestBody, Bill.class);
          // Validar que el ID no sea nulo
-        if (updateBill.getId() == null) {
+        if (updateBill.getIdBill() == null) {
              sendResponse(exchange, 400, "{\"error\": \"Bill ID is required for update\"}");
              return;
         }
