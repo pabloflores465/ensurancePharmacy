@@ -17,6 +17,11 @@ import java.util.List;
 public class AppointmentMadeDAO {
 
     /**
+     * Constructor por defecto para AppointmentMadeDAO.
+     */
+    public AppointmentMadeDAO() {}
+
+    /**
      * Crea un nuevo registro que indica que una cita ha sido realizada.
      *
      * @param idCita El ID de la cita original (puede referenciar a Appointment o EnsuranceAppointment).

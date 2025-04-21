@@ -14,6 +14,11 @@ import java.util.List;
 public class HospitalDAO {
 
     /**
+     * Constructor por defecto para HospitalDAO.
+     */
+    public HospitalDAO() {}
+
+    /**
      * Crea un nuevo hospital en la base de datos.
      *
      * @param name Nombre del hospital.

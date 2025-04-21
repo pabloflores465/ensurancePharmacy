@@ -23,7 +23,17 @@ public class ExternalServiceClient {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     
     /**
-     * Realiza una petición GET a la API externa
+     * Constructor por defecto para ExternalServiceClient.
+     */
+    public ExternalServiceClient() {}
+
+    /**
+     * Realiza una petición GET síncrona a un endpoint específico.
+     *
+     * @param endpoint El path específico del recurso a solicitar (ej. "/citas").
+     * @param isHospital Booleano que indica si la petición es para el servicio de hospital (true) o farmacia (false).
+     * @return La respuesta del servidor como una cadena de texto (generalmente JSON).
+     * @throws Exception Si ocurre un error durante la conexión o si el servidor responde con un código de error.
      */
     public String get(String endpoint, boolean isHospital) throws Exception {
         String baseUrl = isHospital ? HOSPITAL_BASE_URL : PHARMACY_BASE_URL;
@@ -50,7 +60,13 @@ public class ExternalServiceClient {
     }
     
     /**
-     * Realiza una petición POST a la API externa
+     * Realiza una petición POST síncrona a un endpoint específico, enviando datos en el cuerpo.
+     *
+     * @param endpoint El path específico del recurso donde se enviarán los datos.
+     * @param requestBody El objeto a ser serializado como JSON y enviado en el cuerpo de la petición.
+     * @param isHospital Booleano que indica si la petición es para el servicio de hospital (true) o farmacia (false).
+     * @return La respuesta del servidor como una cadena de texto (generalmente JSON).
+     * @throws Exception Si ocurre un error durante la conexión, serialización, o si el servidor responde con un código de error.
      */
     public String post(String endpoint, Object requestBody, boolean isHospital) throws Exception {
         String baseUrl = isHospital ? HOSPITAL_BASE_URL : PHARMACY_BASE_URL;
@@ -94,7 +110,13 @@ public class ExternalServiceClient {
     }
     
     /**
-     * Realiza una petición PUT a la API externa
+     * Realiza una petición PUT síncrona a un endpoint específico, enviando datos en el cuerpo para actualizar un recurso.
+     *
+     * @param endpoint El path específico del recurso a actualizar.
+     * @param requestBody El objeto con los datos actualizados a ser serializado como JSON.
+     * @param isHospital Booleano que indica si la petición es para el servicio de hospital (true) o farmacia (false).
+     * @return La respuesta del servidor como una cadena de texto (generalmente JSON).
+     * @throws Exception Si ocurre un error durante la conexión, serialización, o si el servidor responde con un código de error.
      */
     public String put(String endpoint, Object requestBody, boolean isHospital) throws Exception {
         String baseUrl = isHospital ? HOSPITAL_BASE_URL : PHARMACY_BASE_URL;
@@ -129,7 +151,11 @@ public class ExternalServiceClient {
     }
     
     /**
-     * Métodos asíncronos
+     * Realiza una petición GET asíncrona a un endpoint específico.
+     *
+     * @param endpoint El path específico del recurso a solicitar.
+     * @param isHospital Booleano que indica si la petición es para el servicio de hospital (true) o farmacia (false).
+     * @return Un CompletableFuture que contendrá la respuesta del servidor como String.
      */
     public CompletableFuture<String> getAsync(String endpoint, boolean isHospital) {
         return CompletableFuture.supplyAsync(() -> {
@@ -141,6 +167,14 @@ public class ExternalServiceClient {
         }, executor);
     }
     
+    /**
+     * Realiza una petición POST asíncrona a un endpoint específico.
+     *
+     * @param endpoint El path específico del recurso.
+     * @param requestBody El objeto a enviar en el cuerpo de la petición.
+     * @param isHospital Booleano que indica si la petición es para el servicio de hospital (true) o farmacia (false).
+     * @return Un CompletableFuture que contendrá la respuesta del servidor como String.
+     */
     public CompletableFuture<String> postAsync(String endpoint, Object requestBody, boolean isHospital) {
         return CompletableFuture.supplyAsync(() -> {
             try {
@@ -151,6 +185,14 @@ public class ExternalServiceClient {
         }, executor);
     }
     
+    /**
+     * Realiza una petición PUT asíncrona a un endpoint específico.
+     *
+     * @param endpoint El path específico del recurso a actualizar.
+     * @param requestBody El objeto con los datos actualizados a enviar.
+     * @param isHospital Booleano que indica si la petición es para el servicio de hospital (true) o farmacia (false).
+     * @return Un CompletableFuture que contendrá la respuesta del servidor como String.
+     */
     public CompletableFuture<String> putAsync(String endpoint, Object requestBody, boolean isHospital) {
         return CompletableFuture.supplyAsync(() -> {
             try {

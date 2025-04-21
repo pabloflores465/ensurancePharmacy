@@ -17,6 +17,11 @@ import java.util.List;
 public class EnsuranceAppointmentDAO {
 
     /**
+     * Constructor por defecto para EnsuranceAppointmentDAO.
+     */
+    public EnsuranceAppointmentDAO() {}
+
+    /**
      * Crea una nueva cita de seguro en la base de datos.
      *
      * @param hospitalAppointmentId ID de la cita en el sistema del hospital (puede ser diferente al ID interno).

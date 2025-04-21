@@ -4,8 +4,17 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import com.sources.app.entities.User;
 
+/**
+ * Clase de utilidad para gestionar la SessionFactory de Hibernate.
+ * Sigue el patrón Singleton para asegurar una única instancia de SessionFactory.
+ */
 public class HibernateUtil {
     private static final SessionFactory sessionFactory = buildSessionFactory();
+
+    /**
+     * Constructor privado para prevenir la instanciación de la clase de utilidad.
+     */
+    private HibernateUtil() {}
 
     private static SessionFactory buildSessionFactory() {
         try {
@@ -18,6 +27,11 @@ public class HibernateUtil {
         }
     }
 
+    /**
+     * Obtiene la instancia Singleton de SessionFactory.
+     *
+     * @return La SessionFactory configurada.
+     */
     public static SessionFactory getSessionFactory() {
         return sessionFactory;
     }

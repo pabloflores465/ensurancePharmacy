@@ -15,6 +15,11 @@ import java.util.List;
 public class CategoryDAO {
 
     /**
+     * Constructor por defecto para CategoryDAO.
+     */
+    public CategoryDAO() {}
+
+    /**
      * Crea una nueva categoría en la base de datos.
      *
      * @param name Nombre de la categoría.

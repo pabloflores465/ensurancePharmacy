@@ -17,6 +17,11 @@ import java.util.Date;
 public class HospitalInsuranceServiceDAO {
 
     /**
+     * Constructor por defecto para HospitalInsuranceServiceDAO.
+     */
+    public HospitalInsuranceServiceDAO() {}
+
+    /**
      * Aprueba un servicio de seguro para un hospital específico. Si la relación
      * ya existe, actualiza el estado de aprobación y las notas. De lo contrario, crea
      * un nuevo registro de relación.

@@ -8,7 +8,17 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Clase de utilidad para realizar peticiones HTTP (GET, POST, PUT, DELETE).
+ * Proporciona métodos estáticos simples para interactuar con APIs REST.
+ * Incluye manejo básico de timeouts y errores.
+ */
 public class HttpClientUtil {
+    
+    /**
+     * Constructor privado para prevenir la instanciación de la clase de utilidad.
+     */
+    private HttpClientUtil() {}
     
     private static final int TIMEOUT = 5000; // 5 segundos
     

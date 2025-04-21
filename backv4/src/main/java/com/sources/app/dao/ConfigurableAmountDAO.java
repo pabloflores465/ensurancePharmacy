@@ -18,6 +18,11 @@ import java.util.List;
 public class ConfigurableAmountDAO {
 
     /**
+     * Constructor por defecto para ConfigurableAmountDAO.
+     */
+    public ConfigurableAmountDAO() {}
+
+    /**
      * Crea un nuevo registro de monto configurable.
      * Dado que se espera una única configuración, este método podría usarse 
      * principalmente para la inicialización si no existe ninguna configuración.
@@ -99,12 +104,23 @@ public class ConfigurableAmountDAO {
         }
     }
 
-    // Método para obtener la configuración actual (asumimos que solo hay una fila)
+    /**
+     * Busca la configuración de monto actual (se asume que solo existe una).
+     * Si no se encuentra ninguna configuración, crea una por defecto con un valor predeterminado.
+     *
+     * @return El objeto ConfigurableAmount actual, o uno nuevo si no existe.
+     */
     public ConfigurableAmount findCurrentConfig() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<ConfigurableAmount> query = session.createQuery("FROM ConfigurableAmount", ConfigurableAmount.class);
             query.setMaxResults(1); // Solo nos interesa la primera fila
-            return query.uniqueResult();
+            ConfigurableAmount confAmount = query.uniqueResult();
+            if (confAmount == null) {
+                // Si no existe, crear una con valor por defecto
+                System.out.println("No se encontró configuración, creando una por defecto con Q250.00");
+                return create(new BigDecimal("250.00"));
+            }
+            return confAmount;
         } catch (Exception e) {
             e.printStackTrace();
             // Si no existe, crear una con valor por defecto

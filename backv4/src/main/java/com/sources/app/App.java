@@ -11,6 +11,11 @@ import java.util.Enumeration;
 
 import java.net.InetSocketAddress;
 
+/**
+ * Clase principal de la aplicación para el backend de Ensurance Pharmacy.
+ * Inicializa la conexión a la base de datos, los DAOs, el servidor HTTP y configura los endpoints de la API.
+ * También incluye lógica para verificaciones periódicas como la expiración de servicios.
+ */
 public class App {
     private static final UserDAO userDAO = new UserDAO();
     private static final PolicyDAO policyDAO = new PolicyDAO();
@@ -33,6 +38,13 @@ public class App {
     private static final HospitalInsuranceServiceDAO hospitalInsuranceServiceDAO = new HospitalInsuranceServiceDAO();
     private static final EnsuranceAppointmentDAO ensuranceAppointmentDAO = new EnsuranceAppointmentDAO();
     private static final PrescriptionApprovalDAO prescriptionApprovalDAO = new PrescriptionApprovalDAO();
+
+    /**
+     * Constructor privado para prevenir la instanciación de la clase de utilidad.
+     */
+    private App() {
+        // Prevent instantiation
+    }
 
     private static String getLocalExternalIp() {
         try {
@@ -57,6 +69,15 @@ public class App {
     }
 
 
+    /**
+     * El punto de entrada principal de la aplicación.
+     * Inicializa el servidor, configura los manejadores de contexto para varios endpoints de la API,
+     * realiza comprobaciones iniciales de la base de datos e inicia el servidor HTTP.
+     * También programa una tarea diaria para verificar los servicios de usuario expirados.
+     *
+     * @param args Argumentos de línea de comandos (no utilizados).
+     * @throws Exception Si hay un error al iniciar el servidor o conectarse a la base de datos.
+     */
     public static void main(String[] args) throws Exception {
         // Prueba de conexión a la base de datos
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

@@ -16,6 +16,11 @@ import java.util.List;
 public class InsuranceServiceDAO {
 
     /**
+     * Constructor por defecto para InsuranceServiceDAO.
+     */
+    public InsuranceServiceDAO() {}
+
+    /**
      * Crea un nuevo servicio de seguro en la base de datos.
      *
      * @param service El objeto InsuranceService a crear.

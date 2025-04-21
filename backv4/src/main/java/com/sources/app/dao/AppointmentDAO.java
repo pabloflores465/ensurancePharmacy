@@ -18,6 +18,11 @@ import java.util.List;
 public class AppointmentDAO {
 
     /**
+     * Constructor por defecto para AppointmentDAO.
+     */
+    public AppointmentDAO() {}
+
+    /**
      * Crea una nueva cita en la base de datos.
      *
      * @param idHospital ID del hospital donde se programa la cita.
