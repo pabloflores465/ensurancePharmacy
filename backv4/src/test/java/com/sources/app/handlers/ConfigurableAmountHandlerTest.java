@@ -80,7 +80,7 @@ class ConfigurableAmountHandlerTest {
     
     @Test
     void handle_OptionsRequest_SendsNoContent() throws IOException {
-        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(ENDPOINT_CURRENT)); // Path doesn't matter for OPTIONS
+        // when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(ENDPOINT_CURRENT)); // Likely unnecessary for OPTIONS check
         when(mockHttpExchange.getRequestMethod()).thenReturn("OPTIONS");
         configurableAmountHandler.handle(mockHttpExchange);
         verify(mockHttpExchange).sendResponseHeaders(eq(204), eq(-1L));

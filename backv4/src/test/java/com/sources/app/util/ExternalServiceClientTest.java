@@ -10,8 +10,8 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedConstruction;
-import org.mockito.Mockito;
 import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutionException;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -64,33 +65,31 @@ class ExternalServiceClientTest {
     private MockedConstruction<URL> mockedUrlConstruction;
     private MockedConstruction<HttpURLConnection> mockedConnectionConstruction;
 
+    @Mock
+    private URL mockUrlInstance; // Mock URL instance
+
+    private MockedStatic<URL> mockedUrlStatic; // Class-level static mock
+
     @BeforeEach
     void setUp() throws IOException {
-        lenient().when(mockConnection.getOutputStream()).thenReturn(mockOutputStream);
-        lenient().doNothing().when(mockOutputStream).write(any(byte[].class), anyInt(), anyInt());
-        lenient().doNothing().when(mockOutputStream).close();
-        lenient().doNothing().when(mockConnection).disconnect();
+        // Setup static URL mock BEFORE other setup
+        mockedUrlStatic = Mockito.mockStatic(URL.class);
         
-         // Mock URL.openConnection() to return our mocked HttpURLConnection
-         // This replaces the need to mock the URL constructor directly
-        try {
-            URL url = new URL(HOSPITAL_BASE_URL + TEST_ENDPOINT); // Need a real URL object to mock its method
-            lenient().when(url.openConnection()).thenReturn(mockConnection);
-        } catch (Exception e) { 
-            // This setup might fail depending on test runner environment if URL class is truly final 
-            // and cannot be mocked easily without PowerMock.
-            System.err.println("Warning: Mocking URL.openConnection might require PowerMock or refactoring.");
-        }
-        // We can try mocking the URL constructor too, but it might not work
-        // mockedUrlConstruction = Mockito.mockConstruction(URL.class, (mock, context) -> {
-        //     when(mock.openConnection()).thenReturn(mockConnection);
-        // });
-        
+        // Mock specific URL constructions needed by tests
+        // No MalformedURLException expected with anyString()
+        mockedUrlStatic.when(() -> new URL(anyString())).thenReturn(mockUrlInstance);
+        when(mockUrlInstance.openConnection()).thenReturn(mockConnection);
+
+        // Existing setup
+        when(mockConnection.getOutputStream()).thenReturn(mockOutputStream);
+        // Default successful response setup (can be overridden in tests)
+        setupMockResponse(HttpURLConnection.HTTP_OK, SUCCESS_RESPONSE);
     }
 
     @AfterEach
     void tearDown() {
-       // if (mockedUrlConstruction != null) mockedUrlConstruction.close();
+        // Close static mock AFTER tests
+        mockedUrlStatic.close();
     }
     
      // Helper to mock responses
@@ -112,99 +111,76 @@ class ExternalServiceClientTest {
 
     @Test
     void get_Hospital_Success() throws Exception {
-        setupMockResponse(HttpURLConnection.HTTP_OK, SUCCESS_RESPONSE);
-        
-        // This relies on the URL.openConnection() mock setup being effective
-        // Ideally, inject a URL factory or use MockWebServer
-        // Assuming the setup works for now:
-        // Need to ensure the URL object created internally uses our mocked openConnection
-        // Let's directly mock the URL creation and openConnection call for this specific test run
-         try (MockedStatic<URL> urlMockedStatic = Mockito.mockStatic(URL.class)) {
-            URL mockUrlInstance = mock(URL.class);
-            urlMockedStatic.when(() -> new URL(HOSPITAL_BASE_URL + TEST_ENDPOINT)).thenReturn(mockUrlInstance);
-            when(mockUrlInstance.openConnection()).thenReturn(mockConnection);
-            setupMockResponse(HttpURLConnection.HTTP_OK, SUCCESS_RESPONSE);
+        // Setup specific URL expectation for this test
+        mockedUrlStatic.when(() -> new URL(HOSPITAL_BASE_URL + TEST_ENDPOINT)).thenReturn(mockUrlInstance);
+        setupMockResponse(HttpURLConnection.HTTP_OK, SUCCESS_RESPONSE); // Ensure correct response for this test
 
-            String result = externalServiceClient.get(TEST_ENDPOINT, true);
-            assertEquals(SUCCESS_RESPONSE, result);
+        String result = externalServiceClient.get(TEST_ENDPOINT, true);
+        assertEquals(SUCCESS_RESPONSE, result);
 
-            verify(mockConnection).setRequestMethod("GET");
-            verify(mockConnection).setRequestProperty(eq("Content-Type"), eq("application/json"));
-            verify(mockConnection).getResponseCode();
-            verify(mockConnection).getInputStream();
-            verify(mockConnection).disconnect();
-        } catch (MalformedURLException e) {fail(e);}
+        verify(mockConnection).setRequestMethod("GET");
+        verify(mockConnection).setRequestProperty(eq("Content-Type"), eq("application/json"));
+        verify(mockConnection).getResponseCode();
+        verify(mockConnection).getInputStream();
+        verify(mockConnection).disconnect();
     }
     
      @Test
     void get_Pharmacy_Success() throws Exception {
-        // Similar setup as above, but for Pharmacy URL
-         try (MockedStatic<URL> urlMockedStatic = Mockito.mockStatic(URL.class)) {
-            URL mockUrlInstance = mock(URL.class);
-            urlMockedStatic.when(() -> new URL(PHARMACY_BASE_URL + TEST_ENDPOINT)).thenReturn(mockUrlInstance);
-            when(mockUrlInstance.openConnection()).thenReturn(mockConnection);
-            setupMockResponse(HttpURLConnection.HTTP_OK, SUCCESS_RESPONSE);
+        // Setup specific URL expectation
+        mockedUrlStatic.when(() -> new URL(PHARMACY_BASE_URL + TEST_ENDPOINT)).thenReturn(mockUrlInstance);
+        setupMockResponse(HttpURLConnection.HTTP_OK, SUCCESS_RESPONSE);
 
-            String result = externalServiceClient.get(TEST_ENDPOINT, false); // isHospital = false
-            assertEquals(SUCCESS_RESPONSE, result);
-            verify(mockConnection).setRequestMethod("GET");
-        } catch (MalformedURLException e) {fail(e);}
+        String result = externalServiceClient.get(TEST_ENDPOINT, false); // isHospital = false
+        assertEquals(SUCCESS_RESPONSE, result);
+        verify(mockConnection).setRequestMethod("GET");
     }
 
     @Test
     void get_HttpError_ThrowsException() throws Exception {
-        try (MockedStatic<URL> urlMockedStatic = Mockito.mockStatic(URL.class)) {
-            URL mockUrlInstance = mock(URL.class);
-            urlMockedStatic.when(() -> new URL(HOSPITAL_BASE_URL + TEST_ENDPOINT)).thenReturn(mockUrlInstance);
-            when(mockUrlInstance.openConnection()).thenReturn(mockConnection);
-            setupMockResponse(HttpURLConnection.HTTP_NOT_FOUND, ERROR_RESPONSE);
+        // Setup specific URL expectation
+        mockedUrlStatic.when(() -> new URL(HOSPITAL_BASE_URL + TEST_ENDPOINT)).thenReturn(mockUrlInstance);
+        setupMockResponse(HttpURLConnection.HTTP_NOT_FOUND, ERROR_RESPONSE);
 
-            Exception exception = assertThrows(Exception.class, () -> {
-                externalServiceClient.get(TEST_ENDPOINT, true);
-            });
-            assertTrue(exception.getMessage().contains("Error en la petición GET: 404"));
-            verify(mockConnection).disconnect();
-        }
+        Exception exception = assertThrows(Exception.class, () -> {
+            externalServiceClient.get(TEST_ENDPOINT, true);
+        });
+        assertTrue(exception.getMessage().contains("Error en la petición GET: 404"));
+        verify(mockConnection).disconnect();
     }
     
     @Test
     void post_Hospital_Success() throws Exception {
-         try (MockedStatic<URL> urlMockedStatic = Mockito.mockStatic(URL.class)) {
-            URL mockUrlInstance = mock(URL.class);
-            urlMockedStatic.when(() -> new URL(HOSPITAL_BASE_URL + TEST_ENDPOINT)).thenReturn(mockUrlInstance);
-            when(mockUrlInstance.openConnection()).thenReturn(mockConnection);
-            setupMockResponse(HttpURLConnection.HTTP_CREATED, SUCCESS_RESPONSE);
+        // Setup specific URL expectation
+         mockedUrlStatic.when(() -> new URL(HOSPITAL_BASE_URL + TEST_ENDPOINT)).thenReturn(mockUrlInstance);
+         setupMockResponse(HttpURLConnection.HTTP_CREATED, SUCCESS_RESPONSE);
 
-            String result = externalServiceClient.post(TEST_ENDPOINT, TEST_BODY, true);
-            assertEquals(SUCCESS_RESPONSE, result);
+        String result = externalServiceClient.post(TEST_ENDPOINT, TEST_BODY, true);
+        assertEquals(SUCCESS_RESPONSE, result);
 
-            verify(mockConnection).setRequestMethod("POST");
-            verify(mockConnection).setDoOutput(true);
-            verify(mockConnection).setRequestProperty(eq("Content-Type"), eq("application/json"));
-            verify(mockOutputStream).write(outputStreamCaptor.capture(), eq(0), anyInt());
-            assertEquals(TEST_BODY_JSON, new String(outputStreamCaptor.getValue(), StandardCharsets.UTF_8));
-            verify(mockConnection).getResponseCode();
-            verify(mockConnection).getInputStream();
-            verify(mockConnection).disconnect();
-        }
+        verify(mockConnection).setRequestMethod("POST");
+        verify(mockConnection).setDoOutput(true);
+        verify(mockConnection).setRequestProperty(eq("Content-Type"), eq("application/json"));
+        verify(mockOutputStream).write(outputStreamCaptor.capture(), eq(0), anyInt());
+        assertEquals(TEST_BODY_JSON, new String(outputStreamCaptor.getValue(), StandardCharsets.UTF_8));
+        verify(mockConnection).getResponseCode();
+        verify(mockConnection).getInputStream();
+        verify(mockConnection).disconnect();
     }
     
     @Test
     void post_HttpError_ThrowsExceptionWithErrorBody() throws Exception {
-         try (MockedStatic<URL> urlMockedStatic = Mockito.mockStatic(URL.class)) {
-            URL mockUrlInstance = mock(URL.class);
-            urlMockedStatic.when(() -> new URL(HOSPITAL_BASE_URL + TEST_ENDPOINT)).thenReturn(mockUrlInstance);
-            when(mockUrlInstance.openConnection()).thenReturn(mockConnection);
-            setupMockResponse(HttpURLConnection.HTTP_BAD_REQUEST, ERROR_RESPONSE);
+        // Setup specific URL expectation
+         mockedUrlStatic.when(() -> new URL(HOSPITAL_BASE_URL + TEST_ENDPOINT)).thenReturn(mockUrlInstance);
+         setupMockResponse(HttpURLConnection.HTTP_BAD_REQUEST, ERROR_RESPONSE);
 
-            Exception exception = assertThrows(Exception.class, () -> {
-                externalServiceClient.post(TEST_ENDPOINT, TEST_BODY, true);
-            });
-            assertTrue(exception.getMessage().contains("Error en la petición POST: 400"));
-            assertTrue(exception.getMessage().contains(ERROR_RESPONSE)); 
-            verify(mockConnection).getErrorStream();
-            verify(mockConnection).disconnect();
-        }
+        Exception exception = assertThrows(Exception.class, () -> {
+            externalServiceClient.post(TEST_ENDPOINT, TEST_BODY, true);
+        });
+        assertTrue(exception.getMessage().contains("Error en la petición POST: 400"));
+        assertTrue(exception.getMessage().contains(ERROR_RESPONSE)); 
+        verify(mockConnection).getErrorStream();
+        verify(mockConnection).disconnect();
     }
     
     // --- Async Tests (verify they delegate correctly) ---

@@ -92,7 +92,7 @@ class HospitalInsuranceServiceHandlerTest {
     
     @Test
     void handle_OptionsRequest_SendsNoContent() throws IOException {
-        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT));
+        // when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT)); // Unnecessary stubbing reported at line 95
         when(mockHttpExchange.getRequestMethod()).thenReturn("OPTIONS");
         handler.handle(mockHttpExchange);
         verify(mockHttpExchange).sendResponseHeaders(eq(204), eq(-1L));

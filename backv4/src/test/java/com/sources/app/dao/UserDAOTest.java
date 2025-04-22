@@ -62,13 +62,14 @@ class UserDAOTest {
     void setUp() {
         mockedHibernateUtil = Mockito.mockStatic(HibernateUtil.class);
         mockedHibernateUtil.when(HibernateUtil::getSessionFactory).thenReturn(mockSessionFactory);
+        
         // Use lenient() for mocks whose interactions might not always happen in every test path
-        lenient().when(mockSessionFactory.openSession()).thenReturn(mockSession);
-        lenient().when(mockSession.beginTransaction()).thenReturn(mockTransaction);
+        lenient().doReturn(mockSession).when(mockSessionFactory).openSession();
+        lenient().doReturn(mockTransaction).when(mockSession).beginTransaction();
         // Stub getStatus() globally
-        lenient().when(mockTransaction.getStatus()).thenReturn(mockTransactionStatus);
+        lenient().doReturn(mockTransactionStatus).when(mockTransaction).getStatus();
         // Assume it can rollback by default for tests that might need it
-        lenient().when(mockTransactionStatus.canRollback()).thenReturn(true); 
+        lenient().doReturn(true).when(mockTransactionStatus).canRollback(); 
     }
 
     @AfterEach

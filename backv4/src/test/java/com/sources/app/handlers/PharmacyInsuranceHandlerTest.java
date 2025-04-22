@@ -73,7 +73,8 @@ class PharmacyInsuranceHandlerTest {
     void setUp() {
         // Mock static HibernateUtil.setCorsHeaders if needed, or assume it works
         mockedHibernateUtil = Mockito.mockStatic(HibernateUtil.class);
-        mockedHibernateUtil.when(() -> HibernateUtil.setCorsHeaders(any(HttpExchange.class))).thenAnswer(invocation -> null);
+        mockedHibernateUtil.when(() -> HibernateUtil.setCorsHeaders(any(HttpExchange.class)))
+                           .thenAnswer(invocation -> null); 
         
         lenient().when(mockHttpExchange.getResponseHeaders()).thenReturn(mockResponseHeaders);
         lenient().when(mockHttpExchange.getResponseBody()).thenReturn(mockResponseBody);

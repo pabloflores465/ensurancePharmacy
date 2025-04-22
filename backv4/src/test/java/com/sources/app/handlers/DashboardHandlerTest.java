@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.sources.app.dao.*;
 import com.sources.app.entities.*;
+import com.sources.app.util.HibernateUtil;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import org.junit.jupiter.api.AfterEach;
@@ -15,8 +16,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.hibernate.SessionFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -51,6 +55,10 @@ class DashboardHandlerTest {
     private Headers mockResponseHeaders;
     @Mock
     private OutputStream mockResponseBody;
+    @Mock
+    private SessionFactory mockSessionFactory;
+
+    private MockedStatic<HibernateUtil> mockedHibernateUtil;
 
     @Spy
     private ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules()
@@ -72,6 +80,10 @@ class DashboardHandlerTest {
 
     @BeforeEach
     void setUp() {
+        mockedHibernateUtil = Mockito.mockStatic(HibernateUtil.class);
+        mockedHibernateUtil.when(HibernateUtil::getSessionFactory).thenReturn(mockSessionFactory);
+        mockedHibernateUtil.when(() -> HibernateUtil.setCorsHeaders(any(HttpExchange.class))).thenCallRealMethod();
+        
         lenient().when(mockHttpExchange.getResponseHeaders()).thenReturn(mockResponseHeaders);
         lenient().when(mockHttpExchange.getResponseBody()).thenReturn(mockResponseBody);
         lenient().when(mockHttpExchange.getRequestHeaders()).thenReturn(mockRequestHeaders);
@@ -79,6 +91,7 @@ class DashboardHandlerTest {
 
     @AfterEach
     void tearDown() throws IOException {
+        mockedHibernateUtil.close();
         // verify(mockResponseBody, atLeastOnce()).close(); // Add if needed
     }
     

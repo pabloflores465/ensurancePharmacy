@@ -55,9 +55,9 @@ class TransactionPolicyDAOTest {
     void setUp() {
         mockedHibernateUtil = Mockito.mockStatic(HibernateUtil.class);
         mockedHibernateUtil.when(HibernateUtil::getSessionFactory).thenReturn(mockSessionFactory);
-        lenient().when(mockSessionFactory.openSession()).thenReturn(mockSession);
-        lenient().when(mockSession.beginTransaction()).thenReturn(mockTransaction);
-        lenient().when(mockSession.createQuery(anyString(), eq(TransactionPolicy.class))).thenReturn(mockQuery);
+        lenient().doReturn(mockSession).when(mockSessionFactory).openSession();
+        lenient().doReturn(mockTransaction).when(mockSession).beginTransaction();
+        lenient().doReturn(mockQuery).when(mockSession).createQuery(anyString(), eq(TransactionPolicy.class));
     }
 
     @AfterEach

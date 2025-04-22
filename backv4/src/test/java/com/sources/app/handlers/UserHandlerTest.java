@@ -287,7 +287,7 @@ class UserHandlerTest {
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
         
         User existingUser = new User(); // Mock existing user found by DAO
-        when(mockUserDAO.findById(userId)).thenReturn(existingUser);
+        lenient().when(mockUserDAO.findById(userId)).thenReturn(existingUser);
         when(mockUserDAO.update(any(User.class))).thenReturn(userToUpdate);
         String expectedJson = objectMapper.writeValueAsString(userToUpdate);
         byte[] expectedBytes = expectedJson.getBytes(StandardCharsets.UTF_8);
@@ -308,7 +308,6 @@ class UserHandlerTest {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "/" + userId));
         String requestJson = "{}"; 
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
-        when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
         when(mockUserDAO.findById(userId)).thenReturn(null); // User not found
 
         userHandler.handle(mockHttpExchange);
@@ -324,7 +323,6 @@ class UserHandlerTest {
         // URI is just /api/users, no ID
         String requestJson = "{}"; 
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
-        when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
 
         userHandler.handle(mockHttpExchange);
 

@@ -71,7 +71,7 @@ class UserByEmailHandlerTest {
 
     @Test
     void handle_OptionsRequest_SendsNoContent() throws IOException {
-        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "test@example.com"));
+        // when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT)); // Unnecessary stubbing reported at line 74
         when(mockHttpExchange.getRequestMethod()).thenReturn("OPTIONS");
         userByEmailHandler.handle(mockHttpExchange);
         verify(mockHttpExchange).sendResponseHeaders(eq(204), eq(-1L));

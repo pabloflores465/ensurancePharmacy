@@ -77,7 +77,7 @@ class HospitalRedirectHandlerTest {
 
     @Test
     void handle_OptionsRequest_SendsNoContent() throws IOException {
-        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT));
+        // when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT)); // Unnecessary stubbing reported at line 80
         when(mockHttpExchange.getRequestMethod()).thenReturn("OPTIONS");
         hospitalRedirectHandler.handle(mockHttpExchange);
         verify(mockHttpExchange).sendResponseHeaders(eq(204), eq(-1L));
@@ -222,7 +222,7 @@ class HospitalRedirectHandlerTest {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + subPath));
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
         mockedHttpClientUtil.when(() -> HttpClientUtil.get(eq(expectedForwardUrl)))
-                           .thenThrow(new IOException(exceptionMessage)); // Simulate client throwing exception
+                           .thenThrow(new RuntimeException(exceptionMessage)); // Simulate client throwing exception
 
         hospitalRedirectHandler.handle(mockHttpExchange);
 
