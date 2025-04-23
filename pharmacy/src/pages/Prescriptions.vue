@@ -12,11 +12,14 @@
     <!-- Lista de recetas -->
     <div v-if="recipes && recipes.length > 0" class="prescriptions-list">
       <div v-for="recipe in recipes" :key="recipe._id" class="prescription-item">
-        <h3 class="text-xl font-bold">{{ recipe.patient && recipe.patient.username }}</h3>
-        <p v-if="recipe.patient && recipe.patient.email"><strong>Email:</strong> {{ recipe.patient.email }}</p>
+        <h3 class="text-xl font-bold">
+          {{ getPatientName(recipe) }}
+        </h3>
+        <p v-if="getPatientEmail(recipe)"><strong>Email:</strong> {{ getPatientEmail(recipe) }}</p>
         <p><strong>ID Receta:</strong> {{ recipe._id }}</p>
-        <p><strong>Diagnóstico:</strong> {{ recipe.diagnostic || 'No especificado' }}</p>
+        <p><strong>Diagnóstico:</strong> {{ getDiagnostic(recipe) }}</p>
         <p v-if="recipe.created_at"><strong>Fecha:</strong> {{ recipe.created_at }}</p>
+        <p v-if="recipe.formatted_date"><strong>Fecha:</strong> {{ recipe.formatted_date }}</p>
 
         <!-- Tabla de Medicinas -->
         <table class="medicine-table" v-if="recipe.medicines && recipe.medicines.length > 0">
@@ -59,46 +62,183 @@ import axios from 'axios';
 
 const recipes = ref([]);
 const errorMessage = ref('');
+const patientInfo = ref(null);
+
+// Funciones auxiliares para extraer información del paciente
+const getPatientName = (recipe) => {
+  // Si el paciente es un objeto completo en la receta
+  if (recipe.patient && typeof recipe.patient === 'object' && recipe.patient.username) {
+    return recipe.patient.username;
+  }
+  // Si el paciente está referenciado como ID y tenemos la información del paciente guardada
+  if (patientInfo.value && recipe.patient === patientInfo.value._id) {
+    return patientInfo.value.username;
+  }
+  // Si doctor_details está presente, usamos el formato doctor_details
+  if (recipe.doctor_details) {
+    return recipe.patient_details ? recipe.patient_details.username : 'Paciente';
+  }
+  return 'Paciente';
+};
+
+const getPatientEmail = (recipe) => {
+  // Si el paciente es un objeto completo en la receta
+  if (recipe.patient && typeof recipe.patient === 'object' && recipe.patient.email) {
+    return recipe.patient.email;
+  }
+  // Si el paciente está referenciado como ID y tenemos la información del paciente guardada
+  if (patientInfo.value && recipe.patient === patientInfo.value._id) {
+    return patientInfo.value.email;
+  }
+  // Si patient_details está presente
+  if (recipe.patient_details) {
+    return recipe.patient_details.email;
+  }
+  return '';
+};
+
+const getDiagnostic = (recipe) => {
+  // Intentar obtener diagnóstico desde diferentes estructuras posibles
+  if (recipe.diagnostic) {
+    return recipe.diagnostic;
+  }
+  if (recipe.medicines && recipe.medicines.length > 0 && recipe.medicines[0].diagnostico) {
+    return recipe.medicines[0].diagnostico;
+  }
+  return 'No especificado';
+};
 
 const fetchPrescriptions = async () => {
   try {
-    // Obtener el nombre de usuario (mel) del localStorage
-    let username = 'mel'; // Valor por defecto
+    // Obtener el email del usuario del localStorage
+    let userEmail = ''; // Valor por defecto
     try {
       const userData = JSON.parse(localStorage.getItem('user'));
-      if (userData && userData.name) {
-        username = userData.name; // Tomar el valor "mel" del campo name
-        console.log("Nombre de usuario obtenido:", username);
+      if (userData && userData.email) {
+        userEmail = userData.email;
+        console.log("Email de usuario obtenido:", userEmail);
       } else {
         // Intentar obtener desde session
         const sessionData = JSON.parse(localStorage.getItem('session'));
-        if (sessionData && sessionData.name) {
-          username = sessionData.name;
-          console.log("Nombre de usuario obtenido de session:", username);
+        if (sessionData && sessionData.email) {
+          userEmail = sessionData.email;
+          console.log("Email de usuario obtenido de session:", userEmail);
         } else {
-          console.warn("No se encontró el nombre de usuario en localStorage");
+          console.warn("No se encontró el email de usuario en localStorage");
+          // Fallback a username si no hay email
+          if (userData && userData.name) {
+            userEmail = userData.name;
+            console.log("Usando nombre de usuario en lugar de email:", userEmail);
+          } else if (sessionData && sessionData.name) {
+            userEmail = sessionData.name;
+            console.log("Usando nombre de usuario de session en lugar de email:", userEmail);
+          } else {
+            userEmail = 'rrrivera@unis.edu.gt'; // Valor por defecto si no hay información
+          }
         }
       }
     } catch (err) {
       console.error("Error al obtener el usuario del localStorage:", err);
+      userEmail = 'rrrivera@unis.edu.gt'; // Valor por defecto en caso de error
     }
 
-    // Consumir el API con el parámetro username (mel)
-    console.log(`Consultando recetas para el usuario: ${username}`);
-    const response = await axios.get(` http://172.20.10.3:5051/recipes?username=${username}`);
+    // Usando la URL específica proporcionada
+    // Corrigiendo la URL (quitando un slash)
+    const baseUrl = 'http://172.16.57.55:5050/recipes/email/';
+    const url = `${baseUrl}${userEmail}`;
+    console.log(`Consultando recetas con URL dinámica: ${url}`);
     
-    if (response.data && response.data.recipes) {
-      recipes.value = response.data.recipes;
-      console.log("RECETAS OBTENIDAS:", recipes.value);
+    const response = await axios.get(url, {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    console.log("Respuesta recibida:", response);
+    
+    // Verificar si la respuesta es HTML (texto que comienza con <!DOCTYPE o <html)
+    if (typeof response.data === 'string' && 
+        (response.data.trim().startsWith('<!DOCTYPE') || 
+         response.data.trim().startsWith('<html'))) {
+      console.error("Se recibió HTML en lugar de JSON:", response.data.substring(0, 200) + '...');
+      recipes.value = [];
+      errorMessage.value = 'El servidor respondió con HTML en lugar de datos JSON. Verifique la conexión.';
+      return;
+    }
+    
+    // Manejo flexible de diferentes formatos de respuesta
+    if (response.data) {
+      let recetasEncontradas = false;
+      
+      // Verificamos si existe el objeto patient (formato nuevo)
+      if (response.data.patient && Array.isArray(response.data.recipes)) {
+        recipes.value = response.data.recipes;
+        patientInfo.value = response.data.patient;
+        recetasEncontradas = true;
+        console.log("Formato 1: Objeto con patient y recipes array");
+      } 
+      // Verificamos si recipes existe directamente en la respuesta como array
+      else if (Array.isArray(response.data.recipes)) {
+        recipes.value = response.data.recipes;
+        recetasEncontradas = true;
+        console.log("Formato 2: Objeto con recipes array");
+      } 
+      // En caso de que la API devuelva un array directamente
+      else if (Array.isArray(response.data)) {
+        recipes.value = response.data;
+        recetasEncontradas = true;
+        console.log("Formato 3: Array directo");
+      } 
+      // Si la API devuelve un objeto que es la receta directamente
+      else if (response.data._id && response.data.medicines) {
+        recipes.value = [response.data];
+        recetasEncontradas = true;
+        console.log("Formato 4: Objeto de receta única");
+      }
+      // Si no reconocemos el formato, pero hay un objeto receta
+      else if (typeof response.data === 'object') {
+        // Intentar extraer cualquier array que parezca contener recetas
+        const possibleRecipesArrays = Object.values(response.data).filter(val => 
+          Array.isArray(val) && val.length > 0 && val[0]._id && val[0].medicines
+        );
+        
+        if (possibleRecipesArrays.length > 0) {
+          recipes.value = possibleRecipesArrays[0];
+          recetasEncontradas = true;
+          console.log("Formato 5: Extraído array de recetas de objeto", possibleRecipesArrays[0]);
+        } else {
+          // Último intento: buscar propiedades que parezcan recetas individuales
+          const possibleRecipes = Object.values(response.data).filter(val => 
+            val && typeof val === 'object' && val._id && val.medicines
+          );
+          
+          if (possibleRecipes.length > 0) {
+            recipes.value = possibleRecipes;
+            recetasEncontradas = true;
+            console.log("Formato 6: Extraídas recetas individuales", possibleRecipes);
+          }
+        }
+      }
+      
+      console.log("RECETAS PROCESADAS:", recipes.value);
+      
+      if (!recetasEncontradas) {
+        console.warn("Formato de respuesta no reconocido:", response.data);
+        recipes.value = [];
+        errorMessage.value = 'Formato de respuesta no reconocido. Consulte la consola para más detalles.';
+      } else if (recipes.value.length === 0) {
+        errorMessage.value = 'No se encontraron recetas para este usuario.';
+      }
     } else {
-      console.warn("La respuesta del API no tiene el formato esperado", response.data);
+      console.warn("La respuesta del API está vacía");
       recipes.value = [];
       errorMessage.value = 'No se encontraron recetas para este usuario.';
     }
   } catch (error) {
     console.error("Error al obtener las recetas:", error);
     recipes.value = [];
-    errorMessage.value = 'Error al obtener las recetas. Por favor, inténtelo de nuevo.';
+    errorMessage.value = `Error al obtener las recetas: ${error.message}. Por favor, inténtelo de nuevo.`;
   }
 };
 
