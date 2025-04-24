@@ -29,7 +29,7 @@ const success = ref("");
 
 // Configuración de IPs para la conexión con el backend
 const primaryIP = import.meta.env.VITE_IP || "localhost";
-const fallbackIPs = ["localhost", "127.0.0.1", "192.168.0.4"];
+const fallbackIPs = ["localhost", "127.0.0.1", "192.168.0.4", "172.16.57.55"];
 const possibleIPs = [primaryIP, ...fallbackIPs.filter(ip => ip !== primaryIP)];
 const HOSPITAL_API_URL = `http://${primaryIP}:5050`;
 
