@@ -144,7 +144,7 @@ const fetchPrescriptions = async () => {
 
     // Usando la URL específica proporcionada
     // Corrigiendo la URL (quitando un slash)
-    const baseUrl = 'http://172.16.57.55:5050/recipes/email/';
+    const baseUrl = 'http://172.16.57.55.16.57.55:5050/recipes/email/';
     const url = `${baseUrl}${userEmail}`;
     console.log(`Consultando recetas con URL dinámica: ${url}`);
     
