@@ -44,7 +44,7 @@
       <!-- Presentación -->
       <div class="mb-4">
         <label class="block text-gray-700">Presentación</label>
-        <input v-model="presentacion" type="text" class="input-field" required />
+        <input v-model="presentacion" type="number" class="input-field" required />
       </div>
 
       <!-- Stock -->

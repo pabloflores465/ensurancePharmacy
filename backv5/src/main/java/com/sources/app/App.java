@@ -111,12 +111,11 @@ public class App {
         server.createContext("/api2/comments", new CommentsHandler(commentsDAO));
         server.createContext("/api2/hospitals", new HospitalHandler(hospitalDAO));
         server.createContext("/api2/medicines", new MedicineHandler(medicineDAO));
-        server.createContext("/api2/medicine_catsubcats", new MedicineCatSubcatHandler(medicineCatSubcatDAO));
-        server.createContext("/api2/orders", new OrdersHandler(ordersDAO));
+        server.createContext("/api2/medicines/search", new SearchMedicineHandler(medicineDAO));
         server.createContext("/api2/order_medicines", new OrderMedicineHandler(orderMedicineDAO));
-        server.createContext("/api2/policies", new PolicyHandler(policyDAO));
-        server.createContext("/api2/prescriptions", new PrescriptionHandler(prescriptionDAO));
+        server.createContext("/api2/orders", new OrdersHandler(ordersDAO));
         server.createContext("/api2/prescription_medicines", new PrescriptionMedicineHandler(prescriptionMedicineDAO));
+        server.createContext("/api2/prescriptions", new PrescriptionHandler(prescriptionDAO));
         server.createContext("/api2/subcategories", new SubcategoryHandler(subcategoryDAO));
         server.createContext("/api2/external_medicines", new ExternalMedicineHandler(externalMedicineDAO));
         server.createContext("/api2/verification", new VerificationHandler());

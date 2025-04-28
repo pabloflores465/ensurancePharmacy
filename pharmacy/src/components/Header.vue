@@ -8,7 +8,6 @@
       <!-- Menú de Navegación (versión desktop) -->
       <nav class="nav-links hidden md:flex">
         <router-link to="/" class="nav-item">Inicio</router-link>
-        <router-link to="/ofertas" class="nav-item">Ofertas</router-link>
         <router-link to="/catalogo" class="nav-item"
           >Catálogo de Productos</router-link
         >
@@ -23,14 +22,6 @@
           class="nav-item admin-link"
         >
           📊 Dashboard Admin
-        </router-link>
-
-        <router-link
-          v-if="isLoggedIn && userStore.getUser().role === 'admin'"
-          to="/admin"
-          class="nav-item"
-        >
-          Agregar Productos
         </router-link>
 
         <router-link
@@ -72,9 +63,6 @@
       <router-link to="/" class="mobile-item" @click="toggleMenu"
         >Inicio</router-link
       >
-      <router-link to="/ofertas" class="mobile-item" @click="toggleMenu"
-        >Ofertas</router-link
-      >
       <router-link to="/catalogo" class="mobile-item" @click="toggleMenu"
         >Catálogo de Productos</router-link
       >
@@ -93,15 +81,6 @@
         @click="toggleMenu"
       >
         📊 Dashboard Admin
-      </router-link>
-
-      <router-link
-        v-if="isLoggedIn && userStore.getUser().role === 'admin'"
-        to="/admin"
-        class="mobile-item"
-        @click="toggleMenu"
-      >
-        Agregar Productos
       </router-link>
 
       <!-- Si está loggeado, muestra rol y logout (móvil) -->

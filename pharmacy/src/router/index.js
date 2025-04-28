@@ -7,13 +7,14 @@ import Catalogo from '../pages/Catalogo.vue';
 import Aseguradoras from '@/pages/Aseguradoras.vue';
 import Ofertas from '@/pages/Ofertas.vue';
 import ProductoDetalle from '@/pages/ProductoDetalle.vue'; // new import
+import VerificarCompra from '@/pages/VerificarCompra.vue'; // nueva página de verificación
 import Receta from '@/components/Receta.vue';
 import CreateProduct from '@/pages/CreateProduct.vue';
 import Prescriptions from '@/pages/Prescriptions.vue';
 import { authService } from '@/services/authService';
-import PrescriptionPay from "@/pages/PrescriptionPay.vue";
 import Cart from "@/components/Cart.vue";
 import AdminDash from '@/pages/AdminDash.vue'; // Importar el dashboard administrativo
+import DetalleReceta from '@/pages/DetalleReceta.vue'
 
 // Rutas para usuarios públicos y autenticados
 const userRoutes = [
@@ -24,12 +25,18 @@ const userRoutes = [
   { path: '/aseguradoras', component: Aseguradoras },
   { path: '/ofertas', component: Ofertas },
   { path: '/producto/:id', name: 'ProductoDetalle', component: ProductoDetalle },
+  { path: '/verificar-compra/:id', name: 'VerificarCompra', component: VerificarCompra, meta: { requiresAuth: true } },
   { path: '/receta', component: Receta },
   { path: '/create-product', name: 'CreateProduct', component: CreateProduct },
   { path: '/prescriptions', name: 'Prescriptions', component: Prescriptions },
   { path: '/dashboard', component: Dashboard, meta: { requiresAuth: true } },
-  { path: '/prescriptionpay/:id', name:'PrescriptionPay', component: PrescriptionPay},
-  {path: '/cart', name: 'Cart', component: Cart}
+  {path: '/cart', name: 'Cart', component: Cart},
+  {
+    path: '/detalle-receta/:id',
+    name: 'DetalleReceta',
+    component: DetalleReceta,
+    meta: { requiresAuth: true }
+  },
 ];
 
 // Rutas exclusivas para administradores

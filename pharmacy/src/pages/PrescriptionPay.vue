@@ -157,7 +157,9 @@ const fetchPrescription = async () => {
           ...p.medicine,
           dosis: p.dosis,
           frecuencia: p.frecuencia,
-          duracion: p.duracion
+          duracion: p.duracion,
+          cantidad: 1,
+          precio: p.medicine.price || 0
         });
       });
       prescription.value = grouped[prescriptionId];
@@ -202,8 +204,8 @@ const completePurchase = async () => {
         orders: order,
         medicine: { idMedicine: med.idMedicine },
         quantity: quantity,
-        cost: med.price || 0,
-        total: (med.price || 0) * quantity
+        cost: med.precio || 0,
+        total: (med.precio || 0) * quantity
       });
     }
 

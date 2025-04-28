@@ -34,7 +34,7 @@
               style="width: 60px; margin-left: 10px;"
             />
             <button
-              @click="purchaseProduct"
+              @click="redirectToCheckout"
               :disabled="!quantity || quantity < 1 || quantity > product.stock"
               style="margin-left: 10px;"
             >
@@ -89,6 +89,23 @@
           });
     },
     methods: {
+      redirectToCheckout() {
+        // Verificar si el usuario está logueado
+        const userStore = useUserStore();
+        if (!userStore.user) {
+          // Si no está logueado, redirigir a login
+          this.$router.push('/login');
+          return;
+        }
+        
+        // Redirigir a la página de verificación de compra
+        this.$router.push({
+          name: 'VerificarCompra',
+          params: { id: this.product.idMedicine },
+          query: { quantity: this.quantity }
+        });
+      },
+      
       purchaseProduct() {
         const userStore = useUserStore();
         const userId = userStore.user.idUser;

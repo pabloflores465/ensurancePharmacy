@@ -27,6 +27,7 @@
 /Users/randyrivera/Documents/Farmacia/ensurancePharmacy/backv5/src/main/java/com/sources/app/dao/CategoryDAO.java
 /Users/randyrivera/Documents/Farmacia/ensurancePharmacy/backv5/src/main/java/com/sources/app/handlers/OrderMedicineHandler.java
 /Users/randyrivera/Documents/Farmacia/ensurancePharmacy/backv5/src/main/java/com/sources/app/dao/BillDAO.java
+/Users/randyrivera/Documents/Farmacia/ensurancePharmacy/backv5/src/main/java/com/sources/app/handlers/XMLMedicineHandler.java
 /Users/randyrivera/Documents/Farmacia/ensurancePharmacy/backv5/src/main/java/com/sources/app/dao/MedicineCatSubcatDAO.java
 /Users/randyrivera/Documents/Farmacia/ensurancePharmacy/backv5/src/main/java/com/sources/app/util/HibernateUtil.java
 /Users/randyrivera/Documents/Farmacia/ensurancePharmacy/backv5/src/main/java/com/sources/app/handlers/PrescriptionHandler.java
@@ -40,7 +41,9 @@
 /Users/randyrivera/Documents/Farmacia/ensurancePharmacy/backv5/src/main/java/com/sources/app/handlers/MedicineHandler.java
 /Users/randyrivera/Documents/Farmacia/ensurancePharmacy/backv5/src/main/java/com/sources/app/App.java
 /Users/randyrivera/Documents/Farmacia/ensurancePharmacy/backv5/src/main/java/com/sources/app/util/HospitalClient.java
+/Users/randyrivera/Documents/Farmacia/ensurancePharmacy/backv5/src/main/java/com/sources/app/handlers/StaticXMLMedicineHandler.java
 /Users/randyrivera/Documents/Farmacia/ensurancePharmacy/backv5/src/main/java/com/sources/app/handlers/PrescriptionMedicineHandler.java
+/Users/randyrivera/Documents/Farmacia/ensurancePharmacy/backv5/src/main/java/com/sources/app/handlers/SearchMedicineHandler.java
 /Users/randyrivera/Documents/Farmacia/ensurancePharmacy/backv5/src/main/java/com/sources/app/entities/Subcategory.java
 /Users/randyrivera/Documents/Farmacia/ensurancePharmacy/backv5/src/main/java/com/sources/app/handlers/SubcategoryHandler.java
 /Users/randyrivera/Documents/Farmacia/ensurancePharmacy/backv5/src/main/java/com/sources/app/dao/ServiceApprovalDAO.java

@@ -31,6 +31,7 @@
             <th>Dosis</th>
             <th>Frecuencia</th>
             <th>Duración</th>
+            <th>Acción</th>
           </tr>
           </thead>
           <tbody>
@@ -41,11 +42,18 @@
             <td>{{ medicine.dosis }}</td>
             <td>{{ medicine.frecuencia }}</td>
             <td>{{ medicine.duracion }}</td>
+            <td>
+              <button 
+                class="buy-button small" 
+                @click="goToVerification(medicine.principioActivo, recipe._id)"
+              >
+                Comprar
+              </button>
+            </td>
           </tr>
           </tbody>
         </table>
         <p v-if="recipe.has_insurance" class="insurance-info">Con seguro médico</p>
-        <button class="buy-button" @click="$router.push({ name: 'PrescriptionPay', params: { id: recipe._id } })">Comprar</button>
       </div>
     </div>
 
@@ -59,7 +67,9 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const recipes = ref([]);
 const errorMessage = ref('');
 const patientInfo = ref(null);
@@ -108,6 +118,21 @@ const getDiagnostic = (recipe) => {
   return 'No especificado';
 };
 
+// Función para navegar a la página de verificación
+function goToVerification(medicinePrincipioActivo, recipeId) {
+  if (!medicinePrincipioActivo) {
+    console.error('No se proporcionó Principio Activo para la verificación.');
+    errorMessage.value = 'Error interno: No se pudo seleccionar el medicamento.';
+    return;
+  }
+  console.log(`Navegando a VerificarCompra para Principio Activo: ${medicinePrincipioActivo}, receta ID: ${recipeId}`);
+  router.push({
+    name: 'VerificarCompra',
+    params: { id: medicinePrincipioActivo },
+    query: { recipeId: recipeId }
+  });
+}
+
 const fetchPrescriptions = async () => {
   try {
     // Obtener el email del usuario del localStorage
@@ -144,7 +169,7 @@ const fetchPrescriptions = async () => {
 
     // Usando la URL específica proporcionada
     // Corrigiendo la URL (quitando un slash)
-    const baseUrl = 'http://172.16.57.55.16.57.55:5050/recipes/email/';
+    const baseUrl = 'http://192.168.0.21:5050/recipes/email/';
     const url = `${baseUrl}${userEmail}`;
     console.log(`Consultando recetas con URL dinámica: ${url}`);
     
@@ -302,5 +327,10 @@ onMounted(() => {
 
 .buy-button:hover {
   background-color: #45a049;
+}
+
+.buy-button.small {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
 }
 </style>

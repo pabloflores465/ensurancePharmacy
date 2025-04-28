@@ -3,11 +3,13 @@ com/sources/app/entities/MedicineCatSubcatId.class
 com/sources/app/handlers/InsuranceIntegrationHandler.class
 com/sources/app/dao/ExternalMedicineDAO.class
 com/sources/app/util/HibernateUtil.class
+com/sources/app/handlers/XMLMedicineHandler.class
 com/sources/app/dao/PrescriptionDAO.class
 com/sources/app/handlers/LoginHandler.class
 com/sources/app/util/ExternalServiceClient.class
 com/sources/app/entities/PrescriptionMedicine.class
 com/sources/app/handlers/PrescriptionHandler.class
+com/sources/app/handlers/StaticXMLMedicineHandler.class
 com/sources/app/entities/Bill.class
 com/sources/app/dao/SystemConfigDAO.class
 com/sources/app/handlers/VerificationHandler.class
@@ -34,6 +36,7 @@ com/sources/app/entities/Comments.class
 com/sources/app/handlers/HospitalHandler.class
 com/sources/app/entities/Prescription.class
 com/sources/app/App.class
+com/sources/app/handlers/SearchMedicineHandler.class
 com/sources/app/dao/UserDAO.class
 com/sources/app/entities/SystemConfig.class
 com/sources/app/handlers/MedicineHandler.class

@@ -1,90 +1,134 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <!-- Catalog.vue (o como se llame tu componente) -->
 <template>
-  <Header />
-  
   <div class="catalog-container">
-    <!-- Filtros -->
-    <div class="search-container">
-      <input
-        type="text"
-        v-model="searchQuery"
-        placeholder="Buscar producto..."
-        class="search-input"
-      />
-      <input
-        type="text"
-        v-model="activeIngredientFilter"
-        placeholder="Principio activo"
-        class="search-input"
-      />
-      <input
-        type="text"
-        v-model="brandFilter"
-        placeholder="Marca"
-        class="search-input"
-      />
-      <input
-        type="number"
-        v-model.number="minPrice"
-        placeholder="Precio mínimo"
-        class="search-input"
-      />
-      <input
-        type="number"
-        v-model.number="maxPrice"
-        placeholder="Precio máximo"
-        class="search-input"
-      />
+    <!-- Banner y título -->
+    <div class="catalog-header">
+      <h2 class="title">Catálogo de Medicamentos</h2>
+      <p class="subtitle">Encuentra los medicamentos que necesitas</p>
     </div>
-    <h2 class="title">🛒 Catálogo de Productos</h2>
+
+    <!-- Filtros con diseño moderno -->
+    <div class="filters-container">
+      <div class="search-box">
+        <i class="search-icon">🔍</i>
+        <input
+          type="text"
+          v-model="searchQuery"
+          placeholder="Buscar medicamento..."
+          class="search-input"
+        />
+      </div>
+      
+      <div class="filter-group">
+        <input
+          type="text"
+          v-model="activeIngredientFilter"
+          placeholder="Principio activo"
+          class="filter-input"
+        />
+        <input
+          type="text"
+          v-model="brandFilter"
+          placeholder="Marca"
+          class="filter-input"
+        />
+        <div class="price-filters">
+          <input
+            type="number"
+            v-model.number="minPrice"
+            placeholder="Precio mín"
+            class="filter-input price-input"
+          />
+          <span class="price-separator">-</span>
+          <input
+            type="number"
+            v-model.number="maxPrice"
+            placeholder="Precio máx"
+            class="filter-input price-input"
+          />
+        </div>
+      </div>
+    </div>
   
+    <!-- Grid de productos con nuevo diseño -->
     <div class="product-grid">
       <div v-for="product in filteredProducts" :key="product.idMedicine" class="product-card">
-        <!--<img :src="product.gallery[0]" :alt="product.name" class="product-image" />-->
-        <h3 class="product-name">{{ product.name }}</h3>
-        <p class="product-price">💰 Q{{ product.price.toFixed(2) }}</p>
-        <router-link :to="`/producto/${product.idMedicine}`" class="buy-button">
-          🛍️ Comprar
-        </router-link>
-        <button class="details-button" @click="openModal(product)">Ver detalles</button>
+        <div class="product-content">
+          <div class="product-badge" v-if="product.prescription">Requiere receta</div>
+          <h3 class="product-name">{{ product.name }}</h3>
+          <p class="product-active">{{ product.activeMedicament }}</p>
+          <p class="product-price">Q{{ product.price.toFixed(2) }}</p>
+          
+          <div class="product-actions">
+            <button class="details-button" @click="openModal(product)">
+              <span class="icon">ⓘ</span> Detalles
+            </button>
+            <router-link :to="`/producto/${product.idMedicine}`" class="buy-button">
+              <span class="icon">🛒</span> Comprar
+            </router-link>
+          </div>
+        </div>
       </div>
+    </div>
+
+    <!-- Indicador de carga -->
+    <div v-if="products.length === 0" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Cargando medicamentos...</p>
     </div>
   </div>
 
-  <!-- Modal (diseño dos columnas) -->
+  <!-- Modal de detalles del producto con diseño moderno -->
   <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
     <div class="modal-content">
       <button class="close-modal" @click="closeModal">✖</button>
       
-      <!-- Título del producto -->
-      <h3 class="modal-title">{{ selectedProduct.name }}</h3>
-
-      <!-- Contenedor con dos columnas: imágenes y detalles -->
       <div class="modal-body">
-        <!-- Columna con la galería de imágenes -->
-        <div class="product-images">
-          <!--<img
-            v-for="(img, index) in selectedProduct.gallery"
-            :key="index"
-            :src="img"
-            class="detail-image"
-          />-->
+        <div class="modal-header">
+          <h2 class="modal-title">{{ selectedProduct.name }}</h2>
+          <div class="modal-price">Q{{ selectedProduct.price ? selectedProduct.price.toFixed(2) : '0.00' }}</div>
+          <div class="product-badge large" v-if="selectedProduct.prescription">Requiere receta médica</div>
         </div>
-
-        <!-- Columna con la información del producto -->
-        <div class="product-info">
-          <p><strong>Descripción:</strong> {{ selectedProduct.description }}</p>
-          <p><strong>Ingrediente Activo:</strong> {{ selectedProduct.activeMedicament }}</p>
-          <p><strong>Marca:</strong> {{ selectedProduct.brand }}</p>
-          <p><strong>Precio:</strong> Q{{ selectedProduct.price }}</p>
-          <!-- Agrega más campos que necesites, por ejemplo inventario, recomendaciones, etc. -->
-          
-          <div class="actions">
-            <router-link :to="`/producto/${selectedProduct.idMedicine}`" class="buy-button">
-              Comprar
-            </router-link>
+        
+        <div class="info-grid">
+          <div class="info-item">
+            <h4>Principio Activo</h4>
+            <p>{{ selectedProduct.activeMedicament || 'No disponible' }}</p>
           </div>
+          
+          <div class="info-item">
+            <h4>Marca</h4>
+            <p>{{ selectedProduct.brand || 'No disponible' }}</p>
+          </div>
+          
+          <div class="info-item">
+            <h4>Concentración</h4>
+            <p>{{ selectedProduct.concentration || 'No disponible' }}</p>
+          </div>
+          
+          <div class="info-item">
+            <h4>Presentación</h4>
+            <p>{{ selectedProduct.presentacion || 'No disponible' }}</p>
+          </div>
+          
+          <div class="info-item">
+            <h4>Stock Disponible</h4>
+            <p class="stock-indicator" :class="{'low-stock': selectedProduct.stock < 10}">
+              {{ selectedProduct.stock }} unidades
+            </p>
+          </div>
+          
+          <div class="info-item full-width">
+            <h4>Descripción</h4>
+            <p class="description-text">{{ selectedProduct.description || 'No hay descripción disponible para este producto.' }}</p>
+          </div>
+        </div>
+        
+        <div class="modal-actions">
+          <router-link :to="`/producto/${selectedProduct.idMedicine}`" class="modal-buy-button">
+            Comprar Ahora
+          </router-link>
         </div>
       </div>
     </div>
@@ -93,20 +137,13 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-
-// 1. Importa tus imágenes locales
-/*import botellasImg from '@/assets/botellas.jpg'
-import farmaciaImg from '@/assets/farmacia.png'
-import medicinaImg from '@/assets/medicina.png'
-import muletasImg from '@/assets/muletas.jpg'
-import pastillasImg from '@/assets/pastillas.jpg'
-import pildorasImg from '@/assets/pildoras.webp'
-import masImg from '@/assets/mas.jpeg'*/
 import axios from "axios";
+
+
 const ip = process.env.VUE_APP_IP;
 
 const products = ref([]);
-// 2. Define tus productos utilizando las imágenes importadas
+
 const fetchProduct = async () => {
   try {
     const response = await axios.get(`http://${ip}:8081/api2/medicines`);
@@ -125,26 +162,30 @@ const selectedProduct = ref({});
 const openModal = (product) => {
   selectedProduct.value = product;
   showModal.value = true;
+  // Prevenir el scroll en el fondo cuando el modal está abierto
+  document.body.style.overflow = 'hidden';
 };
 
 const closeModal = () => {
   showModal.value = false;
+  // Restaurar el scroll cuando se cierra el modal
+  document.body.style.overflow = 'auto';
 };
 
 // Filtros
 const searchQuery = ref('');
 const activeIngredientFilter = ref('');
 const brandFilter = ref('');
-const minPrice = ref(0);
-const maxPrice = ref(1000);
+const minPrice = ref(null);
+const maxPrice = ref(null);
 
 const filteredProducts = computed(() => {
   return products.value.filter((product) => {
-    const matchesName = product.name.toLowerCase().includes(searchQuery.value.toLowerCase());
-    const matchesIngredient = product.activeMedicament.toLowerCase().includes(activeIngredientFilter.value.toLowerCase());
-    const matchesBrand = product.brand.toLowerCase().includes(brandFilter.value.toLowerCase());
-    const matchesMinPrice = product.price >= (minPrice.value || 0);
-    const matchesMaxPrice = maxPrice.value ? product.price <= maxPrice.value : true;
+    const matchesName = !searchQuery.value || product.name.toLowerCase().includes(searchQuery.value.toLowerCase());
+    const matchesIngredient = !activeIngredientFilter.value || product.activeMedicament.toLowerCase().includes(activeIngredientFilter.value.toLowerCase());
+    const matchesBrand = !brandFilter.value || product.brand.toLowerCase().includes(brandFilter.value.toLowerCase());
+    const matchesMinPrice = !minPrice.value || product.price >= minPrice.value;
+    const matchesMaxPrice = !maxPrice.value || product.price <= maxPrice.value;
 
     return (
       matchesName &&
@@ -158,181 +199,387 @@ const filteredProducts = computed(() => {
 </script>
 
 <style scoped>
+/* Estilos generales */
 .catalog-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #f8fafc;
+  min-height: 100vh;
+}
+
+/* Encabezado del catálogo */
+.catalog-header {
   text-align: center;
-  padding: 20px;
-  background-color: #f8f9fa;
-}
-
-.search-container {
-  margin-bottom: 20px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-}
-
-.search-input {
-  width: 200px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 16px;
+  margin-bottom: 2.5rem;
 }
 
 .title {
-  font-size: 24px;
+  font-size: 2.5rem;
+  font-weight: 700;
   color: #1e40af;
-  font-weight: bold;
-  margin-bottom: 20px;
+  margin-bottom: 0.5rem;
 }
 
+.subtitle {
+  font-size: 1.2rem;
+  color: #64748b;
+}
+
+/* Contenedor de filtros */
+.filters-container {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+.search-box {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+.search-input {
+  width: 100%;
+  padding: 1rem 1rem 1rem 3rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.filter-input {
+  flex: 1;
+  min-width: 180px;
+  padding: 0.8rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.price-filters {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.price-input {
+  width: 100px;
+  min-width: auto;
+}
+
+.price-separator {
+  color: #64748b;
+}
+
+/* Grid de productos */
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  padding: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
 }
 
 .product-card {
-  background: white;
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  transition: transform 0.2s;
+  background-color: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  padding: 1.5rem;
 }
 
 .product-card:hover {
-  transform: scale(1.05);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
-.product-image {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  border-radius: 8px;
+.product-content {
+  padding: 1.2rem;
 }
 
 .product-name {
-  font-size: 18px;
-  margin: 10px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+  height: 2.6rem;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.product-active {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin-bottom: 0.8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .product-price {
-  font-size: 16px;
+  font-size: 1.3rem;
+  font-weight: 700;
   color: #16a34a;
-  font-weight: bold;
+  margin-bottom: 1rem;
 }
 
-.buy-button {
-  background: #1e40af;
-  color: white;
+.product-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.details-button, .buy-button {
+  padding: 0.7rem 1rem;
   border: none;
-  padding: 10px 15px;
-  border-radius: 5px;
-  font-size: 16px;
+  border-radius: 6px;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s;
-  text-decoration: none; /* para lucir como botón y no un link subrayado */
-}
-
-.buy-button:hover {
-  background: #1e3a8a;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  text-decoration: none;
 }
 
 .details-button {
-  background: #4b5563;
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 5px;
-  font-size: 14px;
-  cursor: pointer;
-  margin-top: 10px;
-  transition: background 0.3s;
+  background-color: #f1f5f9;
+  color: #334155;
+  flex: 1;
 }
 
 .details-button:hover {
-  background: #374151;
+  background-color: #e2e8f0;
 }
 
-/* Modal estilos */
+.buy-button {
+  background-color: #1e40af;
+  color: white;
+  flex: 1;
+}
+
+.buy-button:hover {
+  background-color: #1e3a8a;
+}
+
+.icon {
+  font-size: 1rem;
+}
+
+/* Indicador de carga */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #64748b;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e2e8f0;
+  border-top: 4px solid #1e40af;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Modal */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: center;
   justify-content: center;
-  z-index: 999; /* para que esté sobre otros elementos */
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
 }
 
 .modal-content {
-  background: white;
-  border-radius: 10px;
-  padding: 20px;
+  background-color: white;
+  border-radius: 12px;
   width: 90%;
-  max-width: 700px;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
   position: relative;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  padding: 2rem;
 }
 
 .close-modal {
   position: absolute;
-  top: 10px;
-  right: 15px;
-  background: transparent;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(0, 0, 0, 0.1);
+  color: #334155;
   border: none;
-  font-size: 20px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
   cursor: pointer;
+  transition: background-color 0.2s ease;
+  z-index: 10;
+}
+
+.close-modal:hover {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.modal-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .modal-title {
-  margin-bottom: 16px;
-  font-size: 1.5rem;
-  color: #1e40af;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
 }
 
-/* Cuerpo del modal a dos columnas */
-.modal-body {
-  display: flex;
-  flex-wrap: wrap; /* para que en pantallas pequeñas se adapte */
-  gap: 20px;
+.modal-price {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #16a34a;
+  margin-bottom: 2rem;
 }
 
-/* Columna de imágenes */
-.product-images {
-  flex: 0 0 200px; /* ancho fijo de 200px */
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
 }
 
-/* Imágenes dentro de la galería */
-.detail-image {
-  width: 100%;
-  border-radius: 6px;
-  object-fit: cover;
-}
-
-/* Columna de información */
-.product-info {
-  flex: 1; /* ocupa el resto del espacio */
+.info-item {
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
 
-.actions {
-  margin-top: 15px;
-  text-align: right; /* alineamos el botón a la derecha (opcional) */
+.info-item h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
 }
 
-/* Ajusta si necesitas inputs más anchos */
-.search-input {
-  width: 50%;
+.info-item p {
+  font-size: 1.1rem;
+  color: #1e293b;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.description-text {
+  line-height: 1.6;
+}
+
+.stock-indicator {
+  font-weight: 600;
+}
+
+.low-stock {
+  color: #ef4444;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.modal-buy-button {
+  background-color: #1e40af;
+  color: white;
+  border: none;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.modal-buy-button:hover {
+  background-color: #1e3a8a;
+}
+
+.product-badge {
+  display: inline-block;
+  background-color: rgba(239, 68, 68, 0.9);
+  color: white;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.product-badge.large {
+  font-size: 0.85rem;
+  padding: 0.5rem 0.8rem;
+  margin-top: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .modal-body {
+    padding: 1.5rem;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
