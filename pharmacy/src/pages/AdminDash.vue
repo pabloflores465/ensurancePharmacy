@@ -518,6 +518,14 @@ onMounted(async () => {
     <div class="dashboard-container">
       <h1 class="dashboard-title">Dashboard Administrativo</h1>
 
+      <!-- Información de conexión -->
+      <div class="connection-info">
+        <p class="text-gray-600">
+          <span class="font-bold">IP del servidor:</span> {{ ip }}
+          <span class="font-bold ml-4">Puerto:</span> 8081
+        </p>
+      </div>
+
       <!-- Botón para exportar medicamentos en XML -->
       <div class="export-container">
         <button
@@ -983,5 +991,13 @@ onMounted(async () => {
   .summary-cards {
     grid-template-columns: 1fr;
   }
+}
+
+.connection-info {
+  background-color: #f8fafc;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #e2e8f0;
 }
 </style>

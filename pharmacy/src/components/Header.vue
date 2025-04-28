@@ -11,7 +11,6 @@
         <router-link to="/catalogo" class="nav-item"
           >Catálogo de Productos</router-link
         >
-        <router-link to="/receta" class="nav-item">Receta</router-link>
         <router-link to="/contact" class="nav-item">Contacto</router-link>
         <router-link to="/cart" class="nav-item">Carrito</router-link>
 
@@ -66,12 +65,7 @@
       <router-link to="/catalogo" class="mobile-item" @click="toggleMenu"
         >Catálogo de Productos</router-link
       >
-      <router-link to="/receta" class="mobile-item" @click="toggleMenu"
-        >Receta</router-link
-      >
-      <router-link to="/contact" class="mobile-item" @click="toggleMenu"
-        >Contacto</router-link
-      >
+     
 
       <!-- Enlace SOLO para administradores (móvil) -->
       <router-link
