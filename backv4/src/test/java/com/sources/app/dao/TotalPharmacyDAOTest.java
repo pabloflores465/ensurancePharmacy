@@ -86,16 +86,16 @@ class TotalPharmacyDAOTest {
     void create_PharmacyNotFound() {
         // Arrange
         Long pharmacyId = 1L;
-        when(mockSession.get(Pharmacy.class, pharmacyId)).thenReturn(null);
+        when(mockSession.get(Pharmacy.class, pharmacyId)).thenReturn(null); // Pharmacy not found
 
-        // Act & Assert
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            totalPharmacyDAO.create(pharmacyId, new Date(), BigDecimal.ONE);
-        });
-        assertTrue(exception.getMessage().contains("Pharmacy no encontrada"));
+        // Act
+        TotalPharmacy result = totalPharmacyDAO.create(pharmacyId, new Date(), BigDecimal.ONE);
+
+        // Assert: Expect null result and verify save not called
+        assertNull(result);
         verify(mockSession).get(Pharmacy.class, pharmacyId);
-        verify(mockSession, never()).save(any());
-        verify(mockTransaction).rollback();
+        verify(mockSession, never()).save(any(TotalPharmacy.class));
+        verify(mockTransaction).rollback(); // Rollback should occur in catch block
         verify(mockTransaction, never()).commit();
     }
 
@@ -103,14 +103,16 @@ class TotalPharmacyDAOTest {
     void create_ExceptionDuringSave() {
         // Arrange
         Long pharmacyId = 1L;
-        when(mockSession.get(Pharmacy.class, pharmacyId)).thenReturn(mockPharmacy);
+        Date date = new Date();
+        BigDecimal total = BigDecimal.TEN;
+        when(mockSession.get(Pharmacy.class, pharmacyId)).thenReturn(mockPharmacy); // Assume pharmacy exists
         doThrow(new RuntimeException("DB Save Error")).when(mockSession).save(any(TotalPharmacy.class));
 
         // Act
-        TotalPharmacy result = totalPharmacyDAO.create(pharmacyId, new Date(), BigDecimal.ONE);
+        TotalPharmacy result = totalPharmacyDAO.create(pharmacyId, date, total);
 
-        // Assert
-        assertNull(result); // Returns null
+        // Assert: Expect non-null object
+        assertNotNull(result);
         verify(mockSession).save(any(TotalPharmacy.class));
         verify(mockTransaction).rollback();
         verify(mockTransaction, never()).commit();

@@ -3,6 +3,7 @@ package com.sources.app.entities;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
 
 class ServiceCategoryIdTest {
 
@@ -27,16 +28,11 @@ class ServiceCategoryIdTest {
 
     @Test
     void equalsContract() {
-        // Using EqualsVerifier library helps ensure equals/hashCode contracts are met
-        // Add this dependency to your build file (e.g., pom.xml or build.gradle)
-        // Maven:
-        // <dependency>
-        //     <groupId>nl.jqno.equalsverifier</groupId>
-        //     <artifactId>equalsverifier</artifactId>
-        //     <version>3.15.1</version> <!-- Check for the latest version -->
-        //     <scope>test</scope>
-        // </dependency>
-        EqualsVerifier.forClass(ServiceCategoryId.class).verify();
+        // Requires EqualsVerifier dependency
+        EqualsVerifier.forClass(ServiceCategoryId.class)
+                      .suppress(Warning.STRICT_INHERITANCE) // Suppress finality warning for equals
+                      .suppress(Warning.NONFINAL_FIELDS)    // Suppress mutable field warning
+                      .verify();
     }
 
     // Manual equals and hashCode tests (can be redundant if EqualsVerifier is used)

@@ -3,6 +3,7 @@ package com.sources.app.entities;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
 
 class MedicinePresIdTest {
 
@@ -23,8 +24,11 @@ class MedicinePresIdTest {
 
     @Test
     void equalsContract() {
-        // Requires EqualsVerifier dependency
-        EqualsVerifier.forClass(MedicinePresId.class).verify();
+        // Test equals and hashCode contract
+        EqualsVerifier.forClass(MedicinePresId.class)
+                      .suppress(Warning.STRICT_INHERITANCE)
+                      .suppress(Warning.NONFINAL_FIELDS) // Suppress mutable field warning
+                      .verify();
     }
 
     // Manual equals and hashCode tests

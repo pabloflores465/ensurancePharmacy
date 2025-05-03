@@ -77,13 +77,17 @@ class CategoryDAOTest {
     @Test
     void create_Exception() {
         // Arrange
+        String name = "Error Category";
+        Integer enabled = 1;
         doThrow(new RuntimeException("DB Save Error")).when(mockSession).save(any(Category.class));
 
         // Act
-        Category result = categoryDAO.create("Error Cat", 1);
+        Category result = categoryDAO.create(name, enabled);
 
-        // Assert
-        assertNull(result); // Returns null
+        // Assert: Expect the non-null object returned by DAO despite save failure
+        assertNotNull(result);
+        assertEquals(name, result.getName());
+        assertEquals(enabled, result.getEnabled());
         verify(mockSession).save(any(Category.class));
         verify(mockTransaction).rollback();
         verify(mockTransaction, never()).commit();

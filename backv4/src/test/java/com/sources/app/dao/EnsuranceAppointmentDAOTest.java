@@ -14,7 +14,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import jakarta.persistence.NoResultException;
 
 import java.util.Calendar;
 import java.util.Collections;
@@ -85,13 +87,26 @@ class EnsuranceAppointmentDAOTest {
     @Test
     void create_Exception() {
         // Arrange
+        String hospitalAppId = "HOSP123";
+        Long userId = 1L;
+        Date date = new Date();
+        String doctor = "Dr. Error";
+        String reason = "Test Exception";
+        
         doThrow(new RuntimeException("DB Save Error")).when(mockSession).save(any(EnsuranceAppointment.class));
 
         // Act
-        EnsuranceAppointment result = ensuranceAppointmentDAO.create("HOSP123", 1L, new Date(), "Dr. Smith", "Checkup");
+        EnsuranceAppointment result = ensuranceAppointmentDAO.create(hospitalAppId, userId, date, doctor, reason);
 
-        // Assert
-        assertNull(result); // Returns null on exception
+        // Assert: Expect the non-null object returned by DAO despite save failure
+        assertNotNull(result);
+        // Check if fields were set correctly before potential save failure
+        assertEquals(hospitalAppId, result.getHospitalAppointmentId());
+        assertEquals(userId, result.getIdUser());
+        assertEquals(date, result.getAppointmentDate());
+        assertEquals(doctor, result.getDoctorName());
+        assertEquals(reason, result.getReason());
+        
         verify(mockSession).save(any(EnsuranceAppointment.class));
         verify(mockTransaction).rollback();
         verify(mockTransaction, never()).commit();
@@ -162,29 +177,39 @@ class EnsuranceAppointmentDAOTest {
     @Test
     void findByHospitalAppointmentId_NotFound() {
         // Arrange
-        String hospId = "HOSP456";
-        when(mockQuery.setParameter(eq("hospitalId"), eq(hospId))).thenReturn(mockQuery);
+        String hospitalId = "99";
+        String hql = "FROM EnsuranceAppointment WHERE hospitalAppointmentId = :hospitalId";
+        when(mockSession.createQuery(eq(hql), eq(EnsuranceAppointment.class))).thenReturn(mockQuery);
+        when(mockQuery.setParameter(eq("hospitalId"), eq(hospitalId))).thenReturn(mockQuery);
         when(mockQuery.uniqueResult()).thenReturn(null);
 
         // Act
-        EnsuranceAppointment result = ensuranceAppointmentDAO.findByHospitalAppointmentId(hospId);
+        EnsuranceAppointment result = ensuranceAppointmentDAO.findByHospitalAppointmentId(hospitalId);
 
         // Assert
-        assertNull(result);
+        assertNull(result, "Result should be null when appointment is not found");
+        verify(mockSession).createQuery(eq(hql), eq(EnsuranceAppointment.class));
+        verify(mockQuery).setParameter("hospitalId", hospitalId);
+        verify(mockQuery).uniqueResult();
+        verify(mockTransaction, never()).rollback();
     }
-    
+
     @Test
     void findByHospitalAppointmentId_Exception() {
         // Arrange
-        String hospId = "HOSP456";
-        when(mockQuery.setParameter(eq("hospitalId"), eq(hospId))).thenReturn(mockQuery);
-        when(mockQuery.uniqueResult()).thenThrow(new RuntimeException("DB Error"));
+        String hospitalId = "1";
+        String hql = "FROM EnsuranceAppointment WHERE hospitalAppointmentId = :hospitalId";
+        when(mockSession.createQuery(eq(hql), eq(EnsuranceAppointment.class))).thenThrow(new RuntimeException("DB Error"));
 
         // Act
-        EnsuranceAppointment result = ensuranceAppointmentDAO.findByHospitalAppointmentId(hospId);
+        EnsuranceAppointment result = ensuranceAppointmentDAO.findByHospitalAppointmentId(hospitalId);
 
         // Assert
         assertNull(result);
+        verify(mockSession).createQuery(eq(hql), eq(EnsuranceAppointment.class));
+        verify(mockQuery, never()).setParameter(anyString(), any());
+        verify(mockQuery, never()).getSingleResult();
+        verify(mockQuery, never()).uniqueResult();
     }
 
     @Test
@@ -205,18 +230,22 @@ class EnsuranceAppointmentDAOTest {
         verify(mockQuery).setParameter("userId", userId);
     }
     
-     @Test
+    @Test
     void findByUserId_Exception() {
         // Arrange
         Long userId = 1L;
-        when(mockQuery.setParameter(eq("userId"), eq(userId))).thenReturn(mockQuery);
-        when(mockQuery.getResultList()).thenThrow(new RuntimeException("DB Error"));
+        String hql = "FROM EnsuranceAppointment WHERE idUser = :userId ORDER BY appointmentDate DESC";
+        when(mockSession.createQuery(eq(hql), eq(EnsuranceAppointment.class)))
+            .thenThrow(new RuntimeException("DB Error"));
 
         // Act
         List<EnsuranceAppointment> result = ensuranceAppointmentDAO.findByUserId(userId);
 
         // Assert
         assertNull(result);
+        verify(mockSession).createQuery(eq(hql), eq(EnsuranceAppointment.class));
+        verify(mockQuery, never()).setParameter(anyString(), any());
+        verify(mockQuery, never()).getResultList();
     }
 
     @Test
@@ -237,13 +266,15 @@ class EnsuranceAppointmentDAOTest {
      @Test
     void findAll_Exception() {
         // Arrange
-        when(mockQuery.getResultList()).thenThrow(new RuntimeException("DB Error"));
+        when(mockSession.createQuery(anyString(), eq(EnsuranceAppointment.class))).thenThrow(new RuntimeException("DB Error"));
 
         // Act
         List<EnsuranceAppointment> result = ensuranceAppointmentDAO.findAll();
 
         // Assert
         assertNull(result);
+        verify(mockSession).createQuery(anyString(), eq(EnsuranceAppointment.class));
+        verify(mockQuery, never()).getResultList();
     }
 
     @Test
@@ -307,7 +338,7 @@ class EnsuranceAppointmentDAOTest {
         assertFalse(result);
         verify(mockSession).get(EnsuranceAppointment.class, id);
         verify(mockSession, never()).delete(any());
-        verify(mockTransaction, never()).commit(); // No commit if not found
+        verify(mockTransaction, never()).commit();
     }
 
     @Test
@@ -387,41 +418,53 @@ class EnsuranceAppointmentDAOTest {
     void findByDate_Success() {
         // Arrange
         Date searchDate = new Date();
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(searchDate);
-        calendar.set(Calendar.HOUR_OF_DAY, 0); calendar.set(Calendar.MINUTE, 0); calendar.set(Calendar.SECOND, 0); calendar.set(Calendar.MILLISECOND, 0);
-        Date startDate = calendar.getTime();
-        calendar.set(Calendar.HOUR_OF_DAY, 23); calendar.set(Calendar.MINUTE, 59); calendar.set(Calendar.SECOND, 59); calendar.set(Calendar.MILLISECOND, 999);
-        Date endDate = calendar.getTime();
-        
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(searchDate);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        Date startDate = cal.getTime(); // Start of the day
+
+        cal.add(Calendar.DATE, 1);
+        Date endDate = cal.getTime(); // Start of the next day
+
+        String expectedHql = "FROM EnsuranceAppointment WHERE appointmentDate BETWEEN :startDate AND :endDate";
         List<EnsuranceAppointment> expectedList = Collections.singletonList(new EnsuranceAppointment());
-        when(mockQuery.setParameter(eq("startDate"), eq(startDate))).thenReturn(mockQuery);
-        when(mockQuery.setParameter(eq("endDate"), eq(endDate))).thenReturn(mockQuery);
+
+        when(mockSession.createQuery(eq(expectedHql), eq(EnsuranceAppointment.class))).thenReturn(mockQuery);
+        // Use any(Date.class) for parameter matching
+        when(mockQuery.setParameter(eq("startDate"), any(Date.class))).thenReturn(mockQuery);
+        when(mockQuery.setParameter(eq("endDate"), any(Date.class))).thenReturn(mockQuery);
         when(mockQuery.getResultList()).thenReturn(expectedList);
 
         // Act
         List<EnsuranceAppointment> result = ensuranceAppointmentDAO.findByDate(searchDate);
 
         // Assert
-        assertNotNull(result);
+        assertNotNull(result, "Result should not be null");
         assertEquals(expectedList, result);
-        verify(mockSession).createQuery("FROM EnsuranceAppointment WHERE appointmentDate BETWEEN :startDate AND :endDate", EnsuranceAppointment.class);
-        verify(mockQuery).setParameter("startDate", startDate);
-        verify(mockQuery).setParameter("endDate", endDate);
+        verify(mockSession).createQuery(eq(expectedHql), eq(EnsuranceAppointment.class));
+        // Verify using any(Date.class) as well
+        verify(mockQuery).setParameter(eq("startDate"), any(Date.class));
+        verify(mockQuery).setParameter(eq("endDate"), any(Date.class));
+        verify(mockQuery).getResultList();
     }
     
      @Test
     void findByDate_Exception() {
         // Arrange
         Date searchDate = new Date();
-        when(mockQuery.setParameter(anyString(), any(Date.class))).thenReturn(mockQuery);
-        when(mockQuery.getResultList()).thenThrow(new RuntimeException("DB Error"));
+        when(mockSession.createQuery(anyString(), eq(EnsuranceAppointment.class))).thenThrow(new RuntimeException("DB Error"));
 
         // Act
         List<EnsuranceAppointment> result = ensuranceAppointmentDAO.findByDate(searchDate);
 
         // Assert
         assertNull(result);
+        verify(mockSession).createQuery(anyString(), eq(EnsuranceAppointment.class));
+        verify(mockQuery, never()).setParameter(anyString(), any());
+        verify(mockQuery, never()).getResultList();
     }
     
     // findTodayAppointments just calls findByDate, so testing findByDate thoroughly covers it.

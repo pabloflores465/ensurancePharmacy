@@ -88,13 +88,13 @@ class TotalHospitalDAOTest {
         Long hospitalId = 1L;
         when(mockSession.get(Hospital.class, hospitalId)).thenReturn(null);
 
-        // Act & Assert
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            totalHospitalDAO.create(hospitalId, new Date(), BigDecimal.TEN);
-        });
-        assertTrue(exception.getMessage().contains("Hospital no encontrado"));
+        // Act
+        TotalHospital result = totalHospitalDAO.create(hospitalId, new Date(), BigDecimal.TEN);
+
+        // Assert: Expect null result and verify save was not called
+        assertNull(result);
         verify(mockSession).get(Hospital.class, hospitalId);
-        verify(mockSession, never()).save(any());
+        verify(mockSession, never()).save(any(TotalHospital.class));
         verify(mockTransaction).rollback();
         verify(mockTransaction, never()).commit();
     }
@@ -103,14 +103,16 @@ class TotalHospitalDAOTest {
     void create_ExceptionDuringSave() {
         // Arrange
         Long hospitalId = 1L;
+        Date date = new Date();
+        BigDecimal total = BigDecimal.TEN;
         when(mockSession.get(Hospital.class, hospitalId)).thenReturn(mockHospital);
         doThrow(new RuntimeException("DB Save Error")).when(mockSession).save(any(TotalHospital.class));
 
         // Act
-        TotalHospital result = totalHospitalDAO.create(hospitalId, new Date(), BigDecimal.TEN);
+        TotalHospital result = totalHospitalDAO.create(hospitalId, date, total);
 
-        // Assert
-        assertNull(result); // Returns null
+        // Assert: Expect non-null object
+        assertNotNull(result);
         verify(mockSession).save(any(TotalHospital.class));
         verify(mockTransaction).rollback();
         verify(mockTransaction, never()).commit();

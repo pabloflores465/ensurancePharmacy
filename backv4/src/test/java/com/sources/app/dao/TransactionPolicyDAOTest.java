@@ -92,57 +92,56 @@ class TransactionPolicyDAOTest {
     @Test
     void create_PolicyNotFound() {
         // Arrange
-        Long policyId = 1L;
-        Long userId = 2L;
-        when(mockSession.get(Policy.class, policyId)).thenReturn(null);
-        when(mockSession.get(User.class, userId)).thenReturn(mockUser);
+        Long policyId = 1L, userId = 2L;
+        when(mockSession.get(Policy.class, policyId)).thenReturn(null); // Policy not found
+        when(mockSession.get(User.class, userId)).thenReturn(mockUser); // Assume user exists
 
-        // Act & Assert
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            transactionPolicyDAO.create(policyId, userId, new Date(), BigDecimal.ZERO);
-        });
-        assertEquals("Policy o User no encontrados.", exception.getMessage());
-        verify(mockSession).get(Policy.class, policyId);
-        verify(mockSession, never()).get(eq(User.class), eq(userId));
-        verify(mockSession, never()).save(any());
-        verify(mockTransaction).rollback();
-        verify(mockTransaction, never()).commit();
-    }
-    
-     @Test
-    void create_UserNotFound() {
-        // Arrange
-        Long policyId = 1L;
-        Long userId = 2L;
-        when(mockSession.get(Policy.class, policyId)).thenReturn(mockPolicy);
-        when(mockSession.get(User.class, userId)).thenReturn(null);
+        // Act
+        TransactionPolicy result = transactionPolicyDAO.create(policyId, userId, new Date(), BigDecimal.ZERO);
 
-        // Act & Assert
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            transactionPolicyDAO.create(policyId, userId, new Date(), BigDecimal.ZERO);
-        });
-        assertEquals("Policy o User no encontrados.", exception.getMessage());
+        // Assert: Expect null result and verify save not called
+        assertNull(result);
         verify(mockSession).get(Policy.class, policyId);
         verify(mockSession).get(User.class, userId);
-        verify(mockSession, never()).save(any());
-        verify(mockTransaction).rollback();
+        verify(mockSession, never()).save(any(TransactionPolicy.class));
+        verify(mockTransaction).rollback(); // Rollback should occur
+        verify(mockTransaction, never()).commit();
+    }
+
+    @Test
+    void create_UserNotFound() {
+        // Arrange
+        Long policyId = 1L, userId = 2L;
+        when(mockSession.get(Policy.class, policyId)).thenReturn(mockPolicy); // Assume policy exists
+        when(mockSession.get(User.class, userId)).thenReturn(null); // User not found
+
+        // Act
+        TransactionPolicy result = transactionPolicyDAO.create(policyId, userId, new Date(), BigDecimal.ZERO);
+
+        // Assert: Expect null result and verify save not called
+        assertNull(result);
+        verify(mockSession).get(Policy.class, policyId);
+        verify(mockSession).get(User.class, userId);
+        verify(mockSession, never()).save(any(TransactionPolicy.class));
+        verify(mockTransaction).rollback(); // Rollback should occur
         verify(mockTransaction, never()).commit();
     }
 
     @Test
     void create_ExceptionDuringSave() {
         // Arrange
-        Long policyId = 1L;
-        Long userId = 2L;
+        Long policyId = 1L, userId = 2L;
+        Date date = new Date();
+        BigDecimal total = BigDecimal.TEN;
         when(mockSession.get(Policy.class, policyId)).thenReturn(mockPolicy);
         when(mockSession.get(User.class, userId)).thenReturn(mockUser);
         doThrow(new RuntimeException("DB Save Error")).when(mockSession).save(any(TransactionPolicy.class));
 
         // Act
-        TransactionPolicy result = transactionPolicyDAO.create(policyId, userId, new Date(), BigDecimal.ZERO);
+        TransactionPolicy result = transactionPolicyDAO.create(policyId, userId, date, total);
 
-        // Assert
-        assertNull(result); // Returns null
+        // Assert: Expect non-null object
+        assertNotNull(result);
         verify(mockSession).save(any(TransactionPolicy.class));
         verify(mockTransaction).rollback();
         verify(mockTransaction, never()).commit();

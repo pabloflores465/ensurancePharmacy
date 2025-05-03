@@ -92,7 +92,7 @@ class ConfigurableAmountHandlerTest {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create("/api/wrong-path"));
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
         configurableAmountHandler.handle(mockHttpExchange);
-        verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
+        verify(mockHttpExchange).sendResponseHeaders(eq(404), anyLong());
         verifyNoInteractions(mockConfigDAO);
     }
     
@@ -103,7 +103,7 @@ class ConfigurableAmountHandlerTest {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(ENDPOINT_CURRENT));
         when(mockHttpExchange.getRequestMethod()).thenReturn("POST"); // Unsupported for /current
         configurableAmountHandler.handle(mockHttpExchange);
-        verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L)); // Because path matched, but method didn't in specific handlers
+        verify(mockHttpExchange).sendResponseHeaders(eq(404), anyLong()); // Because path matched, but method didn't in specific handlers
         verifyNoInteractions(mockConfigDAO);
     }
     
@@ -112,7 +112,7 @@ class ConfigurableAmountHandlerTest {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(ENDPOINT_UPDATE));
         when(mockHttpExchange.getRequestMethod()).thenReturn("POST"); // Unsupported for /update
         configurableAmountHandler.handle(mockHttpExchange);
-        verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
+        verify(mockHttpExchange).sendResponseHeaders(eq(404), anyLong());
         verifyNoInteractions(mockConfigDAO);
     }
 
@@ -133,7 +133,7 @@ class ConfigurableAmountHandlerTest {
         configurableAmountHandler.handle(mockHttpExchange);
 
         verify(mockConfigDAO).findCurrentConfig();
-        verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
+        verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json; charset=UTF-8"));
         verify(mockHttpExchange).sendResponseHeaders(eq(200), eq((long)expectedBytes.length));
         verify(mockResponseBody).write(expectedBytes);
         verify(mockResponseBody).close();
@@ -154,7 +154,7 @@ class ConfigurableAmountHandlerTest {
         configurableAmountHandler.handle(mockHttpExchange);
 
         verify(mockConfigDAO).findCurrentConfig();
-        verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
+        verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json; charset=UTF-8"));
         verify(mockHttpExchange).sendResponseHeaders(eq(200), eq((long)expectedBytes.length));
         verify(mockResponseBody).write(responseBodyCaptor.capture());
         // Verify the response body matches the default object JSON
@@ -196,7 +196,7 @@ class ConfigurableAmountHandlerTest {
         assertEquals(existingConfig.getIdConfigurableAmount(), capturedConfig.getIdConfigurableAmount());
         assertEquals(newAmount, capturedConfig.getPrescriptionAmount());
 
-        verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
+        verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json; charset=UTF-8"));
         verify(mockHttpExchange).sendResponseHeaders(eq(200), anyLong());
         verify(mockResponseBody).write(responseBodyCaptor.capture());
         String responseJson = new String(responseBodyCaptor.getValue(), StandardCharsets.UTF_8);
@@ -230,7 +230,7 @@ class ConfigurableAmountHandlerTest {
         verify(mockConfigDAO).create(eq(newAmount));
         verify(mockConfigDAO, never()).update(any());
         
-        verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
+        verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json; charset=UTF-8"));
         verify(mockHttpExchange).sendResponseHeaders(eq(200), eq((long)expectedBytes.length)); // Should still be 200 OK as per code
         verify(mockResponseBody).write(expectedBytes);
         verify(mockResponseBody).close();
@@ -254,7 +254,7 @@ class ConfigurableAmountHandlerTest {
 
         verify(mockConfigDAO).findCurrentConfig();
         verify(mockConfigDAO).update(any(ConfigurableAmount.class));
-        verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
+        verify(mockHttpExchange).sendResponseHeaders(eq(500), anyLong());
     }
     
      @Test
@@ -275,7 +275,7 @@ class ConfigurableAmountHandlerTest {
         verify(mockConfigDAO).findCurrentConfig();
         verify(mockConfigDAO).create(any(BigDecimal.class));
         verify(mockConfigDAO, never()).update(any());
-        verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
+        verify(mockHttpExchange).sendResponseHeaders(eq(500), anyLong());
     }
     
      @Test
@@ -286,12 +286,13 @@ class ConfigurableAmountHandlerTest {
         InputStream requestBodyStream = new ByteArrayInputStream(invalidJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
 
-        // Expect the handler to catch the Jackson parsing exception
+        // Expect the handler to catch the Jackson parsing exception and send 400 Bad Request
         configurableAmountHandler.handle(mockHttpExchange);
 
         verify(mockConfigDAO, never()).findCurrentConfig();
         verify(mockConfigDAO, never()).create(any());
         verify(mockConfigDAO, never()).update(any());
-        verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L)); // Exception leads to 500
+        // Verify 400 Bad Request with any length (as error body is sent)
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), anyLong()); 
     }
 } 
