@@ -29,7 +29,8 @@ const error: Ref<string> = ref("");
 const searchTerm: Ref<string> = ref("");
 const selectedCategory: Ref<number | null> = ref(null);
 const ip = import.meta.env.VITE_IP;
-
+const insurance = parseInt(window.location.port);
+const insurance_port = insurance-30;
 // Servicios filtrados por categoría y término de búsqueda
 const filteredServices = computed(() => {
   let result = services.value;
@@ -83,8 +84,8 @@ const fetchData = async () => {
     error.value = "";
     
     const [categoriesResponse, servicesResponse] = await Promise.all([
-      axios.get(`http://${ip}:8080/api/category`),
-      axios.get(`http://${ip}:8080/api/insurance-services`)
+      axios.get(`http://${ip}:${insurance_port}/api/category`),
+      axios.get(`http://${ip}:${insurance_port}/api/insurance-services`)
     ]);
     
     categories.value = categoriesResponse.data;

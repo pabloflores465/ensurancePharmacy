@@ -47,7 +47,8 @@ const registeredUserId: Ref<number | null> = ref<number | null>(null);
 const availablePolicies: Ref<PolicyData[]> = ref<PolicyData[]>([]);
 const loadingPolicies: Ref<boolean> = ref<boolean>(true);
 const ip = import.meta.env.VITE_IP;
-
+const insurance = parseInt(window.location.port);
+const insurance_port = insurance-30;
 // Devuelve la política seleccionada
 const selectedPolicy = computed(() => {
   if (!selectedPolicyId.value) return null;
@@ -64,16 +65,16 @@ const fetchPolicies = async () => {
   try {
     loadingPolicies.value = true;
     error.value = "";
-    console.log(`Intentando obtener pólizas de: http://${ip}:8080/api/policy`);
+    console.log(`Intentando obtener pólizas de: http://${ip}:${insurance_port}/api/policy`);
     
-    const response = await axios.get(`http://${ip}:8080/api/policy`);
+    const response = await axios.get(`http://${ip}:${insurance_port}/api/policy`);
     console.log("Respuesta completa de pólizas:", response.data);
     
     if (!response.data || response.data.length === 0) {
       console.warn("No se encontraron pólizas en la respuesta. Intentando crear pólizas estándar...");
       await createStandardPolicies();
       // Intentar obtener las pólizas de nuevo después de crearlas
-      const newResponse = await axios.get(`http://${ip}:8080/api/policy`);
+      const newResponse = await axios.get(`http://${ip}:${insurance_port}/api/policy`);
       console.log("Nuevas pólizas después de crear:", newResponse.data);
       
       if (!newResponse.data || newResponse.data.length === 0) {
@@ -151,7 +152,7 @@ const createStandardPolicy = async (percentage: number, cost: number) => {
       enabled: 1
     };
     
-    const response = await axios.post(`http://${ip}:8080/api/policy`, policyData);
+    const response = await axios.post(`http://${ip}:${insurance_port}/api/policy`, policyData);
     console.log(`Póliza ${percentage}% creada:`, response.data);
     return response.data;
   } catch (err) {
@@ -177,7 +178,7 @@ const sendWelcomeEmail = async (userEmail: string, userName: string, userPasswor
     const policy = selectedPolicy.value;
     if (!policy) return false;
     
-    await axios.post(`http://${ip}:8080/api/notifications/email`, {
+    await axios.post(`http://${ip}:${insurance_port}/api/notifications/email`, {
       to: userEmail,
       subject: "Bienvenido a Ensurance - Datos de Acceso",
       body: `
@@ -247,7 +248,7 @@ const registerClient = async () => {
     };
 
     const response: AxiosResponse<any> = await axios.post(
-      `http://${ip}:8080/api/users`,
+      `http://${ip}:${insurance_port}/api/users`,
       registerData
     );
 

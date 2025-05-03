@@ -21,7 +21,8 @@ const error: Ref<string> = ref("");
 const searchTerm: Ref<string> = ref("");
 const router = useRouter();
 const ip = import.meta.env.VITE_IP;
-
+const insurance = parseInt(window.location.port);
+const insurance_port = insurance-30;
 // Hospitales filtrados por término de búsqueda
 const filteredHospitals = computed(() => {
   if (!searchTerm.value) return hospitals.value;
@@ -41,7 +42,7 @@ const fetchHospitals = async () => {
     loading.value = true;
     error.value = "";
     
-    const response = await axios.get(`http://${ip}:8080/api/hospital`);
+    const response = await axios.get(`http://${ip}:${insurance_port}/api/hospital`);
     // Filtrar solo hospitales activos
     hospitals.value = response.data.filter((hospital: Hospital) => hospital.enabled === 1);
   } catch (err: any) {

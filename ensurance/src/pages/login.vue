@@ -37,8 +37,9 @@ const login: () => Promise<void> = async (): Promise<void> => {
     error.value = "";
     
     console.log("Intentando login con:", email.value);
-    
-    const response = await axios.post(`http://${ip}:8080/api/login`, {
+    const insurance = parseInt(window.location.port);
+    const insurance_port = insurance-30;
+    const response = await axios.post(`http://${ip}:${insurance_port}/api/login`, {
       email: email.value,
       password: password.value,
     });

@@ -6,6 +6,7 @@ com/sources/app/util/HibernateUtil.class
 com/sources/app/handlers/XMLMedicineHandler.class
 com/sources/app/dao/PrescriptionDAO.class
 com/sources/app/handlers/LoginHandler.class
+com/sources/app/util/PortManager.class
 com/sources/app/util/ExternalServiceClient.class
 com/sources/app/entities/PrescriptionMedicine.class
 com/sources/app/handlers/PrescriptionHandler.class

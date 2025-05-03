@@ -72,11 +72,12 @@ const approvedServices = computed(() => {
     hs => hs.hospital?.idHospital === selectedHospitalId.value
   );
 });
-
+const insurance = parseInt(window.location.port);
+const insurance_port = insurance-30;
 // Funciones para cargar datos
 const fetchHospitals = async () => {
   try {
-    const response = await axios.get(`http://${ip}:8080/api/hospital`);
+    const response = await axios.get(`http://${ip}:${insurance_port}/api/hospital`);
     if (response.data) {
       hospitals.value = response.data;
     } else {
@@ -92,7 +93,7 @@ const fetchHospitals = async () => {
 
 const fetchServices = async () => {
   try {
-    const response = await axios.get(`http://${ip}:8080/api/insurance-services`);
+    const response = await axios.get(`http://${ip}:${insurance_port}/api/insurance-services`);
     if (response.data) {
       services.value = response.data.filter((s: InsuranceService) => s.enabled === 1);
     } else {
@@ -112,7 +113,7 @@ const fetchHospitalServices = async () => {
   try {
     loading.value = true;
     
-    const response = await axios.get(`http://${ip}:8080/api/hospital-services?hospital=${selectedHospitalId.value}`);
+    const response = await axios.get(`http://${ip}:${insurance_port}/api/hospital-services?hospital=${selectedHospitalId.value}`);
     if (response.data) {
       hospitalServices.value = response.data;
     } else {
@@ -160,7 +161,7 @@ const approveService = async () => {
       notes: ""
     };
     
-    await axios.post(`http://${ip}:8080/api/hospital-services/approve`, hospitalService);
+    await axios.post(`http://${ip}:${insurance_port}/api/hospital-services/approve`, hospitalService);
     
     success.value = "Servicio aprobado correctamente para el hospital.";
     
@@ -189,7 +190,7 @@ const revokeService = async (hospitalService: HospitalService) => {
     loading.value = true;
     error.value = "";
     
-    await axios.delete(`http://${ip}:8080/api/hospital-services/${hospitalService.idHospitalService}`);
+    await axios.delete(`http://${ip}:${insurance_port}/api/hospital-services/${hospitalService.idHospitalService}`);
     
     success.value = "Aprobación de servicio revocada correctamente.";
     

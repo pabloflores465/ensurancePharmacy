@@ -51,6 +51,8 @@ const categories: Ref<{ [key: number]: string }> = ref({});
 const route = useRoute();
 const router = useRouter();
 const ip = import.meta.env.VITE_IP;
+const insurance = parseInt(window.location.port);
+const insurance_port = insurance-30;
 
 // Obtener ID del hospital de la URL
 const hospitalId = computed(() => {
@@ -126,11 +128,11 @@ const fetchData = async () => {
     error.value = "";
     
     // Cargar datos del hospital
-    const hospitalResponse = await axios.get(`http://${ip}:8080/api/hospital?id=${hospitalId.value}`);
+    const hospitalResponse = await axios.get(`http://${ip}:${insurance_port}/api/hospital?id=${hospitalId.value}`);
     hospital.value = hospitalResponse.data;
     
     // Cargar servicios aprobados para este hospital
-    const servicesResponse = await axios.get(`http://${ip}:8080/api/hospital-services?hospital=${hospitalId.value}`);
+    const servicesResponse = await axios.get(`http://${ip}:${insurance_port}/api/hospital-services?hospital=${hospitalId.value}`);
     approvedServices.value = servicesResponse.data;
     
     // Extraer categorías

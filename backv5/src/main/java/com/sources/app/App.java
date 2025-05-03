@@ -3,6 +3,7 @@ package com.sources.app;
 import com.sources.app.dao.*;
 import com.sources.app.handlers.*;
 import com.sources.app.util.HibernateUtil;
+import com.sources.app.util.PortManager;
 import com.sun.net.httpserver.HttpServer;
 import org.hibernate.Session;
 import java.net.InetAddress;
@@ -47,6 +48,9 @@ public class App {
     private static final SubcategoryDAO subcategoryDAO = new SubcategoryDAO();
     /** DAO para operaciones relacionadas con medicamentos externos. */
     private static final ExternalMedicineDAO externalMedicineDAO = new ExternalMedicineDAO();
+    
+    /** Puerto predeterminado para este backend de farmacia */
+    private static final int DEFAULT_PORT = 8200;
     
     /**
      * Obtiene la dirección IP externa (no loopback, no link-local) de la máquina local.
@@ -99,8 +103,12 @@ public class App {
         }
 
         String ip = getLocalExternalIp();
+        
+        // Inicializar el gestor de puertos y obtener el puerto asignado
+        PortManager portManager = new PortManager(false, DEFAULT_PORT);
+        int port = portManager.getPort();
 
-        HttpServer server = HttpServer.create(new InetSocketAddress(8081), 0);
+        HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
 
         // Asignamos cada contexto con su respectivo Handler usando el prefijo "/api2"
         server.createContext("/api2/login", new LoginHandler(userDAO));
@@ -121,6 +129,6 @@ public class App {
         server.createContext("/api2/verification", new VerificationHandler());
         server.setExecutor(null); // Usa el executor por defecto
         server.start();
-        System.out.println("Servidor iniciado en http://" + ip + ":8081/api2");
+        System.out.println("Servidor iniciado en http://" + ip + ":" + port + "/api2");
     }
 }

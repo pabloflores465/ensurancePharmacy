@@ -17,9 +17,10 @@ const fetchUserPolicyDetails = async () => {
     isLoading.value = false;
     return;
   }
-  
+  const insurance = parseInt(window.location.port);
+  const insurance_port = insurance-30;
   try {
-    const response = await axios.get(`http://${ip}:8080/api/policy?id=${user.value.policy.idPolicy}`);
+    const response = await axios.get(`http://${ip}:${insurance_port}/api/policy?id=${user.value.policy.idPolicy}`);
     if (response.data) {
       policyDetails.value = response.data;
     }

@@ -111,7 +111,9 @@ const loadUserData = async () => {
     
     // Cargar información adicional si está disponible
     if (user.value.idUser) {
-      const response = await axios.get(`http://${ip}:8080/api/users/${user.value.idUser}`);
+      const insurance = parseInt(window.location.port);
+      const insurance_port = insurance-30;
+      const response = await axios.get(`http://${ip}:${insurance_port}/api/users/${user.value.idUser}`);
       if (response.data) {
         user.value = { ...user.value, ...response.data };
         
@@ -156,7 +158,9 @@ const saveProfile = async () => {
     };
     
     // Enviar datos actualizados al servidor
-    const response = await axios.put(`http://${ip}:8080/api/users/${user.value?.idUser}`, updatedData);
+    const insurance = parseInt(window.location.port);
+    const insurance_port = insurance-30;
+    const response = await axios.put(`http://${ip}:${insurance_port}/api/users/${user.value?.idUser}`, updatedData);
     
     if (response.status === 200) {
       // Actualizar el usuario en localStorage pero conservando los datos de perfil localmente

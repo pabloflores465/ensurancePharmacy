@@ -22,7 +22,8 @@ const selectedPolicy: Ref<Policy | null> = ref(null);
 const showEditModal: Ref<boolean> = ref(false);
 const ip = import.meta.env.VITE_IP;
 const debugInfo: Ref<string> = ref("");
-
+const insurance = parseInt(window.location.port);
+const insurance_port = insurance-30;
 // Todas las pólizas ordenadas
 const allPolicies = computed(() => {
   return [...policies.value].sort((a, b) => a.percentage - b.percentage);
@@ -33,7 +34,7 @@ const fetchPolicies = async () => {
   try {
     loading.value = true;
     error.value = "";
-    const response = await axios.get(`http://${ip}:8080/api/policy`);
+    const response = await axios.get(`http://${ip}:${insurance_port}/api/policy`);
     console.log("Pólizas obtenidas:", response.data);
     policies.value = response.data;
     
@@ -43,7 +44,7 @@ const fetchPolicies = async () => {
       await createStandardPolicy(90, 400);
       
       // Recargar para obtener las nuevas pólizas creadas
-      const updatedResponse = await axios.get(`http://${ip}:8080/api/policy`);
+      const updatedResponse = await axios.get(`http://${ip}:${insurance_port}/api/policy`);
       policies.value = updatedResponse.data;
     }
   } catch (err: any) {
@@ -76,7 +77,7 @@ const createStandardPolicy = async (percentage: number, cost: number) => {
       enabled: 1
     };
     
-    const response = await axios.post(`http://${ip}:8080/api/policy`, policyData);
+    const response = await axios.post(`http://${ip}:${insurance_port}/api/policy`, policyData);
     console.log("Póliza creada:", response.data);
     success.value = `Póliza del ${percentage}% creada exitosamente`;
   } catch (err: any) {
@@ -125,7 +126,7 @@ const savePolicy = async () => {
     console.log("Datos de póliza a actualizar:", JSON.stringify(policyToUpdate));
     
     // Actualizar póliza existente
-    const response = await axios.put(`http://${ip}:8080/api/policy`, policyToUpdate);
+    const response = await axios.put(`http://${ip}:${insurance_port}/api/policy`, policyToUpdate);
     console.log("Respuesta del servidor:", response.data);
     debugInfo.value = `Respuesta: ${JSON.stringify(response.data)}`;
     success.value = "Póliza actualizada exitosamente";
@@ -165,7 +166,7 @@ const togglePolicyStatus = async (policy: Policy) => {
     
     console.log("Actualizando estado de póliza:", JSON.stringify(updatedPolicy));
     
-    const response = await axios.put(`http://${ip}:8080/api/policy`, updatedPolicy);
+    const response = await axios.put(`http://${ip}:${insurance_port}/api/policy`, updatedPolicy);
     console.log("Respuesta del servidor:", response.data);
     
     // Actualizar la póliza en la lista local

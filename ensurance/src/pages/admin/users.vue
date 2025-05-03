@@ -46,12 +46,13 @@ const availableRoles = [
 ];
 
 const ip = import.meta.env.VITE_IP;
-
+const insurance = parseInt(window.location.port);
+const insurance_port = insurance-30;
 // Cargar usuarios desde el backend
 const fetchUsers = async () => {
   try {
     loading.value = true;
-    const response = await axios.get(`http://${ip}:8080/api/users`);
+    const response = await axios.get(`http://${ip}:${insurance_port}/api/users`);
     users.value = response.data;
     applyFilters();
   } catch (err: any) {
@@ -143,7 +144,7 @@ const saveUser = async () => {
     const originalUserEnabled = users.value.find(u => u.idUser === selectedUser.value?.idUser)?.enabled || 0;
     
     const response = await axios.put(
-      `http://${ip}:8080/api/users/${selectedUser.value.idUser}`,
+      `http://${ip}:${insurance_port}/api/users/${selectedUser.value.idUser}`,
       selectedUser.value
     );
     
@@ -173,7 +174,7 @@ const saveUser = async () => {
 // Enviar email de notificación al activar un usuario
 const sendActivationEmail = async (user: User) => {
   try {
-    await axios.post(`http://${ip}:8080/api/notifications/email`, {
+    await axios.post(`http://${ip}:${insurance_port}/api/notifications/email`, {
       to: user.email,
       subject: "Cuenta activada en Ensurance",
       body: `Hola ${user.name}, tu cuenta ha sido activada. Ya puedes iniciar sesión en el sistema.`

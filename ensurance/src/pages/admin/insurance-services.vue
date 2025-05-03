@@ -33,14 +33,15 @@ const modalOpen = ref(false);
 const currentService = ref<Partial<InsuranceService>>({});
 const selectedCategoryId = ref<number | null>(null);
 const selectedSubcategoryId = ref<number | null>(null);
-
+const insurance = parseInt(window.location.port);
+const insurance_port = insurance-30;
 // Cargar datos
 const fetchServices = async () => {
   try {
     loading.value = true;
     error.value = "";
     
-    const response = await axios.get(`http://${ip}:8080/api/insurance-services`);
+    const response = await axios.get(`http://${ip}:${insurance_port}/api/insurance-services`);
     if (response.data) {
       services.value = response.data;
     } else {
@@ -58,7 +59,7 @@ const fetchServices = async () => {
 
 const fetchCategories = async () => {
   try {
-    const response = await axios.get(`http://${ip}:8080/api/category`);
+    const response = await axios.get(`http://${ip}:${insurance_port}/api/category`);
     if (response.data) {
       categories.value = response.data;
     } else {
@@ -121,14 +122,14 @@ const saveService = async () => {
     if (editMode.value && currentService.value.idInsuranceService) {
       // Actualizar servicio existente
       response = await axios.put(
-        `http://${ip}:8080/api/insurance-services/${currentService.value.idInsuranceService}`,
+        `http://${ip}:${insurance_port}/api/insurance-services/${currentService.value.idInsuranceService}`,
         serviceData
       );
       success.value = "Servicio actualizado correctamente.";
     } else {
       // Crear nuevo servicio
       response = await axios.post(
-        `http://${ip}:8080/api/insurance-services`,
+        `http://${ip}:${insurance_port}/api/insurance-services`,
         serviceData
       );
       success.value = "Servicio creado correctamente.";
@@ -160,7 +161,7 @@ const toggleServiceStatus = async (service: InsuranceService) => {
     };
     
     await axios.put(
-      `http://${ip}:8080/api/insurance-services/${service.idInsuranceService}`,
+      `http://${ip}:${insurance_port}/api/insurance-services/${service.idInsuranceService}`,
       updatedService
     );
     
@@ -190,7 +191,7 @@ const deleteService = async (service: InsuranceService) => {
     loading.value = true;
     error.value = "";
     
-    await axios.delete(`http://${ip}:8080/api/insurance-services/${service.idInsuranceService}`);
+    await axios.delete(`http://${ip}:${insurance_port}/api/insurance-services/${service.idInsuranceService}`);
     
     // Eliminar de la lista local
     services.value = services.value.filter(s => s.idInsuranceService !== service.idInsuranceService);

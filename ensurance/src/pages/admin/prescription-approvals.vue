@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
+import HospitalSelector from '../../components/HospitalSelector.vue';
 
 interface Approval {
   idApproval: number;
@@ -81,17 +82,34 @@ const showAll = ref(true); // Por defecto mostrar todo
 const minAmount = ref<number | null>(null);
 const processingId = ref<number | null>(null);
 const activeTab = ref('hospital'); // 'hospital' o 'approved'
+const insurance = parseInt(window.location.port);
+const insurance_port = insurance-30;
 
-// Configuración de IPs (Asumimos que ya existe tryMultipleIPs)
+// Hospital selector
+const hospitalPort = ref<string>('5050'); // Default value
+const showContent = ref(false);
+  
+// Configuración de IPs
 const possibleIPs = [import.meta.env.VITE_IP || "localhost"];
-const HOSPITAL_API = `http://${import.meta.env.VITE_IP || "localhost"}:5050`;
-const PHARMACY_API_BASE = `http://${import.meta.env.VITE_IP || "localhost"}:8080/api`;
+const HOSPITAL_API = computed(() => `http://${import.meta.env.VITE_IP}:${hospitalPort.value}`);
+const PHARMACY_API_BASE = computed(() => `http://${import.meta.env.VITE_IP}:${insurance_port}/api`);
+
+// Handle hospital selected event
+const onHospitalSelected = (port: string) => {
+  hospitalPort.value = port;
+  showContent.value = true;
+  
+  // Load initial data
+  fetchMinAmount();
+  fetchApprovals();
+  fetchHospitalPrescriptions();
+};
 
 // Función para probar múltiples IPs (simplificada para GET)
 async function tryMultipleIPs(endpoint: string, method: string = 'GET', data: any = null) {
-  const serverIP = import.meta.env.VITE_IP || "localhost";
+  const serverIP = import.meta.env.VITE_IP;
   try {
-    const url = `http://${serverIP}:8080/api${endpoint}`;
+    const url = `${PHARMACY_API_BASE.value}${endpoint}`;
     console.log(`Intentando ${method} a ${url}`);
     const response = await axios({ method, url, data, timeout: 3000 });
     return response;
@@ -101,64 +119,39 @@ async function tryMultipleIPs(endpoint: string, method: string = 'GET', data: an
   }
 }
 
-// Obtener precio de medicamento desde la API de farmacia
-const getMedicinePrice = async (medicineName: string) => {
-  try {
-    const response = await tryMultipleIPs(`/medicines/price?name=${encodeURIComponent(medicineName)}`);
-    if (response && response.data && typeof response.data.price === 'number') {
-      return response.data.price;
-    }
-    return null;
-  } catch (err) {
-    console.error(`Error al obtener precio para ${medicineName}:`, err);
-    return null;
-  }
-};
-
 // Cargar recetas del hospital
 const fetchHospitalPrescriptions = async () => {
   try {
     loadingHospital.value = true;
     hospitalError.value = "";
     
-    const response = await axios.get(`${HOSPITAL_API}/recipes`);
+    const response = await axios.get(`${HOSPITAL_API.value}/recipes`);
     
     if (response.data && response.data.recipes) {
       // Procesar las recetas
       const prescriptions = response.data.recipes;
       
-      // Para cada receta, obtener precios reales y calcular el costo total
-      const prescriptionsWithPrices = await Promise.all(prescriptions.map(async (prescription: HospitalPrescription) => {
+      // Para cada receta, calcular el costo total usando precios generados
+      const prescriptionsWithPrices = prescriptions.map((prescription: HospitalPrescription) => {
         let totalCost = 0;
         
-        // Mapear medicamentos y obtener precios
-        const medicinesWithPrices = await Promise.all(prescription.medicines.map(async (medicine) => {
+        // Mapear medicamentos y generar precios sintéticos
+        const medicinesWithPrices = prescription.medicines.map((medicine) => {
           const medicineName = getMedicineName(medicine);
-          let price = null;
           
-          // Intentar obtener el precio real desde la API
-          try {
-            price = await getMedicinePrice(medicineName);
-          } catch (error) {
-            console.error(`Error al obtener precio para ${medicineName}:`, error);
-          }
-          
-          // Si no se pudo obtener el precio, usar un valor fijo (para que sea consistente)
-          if (price === null) {
-            // Usar hash del nombre del medicamento para generar un precio consistente
-            const hashCode = function(str: string) {
-              let hash = 0;
-              for (let i = 0; i < str.length; i++) {
-                const char = str.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash; // Convert to 32bit integer
-              }
-              return Math.abs(hash);
+          // Usar hash del nombre del medicamento para generar un precio consistente
+          const hashCode = function(str: string) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+              const char = str.charCodeAt(i);
+              hash = ((hash << 5) - hash) + char;
+              hash = hash & hash; // Convert to 32bit integer
             }
-            
-            // Generar un precio entre 50 y 500 basado en el nombre
-            price = (hashCode(medicineName) % 450) + 50;
+            return Math.abs(hash);
           }
+          
+          // Generar un precio entre 50 y 500 basado en el nombre
+          const price = (hashCode(medicineName) % 450) + 50;
           
           // Calcular cantidad basada en dosis y duración (si están disponibles)
           let quantity = 1;
@@ -190,14 +183,14 @@ const fetchHospitalPrescriptions = async () => {
             calculatedQuantity: quantity,
             calculatedTotal: medicineTotal
           };
-        }));
+        });
         
         return {
           ...prescription,
           medicines: medicinesWithPrices,
           estimatedCost: totalCost
         };
-      }));
+      });
       
       hospitalPrescriptions.value = prescriptionsWithPrices;
     } else {
@@ -214,10 +207,21 @@ const fetchHospitalPrescriptions = async () => {
 };
 
 // Función auxiliar para extraer números de strings
-const extractNumber = (str: string): number => {
-  if (!str) return 1;
-  const match = str.match(/\d+(\.\d+)?/);
-  return match ? parseFloat(match[0]) : 1;
+const extractNumber = (str: any): number => {
+  // Manejo seguro: si no es string o está vacío, devolver 1
+  if (!str || typeof str !== 'string') return 1;
+  
+  try {
+    // Si parece ser directamente un número, convertirlo
+    if (!isNaN(Number(str))) return Number(str);
+    
+    // Buscar patrones de números en el string
+    const match = str.match(/\d+(\.\d+)?/);
+    return match ? parseFloat(match[0]) : 1;
+  } catch (error) {
+    console.log(`Error extrayendo número de "${str}":`, error);
+    return 1; // Valor predeterminado seguro
+  }
 }
 
 // Cargar el monto mínimo configurado
@@ -404,9 +408,8 @@ const getDiagnosis = (medicine: Medicine) => {
 };
 
 // Cargar datos al iniciar
-onMounted(async () => {
-  await fetchMinAmount();
-  await Promise.all([fetchApprovals(), fetchHospitalPrescriptions()]);
+onMounted(() => {
+  // Data will be loaded after hospital selection
 });
 
 // Filtrar por usuario
@@ -422,214 +425,218 @@ const changeTab = (tab: string) => {
 </script>
 
 <template>
-  <div class="container">
-    <h1 class="title">Aprobación de Recetas</h1>
+  <div>
+    <HospitalSelector @hospital-selected="onHospitalSelected" />
+    
+    <div class="container" v-if="showContent">
+      <h1 class="title">Aprobación de Recetas</h1>
 
-    <!-- Mensajes de éxito o error -->
-    <div v-if="success" class="success-message">{{ success }}</div>
-    <div v-if="error" class="error-message">{{ error }}</div>
-    <div v-if="hospitalError" class="error-message">{{ hospitalError }}</div>
+      <!-- Mensajes de éxito o error -->
+      <div v-if="success" class="success-message">{{ success }}</div>
+      <div v-if="error" class="error-message">{{ error }}</div>
+      <div v-if="hospitalError" class="error-message">{{ hospitalError }}</div>
 
-    <!-- Información del monto mínimo -->
-    <div v-if="minAmount !== null" class="info-message">
-        Monto mínimo actual para aprobar recetas: <strong>{{ formatCost(minAmount) }}</strong>
-    </div>
-
-    <!-- Pestañas -->
-    <div class="tabs">
-      <button 
-        @click="changeTab('hospital')" 
-        :class="{ 'active-tab': activeTab === 'hospital' }"
-        class="tab-button"
-      >
-        Recetas del Hospital
-      </button>
-      <button 
-        @click="changeTab('approved')" 
-        :class="{ 'active-tab': activeTab === 'approved' }"
-        class="tab-button"
-      >
-        Historial de Aprobaciones
-      </button>
-    </div>
-
-    <!-- Tab: Recetas del Hospital -->
-    <div v-if="activeTab === 'hospital'" class="tab-content">
-      <button @click="fetchHospitalPrescriptions" class="btn-refresh">
-        Actualizar Recetas
-      </button>
-
-      <div class="approvals-table-container">
-        <div v-if="loadingHospital" class="loading-container">
-          <div class="loading-spinner"></div>
-          <p class="loading-text">Cargando recetas del hospital...</p>
-        </div>
-        
-        <div v-else-if="!hospitalPrescriptions || hospitalPrescriptions.length === 0" class="empty-message">
-          <p>No hay recetas disponibles del hospital.</p>
-        </div>
-        
-        <div v-else class="table-scroll-container">
-          <table class="approvals-table">
-            <thead>
-              <tr>
-                <th>Código</th>
-                <th>Paciente</th>
-                <th>Fecha</th>
-                <th>Medicamentos</th>
-                <th>Costo Total</th>
-                <th>Seguro</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="prescription in hospitalPrescriptions" :key="prescription._id" class="table-row">
-                <td class="prescription-code">{{ prescription.code }}</td>
-                <td>{{ prescription.patient?.username || 'Desconocido' }}</td>
-                <td>{{ formatDateTime(prescription.created_at || prescription.date || '') }}</td>
-                <td class="medicines-cell">
-                  <ul class="medicines-list">
-                    <li v-for="(medicine, idx) in prescription.medicines" :key="idx" class="medicine-item">
-                      <div class="medicine-name">
-                        {{ getMedicineName(medicine) }}
-                        <span class="medicine-diagnosis">({{ getDiagnosis(medicine) }})</span>
-                      </div>
-                      <div class="medicine-price">
-                        <span class="quantity">{{ medicine.calculatedQuantity || 1 }} x </span>
-                        {{ formatCost(medicine.calculatedPrice || 0) }} = 
-                        <span class="medicine-total">{{ formatCost(medicine.calculatedTotal || 0) }}</span>
-                      </div>
-                    </li>
-                  </ul>
-                </td>
-                <td class="cost">
-                  <div class="total-cost">{{ formatCost(prescription.estimatedCost || 0) }}</div>
-                </td>
-                <td>
-                  <span v-if="prescription.has_insurance" class="insurance-badge">
-                    {{ prescription.insurance_code || 'Sí' }}
-                  </span>
-                  <span v-else>No</span>
-                </td>
-                <td class="actions">
-                  <button 
-                    @click="approveHospitalPrescription(prescription)"
-                    :disabled="!meetsMinAmount(prescription.estimatedCost || 0) || prescription.isProcessing"
-                    :class="{ 
-                      'btn-approve': meetsMinAmount(prescription.estimatedCost || 0), 
-                      'btn-disabled': !meetsMinAmount(prescription.estimatedCost || 0) || prescription.isProcessing 
-                    }"
-                    :title="!meetsMinAmount(prescription.estimatedCost || 0) ? 'No cumple con el monto mínimo' : ''"
-                  >
-                    {{ prescription.isProcessing ? 'Procesando...' : 'Aprobar' }}
-                  </button>
-                  
-                  <div v-if="!meetsMinAmount(prescription.estimatedCost || 0)" class="warning-message">
-                    No cumple con el monto mínimo requerido.
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      <!-- Información del monto mínimo -->
+      <div v-if="minAmount !== null" class="info-message">
+          Monto mínimo actual para aprobar recetas: <strong>{{ formatCost(minAmount) }}</strong>
       </div>
-    </div>
 
-    <!-- Tab: Historial de Aprobaciones -->
-    <div v-if="activeTab === 'approved'" class="tab-content">
-      <!-- Filtros -->
-      <div class="filter-container">
-          <label for="userFilter">Filtrar por ID de Usuario:</label>
-          <input 
-              type="number" 
-              id="userFilter"
-              v-model.number="filterUserId"
-              placeholder="Dejar vacío para todos"
-              class="filter-input"
-          />
-          <button @click="applyFilter" class="btn-primary">Filtrar</button>
-          <button @click="filterUserId = null; applyFilter();" class="btn-secondary">Limpiar</button>
-          
-          <div class="checkbox-container">
-              <input type="checkbox" id="showAll" v-model="showAll" @change="applyFilter">
-              <label for="showAll">Mostrar todas (incluyendo pendientes)</label>
+      <!-- Pestañas -->
+      <div class="tabs">
+        <button 
+          @click="changeTab('hospital')" 
+          :class="{ 'active-tab': activeTab === 'hospital' }"
+          class="tab-button"
+        >
+          Recetas del Hospital
+        </button>
+        <button 
+          @click="changeTab('approved')" 
+          :class="{ 'active-tab': activeTab === 'approved' }"
+          class="tab-button"
+        >
+          Historial de Aprobaciones
+        </button>
+      </div>
+
+      <!-- Tab: Recetas del Hospital -->
+      <div v-if="activeTab === 'hospital'" class="tab-content">
+        <button @click="fetchHospitalPrescriptions" class="btn-refresh">
+          Actualizar Recetas
+        </button>
+
+        <div class="approvals-table-container">
+          <div v-if="loadingHospital" class="loading-container">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Cargando recetas del hospital...</p>
           </div>
-      </div>
-
-      <div class="approvals-table-container">
-        <div v-if="loading" class="loading-container">
-          <div class="loading-spinner"></div>
-          <p class="loading-text">Cargando historial...</p>
-        </div>
-        
-        <div v-else-if="!approvals || approvals.length === 0" class="empty-message">
-          <p>No hay registros de recetas.</p>
-        </div>
-        
-        <div v-else class="table-scroll-container">
-          <table class="approvals-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>No. Autorización</th>
-                <th>ID Usuario</th>
-                <th>Costo Receta</th>
-                <th>Fecha</th>
-                <th>Estado</th>
-                <th>ID Receta Hosp.</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="approval in approvals" :key="approval.idApproval" class="table-row">
-                <td>{{ approval.idApproval }}</td>
-                <td class="auth-number">{{ approval.authorizationNumber || '-' }}</td>
-                <td>{{ approval.idUser }}</td>
-                <td class="cost">{{ formatCost(approval.prescriptionCost) }}</td>
-                <td>{{ formatDateTime(approval.approvalDate) }}</td>
-                <td>
-                  <span :class="{
-                    'status-approved': approval.status === 'APPROVED',
-                    'status-rejected': approval.status === 'REJECTED',
-                    'status-pending': approval.status === 'PENDING'
-                  }">
-                    {{ approval.status }}
-                  </span>
-                </td>
-                <td class="hospital-id">{{ approval.prescriptionIdHospital || '-' }}</td>
-                <td class="actions">
-                  <template v-if="approval.status === 'PENDING'">
+          
+          <div v-else-if="!hospitalPrescriptions || hospitalPrescriptions.length === 0" class="empty-message">
+            <p>No hay recetas disponibles del hospital.</p>
+          </div>
+          
+          <div v-else class="table-scroll-container">
+            <table class="approvals-table">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Paciente</th>
+                  <th>Fecha</th>
+                  <th>Medicamentos</th>
+                  <th>Costo Total</th>
+                  <th>Seguro</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="prescription in hospitalPrescriptions" :key="prescription._id" class="table-row">
+                  <td class="prescription-code">{{ prescription.code }}</td>
+                  <td>{{ prescription.patient?.username || 'Desconocido' }}</td>
+                  <td>{{ formatDateTime(prescription.created_at || prescription.date || '') }}</td>
+                  <td class="medicines-cell">
+                    <ul class="medicines-list">
+                      <li v-for="(medicine, idx) in prescription.medicines" :key="idx" class="medicine-item">
+                        <div class="medicine-name">
+                          {{ getMedicineName(medicine) }}
+                          <span class="medicine-diagnosis">({{ getDiagnosis(medicine) }})</span>
+                        </div>
+                        <div class="medicine-price">
+                          <span class="quantity">{{ medicine.calculatedQuantity || 1 }} x </span>
+                          {{ formatCost(medicine.calculatedPrice || 0) }} = 
+                          <span class="medicine-total">{{ formatCost(medicine.calculatedTotal || 0) }}</span>
+                        </div>
+                      </li>
+                    </ul>
+                  </td>
+                  <td class="cost">
+                    <div class="total-cost">{{ formatCost(prescription.estimatedCost || 0) }}</div>
+                  </td>
+                  <td>
+                    <span v-if="prescription.has_insurance" class="insurance-badge">
+                      {{ prescription.insurance_code || 'Sí' }}
+                    </span>
+                    <span v-else>No</span>
+                  </td>
+                  <td class="actions">
                     <button 
-                      @click="approvePrescription(approval)"
-                      :disabled="!meetsMinAmount(approval.prescriptionCost) || processingId === approval.idApproval"
+                      @click="approveHospitalPrescription(prescription)"
+                      :disabled="!meetsMinAmount(prescription.estimatedCost || 0) || prescription.isProcessing"
                       :class="{ 
-                        'btn-approve': meetsMinAmount(approval.prescriptionCost), 
-                        'btn-disabled': !meetsMinAmount(approval.prescriptionCost) || processingId === approval.idApproval 
+                        'btn-approve': meetsMinAmount(prescription.estimatedCost || 0), 
+                        'btn-disabled': !meetsMinAmount(prescription.estimatedCost || 0) || prescription.isProcessing 
                       }"
-                      :title="!meetsMinAmount(approval.prescriptionCost) ? 'No cumple con el monto mínimo' : ''"
+                      :title="!meetsMinAmount(prescription.estimatedCost || 0) ? 'No cumple con el monto mínimo' : ''"
                     >
-                      {{ processingId === approval.idApproval ? 'Procesando...' : 'Aprobar' }}
+                      {{ prescription.isProcessing ? 'Procesando...' : 'Aprobar' }}
                     </button>
                     
-                    <div v-if="!meetsMinAmount(approval.prescriptionCost)" class="warning-message">
+                    <div v-if="!meetsMinAmount(prescription.estimatedCost || 0)" class="warning-message">
                       No cumple con el monto mínimo requerido.
                     </div>
-                    
-                    <button 
-                      @click="rejectPrescription(approval, 'Rechazado por el administrador')"
-                      :disabled="processingId === approval.idApproval"
-                      class="btn-reject"
-                    >
-                      Rechazar
-                    </button>
-                  </template>
-                  <template v-else>
-                    <span class="action-text">{{ approval.status === 'APPROVED' ? 'Aprobada' : 'Rechazada' }}</span>
-                  </template>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Historial de Aprobaciones -->
+      <div v-if="activeTab === 'approved'" class="tab-content">
+        <!-- Filtros -->
+        <div class="filter-container">
+            <label for="userFilter">Filtrar por ID de Usuario:</label>
+            <input 
+                type="number" 
+                id="userFilter"
+                v-model.number="filterUserId"
+                placeholder="Dejar vacío para todos"
+                class="filter-input"
+            />
+            <button @click="applyFilter" class="btn-primary">Filtrar</button>
+            <button @click="filterUserId = null; applyFilter();" class="btn-secondary">Limpiar</button>
+            
+            <div class="checkbox-container">
+                <input type="checkbox" id="showAll" v-model="showAll" @change="applyFilter">
+                <label for="showAll">Mostrar todas (incluyendo pendientes)</label>
+            </div>
+        </div>
+
+        <div class="approvals-table-container">
+          <div v-if="loading" class="loading-container">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Cargando historial...</p>
+          </div>
+          
+          <div v-else-if="!approvals || approvals.length === 0" class="empty-message">
+            <p>No hay registros de recetas.</p>
+          </div>
+          
+          <div v-else class="table-scroll-container">
+            <table class="approvals-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>No. Autorización</th>
+                  <th>ID Usuario</th>
+                  <th>Costo Receta</th>
+                  <th>Fecha</th>
+                  <th>Estado</th>
+                  <th>ID Receta Hosp.</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="approval in approvals" :key="approval.idApproval" class="table-row">
+                  <td>{{ approval.idApproval }}</td>
+                  <td class="auth-number">{{ approval.authorizationNumber || '-' }}</td>
+                  <td>{{ approval.idUser }}</td>
+                  <td class="cost">{{ formatCost(approval.prescriptionCost) }}</td>
+                  <td>{{ formatDateTime(approval.approvalDate) }}</td>
+                  <td>
+                    <span :class="{
+                      'status-approved': approval.status === 'APPROVED',
+                      'status-rejected': approval.status === 'REJECTED',
+                      'status-pending': approval.status === 'PENDING'
+                    }">
+                      {{ approval.status }}
+                    </span>
+                  </td>
+                  <td class="hospital-id">{{ approval.prescriptionIdHospital || '-' }}</td>
+                  <td class="actions">
+                    <template v-if="approval.status === 'PENDING'">
+                      <button 
+                        @click="approvePrescription(approval)"
+                        :disabled="!meetsMinAmount(approval.prescriptionCost) || processingId === approval.idApproval"
+                        :class="{ 
+                          'btn-approve': meetsMinAmount(approval.prescriptionCost), 
+                          'btn-disabled': !meetsMinAmount(approval.prescriptionCost) || processingId === approval.idApproval 
+                        }"
+                        :title="!meetsMinAmount(approval.prescriptionCost) ? 'No cumple con el monto mínimo' : ''"
+                      >
+                        {{ processingId === approval.idApproval ? 'Procesando...' : 'Aprobar' }}
+                      </button>
+                      
+                      <div v-if="!meetsMinAmount(approval.prescriptionCost)" class="warning-message">
+                        No cumple con el monto mínimo requerido.
+                      </div>
+                      
+                      <button 
+                        @click="rejectPrescription(approval, 'Rechazado por el administrador')"
+                        :disabled="processingId === approval.idApproval"
+                        class="btn-reject"
+                      >
+                        Rechazar
+                      </button>
+                    </template>
+                    <template v-else>
+                      <span class="action-text">{{ approval.status === 'APPROVED' ? 'Aprobada' : 'Rechazada' }}</span>
+                    </template>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

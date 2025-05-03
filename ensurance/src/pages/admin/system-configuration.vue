@@ -14,7 +14,8 @@ const loading = ref(true);
 const updating = ref(false);
 const error = ref("");
 const success = ref("");
-
+const insurance = parseInt(window.location.port);
+const insurance_port = insurance-30;
 // Configuración de IPs
 const possibleIPs = [import.meta.env.VITE_IP || "localhost"];
 
@@ -22,7 +23,7 @@ const possibleIPs = [import.meta.env.VITE_IP || "localhost"];
 async function tryMultipleIPs(endpoint: string, method: string = 'GET', data: any = null) {
   const serverIP = import.meta.env.VITE_IP || "localhost";
   try {
-    const url = `http://${serverIP}:8080/api${endpoint}`;
+    const url = `http://${serverIP}:${insurance_port}/api${endpoint}`;
     console.log(`Intentando ${method} a ${url}`);
     const response = await axios({ method, url, data, timeout: 3000 });
     return response;

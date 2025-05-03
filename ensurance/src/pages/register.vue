@@ -43,11 +43,13 @@ const error: Ref<string> = ref<string>("");
 const success: Ref<boolean> = ref<boolean>(false);
 const availablePolicies: Ref<PolicyData[]> = ref<PolicyData[]>([]);
 const ip = import.meta.env.VITE_IP;
+const insurance = parseInt(window.location.port);
+const insurance_port = insurance-30;
 
 // Cargar pólizas disponibles
 const fetchPolicies = async () => {
   try {
-    const response = await axios.get(`http://${ip}:8080/api/policy`);
+    const response = await axios.get(`http://${ip}:${insurance_port}/api/policy`);
     // Filtrar solo pólizas activas
     availablePolicies.value = response.data.filter((policy: PolicyData) => policy.enabled === 1);
   } catch (error) {
@@ -90,7 +92,7 @@ const createPolicy = async (policyData: PolicyData): Promise<number | null> => {
     }
     
     // Si no existe, crear una nueva
-    const response = await axios.post(`http://${ip}:8080/api/policy`, policyData);
+    const response = await axios.post(`http://${ip}:${insurance_port}/api/policy`, policyData);
     if (response.status === 201 && response.data && response.data.idPolicy) {
       return response.data.idPolicy;
     }
@@ -104,13 +106,13 @@ const createPolicy = async (policyData: PolicyData): Promise<number | null> => {
 // Enviar email
 const sendWelcomeEmail = async (userEmail: string, userName: string): Promise<boolean> => {
   try {
-    await axios.post(`http://${ip}:8080/api/notifications/email`, {
+    await axios.post(`http://${ip}:${insurance_port}/api/notifications/email`, {
       to: userEmail,
       subject: "Bienvenido a Ensurance",
       body: `Hola ${userName}, gracias por registrarte en nuestro sistema. Tu cuenta será revisada por un administrador para su activación. Has elegido una póliza con cobertura del ${selectedPolicyType.value}%.`
     });
     
-    await axios.post(`http://${ip}:8080/api/notifications/email`, {
+    await axios.post(`http://${ip}:${insurance_port}/api/notifications/email`, {
       to: userEmail,
       subject: "Nuevo registro de usuario - Notificación de administrador",
       body: `Notificación de administrador: El usuario ${userName} (${userEmail}) se ha registrado en el sistema con una póliza del ${selectedPolicyType.value}% y está pendiente de activación.`
@@ -175,7 +177,7 @@ const register: () => Promise<void> = async (): Promise<void> => {
     console.log("Usuario:", registerData);
 
     const response: AxiosResponse<any> = await axios.post(
-      `http://${ip}:8080/api/users`,
+      `http://${ip}:${insurance_port}/api/users`,
       registerData
     );
 

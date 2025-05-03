@@ -3,6 +3,7 @@ package com.sources.app;
 import com.sources.app.dao.*;
 import com.sources.app.handlers.*;
 import com.sources.app.util.HibernateUtil;
+import com.sources.app.util.PortManager;
 import com.sun.net.httpserver.HttpServer;
 import org.hibernate.Session;
 import java.net.InetAddress;
@@ -38,6 +39,9 @@ public class App {
     private static final HospitalInsuranceServiceDAO hospitalInsuranceServiceDAO = new HospitalInsuranceServiceDAO();
     private static final EnsuranceAppointmentDAO ensuranceAppointmentDAO = new EnsuranceAppointmentDAO();
     private static final PrescriptionApprovalDAO prescriptionApprovalDAO = new PrescriptionApprovalDAO();
+    
+    // Default port for insurance backend
+    private static final int DEFAULT_PORT = 8080;
 
     /**
      * Constructor privado para prevenir la instanciación de la clase de utilidad.
@@ -93,6 +97,10 @@ public class App {
 
         String ip = getLocalExternalIp();
 
+        // Inicializar el gestor de puertos y obtener el puerto asignado
+        PortManager portManager = new PortManager(true, DEFAULT_PORT);
+        int port = portManager.getPort();
+
         // Verificar servicios expirados al iniciar
         System.out.println("Verificando servicios expirados...");
         int updatedUsers = userDAO.checkAllUsersServiceExpiration();
@@ -112,7 +120,7 @@ public class App {
         86400000, 86400000);
 
         // Crear y configurar el servidor HTTP
-        HttpServer server = HttpServer.create(new InetSocketAddress(ip, 8080), 0);
+        HttpServer server = HttpServer.create(new InetSocketAddress(ip, port), 0);
         server.createContext("/api/login", new LoginHandler(userDAO));
         server.createContext("/api/users", new UserHandler(userDAO));
         server.createContext("/api/policy", new PolicyHandler(policyDAO));
@@ -148,6 +156,6 @@ public class App {
         
         server.setExecutor(null); // Usa el executor por defecto
         server.start();
-        System.out.println("Servidor iniciado en http://" + ip + ":8080/api");
+        System.out.println("Servidor iniciado en http://" + ip + ":" + port + "/api");
     }
 }
