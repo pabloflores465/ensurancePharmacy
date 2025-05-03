@@ -29,7 +29,8 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useUserStore } from "@/stores/userStore";
 import CommentItem from './CommentItem.vue';
-
+const pharmacy = parseInt(window.location.port);
+const pharmacy_port = pharmacy-30;
 const ip = process.env.VUE_APP_IP;
 
 export default {
@@ -55,7 +56,7 @@ export default {
     onMounted(async () => {
       try {
         console.log(ip);
-        const res = await fetch(`http://${ip}:8081/api2/comments`);
+        const res = await fetch(`http://${ip}:${pharmacy_port}/api2/comments`);
         if (res.ok) {
           const data = await res.json();
           console.log('Comentarios obtenidos:', data);
@@ -87,7 +88,7 @@ export default {
         }
 
         try {
-          const res = await fetch(`http://${ip}:8081/api2/comments`, {
+          const res = await fetch(`http://${ip}:${pharmacy_port}/api2/comments`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)

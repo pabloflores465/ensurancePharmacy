@@ -119,7 +119,8 @@ const role = ref('');        // Por si quieres asignar un rol
 const idPolicy = ref('');
 const enabled = ref(true);   // Por defecto true
 const password = ref('');
-
+const pharmacy = parseInt(window.location.port);
+const pharmacy_port = pharmacy-30;
 // Manejo del registro
 const register = async () => {
   // Aquí hacemos la llamada POST a /api2/login (aunque lo usual sería /api2/register)
@@ -138,7 +139,7 @@ const register = async () => {
     });
 console.log( toString(namex.value),  cui.value, phone.value, email.value, address.value, birthdate.value, "usuario", password.value)
     // Llamada al endpoint con Axios
-    const response = await axios.post(`http://${ip}:8081/api2/users`, {
+    const response = await axios.post(`http://${ip}:${pharmacy_port}/api2/users`, {
       name: namex.value,
       cui: cui.value,
       phone: phone.value,

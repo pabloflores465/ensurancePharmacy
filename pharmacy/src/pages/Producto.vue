@@ -55,12 +55,13 @@ import axios from 'axios';
 const route = useRoute();
 const productId = route.params.id; // Se espera que el router pase el id como string
 const ip = process.env.VUE_APP_IP;
-
+const pharmacy = parseInt(window.location.port);
+const pharmacy_port = pharmacy-30;
 const medicines = ref([]);
 
 const fetchMedicines = async () => {
   try {
-    const response = await axios.get(`http://${ip}:8081/api2/medicines`);
+    const response = await axios.get(`http://${ip}:${pharmacy_port}/api2/medicines`);
     medicines.value = response.data;
     console.log("Medicinas recibidas:", medicines.value);
   } catch (error) {

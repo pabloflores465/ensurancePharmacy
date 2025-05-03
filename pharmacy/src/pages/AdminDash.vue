@@ -168,7 +168,8 @@ const inventoryOptions = ref({
 // Variables para estado de carga
 const isLoading = ref(true);
 const error = ref(null);
-
+const pharmacy = parseInt(window.location.port);
+const pharmacy_port = pharmacy-30;
 // Variables para estado de la exportación XML
 const isExportingXML = ref(false);
 const exportSuccess = ref(false);
@@ -233,7 +234,7 @@ const checkAdminStatus = () => {
 const fetchMedicinesData = async () => {
   try {
     console.log("Obteniendo datos de medicamentos");
-    const response = await axios.get(`http://${ip}:8081/api2/medicines`);
+    const response = await axios.get(`http://${ip}:${pharmacy_port}/api2/medicines`);
     const medicines = response.data;
     console.log("Datos de medicamentos obtenidos:", medicines);
 
@@ -383,13 +384,13 @@ const fetchTransactionsData = async () => {
     // Primero intentamos con la API de transacciones
     let transactions = [];
     try {
-      const response = await axios.get(`http://${ip}:8081/api2/transactions`);
+      const response = await axios.get(`http://${ip}:${pharmacy_port}/api2/transactions`);
       transactions = response.data;
       console.log("Datos de transacciones obtenidos:", transactions);
     } catch (e) {
       console.log("Error al obtener transacciones, intentando con bills:", e);
       // Si falla, intentamos con la API de facturas
-      const response = await axios.get(`http://${ip}:8081/api2/bills`);
+      const response = await axios.get(`http://${ip}:${pharmacy_port}/api2/bills`);
       transactions = response.data;
       console.log("Datos de facturas obtenidos:", transactions);
     }
@@ -445,7 +446,7 @@ const exportMedicinesXML = async () => {
     isExportingXML.value = true;
 
     // Realizar solicitud al endpoint de XML
-    const response = await axios.get(`http://${ip}:8081/api2/medicines-xml`, {
+    const response = await axios.get(`http://${ip}:${pharmacy_port}/api2/medicines-xml`, {
       responseType: "blob",
     });
 

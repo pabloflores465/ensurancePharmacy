@@ -1,6 +1,9 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="prescriptions-container">
+    <!-- Hospital Selector -->
+    <HospitalSelector @hospital-selected="onHospitalSelected" />
+
     <h2 class="text-2xl font-bold text-center text-blue-800 mb-4">
       Todas las Recetas
     </h2>
@@ -65,14 +68,29 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
+import HospitalSelector from '../components/HospitalSelector.vue';
 
 const router = useRouter();
 const recipes = ref([]);
 const errorMessage = ref('');
 const patientInfo = ref(null);
+const selectedPort = ref(localStorage.getItem('selectedHospitalPort') || '');
+
+// URL base computada usando las variables de entorno
+const baseUrl = computed(() => {
+  const serverIp = process.env.VUE_APP_IP || '192.168.0.3';
+  const port = selectedPort.value || '5050';
+  return `http://${serverIp}:${port}/recipes/email/`;
+});
+
+// Manejar la selección del hospital
+const onHospitalSelected = (port) => {
+  selectedPort.value = port;
+  fetchPrescriptions();
+};
 
 // Funciones auxiliares para extraer información del paciente
 const getPatientName = (recipe) => {
@@ -134,6 +152,12 @@ function goToVerification(medicinePrincipioActivo, recipeId) {
 }
 
 const fetchPrescriptions = async () => {
+  // Si no hay puerto seleccionado, no continuar
+  if (!selectedPort.value) {
+    console.log('Esperando selección de hospital...');
+    return;
+  }
+
   try {
     // Obtener el email del usuario del localStorage
     let userEmail = ''; // Valor por defecto
@@ -167,10 +191,8 @@ const fetchPrescriptions = async () => {
       userEmail = 'rrrivera@unis.edu.gt'; // Valor por defecto en caso de error
     }
 
-    // Usando la URL específica proporcionada
-    // Corrigiendo la URL (quitando un slash)
-    const baseUrl = 'http://192.168.0.21:5050/recipes/email/';
-    const url = `${baseUrl}${userEmail}`;
+    // Usando la URL dinámica con IP y puerto
+    const url = `${baseUrl.value}${userEmail}`;
     console.log(`Consultando recetas con URL dinámica: ${url}`);
     
     const response = await axios.get(url, {
@@ -268,7 +290,10 @@ const fetchPrescriptions = async () => {
 };
 
 onMounted(() => {
-  fetchPrescriptions();
+  // Solo cargar recetas si ya hay un puerto seleccionado
+  if (selectedPort.value) {
+    fetchPrescriptions();
+  }
 });
 </script>
 

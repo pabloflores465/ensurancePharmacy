@@ -56,7 +56,8 @@
   import axios from "axios";
   import { useUserStore } from '@/stores/userStore';
 
-
+  const pharmacy = parseInt(window.location.port);
+  const pharmacy_port = pharmacy-30;
   const ip = process.env.VUE_APP_IP;
 
   export default {
@@ -78,7 +79,7 @@
     },
     mounted() {
       const routeId = this.$route.params.id;
-      axios.get(`http://${ip}:8081/api2/medicines`)
+      axios.get(`http://${ip}:${pharmacy_port}/api2/medicines`)
           .then(response => {
             const products = response.data;
             console.log(this.$route.params.id);
@@ -111,7 +112,7 @@
         const userId = userStore.user.idUser;
 
         // Obtener todas las órdenes para el usuario
-        axios.get(`http://${ip}:8081/api2/orders?userId=${userId}`)
+        axios.get(`http://${ip}:${pharmacy_port}/api2/orders?userId=${userId}`)
           .then(response => {
             console.log('Response from orders GET:', response.data);
             const orders = response.data;
@@ -120,7 +121,7 @@
               console.log('Found order in progress:', orderInProgress);
               return orderInProgress;
             } else {
-              return axios.post(`http://${ip}:8081/api2/orders`, {
+              return axios.post(`http://${ip}:${pharmacy_port}/api2/orders`, {
                 user: { idUser: userId },
                 status: 'En progreso'
               }).then(response => {
@@ -131,7 +132,7 @@
           })
           .then(order => {
             console.log('ORDEN:', order);
-            return axios.get(`http://${ip}:8081/api2/order_medicines?id=${order.idOrder}%2C${this.product.idMedicine}`)
+            return axios.get(`http://${ip}:${pharmacy_port}/api2/order_medicines?id=${order.idOrder}%2C${this.product.idMedicine}`)
                 .then(response => {
                   let items = response.data;
                   if (!Array.isArray(items)) items = items ? [items] : [];
@@ -151,8 +152,8 @@
                     total: this.product.price * this.quantity
                   };
                   return existing
-                      ? axios.put(`http://${ip}:8081/api2/order_medicines`, payload)
-                      : axios.post(`http://${ip}:8081/api2/order_medicines`, payload);
+                      ? axios.put(`http://${ip}:${pharmacy_port}/api2/order_medicines`, payload)
+                      : axios.post(`http://${ip}:${pharmacy_port}/api2/order_medicines`, payload);
                 });
           })
           .then(response => {

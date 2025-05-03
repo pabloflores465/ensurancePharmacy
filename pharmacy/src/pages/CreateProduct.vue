@@ -111,14 +111,15 @@ const errorMessage = ref('');
 const showModal = ref(false);
 
 const ip = process.env.VUE_APP_API_IP || 'localhost';
-
+const pharmacy = parseInt(window.location.port);
+const pharmacy_port = pharmacy-30;
 // Función principal de crear producto
 const createProduct = async () => {
   errorMessage.value = '';
 
   try {
     // Petición POST al backend (ajusta la URL a la tuya)
-    const response = await axios.post(`http://${ip}:8081/api2/medicines`, {
+    const response = await axios.post(`http://${ip}:${pharmacy_port}/api2/medicines`, {
       name: name.value,
       activeMedicament: activeMedicament.value,
       description: description.value,

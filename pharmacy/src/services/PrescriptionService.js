@@ -1,7 +1,8 @@
 import axios from 'axios';
-
-const API_URL = process.env.VUE_APP_API_URL || 'http://localhost:8081/api';
-const INSURANCE_API_URL = process.env.VUE_APP_INSURANCE_API_URL || 'http://localhost:8081/api2';
+const pharmacy = parseInt(window.location.port);
+const pharmacy_port = pharmacy-30;
+const API_URL = process.env.VUE_APP_API_URL || `http://localhost:${pharmacy_port}/api`;
+const INSURANCE_API_URL = process.env.VUE_APP_INSURANCE_API_URL || `http://localhost:${pharmacy_port}/api2`;
 
 class PrescriptionService {
   /**

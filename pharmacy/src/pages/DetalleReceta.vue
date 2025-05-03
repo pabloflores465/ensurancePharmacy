@@ -99,7 +99,8 @@ const ip = process.env.VUE_APP_API_IP || 'localhost';
 const isLoading = ref(true);
 const receta = ref(null);
 const error = ref(null);
-
+const pharmacy = parseInt(window.location.port);
+const pharmacy_port = pharmacy-30;
 // Propiedades computadas
 const puedeComprar = computed(() => {
   return receta.value && receta.value.medicines && receta.value.medicines.length > 0;
@@ -128,7 +129,7 @@ async function fetchReceta() {
     }
     
     // Usar la misma API que funciona en PrescriptionPay
-    const response = await axios.get(`http://${ip}:8081/api2/prescription_medicines`);
+    const response = await axios.get(`http://${ip}:${pharmacy_port}/api2/prescription_medicines`);
     const allData = response.data;
     
     // Filtrar solo las recetas que coinciden con el id de la receta

@@ -90,7 +90,8 @@ const password = ref('');
 const errorMessage = ref('');
 const showModal = ref(false);
 const userType = ref('');
-
+const pharmacy = parseInt(window.location.port);
+const pharmacy_port = pharmacy-30;
 // Función principal de login
 const login = async () => {
   errorMessage.value = '';
@@ -99,7 +100,7 @@ const login = async () => {
     console.log("Intentando iniciar sesión con:", email.value);
     
     // Petición POST al backend
-    const response = await axios.post(`http://${ip}:8081/api2/login`, {
+    const response = await axios.post(`http://${ip}:${pharmacy_port}/api2/login`, {
       email: email.value,
       password: password.value
     });

@@ -313,12 +313,13 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 import axios from 'axios';
-
+const pharmacy = parseInt(window.location.port);
+const pharmacy_port = pharmacy-30;
 const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
 const ip = process.env.VUE_APP_IP || '192.168.0.21';
-const apiPort = process.env.VUE_APP_API_PORT || '8081';
+const apiPort = process.env.VUE_APP_API_PORT || pharmacy_port;
 
 // Estados
 const medicine = ref(null);

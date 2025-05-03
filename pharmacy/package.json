@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": " python3 getip.py && vue-cli-service serve ",
+    "watch-env": "node scripts/generate-env-json.js",
+    "serve": "python3 getip.py && vue-cli-service serve --host 0.0.0.0",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
