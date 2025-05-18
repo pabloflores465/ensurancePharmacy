@@ -145,6 +145,8 @@ public class App {
         server.createContext("/api/prescriptions/", new PrescriptionApprovalHandler(prescriptionApprovalDAO, userDAO, configurableAmountDAO));
         // Actualizar handler para monto configurable
         server.createContext("/api/configurable-amount/", new ConfigurableAmountHandler(configurableAmountDAO));
+        // Registrar el nuevo handler para proxy de servicios de hospital
+        server.createContext("/api/hospital-proxy", new HospitalServiceProxyHandler(hospitalDAO));
         
         server.setExecutor(null); // Usa el executor por defecto
         server.start();

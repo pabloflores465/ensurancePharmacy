@@ -101,6 +101,10 @@ function navigateToConfiguration() {
   router.push("/admin/configuration");
 }
 
+function navigateToHospitalConfiguration() {
+  router.push("/admin/hospital-configuration");
+}
+
 function navigateToUserServices() {
   router.push("/user-services");
 }
@@ -200,6 +204,12 @@ function navigateToUserServices() {
               class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
             >
               Hospitales y Servicios
+            </button>
+            <button 
+              @click="navigateToHospitalConfiguration" 
+              class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+            >
+              Configuración de Hospitales
             </button>
             <button 
               @click="navigateToHospitalServicesImport" 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import axios from "axios";
 
 interface Hospital {
@@ -9,6 +9,7 @@ interface Hospital {
   phone: string;
   email: string;
   enabled: number;
+  port?: string;
 }
 
 interface Category {
@@ -48,9 +49,25 @@ const ip = import.meta.env.VITE_IP || "localhost";
 const selectedHospitalId = ref<number | null>(null);
 const selectedServiceId = ref<number | null>(null);
 const serviceFilter = ref("");
+const selectedHospitalPort = ref<string>("8000");
+const useDefaultHospital = ref(true);
 
 // Estado del modal
 const modalOpen = ref(false);
+
+// Función para obtener el hospital predeterminado desde localStorage
+const getDefaultHospital = () => {
+  try {
+    const storedHospital = localStorage.getItem('defaultHospital');
+    if (storedHospital) {
+      return JSON.parse(storedHospital);
+    }
+    return null;
+  } catch (error) {
+    console.error('Error al obtener el hospital predeterminado:', error);
+    return null;
+  }
+};
 
 // Computed para filtrar servicios
 const filteredServices = computed(() => {
@@ -73,12 +90,56 @@ const approvedServices = computed(() => {
   );
 });
 
+// Computed para obtener el hospital seleccionado
+const selectedHospital = computed(() => {
+  if (!selectedHospitalId.value || !hospitals.value) return null;
+  
+  return hospitals.value.find(
+    hospital => hospital.idHospital === selectedHospitalId.value
+  );
+});
+
+// Computed para verificar si hay un hospital predeterminado
+const hasDefaultHospital = computed(() => {
+  return getDefaultHospital() !== null;
+});
+
+// Computed para obtener el nombre del hospital predeterminado
+const defaultHospitalName = computed(() => {
+  const defaultHospital = getDefaultHospital();
+  return defaultHospital ? defaultHospital.name : 'Ninguno';
+});
+
 // Funciones para cargar datos
 const fetchHospitals = async () => {
   try {
     const response = await axios.get(`http://${ip}:8080/api/hospital`);
     if (response.data) {
       hospitals.value = response.data;
+      
+      // Seleccionar el hospital predeterminado si la opción está activada
+      if (useDefaultHospital.value) {
+        const defaultHospital = getDefaultHospital();
+        if (defaultHospital) {
+          // Buscar si el hospital predeterminado existe en la lista de hospitales
+          const hospital = hospitals.value.find(h => h.idHospital === defaultHospital.idHospital);
+          if (hospital && hospital.enabled === 1) {
+            selectedHospitalId.value = hospital.idHospital;
+            
+            // También establecer el puerto del hospital seleccionado
+            if (hospital.port) {
+              selectedHospitalPort.value = hospital.port;
+            } else if (defaultHospital.port) {
+              selectedHospitalPort.value = defaultHospital.port;
+            } else {
+              selectedHospitalPort.value = "5050"; // Valor por defecto
+            }
+            
+            // Cargar servicios del hospital automáticamente
+            await fetchHospitalServices();
+          }
+        }
+      }
     } else {
       hospitals.value = [];
       console.warn("La respuesta del servidor no contiene datos de hospitales");
@@ -112,7 +173,18 @@ const fetchHospitalServices = async () => {
   try {
     loading.value = true;
     
-    const response = await axios.get(`http://${ip}:8080/api/hospital-services?hospital=${selectedHospitalId.value}`);
+    // Usamos el puerto seleccionado
+    const port = selectedHospitalPort.value || "8000";
+    
+    const response = await axios.get(
+      `http://${ip}:8080/api/hospital-services?hospital=${selectedHospitalId.value}`, 
+      {
+        headers: {
+          'X-Hospital-Port': port // Pasar el puerto como header para que el backend lo use
+        }
+      }
+    );
+    
     if (response.data) {
       hospitalServices.value = response.data;
     } else {
@@ -210,6 +282,13 @@ const revokeService = async (hospitalService: HospitalService) => {
 
 const onHospitalChange = async () => {
   if (selectedHospitalId.value) {
+    const hospital = selectedHospital.value;
+    if (hospital && hospital.port) {
+      selectedHospitalPort.value = hospital.port;
+    } else {
+      selectedHospitalPort.value = "8000";
+    }
+    
     await fetchHospitalServices();
   } else {
     hospitalServices.value = [];
@@ -242,6 +321,27 @@ onMounted(async () => {
       <p>{{ error }}</p>
     </div>
     
+    <!-- Hospital predeterminado info -->
+    <div v-if="hasDefaultHospital" class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
+      <div class="flex items-center justify-between">
+        <div>
+          <span class="font-medium">Hospital predeterminado: </span>
+          <span class="text-blue-600">{{ defaultHospitalName }}</span>
+        </div>
+        <div class="flex items-center">
+          <input 
+            type="checkbox" 
+            id="useDefaultHospital" 
+            v-model="useDefaultHospital"
+            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          />
+          <label for="useDefaultHospital" class="ml-2 block text-sm text-gray-900">
+            Usar hospital predeterminado
+          </label>
+        </div>
+      </div>
+    </div>
+    
     <!-- Selector de hospital -->
     <div class="mb-6">
       <label class="block text-sm font-medium text-gray-700 mb-1">Seleccione un Hospital</label>
@@ -257,9 +357,31 @@ onMounted(async () => {
           :value="hospital.idHospital"
           :disabled="hospital.enabled !== 1"
         >
-          {{ hospital.name }} {{ hospital.enabled !== 1 ? '(Inactivo)' : '' }}
+          {{ hospital.name }} 
+          {{ hospital.enabled !== 1 ? '(Inactivo)' : '' }}
+          {{ getDefaultHospital()?.idHospital === hospital.idHospital ? '(Predeterminado)' : '' }}
         </option>
       </select>
+    </div>
+    
+    <!-- Puerto del hospital seleccionado -->
+    <div v-if="selectedHospitalId" class="mb-6">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Puerto del Hospital</label>
+      <div class="flex space-x-2">
+        <input 
+          v-model="selectedHospitalPort" 
+          type="text" 
+          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          placeholder="Puerto (ej: 8000, 5050, 3000, etc.)"
+        />
+        <button 
+          @click="fetchHospitalServices" 
+          class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Actualizar
+        </button>
+      </div>
+      <p class="text-sm text-gray-500 mt-1">Utilizado para conectarse al API del hospital</p>
     </div>
     
     <!-- Botón para abrir modal y aprobar nuevo servicio -->

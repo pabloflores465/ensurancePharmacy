@@ -25,6 +25,7 @@ interface Hospital {
   phone: string;
   email: string;
   enabled: number;
+  port: string;
 }
 
 interface HospitalService {
@@ -123,30 +124,54 @@ const getApprovedHospitals = async (): Promise<Hospital[]> => {
 };
 
 // Hospital system API endpoints
-const getHospitalServices = async (hospitalId?: number): Promise<HospitalService[]> => {
+const getHospitalServices = async (hospitalId?: number, hospitalPort?: string): Promise<HospitalService[]> => {
   try {
     console.log(`Fetching services for hospital ID: ${hospitalId || 'default'}`);
     
-    // Intentar obtener servicios del backend del hospital
+    if (!hospitalId) {
+      console.error('No hospital ID provided');
+      return [];
+    }
+
+    // Verificar si hay un puerto en los parámetros, si no, intentar obtener del hospital predeterminado
+    let port = hospitalPort;
+    if (!port) {
+      const defaultHospital = getDefaultHospital();
+      if (defaultHospital && defaultHospital.idHospital === hospitalId && defaultHospital.port) {
+        port = defaultHospital.port;
+        console.log(`Using default hospital port: ${port}`);
+      }
+    }
+
+    // Configurar headers
+    const headers: Record<string, string> = {};
+    if (port) {
+      headers['X-Hospital-Port'] = port;
+    }
+
+    // Usar el nuevo proxy que maneja el puerto automáticamente
+    const response = await axios.get(
+      `http://${INSURANCE_IP}:8080/api/hospital-proxy/${hospitalId}/api/services/`,
+      { headers }
+    );
+    
+    console.log('Hospital services response:', response.data);
+    if (response.data) {
+      return Array.isArray(response.data) ? response.data : [response.data];
+    }
+    
+    // Si la respuesta es vacía, intentar con otra ruta
     try {
-      // Primero intentar con la ruta de servicios principal
-      const response = await axios.get(`${HOSPITAL_API_URL}/api/services/`);
-      console.log('Hospital services response:', response.data);
-      if (response.data) {
-        return Array.isArray(response.data) ? response.data : [response.data];
+      const alternativeResponse = await axios.get(
+        `http://${INSURANCE_IP}:8080/api/hospital-proxy/${hospitalId}/services/`,
+        { headers }
+      );
+      console.log('Alternative hospital services response:', alternativeResponse.data);
+      if (alternativeResponse.data) {
+        return Array.isArray(alternativeResponse.data) ? alternativeResponse.data : [alternativeResponse.data];
       }
-    } catch (err) {
-      console.log('Hospital services endpoint failed:', err);
-      // Intentar con ruta alternativa
-      try {
-        const alternativeResponse = await axios.get(`${HOSPITAL_API_URL}/services/`);
-        console.log('Alternative hospital services response:', alternativeResponse.data);
-        if (alternativeResponse.data) {
-          return Array.isArray(alternativeResponse.data) ? alternativeResponse.data : [alternativeResponse.data];
-        }
-      } catch (altErr) {
-        console.log('Alternative endpoint failed:', altErr);
-      }
+    } catch (altErr) {
+      console.log('Alternative proxy endpoint failed:', altErr);
     }
     
     // Si todas las consultas fallan, devolver un array vacío
@@ -158,9 +183,49 @@ const getHospitalServices = async (hospitalId?: number): Promise<HospitalService
   }
 };
 
-const getHospitalCategories = async (): Promise<Category[]> => {
+// Función para obtener el hospital predeterminado del localStorage
+const getDefaultHospital = () => {
   try {
-    const response = await axios.get(`${HOSPITAL_API_URL}/api/categories/`);
+    const storedHospital = localStorage.getItem('defaultHospital');
+    if (storedHospital) {
+      return JSON.parse(storedHospital);
+    }
+    return null;
+  } catch (error) {
+    console.error('Error al obtener el hospital predeterminado:', error);
+    return null;
+  }
+};
+
+const getHospitalCategories = async (hospitalId?: number, hospitalPort?: string): Promise<Category[]> => {
+  try {
+    if (!hospitalId) {
+      console.error('No hospital ID provided');
+      return [];
+    }
+
+    // Verificar si hay un puerto en los parámetros, si no, intentar obtener del hospital predeterminado
+    let port = hospitalPort;
+    if (!port) {
+      const defaultHospital = getDefaultHospital();
+      if (defaultHospital && defaultHospital.idHospital === hospitalId && defaultHospital.port) {
+        port = defaultHospital.port;
+        console.log(`Using default hospital port: ${port}`);
+      }
+    }
+
+    // Configurar headers
+    const headers: Record<string, string> = {};
+    if (port) {
+      headers['X-Hospital-Port'] = port;
+    }
+
+    // Usar el nuevo proxy que maneja el puerto automáticamente
+    const response = await axios.get(
+      `http://${INSURANCE_IP}:8080/api/hospital-proxy/${hospitalId}/api/categories/`,
+      { headers }
+    );
+    
     return response.data;
   } catch (error) {
     console.error('Error fetching hospital categories:', error);
@@ -273,10 +338,26 @@ const checkApprovalStatus = async (approvalCode: string) => {
 };
 
 // Integration utilities
-const syncHospitalServices = async (hospitalId: number, insuranceId: string) => {
+const syncHospitalServices = async (hospitalId: number, insuranceId: string, hospitalPort?: string) => {
   try {
+    // Verificar si hay un puerto en los parámetros, si no, intentar obtener del hospital predeterminado
+    let port = hospitalPort;
+    if (!port) {
+      const defaultHospital = getDefaultHospital();
+      if (defaultHospital && defaultHospital.idHospital === hospitalId && defaultHospital.port) {
+        port = defaultHospital.port;
+        console.log(`Using default hospital port: ${port}`);
+      }
+    }
+
     // Get services from hospital system
-    const hospitalServices = await getHospitalServices(hospitalId);
+    const hospitalServices = await getHospitalServices(hospitalId, port);
+    
+    // Configurar headers
+    const headers: Record<string, string> = {};
+    if (port) {
+      headers['X-Hospital-Port'] = port;
+    }
     
     // Transform to insurance system format and import
     const transformedServices = hospitalServices.map((service: HospitalService) => ({
@@ -286,10 +367,12 @@ const syncHospitalServices = async (hospitalId: number, insuranceId: string) => 
       cost: service.cost
     }));
     
-    // Send to insurance system
-    const response = await axios.post(`${HOSPITAL_API_URL}/api/services_ensurance/import/`, {
-      services: transformedServices
-    });
+    // Send to insurance system using the proxy
+    const response = await axios.post(
+      `http://${INSURANCE_IP}:8080/api/hospital-proxy/${hospitalId}/api/services_ensurance/import/`,
+      { services: transformedServices },
+      { headers }
+    );
     
     return response.data;
   } catch (error) {
@@ -299,9 +382,30 @@ const syncHospitalServices = async (hospitalId: number, insuranceId: string) => 
 };
 
 // Función de prueba para verificar CORS
-const testCorsHospital = async (): Promise<any> => {
+const testCorsHospital = async (hospitalId: number, hospitalPort?: string): Promise<any> => {
   try {
-    const response = await axios.get(`${HOSPITAL_API_URL}/cors-test/`);
+    // Verificar si hay un puerto en los parámetros, si no, intentar obtener del hospital predeterminado
+    let port = hospitalPort;
+    if (!port) {
+      const defaultHospital = getDefaultHospital();
+      if (defaultHospital && defaultHospital.idHospital === hospitalId && defaultHospital.port) {
+        port = defaultHospital.port;
+        console.log(`Using default hospital port: ${port}`);
+      }
+    }
+
+    // Configurar headers
+    const headers: Record<string, string> = {};
+    if (port) {
+      headers['X-Hospital-Port'] = port;
+    }
+
+    // Usar el nuevo proxy que maneja el puerto automáticamente
+    const response = await axios.get(
+      `http://${INSURANCE_IP}:8080/api/hospital-proxy/${hospitalId}/cors-test/`,
+      { headers }
+    );
+    
     console.log('CORS test successful:', response.data);
     return response.data;
   } catch (error) {

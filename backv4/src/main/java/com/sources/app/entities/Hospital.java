@@ -51,6 +51,13 @@ public class Hospital {
      */
     @Column(name = "ENABLED", nullable = false)
     private Integer enabled;
+    
+    /**
+     * El puerto del servidor del hospital para conectarse a su API.
+     * Puede ser nulo y tiene una longitud máxima de 10 caracteres.
+     */
+    @Column(name = "PORT", length = 10)
+    private String port;
 
     /**
      * Constructor por defecto para la entidad Hospital.
@@ -125,4 +132,15 @@ public class Hospital {
      * @param enabled el estado habilitado a establecer.
      */
     public void setEnabled(Integer enabled) { this.enabled = enabled; }
+    
+    /**
+     * Obtiene el puerto del servidor del hospital.
+     * @return el puerto del servidor del hospital.
+     */
+    public String getPort() { return port; }
+    /**
+     * Establece el puerto del servidor del hospital.
+     * @param port el puerto del servidor del hospital a establecer.
+     */
+    public void setPort(String port) { this.port = port; }
 }

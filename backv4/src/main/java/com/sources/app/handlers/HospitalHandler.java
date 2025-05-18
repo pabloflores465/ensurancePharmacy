@@ -142,7 +142,7 @@ public class HospitalHandler implements HttpHandler {
      * Maneja las solicitudes POST a {@code /api/hospital}.
      * Crea un nuevo hospital basado en el cuerpo JSON de la solicitud.
      * El cuerpo JSON debe contener al menos 'name' y 'address'. Otros campos como
-     * 'phone', 'email', y 'enabled' son opcionales.
+     * 'phone', 'email', 'enabled' y 'port' son opcionales.
      * Responde con 201 (Created) y el objeto del hospital creado si tiene éxito.
      * Responde con 400 si faltan campos requeridos o el JSON es inválido.
      * Responde con 500 si ocurre un error al interactuar con la base de datos.
@@ -169,7 +169,8 @@ public class HospitalHandler implements HttpHandler {
                     hospital.getAddress(),
                     hospital.getPhone(),     // Puede ser null
                     hospital.getEmail(),     // Puede ser null
-                    hospital.getEnabled()    // Puede ser null (usará default)
+                    hospital.getEnabled(),    // Puede ser null (usará default)
+                    hospital.getPort()       // Puede ser null
             );
             if(created != null) {
                 // Hospital creado exitosamente, enviar respuesta JSON
