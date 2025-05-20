@@ -100,7 +100,21 @@ public class App {
 
         String ip = getLocalExternalIp();
 
-        HttpServer server = HttpServer.create(new InetSocketAddress(8081), 0);
+        // Solicitar puerto por consola
+        System.out.println("Ingrese el puerto para iniciar el servidor (predeterminado: 8081): ");
+        java.util.Scanner scanner = new java.util.Scanner(System.in);
+        String portInput = scanner.nextLine().trim();
+        
+        int port = 8081; // Puerto predeterminado
+        if (!portInput.isEmpty()) {
+            try {
+                port = Integer.parseInt(portInput);
+            } catch (NumberFormatException e) {
+                System.out.println("Formato de puerto inválido. Se usará el puerto predeterminado 8081.");
+            }
+        }
+
+        HttpServer server = HttpServer.create(new InetSocketAddress(ip, port), 0);
 
         // Asignamos cada contexto con su respectivo Handler usando el prefijo "/api2"
         server.createContext("/api2/login", new LoginHandler(userDAO));
@@ -121,6 +135,6 @@ public class App {
         server.createContext("/api2/verification", new VerificationHandler());
         server.setExecutor(null); // Usa el executor por defecto
         server.start();
-        System.out.println("Servidor iniciado en http://" + ip + ":8081/api2");
+        System.out.println("Servidor iniciado en http://" + ip + ":" + port + "/api2");
     }
 }

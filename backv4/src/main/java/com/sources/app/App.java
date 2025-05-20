@@ -93,6 +93,20 @@ public class App {
 
         String ip = getLocalExternalIp();
 
+        // Solicitar puerto por consola
+        System.out.println("Ingrese el puerto para iniciar el servidor (predeterminado: 8080): ");
+        java.util.Scanner scanner = new java.util.Scanner(System.in);
+        String portInput = scanner.nextLine().trim();
+        
+        int port = 8080; // Puerto predeterminado
+        if (!portInput.isEmpty()) {
+            try {
+                port = Integer.parseInt(portInput);
+            } catch (NumberFormatException e) {
+                System.out.println("Formato de puerto inválido. Se usará el puerto predeterminado 8080.");
+            }
+        }
+
         // Verificar servicios expirados al iniciar
         System.out.println("Verificando servicios expirados...");
         int updatedUsers = userDAO.checkAllUsersServiceExpiration();
@@ -112,7 +126,7 @@ public class App {
         86400000, 86400000);
 
         // Crear y configurar el servidor HTTP
-        HttpServer server = HttpServer.create(new InetSocketAddress(ip, 8080), 0);
+        HttpServer server = HttpServer.create(new InetSocketAddress(ip, port), 0);
         server.createContext("/api/login", new LoginHandler(userDAO));
         server.createContext("/api/users", new UserHandler(userDAO));
         server.createContext("/api/policy", new PolicyHandler(policyDAO));
@@ -150,6 +164,6 @@ public class App {
         
         server.setExecutor(null); // Usa el executor por defecto
         server.start();
-        System.out.println("Servidor iniciado en http://" + ip + ":8080/api");
+        System.out.println("Servidor iniciado en http://" + ip + ":" + port + "/api");
     }
 }
