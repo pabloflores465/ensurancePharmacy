@@ -731,7 +731,7 @@ async function checkInsurance() {
     const emailPaciente = userStore.user.email;
     console.log(`Verificando seguro para: ${emailPaciente}`);
     
-    const insuranceResponse = await axios.get(`http://172.20.10.3:8082/api/users/by-email/${encodeURIComponent(emailPaciente)}`);
+    const insuranceResponse = await axios.get(`http://172.20.10.3:8080/api/users/by-email/${encodeURIComponent(emailPaciente)}`);
     console.log('Respuesta de API de seguros:', insuranceResponse.data);
     
     if (insuranceResponse.data && insuranceResponse.data.policy) {
