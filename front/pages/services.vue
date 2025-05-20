@@ -40,7 +40,7 @@ let serviceChanges: Service[] = [];
 const config = useRuntimeConfig();
 const ip = config.public.ip;
 let temp: Service[] = [];
-
+import { getInsuranceApiUrl } from "../../utils/api";
 const fetchService = async () => {
   try {
     notify({
@@ -48,7 +48,7 @@ const fetchService = async () => {
       title: "Loading services",
       description: "Please wait...",
     });
-    const response = await axios.get(`http://${ip}:8080/api/service`);
+    const response = await axios.get(getInsuranceApiUrl("/service"));
     console.log(response.data);
     services.value = response.data;
     serviceChanges = response.data.map((service: Service) => ({ ...service }));

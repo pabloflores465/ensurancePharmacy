@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import axios from "axios";
+import { getInsuranceApiUrl } from "../../utils/api";
 
 interface Hospital {
   idHospital: number;
@@ -25,7 +26,7 @@ const defaultHospitalId = ref<number | null>(null);
 const fetchHospitals = async () => {
   try {
     loading.value = true;
-    const response = await axios.get(`http://${ip}:8080/api/hospital`);
+    const response = await axios.get(getInsuranceApiUrl("/hospital"));
     
     if (response.data) {
       hospitals.value = response.data;
@@ -63,7 +64,7 @@ const saveHospitalPort = async (hospital: Hospital) => {
     }
     
     // Enviar actualización al servidor (sin incluir el ID en la URL)
-    const response = await axios.put(`http://${ip}:8080/api/hospital`, hospital);
+    const response = await axios.put(getInsuranceApiUrl("/hospital"), hospital);
     
     if (response.data) {
       // Actualizar el hospital en la lista local
@@ -120,7 +121,7 @@ const toggleHospitalStatus = async (hospital: Hospital) => {
     };
     
     // Enviar actualización al servidor (sin incluir el ID en la URL)
-    const response = await axios.put(`http://${ip}:8080/api/hospital`, updatedHospital);
+    const response = await axios.put(getInsuranceApiUrl("/hospital"), updatedHospital);
     
     if (response.data) {
       // Actualizar el hospital en la lista local

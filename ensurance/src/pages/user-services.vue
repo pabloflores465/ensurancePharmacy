@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import axios from "axios";
-
+import { getInsuranceApiUrl } from "../utils/api";
 // Función para obtener el hospital predeterminado
 const getDefaultHospital = () => {
   try {
@@ -69,7 +69,7 @@ const usingDefaultHospital = computed(() => {
 async function tryMultipleIPs(endpoint: string, method: string = 'GET', data: any = null) {
   const serverIP = import.meta.env.VITE_IP || "localhost";
   try {
-    const url = `http://${serverIP}:8080/api${endpoint}`;
+    const url = getInsuranceApiUrl(endpoint);
     console.log(`Intentando ${method} a ${url}`);
     const response = await axios({ method, url, data, timeout: 3000 });
     return response;

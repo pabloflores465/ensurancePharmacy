@@ -11,7 +11,7 @@ const isLoading = ref(true);
 const policyDetails = ref<any>(null);
 const error = ref<string | null>(null);
 const ip = import.meta.env.VITE_IP;
-
+import { getInsuranceApiUrl } from "../utils/api";
 const fetchUserPolicyDetails = async () => {
   if (!user.value || !user.value.policy || !user.value.policy.idPolicy) {
     isLoading.value = false;
@@ -19,7 +19,7 @@ const fetchUserPolicyDetails = async () => {
   }
   
   try {
-    const response = await axios.get(`http://${ip}:8080/api/policy?id=${user.value.policy.idPolicy}`);
+    const response = await axios.get(getInsuranceApiUrl(`/policy?id=${user.value.policy.idPolicy}`));
     if (response.data) {
       policyDetails.value = response.data;
     }

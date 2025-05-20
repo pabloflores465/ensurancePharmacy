@@ -14,7 +14,7 @@ const cui = ref("");
 const errorMessage = ref("");
 const config = useRuntimeConfig();
 const ip = config.public.ip;
-
+import { getInsuranceApiUrl } from "../../utils/api";
 const createUser = async () => {
   try {
     notify({
@@ -25,7 +25,7 @@ const createUser = async () => {
     console.log(name, cui, phone, email, birthdate, address, password);
 
     const response = await axios.post(
-      `http://${ip}:8080/api/users`, // URL de tu endpoint de login
+      getInsuranceApiUrl("/users"), // URL de tu endpoint de login
       {
         name: name.value,
         cui: cui.value,

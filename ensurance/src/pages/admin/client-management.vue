@@ -99,7 +99,7 @@ const hospitalServices = ref<Service[]>([]);
 const hospitalUserDetails = ref<any>(null);
 const availablePolicies = ref<Policy[]>([]);
 const loadingPolicies = ref(false);
-
+import { getInsuranceApiUrl } from "../../utils/api";
 // Estado del modal
 const showUserModal = ref(false);
 const activeTab = ref("profile");
@@ -107,7 +107,7 @@ const activeTab = ref("profile");
 // Configuración de IPs
 const possibleIPs = [ip];
 const HOSPITAL_API_URL = `http://${ip}:${DEFAULT_PORT}`;
-const INSURANCE_API_BASE = `http://${ip}:8080/api`;
+const INSURANCE_API_BASE = getInsuranceApiUrl("/");
 
 // Información sobre el hospital predeterminado
 const usingDefaultHospital = computed(() => {
@@ -120,7 +120,7 @@ const usingDefaultHospital = computed(() => {
 async function tryMultipleIPs(endpoint: string, method: string = 'GET', data: any = null) {
   const serverIP = import.meta.env.VITE_IP || "localhost";
   try {
-    const url = `http://${serverIP}:8080/api${endpoint}`;
+    const url = getInsuranceApiUrl(endpoint);
     console.log(`Intentando ${method} a ${url}`);
     const response = await axios({ method, url, data, timeout: 3000 });
     return response;
@@ -218,7 +218,7 @@ const fetchUserTransactions = async (userId: number) => {
 const fetchHospitalUserInfo = async (email: string) => {
   try {
     // Intentar obtener usuario por email desde el hospital
-    const response = await axios.get(`${HOSPITAL_API_URL}/users?email=${email}`);
+    const response = await axios.get(getInsuranceApiUrl(`/users?email=${email}`));
     
     // Verificar si hay datos y encontrar el usuario por email
     if (response.data) {
@@ -252,7 +252,7 @@ const fetchHospitalUserInfo = async (email: string) => {
 const fetchHospitalUserServices = async (hospitalUserId: string) => {
   try {
     // Obtener las citas/servicios del usuario en el hospital
-    const servicesResponse = await axios.get(`${HOSPITAL_API_URL}/api/appointments/patient/${hospitalUserId}`);
+    const servicesResponse = await axios.get(getInsuranceApiUrl(`/appointments/patient/${hospitalUserId}`));
     
     if (servicesResponse.data && Array.isArray(servicesResponse.data)) {
       hospitalServices.value = servicesResponse.data.map((appointment: any) => ({

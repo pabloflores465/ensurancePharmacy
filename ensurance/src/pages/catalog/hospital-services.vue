@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import type { Ref } from "vue";
+import { getInsuranceApiUrl } from "../../utils/api";
 import axios from "axios";
 import { useRoute, useRouter } from "vue-router";
 
@@ -126,11 +127,11 @@ const fetchData = async () => {
     error.value = "";
     
     // Cargar datos del hospital
-    const hospitalResponse = await axios.get(`http://${ip}:8080/api/hospital?id=${hospitalId.value}`);
+    const hospitalResponse = await axios.get(getInsuranceApiUrl(`/hospital?id=${hospitalId.value}`));
     hospital.value = hospitalResponse.data;
     
     // Cargar servicios aprobados para este hospital
-    const servicesResponse = await axios.get(`http://${ip}:8080/api/hospital-services?hospital=${hospitalId.value}`);
+    const servicesResponse = await axios.get(getInsuranceApiUrl(`/hospital-services?hospital=${hospitalId.value}`));
     approvedServices.value = servicesResponse.data;
     
     // Extraer categorías
@@ -212,7 +213,7 @@ onMounted(() => {
             <option 
               v-for="(name, id) in categories" 
               :key="id"
-              :value="parseInt(id)"
+              :value="Number(id)"
             >
               {{ name }}
             </option>

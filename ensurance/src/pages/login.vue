@@ -5,7 +5,7 @@ import axios, { type AxiosResponse } from "axios";
 import router from "../router";
 import eventBus from '../eventBus';
 import { checkMissingRequiredFields } from "../utils/profile-utils";
-
+import { getInsuranceApiUrl } from "../utils/api";
 // La prop msg es opcional
 const props = defineProps<{ msg?: string }>();
 
@@ -38,7 +38,7 @@ const login: () => Promise<void> = async (): Promise<void> => {
     
     console.log("Intentando login con:", email.value);
     
-    const response = await axios.post(`http://${ip}:8080/api/login`, {
+    const response = await axios.post(getInsuranceApiUrl("/login"), {
       email: email.value,
       password: password.value,
     });

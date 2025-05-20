@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import axios from 'axios';
+import { getInsuranceApiUrl } from "../../utils/api";
 interface Policy {
   idPolicy: number;
   percentage: number;
@@ -54,7 +55,7 @@ const fetchTransactions = async () => {
       title: "Loading services",
       description: "Please wait...",
     });
-    const response = await axios.get(`http://${ip}:8080/api/transactions`);
+    const response = await axios.get(getInsuranceApiUrl("/transactions"));
     console.log("Prescriptions obtenidos:", response.data);
     transaction.value = response.data;
     notify({

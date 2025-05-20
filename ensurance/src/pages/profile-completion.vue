@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from "vue";
 import type { Ref } from "vue";
 import axios from "axios";
 import router from "../router";
-
+import { getInsuranceApiUrl } from "../utils/api";
 // Interfaces
 interface User {
   idUser: number;
@@ -111,7 +111,7 @@ const loadUserData = async () => {
     
     // Cargar información adicional si está disponible
     if (user.value.idUser) {
-      const response = await axios.get(`http://${ip}:8080/api/users/${user.value.idUser}`);
+      const response = await axios.get(getInsuranceApiUrl(`/users/${user.value.idUser}`));
       if (response.data) {
         user.value = { ...user.value, ...response.data };
         
@@ -156,7 +156,7 @@ const saveProfile = async () => {
     };
     
     // Enviar datos actualizados al servidor
-    const response = await axios.put(`http://${ip}:8080/api/users/${user.value?.idUser}`, updatedData);
+    const response = await axios.put(getInsuranceApiUrl(`/users/${user.value?.idUser}`), updatedData);
     
     if (response.status === 200) {
       // Actualizar el usuario en localStorage pero conservando los datos de perfil localmente

@@ -2,7 +2,7 @@
 import Hospital from "~/pages/hospital.vue";
 import Pharmacy from "~/pages/pharmacy.vue";
 import axios from "axios";
-
+import { getInsuranceApiUrl } from "../../utils/api";
 export interface Hospital {
   idHospital: number;
   name: string;
@@ -82,7 +82,7 @@ const fetchTransactions = async () => {
       title: "Loading services",
       description: "Please wait...",
     });
-    const response = await axios.get(`http://${ip}:8080/api/prescription`);
+    const response = await axios.get(getInsuranceApiUrl("/prescription"));
     console.log("Prescriptions obtenidos:", response.data);
     prescriptions.value = response.data;
     notify({
@@ -106,7 +106,7 @@ const addPrescription = async () => {
     title: "Adding prescription",
     description: "Please wait...",
   });
-  await axios.post(`http://${ip}:8080/api/prescription`, {
+  await axios.post(getInsuranceApiUrl("/prescription"), {
     hospital: {
       idHospital: 1,
       name: "Hospital La Pez",

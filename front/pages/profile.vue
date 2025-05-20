@@ -3,7 +3,7 @@ import {setProfile, useProfile, initializeProfile} from "~/composables/useProfil
 import axios from "axios";
 import {onMounted} from "vue";
 import { toRaw } from 'vue';
-
+import { getInsuranceApiUrl } from "../../utils/api";   
 interface Policy {
   idPolicy: number;
   percentage: number;
@@ -47,7 +47,7 @@ const fetchUser = async () => {
       throw new Error("No se encontró idUser en localStorage");
     }
 
-    const response = await axios.get(`http://${ip}:8080/api/users/${id}`);
+    const response = await axios.get(getInsuranceApiUrl(`/users/${id}`));
     user.value = response.data;
     setProfile(user.value!);
   } catch (error) {
@@ -187,7 +187,7 @@ const fetchAppointment = async () => {
       throw new Error("No se encontró idUser en localStorage");
     }
 
-    const response = await axios.get(`http://${ip}:8080/api/appointment?user_id=${id}`);
+    const response = await axios.get(getInsuranceApiUrl(`/appointment?user_id=${id}`));
 
     appointments.value = response.data;
     console.log(id);

@@ -9,117 +9,117 @@
       </div>
     </div>
     
-    <div class="calendar-container">
-      <h1 class="text-2xl font-bold mb-6">Calendario de Citas</h1>
+  <div class="calendar-container">
+    <h1 class="text-2xl font-bold mb-6">Calendario de Citas</h1>
+    
+    <!-- Calendario -->
+    <div class="calendar">
+      <div class="calendar-header">
+        <div class="time-column"></div>
+        <div 
+          v-for="day in weekDays" 
+          :key="day.toISOString()" 
+          class="day-column"
+        >
+          {{ formatDay(day) }}
+        </div>
+      </div>
       
-      <!-- Calendario -->
-      <div class="calendar">
-        <div class="calendar-header">
-          <div class="time-column"></div>
+      <div class="calendar-body">
+        <div 
+          v-for="time in timeSlots" 
+          :key="time" 
+          class="time-slot"
+        >
+          <div class="time-label">{{ time }}</div>
           <div 
             v-for="day in weekDays" 
             :key="day.toISOString()" 
-            class="day-column"
+            class="slot"
+            :class="{
+              'taken': isSlotTaken(day, time),
+              'selected': isSlotSelected(day, time)
+            }"
+            @click="handleSlotClick(day, time)"
           >
-            {{ formatDay(day) }}
-          </div>
-        </div>
-        
-        <div class="calendar-body">
-          <div 
-            v-for="time in timeSlots" 
-            :key="time" 
-            class="time-slot"
-          >
-            <div class="time-label">{{ time }}</div>
-            <div 
-              v-for="day in weekDays" 
-              :key="day.toISOString()" 
-              class="slot"
-              :class="{
-                'taken': isSlotTaken(day, time),
-                'selected': isSlotSelected(day, time)
-              }"
-              @click="handleSlotClick(day, time)"
-            >
-              <span v-if="isSlotTaken(day, time)">Ocupado</span>
-            </div>
+            <span v-if="isSlotTaken(day, time)">Ocupado</span>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Formulario para nueva cita -->
-      <div v-if="selectedSlot" class="appointment-form">
-        <h3 class="text-xl font-semibold mb-4">
-          Nueva Cita para {{ formatDate(selectedSlot.date) }} - {{ selectedSlot.time }}
-        </h3>
-        <p><strong>Paciente:</strong> {{ user?.name }}</p>
-        
-        <form @submit.prevent="submitAppointment">
-          <div class="form-group">
-            <label for="doctor" class="block mb-2">Doctor</label>
-            <select 
-              id="doctor" 
-              v-model="appointment.doctor" 
-              class="form-select"
-              required
-            >
-              <option value="">Seleccione un doctor</option>
-              <option v-for="doctor in doctors" :key="doctor._id" :value="doctor._id">
-                {{ doctor.name || doctor.username }}
-              </option>
-            </select>
-          </div>
-          
-          <div class="form-group">
-            <label for="reason" class="block mb-2">Motivo de la consulta</label>
-            <textarea 
-              id="reason" 
-              v-model="appointment.reason" 
-              class="form-textarea" 
-              rows="4"
-              required
-            ></textarea>
-          </div>
-          
-          <div class="button-group">
-            <button type="submit" class="btn-primary">Confirmar Cita</button>
-            <button type="button" class="btn-danger" @click="resetForm">Cancelar</button>
-          </div>
-        </form>
-      </div>
+    <!-- Formulario para nueva cita -->
+    <div v-if="selectedSlot" class="appointment-form">
+      <h3 class="text-xl font-semibold mb-4">
+        Nueva Cita para {{ formatDate(selectedSlot.date) }} - {{ selectedSlot.time }}
+      </h3>
+      <p><strong>Paciente:</strong> {{ user?.name }}</p>
       
-      <!-- Lista de citas agendadas -->
-      <div class="my-appointments mt-8" v-if="userAppointments.length > 0">
-        <h2 class="text-xl font-semibold mb-4">Mis Citas</h2>
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hora</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Motivo</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="appointment in userAppointments" :key="appointment._id">
-                <td class="px-6 py-4 whitespace-nowrap">{{ formatDate(new Date(appointment.start)) }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">{{ formatTime(new Date(appointment.start)) }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">{{ getDoctorName(appointment.doctor) }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">{{ appointment.reason }}</td>
-                <td class="px-6 py-4 whitespace-nowrap space-x-2">
-                  <button 
-                    @click="deleteAppointment(appointment._id)" 
-                    class="btn-danger-sm"
-                  >
-                    Cancelar
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <form @submit.prevent="submitAppointment">
+        <div class="form-group">
+          <label for="doctor" class="block mb-2">Doctor</label>
+          <select 
+            id="doctor" 
+            v-model="appointment.doctor" 
+            class="form-select"
+            required
+          >
+            <option value="">Seleccione un doctor</option>
+            <option v-for="doctor in doctors" :key="doctor._id" :value="doctor._id">
+              {{ doctor.name || doctor.username }}
+            </option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="reason" class="block mb-2">Motivo de la consulta</label>
+          <textarea 
+            id="reason" 
+            v-model="appointment.reason" 
+            class="form-textarea" 
+            rows="4"
+            required
+          ></textarea>
+        </div>
+        
+        <div class="button-group">
+          <button type="submit" class="btn-primary">Confirmar Cita</button>
+          <button type="button" class="btn-danger" @click="resetForm">Cancelar</button>
+        </div>
+      </form>
+    </div>
+    
+    <!-- Lista de citas agendadas -->
+    <div class="my-appointments mt-8" v-if="userAppointments.length > 0">
+      <h2 class="text-xl font-semibold mb-4">Mis Citas</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hora</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Motivo</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr v-for="appointment in userAppointments" :key="appointment._id">
+              <td class="px-6 py-4 whitespace-nowrap">{{ formatDate(new Date(appointment.start)) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">{{ formatTime(new Date(appointment.start)) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">{{ getDoctorName(appointment.doctor) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">{{ appointment.reason }}</td>
+              <td class="px-6 py-4 whitespace-nowrap space-x-2">
+                <button 
+                  @click="deleteAppointment(appointment._id)" 
+                  class="btn-danger-sm"
+                >
+                  Cancelar
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
         </div>
       </div>
     </div>
@@ -129,7 +129,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
-
+import { getInsuranceApiUrl } from "../utils/api";  
 // Función para obtener el hospital predeterminado
 const getDefaultHospital = () => {
   try {
@@ -152,7 +152,7 @@ const DEFAULT_PORT = defaultHospital?.port || '5050';
 // Usamos el puerto del hospital seleccionado o el valor por defecto
 const HOSPITAL_API_URL = `http://${ip}:${DEFAULT_PORT}`;
 // Usamos getip.py para determinar la IP del backend
-const INSURANCE_API_URL = `http://${ip}:8080/api`;
+const INSURANCE_API_URL = getInsuranceApiUrl("/");
 
 // Agregar información sobre el hospital predeterminado para debug
 const usingDefaultHospital = computed(() => {

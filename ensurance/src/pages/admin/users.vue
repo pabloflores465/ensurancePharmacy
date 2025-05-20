@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import type { Ref } from "vue";
+import { getInsuranceApiUrl } from "../../utils/api";
 import axios from "axios";
 import router from "../../router";
 
@@ -45,13 +46,11 @@ const availableRoles = [
   { value: "interconnection", label: "Usuario Interconexiones" }
 ];
 
-const ip = import.meta.env.VITE_IP;
-
 // Cargar usuarios desde el backend
 const fetchUsers = async () => {
   try {
     loading.value = true;
-    const response = await axios.get(`http://${ip}:8080/api/users`);
+    const response = await axios.get(getInsuranceApiUrl("/users"));
     users.value = response.data;
     applyFilters();
   } catch (err: any) {
@@ -143,7 +142,7 @@ const saveUser = async () => {
     const originalUserEnabled = users.value.find(u => u.idUser === selectedUser.value?.idUser)?.enabled || 0;
     
     const response = await axios.put(
-      `http://${ip}:8080/api/users/${selectedUser.value.idUser}`,
+      getInsuranceApiUrl(`/users/${selectedUser.value.idUser}`),
       selectedUser.value
     );
     
@@ -173,7 +172,7 @@ const saveUser = async () => {
 // Enviar email de notificación al activar un usuario
 const sendActivationEmail = async (user: User) => {
   try {
-    await axios.post(`http://${ip}:8080/api/notifications/email`, {
+    await axios.post(getInsuranceApiUrl("/notifications/email"), {
       to: user.email,
       subject: "Cuenta activada en Ensurance",
       body: `Hola ${user.name}, tu cuenta ha sido activada. Ya puedes iniciar sesión en el sistema.`

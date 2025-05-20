@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
-
+import { getInsuranceApiUrl } from "../../utils/api";
 interface Appointment {
   idAppointment: number;
   hospitalAppointmentId: string;
@@ -50,7 +50,7 @@ const selectedDate = ref(formattedDate);
 // Función para probar múltiples IPs
 async function tryMultipleIPs(endpoint: string, method: string = 'GET', data: any = null) {
   try {
-    const url = `http://${ip}:8080/api${endpoint}`;
+    const url = getInsuranceApiUrl(endpoint);
     console.log(`Intentando ${method} a ${url}`);
     const response = await axios({ method, url, data, timeout: 3000 });
     return response;

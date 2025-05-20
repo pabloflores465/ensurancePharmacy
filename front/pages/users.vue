@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import axios from 'axios';
 import {toJSON} from "flatted";
-
+import { getInsuranceApiUrl } from "../../utils/api"; 
 interface Hospital {
   idHospital: number;
   name: string;
@@ -55,7 +55,7 @@ const fetchAppointments = async (userId: number) => {
       title: "Loading policies",
       description: "Please wait...",
     });
-    const response = await axios.get(`http://${ip}:8080/api/appointment?user_id=${userId}`);
+    const response = await axios.get(getInsuranceApiUrl(`/appointment?user_id=${userId}`));
     appointments.value = response.data;
     appointmentChanges = response.data.map((appointment: Appointment) => ({ ...appointments }));
     notify({
@@ -81,7 +81,7 @@ const fetchUsers = async () => {
       title: "Loading policies",
       description: "Please wait...",
     });
-    const response = await axios.get(`http://${ip}:8080/api/users`);
+    const response = await axios.get(getInsuranceApiUrl("/users"));
     users.value = response.data;
     userChanges = response.data.map((user: User) => ({ ...user }));
     console.log(users.value);
@@ -155,7 +155,7 @@ const fetchPrescription = async (userId : number) => {
       title: "Loading services",
       description: "Please wait...",
     });
-    const response = await axios.get(`http://${ip}:8080/api/prescription?user_id=${userId}`);
+    const response = await axios.get(getInsuranceApiUrl(`/prescription?user_id=${userId}`));
     console.log("Prescriptions obtenidos:", response.data);
     prescriptions.value = response.data;
     notify({

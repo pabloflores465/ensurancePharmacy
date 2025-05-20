@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
-
+import { getInsuranceApiUrl } from "../../utils/api"; 
 interface Approval {
   idApproval: number;
   authorizationNumber: string;
@@ -91,7 +91,7 @@ const DEFAULT_PORT = defaultHospital?.port || '5050';
 // Variables globales
 const possibleIPs = [ip];
 const HOSPITAL_API = `http://${ip}:${DEFAULT_PORT}`;
-const PHARMACY_API_BASE = `http://${ip}:8080/api`;
+const PHARMACY_API_BASE = getInsuranceApiUrl("/");
 
 // Información sobre el hospital predeterminado para mostrar
 const usingDefaultHospital = computed(() => {
@@ -118,7 +118,7 @@ const activeTab = ref('hospital'); // 'hospital' o 'approved'
 async function tryMultipleIPs(endpoint: string, method: string = 'GET', data: any = null) {
   const serverIP = import.meta.env.VITE_IP || "localhost";
   try {
-    const url = `http://${serverIP}:8080/api${endpoint}`;
+    const url = getInsuranceApiUrl(endpoint);
     console.log(`Intentando ${method} a ${url}`);
     const response = await axios({ method, url, data, timeout: 3000 });
     return response;

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import axios from "axios";
-
+import { getInsuranceApiUrl } from "../../utils/api";
 const search = useSearch();
 interface Policy {
   idPolicy: number;
@@ -21,7 +21,7 @@ const fetchPolicy = async () => {
       title: "Loading policies",
       description: "Please wait...",
     });
-    const response = await axios.get(`http://${ip}:8080/api/policy`);
+    const response = await axios.get(getInsuranceApiUrl("/policy"));
     policies.value = response.data;
     console.log("Hospitals obtenidos:", policies.value);
     notify({
@@ -40,7 +40,7 @@ const fetchPolicy = async () => {
 };
 const updatePolicy = async (policy: Policy) => {
   try {
-    await axios.put(`http://${ip}:8080/api/policy`, policy);
+    await axios.put(getInsuranceApiUrl("/policy"), policy);
     notify({ type: 'success', title: 'Policy updated', description: 'Successfully updated policy.' });
   } catch (err) {
     console.error('Error updating policy:', err);

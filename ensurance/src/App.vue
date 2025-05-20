@@ -2,11 +2,20 @@
 import { ref, provide, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import eventBus from './eventBus';
+import PortSelector from './components/PortSelector.vue';
+import { loadPortConfiguration } from './utils/api';
 
 const router = useRouter();
 const isLoggedIn = ref(false);
 const userProfile = ref<any>(null);
+const showPortSelector = ref(false);
 
+// Verificar si se debe mostrar el selector de puertos
+const checkShowPortSelector = () => {
+  // No mostrar si el usuario eligió recordar su elección
+  const skipPortSelector = localStorage.getItem('skipPortSelector') === 'true';
+  showPortSelector.value = !skipPortSelector;
+};
 
 const checkAuth = () => {
   const profile = JSON.parse(localStorage.getItem("user") || "null");
@@ -21,11 +30,18 @@ const isAdmin = computed(() => {
   return userProfile.value && userProfile.value.role === "admin";
 });
 
-// Verificar autenticación inicial
-checkAuth();
-
-// Escuchar eventos de login y logout
+// Inicialización
 onMounted(() => {
+  // Cargar configuración de puertos
+  loadPortConfiguration();
+  
+  // Verificar autenticación inicial
+  checkAuth();
+  
+  // Verificar si se debe mostrar el selector de puertos
+  checkShowPortSelector();
+  
+  // Escuchar eventos de login y logout
   eventBus.on('login', () => {
     checkAuth();
   });
@@ -34,6 +50,11 @@ onMounted(() => {
     checkAuth();
   });
 });
+
+// Mostrar el selector de puertos de forma manual
+const openPortSelector = () => {
+  showPortSelector.value = true;
+};
 
 function logout() {
   localStorage.removeItem("user");
@@ -187,6 +208,14 @@ function navigateToUserServices() {
             Admin ▼
           </button>
           <div class="absolute hidden group-hover:block bg-white mt-2 py-2 rounded shadow-lg z-10 w-64 right-0">
+            <!-- Añadir opción para configurar puertos -->
+            <button 
+              @click="openPortSelector" 
+              class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100 border-b border-gray-200"
+            >
+              Configurar Puertos API
+            </button>
+            
             <button 
               @click="navigateToUsers" 
               class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
@@ -275,6 +304,9 @@ function navigateToUserServices() {
   >
     <p>&copy; 2025 Ensurance. All rights reserved and lefts too.</p>
   </footer>
+  
+  <!-- Selector de puertos -->
+  <PortSelector v-if="showPortSelector" />
 </template>
 
 <style>

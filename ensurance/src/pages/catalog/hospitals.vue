@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import type { Ref } from "vue";
+import { getInsuranceApiUrl } from "../../utils/api";
 import axios from "axios";
 import { useRouter } from "vue-router";
 
@@ -41,7 +42,7 @@ const fetchHospitals = async () => {
     loading.value = true;
     error.value = "";
     
-    const response = await axios.get(`http://${ip}:8080/api/hospital`);
+    const response = await axios.get(getInsuranceApiUrl("/hospital"));
     // Filtrar solo hospitales activos
     hospitals.value = response.data.filter((hospital: Hospital) => hospital.enabled === 1);
   } catch (err: any) {

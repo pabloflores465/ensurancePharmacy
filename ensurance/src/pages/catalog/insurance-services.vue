@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import type { Ref } from "vue";
+import { getInsuranceApiUrl } from "../../utils/api";
 import axios from "axios";
 
 // Interfaces
@@ -83,8 +84,8 @@ const fetchData = async () => {
     error.value = "";
     
     const [categoriesResponse, servicesResponse] = await Promise.all([
-      axios.get(`http://${ip}:8080/api/category`),
-      axios.get(`http://${ip}:8080/api/insurance-services`)
+      axios.get(getInsuranceApiUrl("/category")),
+      axios.get(getInsuranceApiUrl("/insurance-services"))
     ]);
     
     categories.value = categoriesResponse.data;
