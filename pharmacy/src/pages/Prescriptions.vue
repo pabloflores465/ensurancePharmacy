@@ -1,65 +1,104 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="prescriptions-container">
-    <h2 class="text-2xl font-bold text-center text-blue-800 mb-4">
-      Todas las Recetas
-    </h2>
+    <div class="header-section">
+      <h2 class="page-title">Mis Recetas Médicas</h2>
+      <p class="page-subtitle">Revisa y compra medicamentos de tus recetas médicas</p>
+    </div>
 
     <!-- Mensaje de error si lo hay -->
-    <div v-if="errorMessage" class="mb-4 text-red-600 text-center">
-      {{ errorMessage }}
+    <div v-if="errorMessage" class="error-message">
+      <i class="fas fa-exclamation-circle"></i>
+      <span>{{ errorMessage }}</span>
     </div>
+
+    <!-- Loader mientras carga las recetas -->
+    <div v-if="isLoading" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Cargando tus recetas...</p>
+    </div>
+
     <!-- Lista de recetas -->
-    <div v-if="recipes && recipes.length > 0" class="prescriptions-list">
-      <div v-for="recipe in recipes" :key="recipe._id" class="prescription-item">
-        <h3 class="text-xl font-bold">
-          {{ getPatientName(recipe) }}
-        </h3>
-        <p v-if="getPatientEmail(recipe)"><strong>Email:</strong> {{ getPatientEmail(recipe) }}</p>
-        <p><strong>ID Receta:</strong> {{ recipe._id }}</p>
-        <p><strong>Diagnóstico:</strong> {{ getDiagnostic(recipe) }}</p>
-        <p v-if="recipe.created_at"><strong>Fecha:</strong> {{ recipe.created_at }}</p>
-        <p v-if="recipe.formatted_date"><strong>Fecha:</strong> {{ recipe.formatted_date }}</p>
+    <div v-else-if="recipes && recipes.length > 0" class="prescriptions-list">
+      <div v-for="recipe in recipes" :key="recipe._id" class="prescription-card">
+        <div class="prescription-header">
+          <div class="patient-info">
+            <span class="patient-name">{{ getPatientName(recipe) }}</span>
+            <span v-if="getPatientEmail(recipe)" class="patient-email">{{ getPatientEmail(recipe) }}</span>
+          </div>
+          <div class="recipe-date">
+            <i class="fas fa-calendar-alt"></i>
+            <span>{{ recipe.formatted_date || recipe.created_at || 'Fecha no disponible' }}</span>
+          </div>
+        </div>
+
+        <div class="prescription-body">
+          <div class="recipe-details">
+            <div class="detail-item">
+              <span class="detail-label">ID Receta:</span>
+              <span class="detail-value">{{ recipe._id }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Diagnóstico:</span>
+              <span class="detail-value diagnostic">{{ getDiagnostic(recipe) }}</span>
+            </div>
+          </div>
+
+          <div v-if="recipe.has_insurance" class="insurance-badge">
+            <i class="fas fa-shield-alt"></i>
+            Con cobertura de seguro
+          </div>
+        </div>
 
         <!-- Tabla de Medicinas -->
-        <table class="medicine-table" v-if="recipe.medicines && recipe.medicines.length > 0">
-          <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Concentración</th>
-            <th>Presentación</th>
-            <th>Dosis</th>
-            <th>Frecuencia</th>
-            <th>Duración</th>
-            <th>Acción</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr v-for="medicine in recipe.medicines" :key="medicine._id">
-            <td>{{ medicine.principioActivo }}</td>
-            <td>{{ medicine.concentracion }}</td>
-            <td>{{ medicine.presentacion }}</td>
-            <td>{{ medicine.dosis }}</td>
-            <td>{{ medicine.frecuencia }}</td>
-            <td>{{ medicine.duracion }}</td>
-            <td>
+        <div class="medicines-section" v-if="recipe.medicines && recipe.medicines.length > 0">
+          <h3 class="medicines-title">Medicamentos Recetados</h3>
+          
+          <div class="medicines-list">
+            <div v-for="medicine in recipe.medicines" :key="medicine._id" class="medicine-card">
+              <div class="medicine-info">
+                <h4 class="medicine-name">{{ medicine.principioActivo }}</h4>
+                <div class="medicine-details">
+                  <span class="medicine-concentration">{{ medicine.concentracion }}</span>
+                  <span class="medicine-presentation">{{ medicine.presentacion }}</span>
+                </div>
+              </div>
+              
+              <div class="dosage-info">
+                <div class="dosage-item">
+                  <span class="dosage-label">Dosis:</span>
+                  <span class="dosage-value">{{ medicine.dosis }}</span>
+                </div>
+                <div class="dosage-item">
+                  <span class="dosage-label">Frecuencia:</span>
+                  <span class="dosage-value">{{ medicine.frecuencia }}</span>
+                </div>
+                <div class="dosage-item">
+                  <span class="dosage-label">Duración:</span>
+                  <span class="dosage-value">{{ medicine.duracion }}</span>
+                </div>
+              </div>
+              
               <button 
-                class="buy-button small" 
+                class="buy-button" 
                 @click="goToVerification(medicine.principioActivo, recipe._id)"
               >
+                <i class="fas fa-shopping-cart"></i>
                 Comprar
               </button>
-            </td>
-          </tr>
-          </tbody>
-        </table>
-        <p v-if="recipe.has_insurance" class="insurance-info">Con seguro médico</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Mensaje si no hay recetas -->
-    <div v-else class="text-center text-gray-600">
-      No hay recetas disponibles.
+    <div v-else class="empty-state">
+      <div class="empty-icon">
+        <i class="fas fa-clipboard-list"></i>
+      </div>
+      <h3>No hay recetas disponibles</h3>
+      <p>Cuando tengas recetas médicas recetadas, aparecerán aquí.</p>
     </div>
   </div>
 </template>
@@ -73,6 +112,7 @@ const router = useRouter();
 const recipes = ref([]);
 const errorMessage = ref('');
 const patientInfo = ref(null);
+const isLoading = ref(true);
 
 // Funciones auxiliares para extraer información del paciente
 const getPatientName = (recipe) => {
@@ -125,15 +165,39 @@ function goToVerification(medicinePrincipioActivo, recipeId) {
     errorMessage.value = 'Error interno: No se pudo seleccionar el medicamento.';
     return;
   }
-  console.log(`Navegando a VerificarCompra para Principio Activo: ${medicinePrincipioActivo}, receta ID: ${recipeId}`);
-  router.push({
-    name: 'VerificarCompra',
-    params: { id: medicinePrincipioActivo },
-    query: { recipeId: recipeId }
-  });
+  
+  console.log(`Navegando a VerificarCompra para medicamento: ${medicinePrincipioActivo}, receta ID: ${recipeId}`);
+  
+  // Primero debemos obtener el ID del medicamento basado en el principio activo
+  const baseApiUrl = 'http://172.20.10.3:8081/api2';
+  
+  axios.get(`${baseApiUrl}/medicines/search?activeMedicament=${encodeURIComponent(medicinePrincipioActivo)}`)
+    .then(response => {
+      if (response.data && response.data.length > 0) {
+        const medicamento = response.data[0];
+        console.log('Medicamento encontrado para compra:', medicamento);
+        
+        // Ahora redirigimos usando el ID real del medicamento
+        router.push({
+          name: 'VerificarCompra',
+          params: { id: medicamento.idMedicine.toString() },
+          query: { recipeId: recipeId }
+        });
+      } else {
+        console.error('No se encontró el medicamento en la base de datos:', medicinePrincipioActivo);
+        errorMessage.value = `No se encontró el medicamento "${medicinePrincipioActivo}" en la base de datos.`;
+      }
+    })
+    .catch(error => {
+      console.error('Error al buscar el medicamento:', error);
+      errorMessage.value = 'Error al conectar con el servidor. Inténtelo más tarde.';
+    });
 }
 
 const fetchPrescriptions = async () => {
+  isLoading.value = true;
+  errorMessage.value = '';
+  
   try {
     // Obtener el email del usuario del localStorage
     let userEmail = ''; // Valor por defecto
@@ -169,7 +233,7 @@ const fetchPrescriptions = async () => {
 
     // Usando la URL específica proporcionada
     // Corrigiendo la URL (quitando un slash)
-    const baseUrl = 'http://192.168.0.21:5050/recipes/email/';
+    const baseUrl = 'http://172.20.10.3:5052/recipes/email/';
     const url = `${baseUrl}${userEmail}`;
     console.log(`Consultando recetas con URL dinámica: ${url}`);
     
@@ -264,6 +328,8 @@ const fetchPrescriptions = async () => {
     console.error("Error al obtener las recetas:", error);
     recipes.value = [];
     errorMessage.value = `Error al obtener las recetas: ${error.message}. Por favor, inténtelo de nuevo.`;
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -274,63 +340,313 @@ onMounted(() => {
 
 <style scoped>
 .prescriptions-container {
-  padding: 50px;
+  padding: 2rem;
   background-color: #f8f9fa;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.header-section {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.page-subtitle {
+  color: #6c757d;
+  font-size: 1.1rem;
+}
+
+.error-message {
+  background-color: #fff3f3;
+  border-left: 4px solid #f44336;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  color: #d32f2f;
+}
+
+.error-message i {
+  font-size: 1.5rem;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.loading-spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #3498db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .prescriptions-list {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 1.5rem;
 }
 
-.prescription-item {
+.prescription-card {
   background: white;
-  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.prescription-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+.prescription-header {
+  background-color: #3498db;
+  color: white;
+  padding: 1.2rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.patient-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.patient-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.patient-email {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.recipe-date {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.prescription-body {
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid #eee;
+}
+
+.recipe-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #555;
+  min-width: 100px;
+}
+
+.detail-value {
+  color: #333;
+}
+
+.detail-value.diagnostic {
+  background-color: #f0f7ff;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.insurance-badge {
+  background-color: #e8f5e9;
+  color: #388e3c;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.medicines-section {
+  padding: 1.5rem;
+}
+
+.medicines-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.5rem;
+}
+
+.medicines-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.medicine-card {
+  background-color: #f8f9fa;
   border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-left: 4px solid #3498db;
 }
 
-.medicine-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-  margin-bottom: 15px;
+.medicine-info {
+  flex: 1;
 }
 
-.medicine-table th, .medicine-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: center;
+.medicine-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 0.3rem 0;
 }
 
-.medicine-table th {
-  background-color: #f4f4f4;
-  font-weight: bold;
+.medicine-details {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.9rem;
+  color: #6c757d;
 }
 
-.insurance-info {
-  color: #4caf50;
-  font-weight: bold;
-  margin: 10px 0;
+.medicine-concentration, .medicine-presentation {
+  background-color: #e9ecef;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.dosage-info {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.dosage-item {
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+}
+
+.dosage-label {
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.dosage-value {
+  font-weight: 600;
+  color: #333;
 }
 
 .buy-button {
   background-color: #4caf50;
   color: white;
-  padding: 8px 16px;
-  border-radius: 4px;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
   cursor: pointer;
   border: none;
-  font-weight: bold;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s;
 }
 
 .buy-button:hover {
-  background-color: #45a049;
+  background-color: #3d8b40;
 }
 
-.buy-button.small {
-  padding: 0.4rem 0.8rem;
-  font-size: 0.85rem;
+.empty-state {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  padding: 3rem;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  color: #d1d8e0;
+  margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+  font-size: 1.4rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+  color: #6c757d;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .prescriptions-container {
+    padding: 1rem;
+  }
+  
+  .medicine-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .dosage-info {
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0.5rem 0;
+  }
+  
+  .prescription-header, .prescription-body {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  
+  .buy-button {
+    width: 100%;
+    justify-content: center;
+  }
 }
 </style>

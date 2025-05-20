@@ -169,6 +169,81 @@
           </p>
         </div>
       </div>
+      
+      <!-- Formulario de Tarjeta de Crédito -->
+      <div class="payment-section">
+        <h3>Información de Pago</h3>
+        <div class="card-form">
+          <div class="form-group">
+            <label for="card-name">Titular de la Tarjeta</label>
+            <input 
+              type="text" 
+              id="card-name" 
+              v-model="cardName" 
+              placeholder="Nombre como aparece en la tarjeta"
+              @input="validateAllCardFields"
+            />
+          </div>
+          
+          <div class="form-group">
+            <label for="card-number">Número de Tarjeta</label>
+            <div class="card-number-wrapper">
+              <input 
+                type="text" 
+                id="card-number" 
+                v-model="cardNumber" 
+                placeholder="1234 5678 9012 3456"
+                @input="formatCardNumber"
+                maxlength="19"
+              />
+              <div class="card-type">
+                <i class="fas fa-credit-card"></i>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group col">
+              <label for="card-expiry">Fecha de Expiración</label>
+              <input 
+                type="text" 
+                id="card-expiry" 
+                v-model="cardExpiry" 
+                placeholder="MM/AA" 
+                @input="formatCardExpiry"
+                maxlength="5"
+              />
+            </div>
+            
+            <div class="form-group col">
+              <label for="card-cvc">CVC</label>
+              <input 
+                type="text" 
+                id="card-cvc" 
+                v-model="cardCVC" 
+                placeholder="123" 
+                @input="validateAllCardFields"
+                maxlength="4"
+              />
+            </div>
+          </div>
+          
+          <div class="card-validation" v-if="cardNumber">
+            <div class="validation-indicator" :class="{'valid': validateCardNumber()}">
+              <i :class="validateCardNumber() ? 'fas fa-check' : 'fas fa-times'"></i>
+              <span>Número de tarjeta {{ validateCardNumber() ? 'válido' : 'inválido' }}</span>
+            </div>
+            <div v-if="cardExpiry" class="validation-indicator" :class="{'valid': validateCardExpiry()}">
+              <i :class="validateCardExpiry() ? 'fas fa-check' : 'fas fa-times'"></i>
+              <span>Fecha de expiración {{ validateCardExpiry() ? 'válida' : 'inválida' }}</span>
+            </div>
+            <div v-if="cardCVC" class="validation-indicator" :class="{'valid': validateCardCVC()}">
+              <i :class="validateCardCVC() ? 'fas fa-check' : 'fas fa-times'"></i>
+              <span>CVC {{ validateCardCVC() ? 'válido' : 'inválido' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- Resumen de pago -->
       <div class="payment-summary">
@@ -335,9 +410,18 @@ const selectedRecipe = ref(null);
 const showDetailModal = ref(false);
 const medicineMatch = ref(null);
 
+// Nuevos estados para tarjeta y seguro
+const cardNumber = ref('');
+const cardName = ref('');
+const cardExpiry = ref('');
+const cardCVC = ref('');
+const isCardValid = ref(false);
+const isCheckingInsurance = ref(false);
+const insuranceDetails = ref(null);
+
 // Verificar si el usuario puede realizar la compra
 const canConfirmPurchase = computed(() => {
-  return hasStock.value;
+  return hasStock.value && isCardValid.value;
 });
 
 // Verificar si se puede usar la receta seleccionada
@@ -512,12 +596,188 @@ function closeDetailModal() {
   showDetailModal.value = false;
 }
 
+// Validar formato de tarjeta
+function validateCardNumber() {
+  // Implementación básica de validación (Luhn algorithm)
+  const value = cardNumber.value.replace(/\s/g, '');
+  
+  // Verificar longitud
+  if (value.length < 13 || value.length > 19) {
+    return false;
+  }
+  
+  // Verificar que sean solo dígitos
+  if (!/^\d+$/.test(value)) {
+    return false;
+  }
+  
+  // Implementación del algoritmo de Luhn
+  let sum = 0;
+  let double = false;
+  
+  // Recorrer de derecha a izquierda
+  for (let i = value.length - 1; i >= 0; i--) {
+    let digit = parseInt(value.charAt(i));
+    
+    if (double) {
+      digit *= 2;
+      if (digit > 9) {
+        digit -= 9;
+      }
+    }
+    
+    sum += digit;
+    double = !double;
+  }
+  
+  // Valid si es divisible por 10
+  return sum % 10 === 0;
+}
+
+// Validar fecha de expiración
+function validateCardExpiry() {
+  const value = cardExpiry.value;
+  if (!value || !/^\d{2}\/\d{2}$/.test(value)) {
+    return false;
+  }
+  
+  const [month, year] = value.split('/').map(num => parseInt(num, 10));
+  
+  // Verificar que el mes sea válido (1-12)
+  if (month < 1 || month > 12) {
+    return false;
+  }
+  
+  // Obtener año actual y convertir el año de 2 dígitos a 4 dígitos
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear() % 100; // últimos 2 dígitos
+  const currentMonth = currentDate.getMonth() + 1; // 1-12
+  
+  // Convertir año de tarjeta a número de 2 dígitos para comparación
+  const expYear = year;
+  
+  // Verificar si la tarjeta ya está vencida
+  if (expYear < currentYear || (expYear === currentYear && month < currentMonth)) {
+    return false;
+  }
+  
+  return true;
+}
+
+// Validar CVC
+function validateCardCVC() {
+  const value = cardCVC.value;
+  return /^\d{3,4}$/.test(value);
+}
+
+// Formatear número de tarjeta mientras se escribe
+function formatCardNumber(e) {
+  let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+  
+  // Limitar a 16 dígitos
+  if (value.length > 16) {
+    value = value.substr(0, 16);
+  }
+  
+  // Formato 4 dígitos - 4 dígitos - 4 dígitos - 4 dígitos
+  const parts = [];
+  for (let i = 0; i < value.length; i += 4) {
+    parts.push(value.substr(i, 4));
+  }
+  
+  cardNumber.value = parts.join(' ');
+}
+
+// Formatear fecha de expiración mientras se escribe
+function formatCardExpiry(e) {
+  let value = e.target.value.replace(/[^0-9]/g, '');
+  
+  // Limitar a 4 dígitos
+  if (value.length > 4) {
+    value = value.substr(0, 4);
+  }
+  
+  // Formato MM/YY
+  if (value.length > 2) {
+    cardExpiry.value = `${value.substr(0, 2)}/${value.substr(2)}`;
+  } else {
+    cardExpiry.value = value;
+  }
+}
+
+// Verificar todos los campos de tarjeta
+function validateAllCardFields() {
+  isCardValid.value = 
+    cardNumber.value.trim() !== '' && validateCardNumber() &&
+    cardName.value.trim() !== '' &&
+    cardExpiry.value.trim() !== '' && validateCardExpiry() &&
+    cardCVC.value.trim() !== '' && validateCardCVC();
+  
+  return isCardValid.value;
+}
+
+// Verificar seguro médico del usuario
+async function checkInsurance() {
+  if (!userStore.user || !userStore.user.email) {
+    console.warn('No hay email de usuario para verificar seguro');
+    hasInsurance.value = false;
+    coveragePercentage.value = 0;
+    return;
+  }
+  
+  isCheckingInsurance.value = true;
+  
+  try {
+    const emailPaciente = userStore.user.email;
+    console.log(`Verificando seguro para: ${emailPaciente}`);
+    
+    const insuranceResponse = await axios.get(`http://172.20.10.3:8082/api/users/by-email/${encodeURIComponent(emailPaciente)}`);
+    console.log('Respuesta de API de seguros:', insuranceResponse.data);
+    
+    if (insuranceResponse.data && insuranceResponse.data.policy) {
+      // Usuario tiene seguro
+      hasInsurance.value = true;
+      insuranceDetails.value = insuranceResponse.data;
+      
+      // Verificar si cubre el medicamento actual
+      if (medicine.value && medicine.value.activeMedicament) {
+        // Simulación: validar que el medicamento está cubierto
+        const isCovered = true; // En producción, esto vendría desde la API
+        
+        if (isCovered) {
+          coveragePercentage.value = 70; // Porcentaje de cobertura (podría venir de la API)
+          console.log(`Medicamento cubierto al ${coveragePercentage.value}%`);
+        } else {
+          coveragePercentage.value = 0;
+          console.log('Medicamento no cubierto por el seguro');
+        }
+      }
+    } else {
+      hasInsurance.value = false;
+      coveragePercentage.value = 0;
+      insuranceDetails.value = null;
+      console.log('Usuario no tiene seguro médico');
+    }
+  } catch (error) {
+    console.error('Error al verificar seguro:', error);
+    hasInsurance.value = false;
+    coveragePercentage.value = 0;
+  } finally {
+    isCheckingInsurance.value = false;
+  }
+}
+
 // Función para confirmar la compra
 async function confirmPurchase() {
   console.log('[VerificarCompra] Iniciando confirmPurchase...');
-  // ... (resto de la lógica de confirmPurchase como estaba antes, 
-  //      asegurándose de usar selectedRecipe.value?._id para la factura)
-   try {
+  
+  // Validar tarjeta de nuevo antes de procesar
+  if (!validateAllCardFields()) {
+    alert('Por favor, ingrese una tarjeta válida para continuar con la compra.');
+    return;
+  }
+  
+  try {
     isLoading.value = true;
     
     if (!medicine.value || !medicine.value.idMedicine) {
@@ -541,25 +801,60 @@ async function confirmPurchase() {
       return;
     }
     
+    // Verificar que la cantidad solicitada no sea mayor al stock disponible
+    if (quantity.value > medicine.value.stock) {
+      alert(`Solo hay ${medicine.value.stock} unidades disponibles. Ajuste la cantidad.`);
+      quantity.value = medicine.value.stock;
+      isLoading.value = false;
+      return;
+    }
+    
     console.log('Iniciando proceso de compra:', {
       medicineId: medicine.value.idMedicine,
       userId: userStore.user.idUser,
       quantity: quantity.value,
-      recipeId: selectedRecipe.value?._id // Incluir ID de receta si está seleccionada
+      recipeId: selectedRecipe.value?._id, // Incluir ID de receta si está seleccionada
+      stockActual: medicine.value.stock
     });
     
-    // 1. Crear orden de compra
-    const orderData = {
-      user: { idUser: userStore.user.idUser },
-      status: 'Completado'
-    };
+    // Simulación de procesamiento de pago
+    console.log('Procesando pago con tarjeta:', cardNumber.value.slice(-4));
+    // En un entorno real, aquí iría la llamada a un servicio de pago
     
+    // PROCESO DE COMPRA
+    
+    // 1. Actualizar primero el stock del medicamento para reservar el inventario
     try {
+      console.log('Paso 1: Actualizando stock del medicamento...');
+      const updatedMedicine = { ...medicine.value };
+      const nuevoStock = updatedMedicine.stock - quantity.value;
+      
+      if (nuevoStock < 0) {
+        throw new Error('Stock insuficiente');
+      }
+      
+      updatedMedicine.stock = nuevoStock;
+      
+      await axios.put(
+        `http://${ip}:${apiPort}/api2/medicines/${medicine.value.idMedicine}`, 
+        updatedMedicine
+      );
+      
+      console.log(`Stock actualizado correctamente. Nuevo stock: ${nuevoStock}`);
+      
+      // 2. Crear orden de compra
+      console.log('Paso 2: Creando orden de compra...');
+      const orderData = {
+        user: { idUser: userStore.user.idUser },
+        status: 'Completado'
+      };
+      
       const orderResponse = await axios.post(`http://${ip}:${apiPort}/api2/orders`, orderData);
       const order = orderResponse.data;
       console.log('Orden creada:', order);
       
-      // 2. Añadir medicamento a la orden
+      // 3. Añadir medicamento a la orden
+      console.log('Paso 3: Añadiendo medicamento a la orden...');
       const orderMedicineData = {
         orders: order,
         medicine: { idMedicine: medicine.value.idMedicine },
@@ -569,21 +864,18 @@ async function confirmPurchase() {
       };
       
       await axios.post(`http://${ip}:${apiPort}/api2/order_medicines`, orderMedicineData);
-      console.log('Medicamento añadido a la orden');
-      
-      // 3. Actualizar el stock del medicamento
-      const updatedMedicine = { ...medicine.value };
-      updatedMedicine.stock = updatedMedicine.stock - quantity.value;
-      await axios.put(`http://${ip}:${apiPort}/api2/medicines/${medicine.value.idMedicine}`, updatedMedicine);
-      console.log('Stock actualizado');
+      console.log('Medicamento añadido a la orden con éxito');
       
       // 4. Si hay seguro o receta, generar registro de factura
       if (hasInsurance.value || selectedRecipe.value) {
-        const insuranceAmount = hasInsurance.value ? (medicine.value.price * quantity.value) * (coveragePercentage.value / 100) : 0;
+        console.log('Paso 4: Generando factura...');
+        const insuranceAmount = hasInsurance.value ? 
+          (medicine.value.price * quantity.value) * (coveragePercentage.value / 100) : 0;
+          
         const patientAmount = (medicine.value.price * quantity.value) - insuranceAmount;
         
         const billData = {
-          prescription: selectedRecipe.value ? selectedRecipe.value._id : null, // Correcto
+          prescription: selectedRecipe.value ? selectedRecipe.value._id : null,
           total: medicine.value.price * quantity.value,
           subtotal: medicine.value.price * quantity.value,
           taxes: 0,
@@ -594,33 +886,54 @@ async function confirmPurchase() {
           insuranceApprovalCode: hasInsurance.value ? 'AP' + Math.floor(Math.random() * 100000) : null
         };
         
-        console.log('Creando factura con datos:', billData);
+        console.log('Datos de factura:', billData);
         await axios.post(`http://${ip}:${apiPort}/api2/bills`, billData);
-        console.log('Factura creada');
+        console.log('Factura creada con éxito');
       }
       
       console.log('Compra completada exitosamente');
-      isLoading.value = false;
+      
+      // Actualizamos la referencia local del medicamento para reflejar el nuevo stock
+      medicine.value.stock = nuevoStock;
       
       // Cerrar cualquier modal abierto
       closeDetailModal();
       
       // Mostrar confirmación
       showConfirmationModal.value = true;
-    } catch (error) {
-      console.error('Error en proceso de compra (llamadas API):', error);
-      if (error.response) {
-        console.error('Respuesta del servidor:', error.response.data);
-        alert(`Error del servidor: ${error.response.status} - ${error.response.data?.message || 'Error desconocido'}`);
-      } else {
-        alert('Ocurrió un error al procesar su compra (API). Por favor, inténtelo de nuevo.');
+      
+    } catch (stockError) {
+      console.error('Error al actualizar el stock:', stockError);
+      
+      // Si falló la actualización del stock, intentamos revertir si ya se había actualizado
+      if (stockError.message !== 'Stock insuficiente') {
+        try {
+          console.warn('Intentando verificar estado actual del stock...');
+          const checkResponse = await axios.get(`http://${ip}:${apiPort}/api2/medicines/${medicine.value.idMedicine}`);
+          
+          // Si el stock ya fue actualizado erróneamente, intentamos restaurarlo
+          if (checkResponse.data.stock !== medicine.value.stock) {
+            console.warn('Detectado cambio de stock, intentando restaurar...');
+            await axios.put(`http://${ip}:${apiPort}/api2/medicines/${medicine.value.idMedicine}`, medicine.value);
+            console.log('Stock restaurado al valor original');
+          }
+        } catch (restoreError) {
+          console.error('Error al restaurar stock:', restoreError);
+        }
       }
-      isLoading.value = false;
+      
+      if (stockError.message === 'Stock insuficiente') {
+        alert('No hay suficiente stock para completar la compra.');
+      } else {
+        alert('Error al actualizar el inventario. Inténtelo nuevamente.');
+      }
     }
+    
   } catch (error) {
     console.error('Error general procesando la compra:', error);
-    isLoading.value = false;
     alert('Ocurrió un error al procesar su compra. Por favor, inténtelo de nuevo.');
+  } finally {
+    isLoading.value = false;
   }
 }
 
@@ -717,23 +1030,26 @@ function recargarRecetas() {
 onMounted(async () => {
   isLoading.value = true;
   try {
-    const activeMedicamentName = route.params.id;
-    console.log('Buscando medicamento con principio activo:', activeMedicamentName);
+    const medicineId = route.params.id;
+    console.log('Buscando medicamento con ID:', medicineId);
     
-    const searchUrl = `http://${ip}:${apiPort}/api2/medicines/search?activeMedicament=${activeMedicamentName}`;
-    console.log('URL de búsqueda:', searchUrl);
+    // Modificamos la URL para buscar directamente por ID en lugar de principio activo
+    const searchUrl = `http://${ip}:${apiPort}/api2/medicines/${medicineId}`;
+    console.log('URL de búsqueda directa:', searchUrl);
     
     const response = await axios.get(searchUrl);
     console.log('Respuesta de búsqueda:', response.data);
     
-    if (response.data && response.data.length > 0) {
-      medicine.value = response.data[0];
+    // La respuesta debería ser el objeto medicina directamente, no un array
+    if (response.data && response.data.idMedicine) {
+      medicine.value = response.data;
       console.log('Medicamento encontrado:', medicine.value);
       
       // Verificar stock
-      if (medicine.value.stock > 0) {
-        hasStock.value = true;
-      }
+      verificarStock();
+      
+      // Verificar seguro médico
+      await checkInsurance();
       
       // Cargar recetas
       await loadRecipes();
@@ -747,12 +1063,50 @@ onMounted(async () => {
         }
       }
     } else {
-      console.warn('No se encontró el medicamento');
-      medicine.value = null;
+      // Si no encuentra por ID directo, intentamos buscar por principio activo como fallback
+      try {
+        const fallbackUrl = `http://${ip}:${apiPort}/api2/medicines/search?activeMedicament=${medicineId}`;
+        console.log('Intentando URL alternativa:', fallbackUrl);
+        
+        const fallbackResponse = await axios.get(fallbackUrl);
+        
+        if (fallbackResponse.data && fallbackResponse.data.length > 0) {
+          medicine.value = fallbackResponse.data[0];
+          console.log('Medicamento encontrado con búsqueda alternativa:', medicine.value);
+          verificarStock();
+          await checkInsurance();
+          await loadRecipes();
+        } else {
+          console.warn('No se encontró el medicamento con ningún método');
+          medicine.value = null;
+        }
+      } catch (fallbackError) {
+        console.error('Error en búsqueda alternativa:', fallbackError);
+        medicine.value = null;
+      }
     }
   } catch (error) {
     console.error('Error al buscar el medicamento:', error);
-    medicine.value = null;
+    // Intentar con otro método si el primero falla
+    try {
+      const fallbackUrl = `http://${ip}:${apiPort}/api2/medicines/search?query=${route.params.id}`;
+      console.log('Intentando URL de respaldo general:', fallbackUrl);
+      
+      const generalSearchResponse = await axios.get(fallbackUrl);
+      
+      if (generalSearchResponse.data && generalSearchResponse.data.length > 0) {
+        medicine.value = generalSearchResponse.data[0];
+        console.log('Medicamento encontrado con búsqueda general:', medicine.value);
+        verificarStock();
+        await checkInsurance();
+        await loadRecipes();
+      } else {
+        medicine.value = null;
+      }
+    } catch (backupError) {
+      console.error('Error en la búsqueda de respaldo:', backupError);
+      medicine.value = null;
+    }
   } finally {
     isLoading.value = false;
   }
@@ -1431,4 +1785,105 @@ onMounted(async () => {
   font-style: italic;
 }
 
+/* Estilos para el formulario de tarjeta de crédito */
+.payment-section {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.payment-section h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  color: #1e293b;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.5rem;
+}
+
+.card-form {
+  background-color: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 10px;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #334155;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-row .col {
+  flex: 1;
+}
+
+.card-number-wrapper {
+  position: relative;
+}
+
+.card-type {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+}
+
+.card-validation {
+  margin-top: 0.5rem;
+}
+
+.validation-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #ef4444;
+}
+
+.validation-indicator.valid {
+  color: #22c55e;
+}
+
+.validation-indicator i {
+  font-size: 1rem;
+}
+
+/* Pequeño loader para estados de verificación */
+.verification-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e2e8f0;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin-right: 0.5rem;
+}
 </style> 
