@@ -90,10 +90,10 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
+import ApiService from '../services/ApiService';  
 
 const route = useRoute();
 const router = useRouter();
-const ip = process.env.VUE_APP_API_IP || 'localhost';
 
 // Estado
 const isLoading = ref(true);
@@ -128,7 +128,7 @@ async function fetchReceta() {
     }
     
     // Usar la misma API que funciona en PrescriptionPay
-    const response = await axios.get(`http://${ip}:8081/api2/prescription_medicines`);
+    const response = await axios.get(ApiService.getPharmacyApiUrl("/prescription_medicines"));
     const allData = response.data;
     
     // Filtrar solo las recetas que coinciden con el id de la receta

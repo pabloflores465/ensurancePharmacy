@@ -1,7 +1,5 @@
 import axios from 'axios';
-
-const API_URL = process.env.VUE_APP_API_URL || 'http://localhost:8081/api';
-const INSURANCE_API_URL = process.env.VUE_APP_INSURANCE_API_URL || 'http://localhost:8081/api2';
+import ApiService from './ApiService';
 
 class PrescriptionService {
   /**
@@ -10,7 +8,7 @@ class PrescriptionService {
    */
   async verifyPrescription(approvalCode) {
     try {
-      const response = await axios.get(`${INSURANCE_API_URL}/service-approvals/check/${approvalCode}`);
+      const response = await axios.get(ApiService.getEnsuranceApiUrl(`/service-approvals/check/${approvalCode}`));
       return response.data;
     } catch (error) {
       console.error('Error al verificar la receta:', error);
@@ -24,7 +22,7 @@ class PrescriptionService {
    */
   async processPrescription(prescriptionData) {
     try {
-      const response = await axios.post(`${API_URL}/prescriptions/process`, prescriptionData);
+      const response = await axios.post(ApiService.getPharmacyApiUrl('/prescriptions/process'), prescriptionData);
       return response.data;
     } catch (error) {
       console.error('Error al procesar la receta:', error);
@@ -38,7 +36,7 @@ class PrescriptionService {
    */
   async completePrescription(approvalCode) {
     try {
-      const response = await axios.put(`${INSURANCE_API_URL}/service-approvals/complete/${approvalCode}`);
+      const response = await axios.put(ApiService.getEnsuranceApiUrl(`/service-approvals/complete/${approvalCode}`));
       return response.data;
     } catch (error) {
       console.error('Error al completar la receta:', error);
@@ -52,7 +50,7 @@ class PrescriptionService {
    */
   async getPrescriptionHistory(filters = {}) {
     try {
-      const response = await axios.get(`${API_URL}/prescriptions/history`, { 
+      const response = await axios.get(ApiService.getPharmacyApiUrl('/prescriptions/history'), { 
         params: filters 
       });
       return response.data;
@@ -68,7 +66,7 @@ class PrescriptionService {
    */
   async getPrescriptionDetails(prescriptionId) {
     try {
-      const response = await axios.get(`${API_URL}/prescriptions/${prescriptionId}`);
+      const response = await axios.get(ApiService.getPharmacyApiUrl(`/prescriptions/${prescriptionId}`));
       return response.data;
     } catch (error) {
       console.error('Error al obtener detalles de la receta:', error);
@@ -83,7 +81,7 @@ class PrescriptionService {
    */
   async checkMedicationAvailability(medicationCode, quantity) {
     try {
-      const response = await axios.get(`${API_URL}/inventory/check`, {
+      const response = await axios.get(ApiService.getPharmacyApiUrl('/inventory/check'), {
         params: {
           code: medicationCode,
           quantity: quantity
@@ -102,7 +100,7 @@ class PrescriptionService {
    */
   async updateInventoryAfterDispensing(medications) {
     try {
-      const response = await axios.post(`${API_URL}/inventory/update-after-dispensing`, {
+      const response = await axios.post(ApiService.getPharmacyApiUrl('/inventory/update-after-dispensing'), {
         medications: medications
       });
       return response.data;
@@ -118,7 +116,7 @@ class PrescriptionService {
    */
   async generateReceipt(receiptData) {
     try {
-      const response = await axios.post(`${API_URL}/receipts/generate`, receiptData);
+      const response = await axios.post(ApiService.getPharmacyApiUrl('/receipts/generate'), receiptData);
       return response.data;
     } catch (error) {
       console.error('Error al generar el recibo:', error);
@@ -133,7 +131,7 @@ class PrescriptionService {
    */
   async checkInsuranceCoverage(medicationCode, approvalCode) {
     try {
-      const response = await axios.get(`${INSURANCE_API_URL}/medication-coverage/check`, {
+      const response = await axios.get(ApiService.getEnsuranceApiUrl('/medication-coverage/check'), {
         params: {
           medicationCode,
           approvalCode

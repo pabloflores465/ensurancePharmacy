@@ -1,11 +1,9 @@
 // src/services/authService.js
-const ip = process.env.VUE_APP_IP; // Asegúrate de tener definida esta variable
-console.log(ip);
-const API_URL = `http://${ip}:8000/api2`;
+import ApiService from './ApiService';
 
 export const authService = {
   async login(credentials) {
-    const response = await fetch(`${API_URL}/login`, {
+    const response = await fetch(ApiService.getPharmacyApiUrl('/login'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

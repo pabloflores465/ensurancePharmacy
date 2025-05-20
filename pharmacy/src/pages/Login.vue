@@ -77,10 +77,7 @@ import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { useUserStore } from '@/stores/userStore'
 const userStore = useUserStore();
-
-// Asegúrate de tener definida la variable de entorno (p. ej., VUE_APP_IP)
-const ip = process.env.VUE_APP_IP;
-console.log("IP del servidor: " + ip);
+import ApiService from '../services/ApiService';
 
 const router = useRouter();
 
@@ -99,7 +96,7 @@ const login = async () => {
     console.log("Intentando iniciar sesión con:", email.value);
     
     // Petición POST al backend
-    const response = await axios.post(`http://${ip}:8081/api2/login`, {
+    const response = await axios.post(ApiService.getPharmacyApiUrl("/login"), {
       email: email.value,
       password: password.value
     });

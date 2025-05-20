@@ -101,11 +101,8 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
-
-// Normalmente definimos el IP en una variable de entorno
-// Asegúrate de que esté configurado en tu .env
-const ip = process.env.VUE_APP_IP; 
-
+import ApiService from '../services/ApiService';  
+  
 const router = useRouter();
 
 // Campos
@@ -138,7 +135,7 @@ const register = async () => {
     });
 console.log( toString(namex.value),  cui.value, phone.value, email.value, address.value, birthdate.value, "usuario", password.value)
     // Llamada al endpoint con Axios
-    const response = await axios.post(`http://${ip}:8081/api2/users`, {
+    const response = await axios.post(ApiService.getPharmacyApiUrl("/users"), {
       name: namex.value,
       cui: cui.value,
       phone: phone.value,

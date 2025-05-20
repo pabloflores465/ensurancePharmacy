@@ -107,7 +107,7 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
-
+import ApiService from '../services/ApiService';
 const router = useRouter();
 const recipes = ref([]);
 const errorMessage = ref('');
@@ -169,9 +169,9 @@ function goToVerification(medicinePrincipioActivo, recipeId) {
   console.log(`Navegando a VerificarCompra para medicamento: ${medicinePrincipioActivo}, receta ID: ${recipeId}`);
   
   // Primero debemos obtener el ID del medicamento basado en el principio activo
-  const baseApiUrl = 'http://172.20.10.3:8081/api2';
+  const baseApiUrl = ApiService.getPharmacyApiUrl(`/medicines/search?activeMedicament=${encodeURIComponent(medicinePrincipioActivo)}`)
   
-  axios.get(`${baseApiUrl}/medicines/search?activeMedicament=${encodeURIComponent(medicinePrincipioActivo)}`)
+  axios.get(baseApiUrl)
     .then(response => {
       if (response.data && response.data.length > 0) {
         const medicamento = response.data[0];
@@ -233,7 +233,7 @@ const fetchPrescriptions = async () => {
 
     // Usando la URL específica proporcionada
     // Corrigiendo la URL (quitando un slash)
-    const baseUrl = 'http://172.20.10.3:5052/recipes/email/';
+    const baseUrl = ApiService.getPharmacyApiUrl("/recipes/email/");
     const url = `${baseUrl}${userEmail}`;
     console.log(`Consultando recetas con URL dinámica: ${url}`);
     

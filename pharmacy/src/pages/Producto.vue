@@ -51,7 +51,7 @@ import { ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import Header from '@/components/Header.vue';
 import axios from 'axios';
-
+import ApiService from '../services/ApiService';
 const route = useRoute();
 const productId = route.params.id; // Se espera que el router pase el id como string
 const ip = process.env.VUE_APP_IP;
@@ -60,7 +60,7 @@ const medicines = ref([]);
 
 const fetchMedicines = async () => {
   try {
-    const response = await axios.get(`http://${ip}:8081/api2/medicines`);
+    const response = await axios.get(ApiService.getPharmacyApiUrl("/medicines"));
     medicines.value = response.data;
     console.log("Medicinas recibidas:", medicines.value);
   } catch (error) {

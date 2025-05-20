@@ -94,11 +94,10 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
-
+import ApiService from '../services/ApiService';
 const route = useRoute();
 const prescription = ref(null);
 const errorMessage = ref('');
-const ip = process.env.VUE_APP_API_IP || 'localhost';
 const isModalOpen = ref(false);
 const cardNumber = ref('');
 const cardExpiry = ref('');
@@ -123,7 +122,7 @@ const allMedicinesAvailable = computed(() => {
 
 const fetchMedicineDetails = async (medicine) => {
   try {
-    const response = await axios.get(`http://${ip}:8081/api2/medicines/${medicine.idMedicine}`);
+    const response = await axios.get(ApiService.getPharmacyApiUrl(`/medicines/${medicine.idMedicine}`));
     // Extract only specific fields: name, presentacion, concentration, image, and stock
     const { name, presentacion, concentration, image, stock } = response.data;
     medicine.details = { name, presentacion, concentration, image, stock };
@@ -137,7 +136,7 @@ const fetchPrescription = async () => {
   try {
     const prescriptionId = route.params.id;
     // Fetch all prescription medicines as in Prescriptions.vue
-    const response = await axios.get(`http://${ip}:8081/api2/prescription_medicines`);
+    const response = await axios.get(ApiService.getPharmacyApiUrl("/prescription_medicines"));
     const allData = response.data;
     // Filtrar solo las recetas que coinciden con el id de la receta
     const filtered = allData.filter(p => p.id.prescriptionId == prescriptionId);
@@ -191,7 +190,7 @@ const completePurchase = async () => {
   if (!isCardValid.value) return;
   try {
     // Create order with status 'Completado' and user id from prescription
-    const orderResponse = await axios.post(`http://${ip}:8081/api2/orders`, {
+    const orderResponse = await axios.post(ApiService.getPharmacyApiUrl("/orders"), {
       status: "Completado",
       user: { idUser: prescription.value.prescription.user.idUser }
     });
@@ -200,7 +199,7 @@ const completePurchase = async () => {
     // For each medicine, calculate quantity and send to order_medicines API
     for (const med of prescription.value.medicines) {
       const quantity = Math.ceil((med.dosis * med.duracion) / med.details.presentacion);
-      await axios.post(`http://${ip}:8081/api2/order_medicines`, {
+      await axios.post(ApiService.getPharmacyApiUrl("/order_medicines"), {
         orders: order,
         medicine: { idMedicine: med.idMedicine },
         quantity: quantity,

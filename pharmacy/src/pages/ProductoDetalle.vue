@@ -94,8 +94,7 @@
 import Comentarios from '@/components/Comentarios.vue';
 import axios from "axios";
 import { useUserStore } from '@/stores/userStore';
-
-const ip = process.env.VUE_APP_IP;
+import ApiService from '../services/ApiService';
 
 export default {
   name: "ProductoDetalle",
@@ -119,7 +118,7 @@ export default {
   methods: {
     fetchProductDetails() {
       const routeId = this.$route.params.id;
-      axios.get(`http://${ip}:8081/api2/medicines`)
+      axios.get(ApiService.getPharmacyApiUrl("/medicines"))
         .then(response => {
           const products = response.data;
           console.log(this.$route.params.id);
@@ -161,7 +160,7 @@ export default {
       const userId = userStore.user.idUser;
 
       // Obtener todas las órdenes para el usuario
-      axios.get(`http://${ip}:8081/api2/orders?userId=${userId}`)
+      axios.get(ApiService.getPharmacyApiUrl(`/orders?userId=${userId}`))
         .then(response => {
           console.log('Response from orders GET:', response.data);
           const orders = response.data;
@@ -170,7 +169,7 @@ export default {
             console.log('Found order in progress:', orderInProgress);
             return orderInProgress;
           } else {
-            return axios.post(`http://${ip}:8081/api2/orders`, {
+            return axios.post(ApiService.getPharmacyApiUrl("/orders"), {
               user: { idUser: userId },
               status: 'En progreso'
             }).then(response => {
@@ -181,7 +180,7 @@ export default {
         })
         .then(order => {
           console.log('ORDEN:', order);
-          return axios.get(`http://${ip}:8081/api2/order_medicines?id=${order.idOrder}%2C${this.product.idMedicine}`)
+          return axios.get(ApiService.getPharmacyApiUrl(`/order_medicines?id=${order.idOrder}%2C${this.product.idMedicine}`))
               .then(response => {
                 let items = response.data;
                 if (!Array.isArray(items)) items = items ? [items] : [];
@@ -201,8 +200,8 @@ export default {
                   total: this.product.price * this.quantity
                 };
                 return existing
-                    ? axios.put(`http://${ip}:8081/api2/order_medicines`, payload)
-                    : axios.post(`http://${ip}:8081/api2/order_medicines`, payload);
+                    ? axios.put(ApiService.getPharmacyApiUrl("/order_medicines"), payload)
+                    : axios.post(ApiService.getPharmacyApiUrl("/order_medicines"), payload);
               });
         })
         .then(response => {

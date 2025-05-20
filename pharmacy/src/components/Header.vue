@@ -31,6 +31,14 @@
           Crear Producto
         </router-link>
 
+        <!-- Configuración de puertos (disponible para todos) -->
+        <button
+          @click="openPortSelector"
+          class="nav-item admin-config-button"
+        >
+          ⚙️ Configurar Puertos
+        </button>
+
         <router-link to="/prescriptions" class="nav-item">
           Ver Recetas
         </router-link>
@@ -66,6 +74,13 @@
         >Catálogo de Productos</router-link
       >
      
+      <!-- Configuración de puertos (móvil - disponible para todos) -->
+      <button
+        @click="openPortSelector(); toggleMenu();"
+        class="mobile-item admin-config-button"
+      >
+        ⚙️ Configurar Puertos
+      </button>
 
       <!-- Enlace SOLO para administradores (móvil) -->
       <router-link
@@ -102,41 +117,63 @@
   </header>
 </template>
 
-<script setup>
+<script>
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/userStore";
 
-
-// Menú móvil
-const mobileMenuOpen = ref(false);
-const toggleMenu = () => {
-  mobileMenuOpen.value = !mobileMenuOpen.value;
-};
-
-// Store de usuario
-const userStore = useUserStore();
-const router = useRouter();
-
-const isLoggedIn = computed(() => {
-  const user = userStore.getUser();
-  return Object.keys(user).length !==0;
-});
-
-// Cerrar sesión
-const logout = () => {
-  userStore.logout();
-  // Limpiar todas las claves de sesión del localStorage
-  localStorage.removeItem("session");
-  localStorage.removeItem("user");
-  localStorage.removeItem("role");
-  console.log("Sesión cerrada: localStorage limpiado");
+export default {
+  name: 'AppHeader',
   
-  router.push("/");
-  setTimeout(() => {
-    window.location.reload();
-  }, 100);
-};
+  emits: ['open-port-selector'],
+  
+  setup(props, { emit }) {
+    // Menú móvil
+    const mobileMenuOpen = ref(false);
+    const toggleMenu = () => {
+      mobileMenuOpen.value = !mobileMenuOpen.value;
+    };
+    
+    // Store de usuario
+    const userStore = useUserStore();
+    const router = useRouter();
+    
+    const isLoggedIn = computed(() => {
+      const user = userStore.getUser();
+      return Object.keys(user).length !== 0;
+    });
+    
+    // Función para abrir el selector de puertos
+    const openPortSelector = () => {
+      // Emite un evento que será capturado por App.vue
+      emit('open-port-selector');
+    };
+    
+    // Cerrar sesión
+    const logout = () => {
+      userStore.logout();
+      // Limpiar todas las claves de sesión del localStorage
+      localStorage.removeItem("session");
+      localStorage.removeItem("user");
+      localStorage.removeItem("role");
+      console.log("Sesión cerrada: localStorage limpiado");
+      
+      router.push("/");
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
+    };
+    
+    return {
+      mobileMenuOpen,
+      toggleMenu,
+      userStore,
+      isLoggedIn,
+      openPortSelector,
+      logout
+    };
+  }
+}
 </script>
 
 <style scoped>
@@ -176,6 +213,14 @@ const logout = () => {
 
 .nav-item:hover {
   color: yellow;
+}
+
+.admin-config-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
 }
 
 .login-button {

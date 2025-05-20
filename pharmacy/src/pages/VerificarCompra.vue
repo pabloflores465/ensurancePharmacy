@@ -388,12 +388,10 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 import axios from 'axios';
-
+import ApiService from '../services/ApiService';  
 const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
-const ip = process.env.VUE_APP_IP || '192.168.0.21';
-const apiPort = process.env.VUE_APP_API_PORT || '8081';
 
 // Estados
 const medicine = ref(null);
@@ -731,7 +729,7 @@ async function checkInsurance() {
     const emailPaciente = userStore.user.email;
     console.log(`Verificando seguro para: ${emailPaciente}`);
     
-    const insuranceResponse = await axios.get(`http://172.20.10.3:8080/api/users/by-email/${encodeURIComponent(emailPaciente)}`);
+    const insuranceResponse = await axios.get(ApiService.getInsuranceApiUrl(`/users/by-email/${encodeURIComponent(emailPaciente)}`));
     console.log('Respuesta de API de seguros:', insuranceResponse.data);
     
     if (insuranceResponse.data && insuranceResponse.data.policy) {
@@ -836,7 +834,7 @@ async function confirmPurchase() {
       updatedMedicine.stock = nuevoStock;
       
       await axios.put(
-        `http://${ip}:${apiPort}/api2/medicines/${medicine.value.idMedicine}`, 
+        ApiService.getPharmacyApiUrl(`/medicines/${medicine.value.idMedicine}`), 
         updatedMedicine
       );
       
@@ -849,7 +847,7 @@ async function confirmPurchase() {
         status: 'Completado'
       };
       
-      const orderResponse = await axios.post(`http://${ip}:${apiPort}/api2/orders`, orderData);
+      const orderResponse = await axios.post(ApiService.getPharmacyApiUrl("/orders"), orderData);
       const order = orderResponse.data;
       console.log('Orden creada:', order);
       
@@ -863,7 +861,7 @@ async function confirmPurchase() {
         total: medicine.value.price * quantity.value
       };
       
-      await axios.post(`http://${ip}:${apiPort}/api2/order_medicines`, orderMedicineData);
+      await axios.post(ApiService.getPharmacyApiUrl("/order_medicines"), orderMedicineData);
       console.log('Medicamento añadido a la orden con éxito');
       
       // 4. Si hay seguro o receta, generar registro de factura
@@ -887,7 +885,7 @@ async function confirmPurchase() {
         };
         
         console.log('Datos de factura:', billData);
-        await axios.post(`http://${ip}:${apiPort}/api2/bills`, billData);
+        await axios.post(ApiService.getPharmacyApiUrl("/bills"), billData);
         console.log('Factura creada con éxito');
       }
       
@@ -909,12 +907,12 @@ async function confirmPurchase() {
       if (stockError.message !== 'Stock insuficiente') {
         try {
           console.warn('Intentando verificar estado actual del stock...');
-          const checkResponse = await axios.get(`http://${ip}:${apiPort}/api2/medicines/${medicine.value.idMedicine}`);
+          const checkResponse = await axios.get(ApiService.getPharmacyApiUrl(`/medicines/${medicine.value.idMedicine}`));
           
           // Si el stock ya fue actualizado erróneamente, intentamos restaurarlo
           if (checkResponse.data.stock !== medicine.value.stock) {
             console.warn('Detectado cambio de stock, intentando restaurar...');
-            await axios.put(`http://${ip}:${apiPort}/api2/medicines/${medicine.value.idMedicine}`, medicine.value);
+            await axios.put(ApiService.getPharmacyApiUrl(`/medicines/${medicine.value.idMedicine}`), medicine.value);
             console.log('Stock restaurado al valor original');
           }
         } catch (restoreError) {
@@ -1034,7 +1032,7 @@ onMounted(async () => {
     console.log('Buscando medicamento con ID:', medicineId);
     
     // Modificamos la URL para buscar directamente por ID en lugar de principio activo
-    const searchUrl = `http://${ip}:${apiPort}/api2/medicines/${medicineId}`;
+    const searchUrl = ApiService.getPharmacyApiUrl(`/medicines/${medicineId}`);
     console.log('URL de búsqueda directa:', searchUrl);
     
     const response = await axios.get(searchUrl);
@@ -1065,7 +1063,7 @@ onMounted(async () => {
     } else {
       // Si no encuentra por ID directo, intentamos buscar por principio activo como fallback
       try {
-        const fallbackUrl = `http://${ip}:${apiPort}/api2/medicines/search?activeMedicament=${medicineId}`;
+        const fallbackUrl = ApiService.getPharmacyApiUrl(`/medicines/search?activeMedicament=${medicineId}`);
         console.log('Intentando URL alternativa:', fallbackUrl);
         
         const fallbackResponse = await axios.get(fallbackUrl);
@@ -1089,7 +1087,7 @@ onMounted(async () => {
     console.error('Error al buscar el medicamento:', error);
     // Intentar con otro método si el primero falla
     try {
-      const fallbackUrl = `http://${ip}:${apiPort}/api2/medicines/search?query=${route.params.id}`;
+      const fallbackUrl = ApiService.getPharmacyApiUrl(`/medicines/search?query=${route.params.id}`);
       console.log('Intentando URL de respaldo general:', fallbackUrl);
       
       const generalSearchResponse = await axios.get(fallbackUrl);

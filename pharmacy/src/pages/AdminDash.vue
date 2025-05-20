@@ -14,7 +14,7 @@ import {
   ArcElement,
   RadialLinearScale,
 } from "chart.js";
-
+import ApiService from '../services/ApiService';
 import axios from "axios";
 
 // Registrar componentes de Chart.js
@@ -33,8 +33,6 @@ const router = useRouter();
 const userStore = useUserStore();
 
 // Obtener IP del servidor
-const ip = process.env.VUE_APP_IP || "127.0.0.1";
-console.log("IP del servidor para API:", ip);
 
 // Estado para almacenar los datos de las gráficas
 const topCategoriesData = ref({
@@ -233,7 +231,7 @@ const checkAdminStatus = () => {
 const fetchMedicinesData = async () => {
   try {
     console.log("Obteniendo datos de medicamentos");
-    const response = await axios.get(`http://${ip}:8081/api2/medicines`);
+    const response = await axios.get(ApiService.getPharmacyApiUrl("/medicines"));
     const medicines = response.data;
     console.log("Datos de medicamentos obtenidos:", medicines);
 
@@ -383,13 +381,13 @@ const fetchTransactionsData = async () => {
     // Primero intentamos con la API de transacciones
     let transactions = [];
     try {
-      const response = await axios.get(`http://${ip}:8081/api2/transactions`);
+      const response = await axios.get(ApiService.getPharmacyApiUrl("/transactions"));
       transactions = response.data;
       console.log("Datos de transacciones obtenidos:", transactions);
     } catch (e) {
       console.log("Error al obtener transacciones, intentando con bills:", e);
       // Si falla, intentamos con la API de facturas
-      const response = await axios.get(`http://${ip}:8081/api2/bills`);
+      const response = await axios.get(ApiService.getPharmacyApiUrl("/bills"));
       transactions = response.data;
       console.log("Datos de facturas obtenidos:", transactions);
     }
@@ -445,7 +443,7 @@ const exportMedicinesXML = async () => {
     isExportingXML.value = true;
 
     // Realizar solicitud al endpoint de XML
-    const response = await axios.get(`http://${ip}:8081/api2/medicines-xml`, {
+    const response = await axios.get(ApiService.getPharmacyApiUrl("/medicines-xml"), {
       responseType: "blob",
     });
 

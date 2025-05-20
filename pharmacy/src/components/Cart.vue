@@ -52,9 +52,8 @@
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import { useUserStore } from '@/stores/userStore'
-
+import ApiService from '../services/ApiService';  
 const userStore = useUserStore()
-const ip = process.env.VUE_APP_API_IP || 'localhost'
 
 const currentOrder = ref(null)
 const cartItems = ref([])
@@ -62,7 +61,7 @@ const cartItems = ref([])
 // Buscar la orden en progreso para el usuario actual
 const fetchCurrentOrder = async () => {
   try {
-    const ordersResponse = await axios.get(`http://${ip}:8081/api2/orders`)
+    const ordersResponse = await axios.get(ApiService.getPharmacyApiUrl("/orders"))
     const orders = ordersResponse.data
     const userId = userStore.getUser().idUser
     const inProgressOrder = orders.find(o => o.user.idUser === userId && o.status === 'En progreso')
@@ -75,7 +74,7 @@ const fetchCurrentOrder = async () => {
 // Obtener los ítems (OrderMedicine) de la orden en progreso
 const fetchCartItems = async (orderId) => {
   try {
-    const response = await axios.get(`http://${ip}:8081/api2/order_medicines`)
+    const response = await axios.get(ApiService.getPharmacyApiUrl("/order_medicines"))
     const allItems = response.data
     // Filtrar solo los ítems que corresponden a la orden en progreso
     cartItems.value = allItems.filter(item => item.orders.idOrder === orderId)
@@ -89,7 +88,7 @@ const removeItem = async (item) => {
   try {
     const orderId = item.orders.idOrder
     const medicineId = item.medicine.idMedicine
-    await axios.delete(`http://${ip}:8081/api2/order_medicines?id=${orderId},${medicineId}`)
+    await axios.delete(ApiService.getPharmacyApiUrl(`/order_medicines?id=${orderId},${medicineId}`))
     // Actualizar la lista local eliminando el ítem borrado
     cartItems.value = cartItems.value.filter(i => i.medicine.idMedicine !== medicineId)
   } catch (error) {
@@ -132,7 +131,7 @@ const completePurchase = async () => {
     if (!order) return;
 
     // Actualizar la orden existente con estado 'Completado' enviando el objeto completo
-    await axios.put(`http://${ip}:8081/api2/orders`, {
+    await axios.put(ApiService.getPharmacyApiUrl("/orders"), {
       idOrder: order.idOrder,
       status: 'Completado',
       user: order.user

@@ -1,19 +1,37 @@
 <template>
   <div id="app">
-    <Header />
-    <Receta />
+    <Header @open-port-selector="showPortSelector = true" />
     <router-view /> <!-- Aquí se mostrarán las páginas según la ruta -->
     
+    <!-- Selector de puertos -->
+    <PortSelector v-if="showPortSelector" @close="showPortSelector = false" />
   </div>
 </template>
 
 <script>
 import Header from '@/components/Header.vue';
-// import Receta from '@/components/Receta.vue';
+import PortSelector from '@/components/PortSelector.vue';
+import ApiService from '@/services/ApiService';
 
 export default {
   name: "App",
-  components: { Header }
+  components: { 
+    Header,
+    PortSelector
+  },
+  data() {
+    return {
+      showPortSelector: false
+    };
+  },
+  created() {
+    // Cargar configuración de puertos
+    ApiService.loadPortConfiguration();
+    
+    // Verificar si se debe mostrar el selector de puertos
+    const skipPortSelector = localStorage.getItem('skipPortSelector') === 'true';
+    this.showPortSelector = !skipPortSelector;
+  }
 };
 </script>
 
@@ -24,10 +42,7 @@ body {
   background-color: #f1f9ff;
   margin: 0;
 }
-</style>
 
-
-<style>
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;

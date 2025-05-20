@@ -140,13 +140,12 @@ import { ref, computed } from 'vue';
 import axios from "axios";
 
 
-const ip = process.env.VUE_APP_IP;
 
 const products = ref([]);
-
+import ApiService from '../services/ApiService';
 const fetchProduct = async () => {
   try {
-    const response = await axios.get(`http://${ip}:8081/api2/medicines`);
+    const response = await axios.get(ApiService.getPharmacyApiUrl("/medicines"));
     products.value = response.data;
     console.log(products.value);
   } catch (error) {

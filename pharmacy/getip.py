@@ -18,5 +18,6 @@ if __name__ == "__main__":
     
     # Write the IP to a .env file
     with open('.env', 'w') as env_file:
+        env_file.write(f"VUE_APP_API_HOST={ip}\n")
         env_file.write(f"VUE_APP_IP={ip}\n")
     print(".env file created successfully!")

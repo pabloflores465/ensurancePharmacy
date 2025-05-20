@@ -94,7 +94,7 @@
 <script setup>
 import { ref } from 'vue';
 import axios from 'axios';
-
+import ApiService from '../services/ApiService';
 // Campos reactivamente enlazados al formulario
 const name = ref('');
 const activeMedicament = ref('');
@@ -110,7 +110,6 @@ const soldUnits = ref(0);
 const errorMessage = ref('');
 const showModal = ref(false);
 
-const ip = process.env.VUE_APP_API_IP || 'localhost';
 
 // Función principal de crear producto
 const createProduct = async () => {
@@ -118,7 +117,7 @@ const createProduct = async () => {
 
   try {
     // Petición POST al backend (ajusta la URL a la tuya)
-    const response = await axios.post(`http://${ip}:8081/api2/medicines`, {
+    const response = await axios.post(ApiService.getPharmacyApiUrl("/medicines"), {
       name: name.value,
       activeMedicament: activeMedicament.value,
       description: description.value,
