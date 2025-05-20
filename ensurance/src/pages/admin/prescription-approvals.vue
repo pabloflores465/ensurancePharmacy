@@ -68,6 +68,38 @@ interface ConfigurableAmount {
   prescriptionAmount: number;
 }
 
+// Función para obtener el hospital predeterminado
+const getDefaultHospital = () => {
+  try {
+    const storedHospital = localStorage.getItem('defaultHospital');
+    if (storedHospital) {
+      return JSON.parse(storedHospital);
+    }
+    return null;
+  } catch (error) {
+    console.error('Error al obtener el hospital predeterminado:', error);
+    return null;
+  }
+};
+
+// Obtener la configuración del hospital predeterminado
+const defaultHospital = getDefaultHospital();
+const ip = import.meta.env.VITE_IP || "localhost";
+// Usar el puerto del hospital predeterminado o 5050 como fallback
+const DEFAULT_PORT = defaultHospital?.port || '5050';
+
+// Variables globales
+const possibleIPs = [ip];
+const HOSPITAL_API = `http://${ip}:${DEFAULT_PORT}`;
+const PHARMACY_API_BASE = `http://${ip}:8080/api`;
+
+// Información sobre el hospital predeterminado para mostrar
+const usingDefaultHospital = computed(() => {
+  return defaultHospital 
+    ? `Hospital seleccionado: ${defaultHospital.name} (Puerto: ${defaultHospital.port || '5050'})` 
+    : 'No hay hospital predeterminado seleccionado';
+});
+
 // Estado
 const approvals = ref<Approval[]>([]);
 const hospitalPrescriptions = ref<HospitalPrescription[]>([]);
@@ -81,11 +113,6 @@ const showAll = ref(true); // Por defecto mostrar todo
 const minAmount = ref<number | null>(null);
 const processingId = ref<number | null>(null);
 const activeTab = ref('hospital'); // 'hospital' o 'approved'
-
-// Configuración de IPs (Asumimos que ya existe tryMultipleIPs)
-const possibleIPs = [import.meta.env.VITE_IP || "localhost"];
-const HOSPITAL_API = `http://${import.meta.env.VITE_IP || "localhost"}:5050`;
-const PHARMACY_API_BASE = `http://${import.meta.env.VITE_IP || "localhost"}:8080/api`;
 
 // Función para probar múltiples IPs (simplificada para GET)
 async function tryMultipleIPs(endpoint: string, method: string = 'GET', data: any = null) {
@@ -422,8 +449,15 @@ const changeTab = (tab: string) => {
 </script>
 
 <template>
-  <div class="container">
-    <h1 class="title">Aprobación de Recetas</h1>
+  <div class="container mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-6">Aprobación de Recetas</h1>
+    
+    <!-- Información del hospital por defecto -->
+    <div v-if="defaultHospital" class="bg-blue-50 p-3 rounded mb-4 border border-blue-200">
+      <div class="flex items-center">
+        <span class="text-blue-700">{{ usingDefaultHospital }}</span>
+      </div>
+    </div>
 
     <!-- Mensajes de éxito o error -->
     <div v-if="success" class="success-message">{{ success }}</div>

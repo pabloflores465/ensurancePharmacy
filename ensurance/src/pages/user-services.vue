@@ -2,6 +2,20 @@
 import { ref, onMounted, computed } from "vue";
 import axios from "axios";
 
+// Función para obtener el hospital predeterminado
+const getDefaultHospital = () => {
+  try {
+    const storedHospital = localStorage.getItem('defaultHospital');
+    if (storedHospital) {
+      return JSON.parse(storedHospital);
+    }
+    return null;
+  } catch (error) {
+    console.error('Error al obtener el hospital predeterminado:', error);
+    return null;
+  }
+};
+
 // Interfaces
 interface Transaction {
   idTransaction: number;
@@ -35,9 +49,21 @@ const loading = ref(false);
 const error = ref("");
 const activeTab = ref("insurance");
 
+// Obtener información del hospital predeterminado
+const defaultHospital = getDefaultHospital();
+const ip = import.meta.env.VITE_IP || "localhost";
+// Usar el puerto del hospital predeterminado o 5050 como fallback
+const DEFAULT_PORT = defaultHospital?.port || '5050';
 // Configuración de IPs
-const possibleIPs = [import.meta.env.VITE_IP || "localhost"];
-const HOSPITAL_API_URL = `http://${import.meta.env.VITE_IP || "localhost"}:5050`;
+const possibleIPs = [ip];
+const HOSPITAL_API_URL = `http://${ip}:${DEFAULT_PORT}`;
+
+// Información sobre el hospital predeterminado para mostrar
+const usingDefaultHospital = computed(() => {
+  return defaultHospital 
+    ? `Hospital seleccionado: ${defaultHospital.name} (Puerto: ${defaultHospital.port || '5050'})` 
+    : 'No hay hospital predeterminado seleccionado';
+});
 
 // Función para probar múltiples IPs
 async function tryMultipleIPs(endpoint: string, method: string = 'GET', data: any = null) {
@@ -161,6 +187,13 @@ onMounted(() => {
 <template>
   <div class="container mx-auto p-6">
     <h1 class="text-2xl font-bold mb-6">Mis Servicios Médicos</h1>
+    
+    <!-- Información del hospital por defecto -->
+    <div v-if="defaultHospital" class="bg-blue-50 p-3 rounded mb-4 border border-blue-200">
+      <div class="flex items-center">
+        <span class="text-blue-700">{{ usingDefaultHospital }}</span>
+      </div>
+    </div>
     
     <!-- Mensajes de error -->
     <div v-if="error" class="bg-red-100 text-red-700 p-3 mb-4 rounded">{{ error }}</div>

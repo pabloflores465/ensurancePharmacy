@@ -15,27 +15,47 @@ interface Appointment {
   status?: string;
 }
 
+// Función para obtener el hospital predeterminado
+const getDefaultHospital = () => {
+  try {
+    const storedHospital = localStorage.getItem('defaultHospital');
+    if (storedHospital) {
+      return JSON.parse(storedHospital);
+    }
+    return null;
+  } catch (error) {
+    console.error('Error al obtener el hospital predeterminado:', error);
+    return null;
+  }
+};
+
+// Obtener información del hospital predeterminado
+const defaultHospital = getDefaultHospital();
+const ip = import.meta.env.VITE_IP || "localhost";
+// Usar el puerto del hospital predeterminado o 5050 como fallback
+const DEFAULT_PORT = defaultHospital?.port || '5050';
+
+// Variables globales
+const HOSPITAL_API_URL = `http://${ip}:${DEFAULT_PORT}`;
+const currentDate = new Date();
+const formattedDate = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+
 // Estado
 const appointments = ref<Appointment[]>([]);
 const loading = ref(true);
 const error = ref("");
 const success = ref("");
-const selectedDate = ref(new Date().toISOString().split('T')[0]); // Formato YYYY-MM-DD
-
-// Configuración de IPs
-const possibleIPs = [import.meta.env.VITE_IP || "localhost"];
-const HOSPITAL_API_URL = `http://${import.meta.env.VITE_IP || "localhost"}:5050`;
+const selectedDate = ref(formattedDate);
 
 // Función para probar múltiples IPs
 async function tryMultipleIPs(endpoint: string, method: string = 'GET', data: any = null) {
-  const serverIP = import.meta.env.VITE_IP || "localhost";
   try {
-    const url = `http://${serverIP}:8080/api${endpoint}`;
+    const url = `http://${ip}:8080/api${endpoint}`;
     console.log(`Intentando ${method} a ${url}`);
     const response = await axios({ method, url, data, timeout: 3000 });
     return response;
   } catch (error: any) {
-    console.error(`Error con IP ${serverIP}:`, error.message);
+    console.error(`Error con IP ${ip}:`, error.message);
     throw new Error("No se pudo conectar con el servidor");
   }
 }
@@ -146,11 +166,25 @@ const changeDate = () => {
 onMounted(() => {
   fetchAppointments();
 });
+
+// Información sobre el hospital predeterminado
+const usingDefaultHospital = computed(() => {
+  return defaultHospital 
+    ? `Hospital seleccionado: ${defaultHospital.name} (Puerto: ${defaultHospital.port || '5050'})` 
+    : 'No hay hospital predeterminado seleccionado';
+});
 </script>
 
 <template>
   <div class="container mx-auto p-6">
     <h1 class="text-2xl font-bold mb-6">Citas Diarias</h1>
+    
+    <!-- Información del hospital por defecto -->
+    <div v-if="defaultHospital" class="bg-blue-50 p-3 rounded mb-4 border border-blue-200">
+      <div class="flex items-center">
+        <span class="text-blue-700">{{ usingDefaultHospital }}</span>
+      </div>
+    </div>
     
     <!-- Mensajes de éxito o error -->
     <div v-if="success" class="bg-green-100 text-green-700 p-3 mb-4 rounded">{{ success }}</div>

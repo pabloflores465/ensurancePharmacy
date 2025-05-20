@@ -2,6 +2,20 @@
 import { ref, onMounted, computed } from "vue";
 import axios from "axios";
 
+// Función para obtener el hospital predeterminado
+const getDefaultHospital = () => {
+  try {
+    const storedHospital = localStorage.getItem('defaultHospital');
+    if (storedHospital) {
+      return JSON.parse(storedHospital);
+    }
+    return null;
+  } catch (error) {
+    console.error('Error al obtener el hospital predeterminado:', error);
+    return null;
+  }
+};
+
 // Interfaces
 interface User {
   idUser: number;
@@ -18,6 +32,10 @@ interface User {
   policyId: number | null;
   policy: Policy | null;
   password?: string;
+  username: string;
+  // Campos adicionales
+  policyNumber?: string;
+  hospitalUserId?: string;
 }
 
 interface Transaction {
@@ -53,15 +71,31 @@ interface Policy {
   enabled: number;
 }
 
+interface Service {
+  _id: string;
+  name: string;
+  doctor?: string;
+  reason?: string;
+  date: string;
+  total?: number;
+  description?: string;
+}
+
+// Obtener la configuración del hospital predeterminado
+const defaultHospital = getDefaultHospital();
+const ip = import.meta.env.VITE_IP || "localhost";
+// Usar el puerto del hospital predeterminado o 5050 como fallback
+const DEFAULT_PORT = defaultHospital?.port || '5050';
+
 // Estado
 const users = ref<User[]>([]);
 const selectedUser = ref<User | null>(null);
 const userTransactions = ref<Transaction[]>([]);
-const loading = ref(false);
+const loading = ref(true);
 const error = ref("");
 const success = ref("");
 const searchQuery = ref("");
-const hospitalServices = ref<HospitalService[]>([]);
+const hospitalServices = ref<Service[]>([]);
 const hospitalUserDetails = ref<any>(null);
 const availablePolicies = ref<Policy[]>([]);
 const loadingPolicies = ref(false);
@@ -71,8 +105,16 @@ const showUserModal = ref(false);
 const activeTab = ref("profile");
 
 // Configuración de IPs
-const possibleIPs = [import.meta.env.VITE_IP || "localhost"];
-const HOSPITAL_API_URL = `http://${import.meta.env.VITE_IP || "localhost"}:5050`;
+const possibleIPs = [ip];
+const HOSPITAL_API_URL = `http://${ip}:${DEFAULT_PORT}`;
+const INSURANCE_API_BASE = `http://${ip}:8080/api`;
+
+// Información sobre el hospital predeterminado
+const usingDefaultHospital = computed(() => {
+  return defaultHospital 
+    ? `Hospital seleccionado: ${defaultHospital.name} (Puerto: ${defaultHospital.port || '5050'})` 
+    : 'No hay hospital predeterminado seleccionado';
+});
 
 // Función para probar múltiples IPs
 async function tryMultipleIPs(endpoint: string, method: string = 'GET', data: any = null) {
@@ -375,6 +417,13 @@ onMounted(() => {
 <template>
   <div class="container mx-auto p-6">
     <h1 class="text-2xl font-bold mb-6">Administración de Clientes</h1>
+    
+    <!-- Información del hospital por defecto -->
+    <div v-if="defaultHospital" class="bg-blue-50 p-3 rounded mb-4 border border-blue-200">
+      <div class="flex items-center">
+        <span class="text-blue-700">{{ usingDefaultHospital }}</span>
+      </div>
+    </div>
     
     <!-- Mensajes de éxito o error -->
     <div v-if="success" class="bg-green-100 text-green-700 p-3 mb-4 rounded">{{ success }}</div>
@@ -746,7 +795,7 @@ onMounted(() => {
                   <tr v-for="service in hospitalServices" :key="service._id" class="hover:bg-gray-50">
                     <td class="px-4 py-3">{{ service.name }}</td>
                     <td class="px-4 py-3 whitespace-nowrap">{{ service.date }}</td>
-                    <td class="px-4 py-3 whitespace-nowrap">Q{{ service.total.toFixed(2) }}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">Q{{ service.total?.toFixed(2) || 'N/A' }}</td>
                     <td class="px-4 py-3">{{ service.description }}</td>
                   </tr>
                 </tbody>

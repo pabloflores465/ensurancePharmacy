@@ -20,6 +20,26 @@ interface HospitalServiceItem {
   total?: number;
 }
 
+// Función para obtener el hospital predeterminado
+const getDefaultHospital = () => {
+  try {
+    const storedHospital = localStorage.getItem('defaultHospital');
+    if (storedHospital) {
+      return JSON.parse(storedHospital);
+    }
+    return null;
+  } catch (error) {
+    console.error('Error al obtener el hospital predeterminado:', error);
+    return null;
+  }
+};
+
+// Obtener la configuración del hospital predeterminado
+const defaultHospital = getDefaultHospital();
+const ip = import.meta.env.VITE_IP || "localhost";
+// Usar el puerto del hospital predeterminado o 5050 como fallback
+const DEFAULT_PORT = defaultHospital?.port || '5050';
+
 // Estado
 const hospitalServices = ref<HospitalServiceItem[]>([]);
 const categories = ref<Category[]>([]);
@@ -28,10 +48,10 @@ const error = ref("");
 const success = ref("");
 
 // Configuración de IPs para la conexión con el backend
-const primaryIP = import.meta.env.VITE_IP || "localhost";
+const primaryIP = ip;
 const fallbackIPs = ["localhost", "127.0.0.1", "192.168.0.4", "172.16.57.55"];
 const possibleIPs = [primaryIP, ...fallbackIPs.filter(ip => ip !== primaryIP)];
-const HOSPITAL_API_URL = `http://${primaryIP}:5050`;
+const HOSPITAL_API_URL = `http://${primaryIP}:${DEFAULT_PORT}`;
 
 // Estado del modal de aprobación
 const showApprovalModal = ref(false);
@@ -238,11 +258,25 @@ const connectionStatus = ref<'success' | 'error' | null>(null);
 
 // Estado para resultados de pruebas de conexión
 const connectionTestResults = ref<Record<string, boolean>>({});
+
+// Información sobre el hospital predeterminado
+const usingDefaultHospital = computed(() => {
+  return defaultHospital 
+    ? `Hospital seleccionado: ${defaultHospital.name} (Puerto: ${defaultHospital.port || '5050'})` 
+    : 'No hay hospital predeterminado seleccionado';
+});
 </script>
 
 <template>
-  <div class="p-6">
-    <h1 class="text-2xl font-bold mb-6">Importar Servicios del Hospital</h1>
+  <div class="container mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-6">Importar Servicios de Hospital</h1>
+    
+    <!-- Información del hospital por defecto -->
+    <div v-if="defaultHospital" class="bg-blue-50 p-3 rounded mb-4 border border-blue-200">
+      <div class="flex items-center">
+        <span class="text-blue-700">{{ usingDefaultHospital }}</span>
+      </div>
+    </div>
     
     <div v-if="success" class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
       <p>{{ success }}</p>
