@@ -1,11 +1,7 @@
-<script setup lang="ts">
-import Medicine from '~/components/ medicine.vue';
-
-</script>
+<script setup lang="ts"></script>
 
 <template>
-    <div class="w-full bg-[url('/carCrash.jpg')] bg-cover bg-center">
-        <Carrousel/>
-        <Medicine/>
-    </div>
+  <main class="bg-image-[url('/carCrash.jpg')]">
+    <Carrousel />
+  </main>
 </template>
