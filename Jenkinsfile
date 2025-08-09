@@ -1,6 +1,6 @@
 pipeline {
   agent any
-
+  
   environment {
     // Nombre del servidor SonarQube que configuraste en Jenkins → System
     SONARQUBE_SERVER = 'sonarqube'
