@@ -63,15 +63,15 @@ pipeline {
 
     stage('SonarQube Analysis') {
       steps {
-        withSonarQubeEnv("${SONARQUBE_SERVER}") {
-          // Usa sonar-project.properties en la raíz
-          sh '''
-            if ! command -v sonar-scanner >/dev/null 2>&1; then
-              echo "Instala SonarScanner en Global Tool Config y expórtalo en el PATH"
-              exit 1
-            fi
-            sonar-scanner -Dsonar.projectVersion=${BUILD_NUMBER}
-          '''
+        script {
+          // Toma la ruta real del SonarQube Scanner instalado en "Global Tool Configuration"
+          def scannerHome = tool 'Scanner'   // <-- el nombre debe coincidir con el que pusiste
+          withSonarQubeEnv("${SONARQUBE_SERVER}") {
+            sh """
+              "${scannerHome}/bin/sonar-scanner" \
+              -Dsonar.projectVersion=${BUILD_NUMBER}
+            """
+          }
         }
       }
     }
