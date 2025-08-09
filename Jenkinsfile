@@ -1,5 +1,8 @@
 pipeline {
   agent any
+  tools {
+    nodejs 'NodeJS'          // <-- Global Tool: NodeJS
+  }
 
   environment {
     // Nombre del servidor SonarQube que configuraste en Jenkins → System
