@@ -13,7 +13,7 @@ services:
       context: .
       dockerfile: Dockerfile.ensurance.backend
     ports:
-      - "5172.16.57.55:8080"
+      - "5172:8080"
     depends_on:
       - ensurance-db
   ensurance-backend2:
