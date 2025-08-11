@@ -3,6 +3,7 @@ pipeline {
   tools {
     nodejs 'NodeJS_24_5_0'         // <-- Global Tool: NodeJS
     maven 'Maven_3_9_11'
+    jdk 'JDK_23'
   }
 
   environment {
