@@ -29,7 +29,7 @@ pipeline {
             echo "[frontend] npm ci && npm test"
             cd ./ensurance
             npm ci || true
-            npm test -- --ci || true
+            npm test  --if-present -- --ci
             cd -
           fi
 
@@ -38,7 +38,7 @@ pipeline {
             echo "[backend] npm ci && npm test"
             cd ./pharmacy
             npm ci || true
-            npm test -- --ci || true
+            npm test  --if-present -- --ci
             cd -
           fi
 
