@@ -1,7 +1,8 @@
 pipeline {
   agent any
   tools {
-    nodejs 'NodeJS'          // <-- Global Tool: NodeJS
+    nodejs 'NodeJS';          // <-- Global Tool: NodeJS
+    maven 'Maven_3_9_11
   }
 
   environment {
