@@ -31,24 +31,37 @@ pipeline {
             cd -
           fi
 
-          # Backend (Node/Java/Python) – intenta detectar:
+          # Backend (Node/Java/Python) – ejecuta cada stack si existe
           if [ -f "./pharmacy/package.json" ]; then
             echo "[backend] npm ci && npm test"
             cd ./pharmacy
             npm ci || true
             npm test -- --ci || true
             cd -
-          elif [ -f "pom.xml" ]; then
-            echo "[backend] mvn -B -DskipTests=false test"
+          fi
+
+          if [ -d "backv4" ]; then
+            echo "[backv4] mvn verify con ignore de fallos para generar jacoco.xml"
+            mvn -B -f backv4/pom.xml -DtestFailureIgnore=true verify || true
+          fi
+          if [ -d "backv5" ]; then
+            echo "[backv5] mvn verify con ignore de fallos para generar jacoco.xml"
+            mvn -B -f backv5/pom.xml -DtestFailureIgnore=true verify || true
+          fi
+
+          if [ -f "pom.xml" ]; then
+            echo "[backend-root] mvn -B -DskipTests=false test"
             mvn -B -DskipTests=false test || true
-          elif [ -f "build.gradle" ] || [ -f "gradlew" ]; then
+          fi
+
+          if [ -f "build.gradle" ] || [ -f "gradlew" ]; then
             echo "[backend] gradle test"
             ./gradlew test || true
-          elif [ -f "requirements.txt" ] && command -v pytest >/dev/null 2>&1; then
+          fi
+
+          if [ -f "requirements.txt" ] && command -v pytest >/dev/null 2>&1; then
             echo "[backend] pytest"
             pytest || true
-          else
-            echo "No se detectaron tests automáticamente. (OK para primera corrida)"
           fi
         '''
       }
@@ -69,7 +82,9 @@ pipeline {
           withSonarQubeEnv("${SONARQUBE_SERVER}") {
             sh """
               "${scannerHome}/bin/sonar-scanner" \
-              -Dsonar.projectVersion=${BUILD_NUMBER}
+              -Dsonar.projectVersion=${BUILD_NUMBER} \
+              -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes \
+              -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml,backv5/target/site/jacoco/jacoco.xml
             """
           }
         }

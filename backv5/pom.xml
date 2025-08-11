@@ -134,6 +134,15 @@
                         </goals>
                         <configuration>
                             <propertyName>surefireArgLine</propertyName>
+                            <excludes>
+                                <exclude>java/*</exclude>
+                                <exclude>javax/*</exclude>
+                                <exclude>sun/*</exclude>
+                                <exclude>com/sun/*</exclude>
+                                <exclude>jdk/*</exclude>
+                                <exclude>**/*$HibernateProxy*</exclude>
+                                <exclude>**/*$HibernateInstantiator*</exclude>
+                            </excludes>
                         </configuration>
                     </execution>
                     <execution>
@@ -142,6 +151,13 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
+                        <configuration>
+                            <reports>
+                                <xml enabled="true"/>
+                                <csv enabled="false"/>
+                                <html enabled="false"/>
+                            </reports>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
