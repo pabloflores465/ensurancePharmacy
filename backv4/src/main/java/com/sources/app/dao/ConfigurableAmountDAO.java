@@ -10,22 +10,23 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * Data Access Object (DAO) para gestionar la entidad ConfigurableAmount.
- * Esta entidad almacena montos configurables, como el monto máximo para recetas.
- * Se asume que normalmente habrá una sola fila de configuración.
- * Proporciona métodos para crear, buscar, actualizar y obtener la configuración actual.
+ * Data Access Object (DAO) para gestionar la entidad ConfigurableAmount. Esta
+ * entidad almacena montos configurables, como el monto máximo para recetas. Se
+ * asume que normalmente habrá una sola fila de configuración. Proporciona
+ * métodos para crear, buscar, actualizar y obtener la configuración actual.
  */
 public class ConfigurableAmountDAO {
 
     /**
      * Constructor por defecto para ConfigurableAmountDAO.
      */
-    public ConfigurableAmountDAO() {}
+    public ConfigurableAmountDAO() {
+    }
 
     /**
-     * Crea un nuevo registro de monto configurable.
-     * Dado que se espera una única configuración, este método podría usarse 
-     * principalmente para la inicialización si no existe ninguna configuración.
+     * Crea un nuevo registro de monto configurable. Dado que se espera una
+     * única configuración, este método podría usarse principalmente para la
+     * inicialización si no existe ninguna configuración.
      *
      * @param prescriptionAmount El monto máximo configurable para las recetas.
      * @return El objeto ConfigurableAmount creado, o null si ocurre un error.
@@ -46,16 +47,18 @@ public class ConfigurableAmountDAO {
                 tx.rollback();
             }
             e.printStackTrace();
+            return null;
         }
         return confAmount;
     }
 
     /**
-     * Busca un registro de ConfigurableAmount por su ID único.
-     * Generalmente se usará `findCurrentConfig` en lugar de este método.
+     * Busca un registro de ConfigurableAmount por su ID único. Generalmente se
+     * usará `findCurrentConfig` en lugar de este método.
      *
      * @param id El ID del registro a buscar.
-     * @return El objeto ConfigurableAmount encontrado, o null si no se encuentra o si ocurre un error.
+     * @return El objeto ConfigurableAmount encontrado, o null si no se
+     * encuentra o si ocurre un error.
      */
     public ConfigurableAmount findById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -67,10 +70,11 @@ public class ConfigurableAmountDAO {
     }
 
     /**
-     * Recupera todos los registros de ConfigurableAmount. 
-     * Usualmente solo debería haber uno.
+     * Recupera todos los registros de ConfigurableAmount. Usualmente solo
+     * debería haber uno.
      *
-     * @return Una lista de todos los objetos ConfigurableAmount, o null si ocurre un error.
+     * @return Una lista de todos los objetos ConfigurableAmount, o null si
+     * ocurre un error.
      */
     public List<ConfigurableAmount> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -85,8 +89,10 @@ public class ConfigurableAmountDAO {
     /**
      * Actualiza un registro existente de ConfigurableAmount.
      *
-     * @param confAmount El objeto ConfigurableAmount con los datos actualizados.
-     * @return El objeto ConfigurableAmount actualizado, o null si ocurre un error.
+     * @param confAmount El objeto ConfigurableAmount con los datos
+     * actualizados.
+     * @return El objeto ConfigurableAmount actualizado, o null si ocurre un
+     * error.
      */
     public ConfigurableAmount update(ConfigurableAmount confAmount) {
         Transaction tx = null;
@@ -105,8 +111,9 @@ public class ConfigurableAmountDAO {
     }
 
     /**
-     * Busca la configuración de monto actual (se asume que solo existe una).
-     * Si no se encuentra ninguna configuración, crea una por defecto con un valor predeterminado.
+     * Busca la configuración de monto actual (se asume que solo existe una). Si
+     * no se encuentra ninguna configuración, crea una por defecto con un valor
+     * predeterminado.
      *
      * @return El objeto ConfigurableAmount actual, o uno nuevo si no existe.
      */
@@ -122,10 +129,15 @@ public class ConfigurableAmountDAO {
             }
             return confAmount;
         } catch (Exception e) {
+            // Si falla la búsqueda, intentar crear una por defecto
             e.printStackTrace();
-            // Si no existe, crear una con valor por defecto
-            System.out.println("No se encontró configuración, creando una por defecto con Q250.00");
-            return create(new BigDecimal("250.00"));
+            try {
+                return create(new BigDecimal("250.00"));
+            } catch (Exception createEx) {
+                // Si también falla la creación, devolver null
+                createEx.printStackTrace();
+                return null;
+            }
         }
     }
 }

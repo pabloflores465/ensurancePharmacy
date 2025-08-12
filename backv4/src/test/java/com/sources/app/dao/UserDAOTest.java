@@ -1,34 +1,42 @@
 package com.sources.app.dao;
 
-import com.sources.app.entities.Policy;
-import com.sources.app.entities.User;
-import com.sources.app.util.HibernateUtil;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Date;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import com.sources.app.entities.Policy;
+import com.sources.app.entities.User;
+import com.sources.app.util.HibernateUtil;
 
 @ExtendWith(MockitoExtension.class)
 class UserDAOTest {
@@ -60,16 +68,17 @@ class UserDAOTest {
 
     @BeforeEach
     void setUp() {
-        mockedHibernateUtil = Mockito.mockStatic(HibernateUtil.class);
-        mockedHibernateUtil.when(HibernateUtil::getSessionFactory).thenReturn(mockSessionFactory);
-        
+        mockedHibernateUtil = Mockito.mockStatic(HibernateUtil.class, Mockito.CALLS_REAL_METHODS);
+        // Use setter to avoid strict static stubbing when possible
+        HibernateUtil.setSessionFactory(mockSessionFactory);
+
         // Use lenient() for mocks whose interactions might not always happen in every test path
-        lenient().doReturn(mockSession).when(mockSessionFactory).openSession();
-        lenient().doReturn(mockTransaction).when(mockSession).beginTransaction();
+        lenient().when(mockSessionFactory.openSession()).thenReturn(mockSession);
+        lenient().when(mockSession.beginTransaction()).thenReturn(mockTransaction);
         // Stub getStatus() globally
         lenient().doReturn(mockTransactionStatus).when(mockTransaction).getStatus();
         // Assume it can rollback by default for tests that might need it
-        lenient().doReturn(true).when(mockTransactionStatus).canRollback(); 
+        lenient().doReturn(true).when(mockTransactionStatus).canRollback();
     }
 
     @AfterEach
@@ -114,8 +123,8 @@ class UserDAOTest {
         // Assert
         assertNull(result);
     }
-    
-     @Test
+
+    @Test
     void login_Exception() {
         // Arrange
         String email = "test@example.com";
@@ -148,7 +157,7 @@ class UserDAOTest {
 
     @Test
     void existsUserWithEmail_NotExists() {
-       // Arrange
+        // Arrange
         String email = "new@example.com";
         when(mockSession.createQuery(anyString(), eq(Long.class))).thenReturn(mockLongQuery);
         when(mockLongQuery.setParameter(eq("email"), eq(email))).thenReturn(mockLongQuery);
@@ -160,10 +169,10 @@ class UserDAOTest {
         // Assert
         assertFalse(exists);
     }
-    
+
     @Test
     void existsUserWithEmail_Exception() {
-       // Arrange
+        // Arrange
         String email = "error@example.com";
         when(mockSession.createQuery(anyString(), eq(Long.class))).thenThrow(new RuntimeException("DB error"));
 
@@ -176,7 +185,7 @@ class UserDAOTest {
 
     @Test
     void existsUserWithCUI_Exists() {
-         // Arrange
+        // Arrange
         Long cui = 12345L;
         when(mockSession.createQuery(anyString(), eq(Long.class))).thenReturn(mockLongQuery);
         when(mockLongQuery.setParameter(eq("cui"), eq(cui))).thenReturn(mockLongQuery);
@@ -193,7 +202,7 @@ class UserDAOTest {
 
     @Test
     void existsUserWithCUI_NotExists() {
-         // Arrange
+        // Arrange
         Long cui = 12345L;
         when(mockSession.createQuery(anyString(), eq(Long.class))).thenReturn(mockLongQuery);
         when(mockLongQuery.setParameter(eq("cui"), eq(cui))).thenReturn(mockLongQuery);
@@ -205,12 +214,12 @@ class UserDAOTest {
         // Assert
         assertFalse(exists);
     }
-    
+
     @Test
     void existsUserWithCUI_Exception() {
-         // Arrange
+        // Arrange
         Long cui = 12345L;
-         when(mockSession.createQuery(anyString(), eq(Long.class))).thenThrow(new RuntimeException("DB error"));
+        when(mockSession.createQuery(anyString(), eq(Long.class))).thenThrow(new RuntimeException("DB error"));
 
         // Act
         boolean exists = userDAO.existsUserWithCUI(cui);
@@ -229,20 +238,20 @@ class UserDAOTest {
         Date birthdate = new Date();
         String address = "123 Test St";
         String password = "password";
-        
+
         // Mock the existence checks to return false
         // Need to mock session creation again for these separate calls within create()
-        Session mockSessionForCheck = mock(Session.class); 
+        Session mockSessionForCheck = mock(Session.class);
         Query<Long> mockLongQueryForCheck = mock(Query.class);
         // Ensure mockSessionForCheck is returned for both check calls, then the main mockSession for the save operation
         lenient().when(mockSessionFactory.openSession())
-                 .thenReturn(mockSessionForCheck) // For existsUserWithEmail
-                 .thenReturn(mockSessionForCheck) // For existsUserWithCUI
-                 .thenReturn(mockSession);        // For the actual save transaction
+                .thenReturn(mockSessionForCheck) // For existsUserWithEmail
+                .thenReturn(mockSessionForCheck) // For existsUserWithCUI
+                .thenReturn(mockSession);        // For the actual save transaction
         when(mockSessionForCheck.createQuery(anyString(), eq(Long.class))).thenReturn(mockLongQueryForCheck);
         when(mockLongQueryForCheck.setParameter(anyString(), any())).thenReturn(mockLongQueryForCheck);
         when(mockLongQueryForCheck.uniqueResult()).thenReturn(0L); // Return 0 to indicate not exists
-        
+
         // Act
         User result = userDAO.create(name, cui, phone, email, birthdate, address, password, mockPolicy);
 
@@ -265,14 +274,14 @@ class UserDAOTest {
         verify(mockLongQueryForCheck).setParameter("cui", cui);
         verify(mockSessionForCheck, times(2)).close(); // Ensure check sessions are closed
     }
-    
+
     @Test
     void create_EmailExists() {
         // Arrange
         String email = "existing@example.com";
-                
+
         // Mock the email existence check to return true
-        Session mockSessionForCheck = mock(Session.class); 
+        Session mockSessionForCheck = mock(Session.class);
         Query<Long> mockLongQueryForCheck = mock(Query.class);
         lenient().when(mockSessionFactory.openSession()).thenReturn(mockSessionForCheck); // Only need the check session
         when(mockSessionForCheck.createQuery("SELECT COUNT(u) FROM User u WHERE u.email = :email", Long.class)).thenReturn(mockLongQueryForCheck);
@@ -286,17 +295,17 @@ class UserDAOTest {
         assertNull(result); // Should return null if email exists
         verify(mockSession, never()).save(any(User.class));
         verify(mockTransaction, never()).commit();
-         verify(mockSessionForCheck, times(1)).close();
+        verify(mockSessionForCheck, times(1)).close();
     }
-    
+
     @Test
     void create_CuiExists() {
-         // Arrange
+        // Arrange
         Long cui = 98765L;
         String email = "newforCui@example.com";
-                
+
         // Mock the email existence check to return false, CUI check true
-        Session mockSessionForCheck = mock(Session.class); 
+        Session mockSessionForCheck = mock(Session.class);
         Query<Long> mockLongQueryEmailCheck = mock(Query.class);
         Query<Long> mockLongQueryCuiCheck = mock(Query.class);
         lenient().when(mockSessionFactory.openSession()).thenReturn(mockSessionForCheck); // Only need the check session
@@ -318,20 +327,20 @@ class UserDAOTest {
         verify(mockTransaction, never()).commit();
         verify(mockSessionForCheck, times(2)).close(); // Both checks close session
     }
-    
-     @Test
+
+    @Test
     void create_ExceptionDuringSave() {
         // Arrange
         String email = "exception@example.com";
         Long cui = 1111L;
-       // Mock the existence checks to return false
-        Session mockSessionForCheck = mock(Session.class); 
+        // Mock the existence checks to return false
+        Session mockSessionForCheck = mock(Session.class);
         Query<Long> mockLongQueryForCheck = mock(Query.class);
         lenient().when(mockSessionFactory.openSession()).thenReturn(mockSessionForCheck).thenReturn(mockSession); // First calls for checks, then main operation
         when(mockSessionForCheck.createQuery(anyString(), eq(Long.class))).thenReturn(mockLongQueryForCheck);
         when(mockLongQueryForCheck.setParameter(anyString(), any())).thenReturn(mockLongQueryForCheck);
         when(mockLongQueryForCheck.uniqueResult()).thenReturn(0L); // Return 0 to indicate not exists
-        
+
         // Mock save to throw exception
         doThrow(new RuntimeException("DB Save Error")).when(mockSession).save(any(User.class));
 
@@ -363,7 +372,7 @@ class UserDAOTest {
         assertEquals(expectedList, result);
         verify(mockSession).createQuery("FROM User", User.class);
     }
-    
+
     @Test
     void findAll_Exception() {
         // Arrange
@@ -404,12 +413,12 @@ class UserDAOTest {
         // Assert
         assertNull(result);
     }
-    
-     @Test
+
+    @Test
     void findById_Exception() {
         // Arrange
         Long id = 1L;
-         when(mockSession.get(User.class, id)).thenThrow(new RuntimeException("DB error"));
+        when(mockSession.get(User.class, id)).thenThrow(new RuntimeException("DB error"));
 
         // Act
         User result = userDAO.findById(id);
@@ -436,10 +445,10 @@ class UserDAOTest {
         userToUpdate.setPaidService(true);
         userToUpdate.setExpirationDate(new Date(System.currentTimeMillis() + 86400000)); // Expires tomorrow
         userToUpdate.setPolicy(mockPolicy);
-        
+
         User existingUser = new User(); // User fetched from DB
         existingUser.setIdUser(userId);
-        
+
         when(mockSession.get(User.class, userId)).thenReturn(existingUser);
 
         // Act
@@ -453,12 +462,12 @@ class UserDAOTest {
         assertEquals(userToUpdate.getPaidService(), result.getPaidService());
         assertEquals(userToUpdate.getExpirationDate(), result.getExpirationDate()); // checkServiceExpiration shouldn't modify it here
         assertEquals(mockPolicy, result.getPolicy());
-        
+
         verify(mockSession).get(User.class, userId);
         verify(mockSession).update(existingUser); // Ensure it updates the fetched entity
         verify(mockTransaction).commit();
     }
-    
+
     @Test
     void update_ClearExpirationDateWhenNotPaid() {
         // Arrange
@@ -473,7 +482,7 @@ class UserDAOTest {
         existingUser.setIdUser(userId);
         existingUser.setPaidService(true); // Was previously paid
         existingUser.setExpirationDate(new Date()); // Had expiration
-        
+
         when(mockSession.get(User.class, userId)).thenReturn(existingUser);
 
         // Act
@@ -487,8 +496,8 @@ class UserDAOTest {
         verify(mockSession).update(existingUser);
         verify(mockTransaction).commit();
     }
-    
-     @Test
+
+    @Test
     void update_ServiceExpiredCheck() {
         // Arrange
         Long userId = 1L;
@@ -503,7 +512,7 @@ class UserDAOTest {
         existingUser.setPaidService(true);
         existingUser.setExpirationDate(new Date(System.currentTimeMillis() - 86400000)); // Expired yesterday
         existingUser.setPolicy(mockPolicy);
-        
+
         when(mockSession.get(User.class, userId)).thenReturn(existingUser);
 
         // Act
@@ -512,28 +521,28 @@ class UserDAOTest {
         // Assert
         assertNotNull(result);
         // checkServiceExpiration should run during update and set paidService to false
-        assertFalse(result.getPaidService(), "Service should be marked as not paid due to expiration"); 
+        assertFalse(result.getPaidService(), "Service should be marked as not paid due to expiration");
         assertNull(result.getPolicy(), "Policy should be removed when service expires");
         assertEquals(userToUpdate.getExpirationDate(), result.getExpirationDate()); // Date itself isn't cleared, just flag
-        
+
         verify(mockSession).update(existingUser);
         verify(mockTransaction).commit();
     }
-    
+
     @Test
     void update_SetPolicyNullWhenNotPaid() {
         // Arrange
         Long userId = 1L;
-        User userToUpdate = new User(); 
+        User userToUpdate = new User();
         userToUpdate.setIdUser(userId);
         userToUpdate.setPaidService(false); // Service explicitly set to not paid
         userToUpdate.setPolicy(mockPolicy); // Policy provided in input (should be ignored)
 
-        User existingUser = new User(); 
+        User existingUser = new User();
         existingUser.setIdUser(userId);
         existingUser.setPaidService(true);
         existingUser.setPolicy(mockPolicy); // Had a policy before
-        
+
         when(mockSession.get(User.class, userId)).thenReturn(existingUser);
 
         // Act
@@ -541,9 +550,9 @@ class UserDAOTest {
 
         // Assert
         assertNotNull(result);
-        assertFalse(result.getPaidService()); 
+        assertFalse(result.getPaidService());
         assertNull(result.getPolicy(), "Policy should be set to null when service is not paid");
-        
+
         verify(mockSession).update(existingUser);
         verify(mockTransaction).commit();
     }
@@ -574,7 +583,7 @@ class UserDAOTest {
         userToUpdate.setIdUser(userId);
 
         // Mock findById to return a user, then update to fail
-        User existingUser = new User(); 
+        User existingUser = new User();
         existingUser.setIdUser(userId);
         when(mockSession.get(User.class, userId)).thenReturn(existingUser);
         doThrow(new RuntimeException("DB Update Error")).when(mockSession).update(any(User.class));
@@ -599,15 +608,15 @@ class UserDAOTest {
         expiredUser1.setPaidService(true);
         expiredUser1.setExpirationDate(yesterday);
         expiredUser1.setPolicy(mockPolicy); // Has policy
-        
+
         User expiredUser2 = new User();
         expiredUser2.setIdUser(2L);
         expiredUser2.setPaidService(true);
         expiredUser2.setExpirationDate(yesterday);
         expiredUser2.setPolicy(mockPolicy); // Has policy
-        
+
         List<User> expiredList = List.of(expiredUser1, expiredUser2);
-        
+
         when(mockSession.createQuery(anyString(), eq(User.class))).thenReturn(mockUserQuery);
         when(mockUserQuery.setParameter(eq("today"), any(Date.class))).thenReturn(mockUserQuery);
         when(mockUserQuery.getResultList()).thenReturn(expiredList);
@@ -628,12 +637,12 @@ class UserDAOTest {
         assertNull(expiredUser2.getPolicy()); // Policy should be removed
         verify(mockTransaction).commit();
     }
-    
-     @Test
+
+    @Test
     void checkAllUsersServiceExpiration_NoExpiredUsers() {
         // Arrange
         List<User> emptyList = Collections.emptyList();
-        
+
         when(mockSession.createQuery(anyString(), eq(User.class))).thenReturn(mockUserQuery);
         when(mockUserQuery.setParameter(eq("today"), any(Date.class))).thenReturn(mockUserQuery);
         when(mockUserQuery.getResultList()).thenReturn(emptyList);
@@ -648,7 +657,7 @@ class UserDAOTest {
         verify(mockSession, never()).update(any(User.class));
         verify(mockTransaction).commit();
     }
-    
+
     @Test
     void checkAllUsersServiceExpiration_ExceptionDuringQuery() {
         // Arrange
@@ -661,7 +670,7 @@ class UserDAOTest {
         verify(mockTransaction).rollback();
         verify(mockTransaction, never()).commit();
     }
-    
+
     @Test
     void checkAllUsersServiceExpiration_ExceptionDuringUpdate() {
         // Arrange
@@ -670,11 +679,11 @@ class UserDAOTest {
         expiredUser.setPaidService(true);
         expiredUser.setExpirationDate(new Date(System.currentTimeMillis() - 100000)); // Expired
         expiredUser.setPolicy(mockPolicy);
-        
+
         List<User> userList = Collections.singletonList(expiredUser);
         when(mockSession.createQuery(anyString(), eq(User.class))).thenReturn(mockUserQuery);
         when(mockUserQuery.getResultList()).thenReturn(userList);
-        
+
         // Throw exception during the update call within the loop
         doThrow(new RuntimeException("DB Update Error")).when(mockSession).update(any(User.class));
 
@@ -708,7 +717,7 @@ class UserDAOTest {
 
     @Test
     void findByEmail_NotFound() {
-       // Arrange
+        // Arrange
         String email = "notfound@example.com";
         when(mockSession.createQuery(anyString(), eq(User.class))).thenReturn(mockUserQuery);
         when(mockUserQuery.setParameter(eq("email"), eq(email))).thenReturn(mockUserQuery);
@@ -720,10 +729,10 @@ class UserDAOTest {
         // Assert
         assertNull(result);
     }
-    
+
     @Test
     void findByEmail_Exception() {
-       // Arrange
+        // Arrange
         String email = "exception@example.com";
         when(mockSession.createQuery(anyString(), eq(User.class))).thenThrow(new RuntimeException("DB error"));
 
@@ -733,4 +742,4 @@ class UserDAOTest {
         // Assert
         assertNull(result);
     }
-} 
+}

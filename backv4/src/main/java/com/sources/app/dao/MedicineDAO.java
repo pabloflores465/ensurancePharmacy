@@ -12,7 +12,8 @@ import java.util.List;
 
 /**
  * Data Access Object (DAO) para gestionar las entidades Medicine (Medicamento).
- * Proporciona métodos para operaciones CRUD (Crear, Leer, Actualizar) sobre los medicamentos.
+ * Proporciona métodos para operaciones CRUD (Crear, Leer, Actualizar) sobre los
+ * medicamentos.
  */
 public class MedicineDAO {
 
@@ -22,18 +23,21 @@ public class MedicineDAO {
      * @param name Nombre del medicamento.
      * @param description Descripción del medicamento.
      * @param price Precio del medicamento.
-     * @param pharmacy Farmacia a la que pertenece el medicamento (objeto Pharmacy).
+     * @param pharmacy Farmacia a la que pertenece el medicamento (objeto
+     * Pharmacy).
      * @param enabled Estado de habilitación (1 habilitado, 0 deshabilitado).
      * @param activePrinciple Principio activo del medicamento.
-     * @param presentation Presentación del medicamento (p. ej., tabletas, jarabe).
+     * @param presentation Presentación del medicamento (p. ej., tabletas,
+     * jarabe).
      * @param stock Cantidad en inventario.
      * @param brand Marca del medicamento.
-     * @param coverage Indicador de cobertura (p. ej., 1 si está cubierto por seguro, 0 si no).
+     * @param coverage Indicador de cobertura (p. ej., 1 si está cubierto por
+     * seguro, 0 si no).
      * @return El objeto Medicine creado, o null si ocurre un error.
      */
     public Medicine create(String name, String description, BigDecimal price, Pharmacy pharmacy,
-                           Integer enabled, String activePrinciple, String presentation,
-                           Integer stock, String brand, Integer coverage) {
+            Integer enabled, String activePrinciple, String presentation,
+            Integer stock, String brand, Integer coverage) {
         Transaction tx = null;
         Medicine medicine = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -58,6 +62,7 @@ public class MedicineDAO {
                 tx.rollback();
             }
             e.printStackTrace();
+            return null;
         }
         return medicine;
     }
@@ -66,7 +71,8 @@ public class MedicineDAO {
      * Busca un medicamento por su ID único.
      *
      * @param id El ID del medicamento a buscar.
-     * @return El objeto Medicine encontrado, o null si no se encuentra o si ocurre un error.
+     * @return El objeto Medicine encontrado, o null si no se encuentra o si
+     * ocurre un error.
      */
     public Medicine findById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -80,7 +86,8 @@ public class MedicineDAO {
     /**
      * Recupera todos los medicamentos de la base de datos.
      *
-     * @return Una lista de todos los objetos Medicine, o null si ocurre un error.
+     * @return Una lista de todos los objetos Medicine, o null si ocurre un
+     * error.
      */
     public List<Medicine> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

@@ -36,7 +36,7 @@ class PharmacyClientTest {
 
     // Static mocking requires careful handling, especially for final classes like URL
     // PowerMock might be necessary for full coverage. Mockito's static mocking is limited.
-    private MockedStatic<URL> mockedUrlStatic; 
+    private MockedStatic<PharmacyClient> mockedClientStatic;
 
     @Captor
     ArgumentCaptor<byte[]> outputStreamCaptor;
@@ -54,23 +54,16 @@ class PharmacyClientTest {
         lenient().doNothing().when(mockOutputStream).write(any(byte[].class), anyInt(), anyInt());
         lenient().doNothing().when(mockOutputStream).close();
         lenient().doNothing().when(mockConnection).disconnect();
-        
-        // Attempt to mock URL constructor and openConnection using Mockito static mocking
-        // This might fail or have limitations. 
-        mockedUrlStatic = Mockito.mockStatic(URL.class);
-        try {
-            URL realUrl = new URL(PHARMACY_API_BASE_URL + TEST_ENDPOINT);
-            mockedUrlStatic.when(() -> new URL(anyString())).thenReturn(mockUrl); // Mock constructor
-            when(mockUrl.openConnection()).thenReturn(mockConnection); // Mock openConnection on the mocked URL
-        } catch (MalformedURLException e) {
-            fail("Test setup failed: " + e.getMessage());
-        }
+
+        // Mockear factoría estática del cliente para inyectar conexión
+        mockedClientStatic = Mockito.mockStatic(PharmacyClient.class, Mockito.CALLS_REAL_METHODS);
+        mockedClientStatic.when(() -> PharmacyClient.open(anyString())).thenReturn(mockConnection);
     }
 
     @AfterEach
     void tearDown() {
-        if (mockedUrlStatic != null) {
-            mockedUrlStatic.close();
+        if (mockedClientStatic != null) {
+            mockedClientStatic.close();
         }
     }
 
@@ -85,7 +78,7 @@ class PharmacyClientTest {
             lenient().when(mockConnection.getErrorStream()).thenReturn(null);
         } else {
             lenient().when(mockConnection.getInputStream()).thenThrow(new IOException("Simulated error stream access"));
-            when(mockConnection.getErrorStream()).thenReturn(errorStream);
+            lenient().when(mockConnection.getErrorStream()).thenReturn(errorStream);
         }
     }
 
@@ -93,23 +86,23 @@ class PharmacyClientTest {
     void get_Success() throws Exception {
         setupMockResponse(HttpURLConnection.HTTP_OK, SUCCESS_RESPONSE, "");
         String result = PharmacyClient.get(TEST_ENDPOINT);
-        
+
         assertEquals(SUCCESS_RESPONSE, result);
-        mockedUrlStatic.verify(() -> new URL(PHARMACY_API_BASE_URL + TEST_ENDPOINT));
+        // Verifica que se haya configurado el método
         verify(mockConnection).setRequestMethod("GET");
         verify(mockConnection).getResponseCode();
         verify(mockConnection).getInputStream();
     }
-    
-     @Test
+
+    @Test
     void get_HttpError_ReturnsErrorJson() throws Exception {
         setupMockResponse(HttpURLConnection.HTTP_NOT_FOUND, "", ERROR_RESPONSE);
         String result = PharmacyClient.get(TEST_ENDPOINT);
-        
+
         // The method currently wraps the error in a new JSON structure
         assertTrue(result.contains("\"error\":true"));
         assertTrue(result.contains("\"message\":\"")); // Contains the error stream content
-        assertTrue(result.contains("\"statusCode\":404")); 
+        assertTrue(result.contains("\"statusCode\":404"));
         verify(mockConnection).setRequestMethod("GET");
         verify(mockConnection).getResponseCode();
         verify(mockConnection).getErrorStream();
@@ -122,25 +115,27 @@ class PharmacyClientTest {
         String result = PharmacyClient.post(TEST_ENDPOINT, TEST_BODY_MAP);
 
         assertEquals(SUCCESS_RESPONSE, result);
-        mockedUrlStatic.verify(() -> new URL(PHARMACY_API_BASE_URL + TEST_ENDPOINT));
+        // Verificación de escritura y headers
         verify(mockConnection).setRequestMethod("POST");
         verify(mockConnection).setDoOutput(true);
         verify(mockConnection).setRequestProperty(eq("Content-Type"), eq("application/json"));
         verify(mockOutputStream).write(outputStreamCaptor.capture(), eq(0), anyInt());
         // Verify JSON body was written (approximation)
-        assertTrue(new String(outputStreamCaptor.getValue(), StandardCharsets.UTF_8).contains("\"key\":\"value\""));
+        String written = new String(outputStreamCaptor.getValue(), StandardCharsets.UTF_8);
+        assertTrue(written.contains("\"id\":\"123\""));
+        assertTrue(written.contains("\"qty\":\"10\""));
         verify(mockConnection).getResponseCode();
         verify(mockConnection).getInputStream();
     }
-    
+
     @Test
     void post_HttpError_ReturnsErrorJson() throws Exception {
         setupMockResponse(HttpURLConnection.HTTP_BAD_REQUEST, "", ERROR_RESPONSE);
         String result = PharmacyClient.post(TEST_ENDPOINT, TEST_BODY_MAP);
 
         assertTrue(result.contains("\"error\":true"));
-        assertTrue(result.contains(ERROR_RESPONSE)); 
-        assertTrue(result.contains("\"statusCode\":400")); 
+        assertTrue(result.contains(ERROR_RESPONSE));
+        assertTrue(result.contains("\"statusCode\":400"));
         verify(mockConnection).setRequestMethod("POST");
         verify(mockConnection).getResponseCode();
         verify(mockConnection).getErrorStream();
@@ -148,20 +143,22 @@ class PharmacyClientTest {
 
     @Test
     void put_Success() throws Exception {
-         setupMockResponse(HttpURLConnection.HTTP_OK, SUCCESS_RESPONSE, "");
+        setupMockResponse(HttpURLConnection.HTTP_OK, SUCCESS_RESPONSE, "");
         String result = PharmacyClient.put(TEST_ENDPOINT, TEST_BODY_MAP);
 
         assertEquals(SUCCESS_RESPONSE, result);
-        mockedUrlStatic.verify(() -> new URL(PHARMACY_API_BASE_URL + TEST_ENDPOINT));
+        // Verificación de escritura y headers
         verify(mockConnection).setRequestMethod("PUT");
         verify(mockConnection).setDoOutput(true);
         verify(mockOutputStream).write(outputStreamCaptor.capture(), eq(0), anyInt());
-        assertTrue(new String(outputStreamCaptor.getValue(), StandardCharsets.UTF_8).contains("\"key\":\"value\""));
+        String writtenPut = new String(outputStreamCaptor.getValue(), StandardCharsets.UTF_8);
+        assertTrue(writtenPut.contains("\"id\":\"123\""));
+        assertTrue(writtenPut.contains("\"qty\":\"10\""));
         verify(mockConnection).getResponseCode();
         verify(mockConnection).getInputStream();
     }
-    
-     @Test
+
+    @Test
     void put_HttpError_ThrowsException() throws Exception {
         // The PUT method in the client throws Exception on non-2xx, unlike POST
         setupMockResponse(HttpURLConnection.HTTP_INTERNAL_ERROR, "", ERROR_RESPONSE);
@@ -169,11 +166,11 @@ class PharmacyClientTest {
         Exception exception = assertThrows(Exception.class, () -> {
             PharmacyClient.put(TEST_ENDPOINT, TEST_BODY_MAP);
         });
-        
+
         assertTrue(exception.getMessage().contains("Error en la petición PUT: 500"));
         verify(mockConnection).setRequestMethod("PUT");
         verify(mockConnection).getResponseCode();
         // Error stream is not explicitly read in the client's PUT error handling
         // verify(mockConnection).getErrorStream(); 
     }
-} 
+}

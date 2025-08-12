@@ -98,7 +98,7 @@ class MedicinePresDAOTest {
         Long prescriptionId = 1L;
         Long medicineId = 2L;
         when(mockSession.get(Prescription.class, prescriptionId)).thenReturn(null);
-        when(mockSession.get(Medicine.class, medicineId)).thenReturn(mockMedicine);
+        lenient().when(mockSession.get(Medicine.class, medicineId)).thenReturn(mockMedicine);
 
         // Act & Assert
         Exception exception = assertThrows(RuntimeException.class, () -> {
@@ -111,8 +111,8 @@ class MedicinePresDAOTest {
         verify(mockTransaction).rollback();
         verify(mockTransaction, never()).commit();
     }
-    
-     @Test
+
+    @Test
     void create_MedicineNotFound() {
         // Arrange
         Long prescriptionId = 1L;
@@ -184,7 +184,7 @@ class MedicinePresDAOTest {
         // Assert
         assertNull(result);
     }
-    
+
     @Test
     void findById_Exception() {
         // Arrange
@@ -213,8 +213,8 @@ class MedicinePresDAOTest {
         assertEquals(expectedList, result);
         verify(mockSession).createQuery("FROM MedicinePres", MedicinePres.class);
     }
-    
-     @Test
+
+    @Test
     void findAll_Exception() {
         // Arrange
         when(mockQuery.getResultList()).thenThrow(new RuntimeException("DB Error"));
@@ -256,4 +256,4 @@ class MedicinePresDAOTest {
         verify(mockTransaction).rollback();
         verify(mockTransaction, never()).commit();
     }
-} 
+}

@@ -5,7 +5,8 @@ import java.util.Date;
 
 /**
  * Representa una entidad de póliza de seguro mapeada a la tabla POLICY.
- * Contiene información sobre las pólizas, como porcentaje de cobertura, fechas y costo.
+ * Contiene información sobre las pólizas, como porcentaje de cobertura, fechas
+ * y costo.
  */
 @Entity
 @Table(name = "POLICY")
@@ -20,52 +21,49 @@ public class Policy {
     private Long idPolicy;
 
     /**
-     * Porcentaje de cobertura que ofrece la póliza.
-     * Puede ser nulo.
+     * Porcentaje de cobertura que ofrece la póliza. Puede ser nulo.
      */
     @Column(name = "PERCENTAGE")
     private Float percentage;
 
     /**
-     * Fecha de creación de la póliza.
-     * Se almacena solo la fecha.
+     * Fecha de creación de la póliza. Se almacena solo la fecha.
      */
     @Temporal(TemporalType.DATE)
     @Column(name = "CREATION_DATE")
     private Date creationDate;
 
     /**
-     * Fecha de expiración de la póliza.
-     * Se almacena solo la fecha.
+     * Fecha de expiración de la póliza. Se almacena solo la fecha.
      */
     @Temporal(TemporalType.DATE)
     @Column(name = "EXP_DATE")
     private Date expDate;
 
     /**
-     * Costo de la póliza.
-     * Puede ser nulo.
+     * Costo de la póliza. Puede ser nulo.
      */
     @Column(name = "COST")
     private Float cost;
 
     /**
-     * Indica si la póliza está habilitada o activa.
-     * Típicamente 1 para habilitado, 0 para deshabilitado. Puede ser nulo.
+     * Indica si la póliza está habilitada o activa. Típicamente 1 para
+     * habilitado, 0 para deshabilitado. Puede ser nulo.
      */
     @Column(name = "ENABLED")
     private Integer enabled;
 
     /**
-     * Constructor por defecto para la entidad Policy.
-     * Requerido por JPA.
+     * Constructor por defecto para la entidad Policy. Requerido por JPA.
      */
     // Constructor por defecto
     public Policy() {
     }
 
     /**
-     * Constructor con parámetros para crear una instancia de Policy con detalles específicos.
+     * Constructor con parámetros para crear una instancia de Policy con
+     * detalles específicos.
+     *
      * @param percentage Porcentaje de cobertura.
      * @param creationDate Fecha de creación.
      * @param expDate Fecha de expiración.
@@ -84,6 +82,7 @@ public class Policy {
     // Getters y Setters
     /**
      * Obtiene el ID de la póliza.
+     *
      * @return el ID de la póliza.
      */
     public Long getIdPolicy() {
@@ -92,6 +91,7 @@ public class Policy {
 
     /**
      * Establece el ID de la póliza.
+     *
      * @param idPolicy el ID a establecer.
      */
     public void setIdPolicy(Long idPolicy) {
@@ -100,6 +100,7 @@ public class Policy {
 
     /**
      * Obtiene el porcentaje de cobertura.
+     *
      * @return el porcentaje de cobertura.
      */
     public Float getPercentage() {
@@ -108,6 +109,7 @@ public class Policy {
 
     /**
      * Establece el porcentaje de cobertura.
+     *
      * @param percentage el porcentaje a establecer.
      */
     public void setPercentage(Float percentage) {
@@ -116,6 +118,7 @@ public class Policy {
 
     /**
      * Obtiene la fecha de creación.
+     *
      * @return la fecha de creación.
      */
     public Date getCreationDate() {
@@ -124,6 +127,7 @@ public class Policy {
 
     /**
      * Establece la fecha de creación.
+     *
      * @param creationDate la fecha a establecer.
      */
     public void setCreationDate(Date creationDate) {
@@ -132,6 +136,7 @@ public class Policy {
 
     /**
      * Obtiene la fecha de expiración.
+     *
      * @return la fecha de expiración.
      */
     public Date getExpDate() {
@@ -140,6 +145,7 @@ public class Policy {
 
     /**
      * Establece la fecha de expiración.
+     *
      * @param expDate la fecha a establecer.
      */
     public void setExpDate(Date expDate) {
@@ -148,6 +154,7 @@ public class Policy {
 
     /**
      * Obtiene el costo de la póliza.
+     *
      * @return el costo.
      */
     public Float getCost() {
@@ -156,6 +163,7 @@ public class Policy {
 
     /**
      * Establece el costo de la póliza.
+     *
      * @param cost el costo a establecer.
      */
     public void setCost(Float cost) {
@@ -164,6 +172,7 @@ public class Policy {
 
     /**
      * Obtiene el estado de habilitación.
+     *
      * @return el estado de habilitación.
      */
     public Integer getEnabled() {
@@ -172,9 +181,30 @@ public class Policy {
 
     /**
      * Establece el estado de habilitación.
+     *
      * @param enabled el estado a establecer.
      */
     public void setEnabled(Integer enabled) {
         this.enabled = enabled;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Policy)) {
+            return false;
+        }
+        Policy other = (Policy) o;
+        if (this.idPolicy == null || other.idPolicy == null) {
+            return false;
+        }
+        return this.idPolicy.equals(other.idPolicy);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(idPolicy);
     }
 }

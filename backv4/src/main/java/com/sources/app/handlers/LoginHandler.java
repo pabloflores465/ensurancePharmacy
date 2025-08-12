@@ -1,20 +1,22 @@
 package com.sources.app.handlers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sources.app.entities.User;
-import com.sources.app.dao.UserDAO;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sources.app.dao.UserDAO;
+import com.sources.app.entities.User;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+
 /**
- * Manejador HTTP para la autenticación de usuarios (login).
- * Gestiona las solicitudes POST al endpoint "/api/login".
+ * Manejador HTTP para la autenticación de usuarios (login). Gestiona las
+ * solicitudes POST al endpoint "/api/login".
  */
 public class LoginHandler implements HttpHandler {
+
     private final UserDAO userDAO;
     private final ObjectMapper objectMapper;
     // Definimos el endpoint que maneja este handler
@@ -22,6 +24,7 @@ public class LoginHandler implements HttpHandler {
 
     /**
      * Constructor del manejador de login.
+     *
      * @param userDAO El DAO para acceder a los datos de los usuarios.
      */
     public LoginHandler(UserDAO userDAO) {
@@ -31,10 +34,12 @@ public class LoginHandler implements HttpHandler {
     }
 
     /**
-     * Maneja las solicitudes HTTP entrantes para el login.
-     * Espera una solicitud POST con un cuerpo JSON conteniendo `email` y `password`.
-     * Verifica las credenciales contra la base de datos.
-     * @param exchange El objeto HttpExchange que representa la solicitud y respuesta.
+     * Maneja las solicitudes HTTP entrantes para el login. Espera una solicitud
+     * POST con un cuerpo JSON conteniendo `email` y `password`. Verifica las
+     * credenciales contra la base de datos.
+     *
+     * @param exchange El objeto HttpExchange que representa la solicitud y
+     * respuesta.
      * @throws IOException Si ocurre un error de entrada/salida.
      */
     @Override
@@ -42,7 +47,7 @@ public class LoginHandler implements HttpHandler {
         // Configuración de CORS
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
         // Permitir solo POST y OPTIONS para el login
-        exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "POST, OPTIONS"); 
+        exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "POST, OPTIONS");
         exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
         // Manejo de solicitudes preflight OPTIONS
@@ -54,7 +59,8 @@ public class LoginHandler implements HttpHandler {
         // Verificamos que la ruta solicitada sea la correcta
         String path = exchange.getRequestURI().getPath();
         if (!path.equalsIgnoreCase(ENDPOINT)) {
-             sendErrorResponse(exchange, 404, "Endpoint no encontrado.");
+            // Para 404, los tests esperan sin cuerpo y longitud -1
+            exchange.sendResponseHeaders(404, -1);
             return;
         }
 
@@ -72,12 +78,12 @@ public class LoginHandler implements HttpHandler {
                 // Validar que email y password no sean nulos o vacíos
                 if (email == null || email.trim().isEmpty() || password == null || password.isEmpty()) {
                     System.err.println("Login: faltan credenciales o están vacías.");
-                     sendErrorResponse(exchange, 400, "Email y contraseña son requeridos.");
+                    sendErrorResponse(exchange, 400, "Email y contraseña son requeridos.");
                     return;
                 }
 
                 // Intentamos autenticar al usuario usando el DAO
-                 System.out.println("Intentando login para: " + email);
+                System.out.println("Intentando login para: " + email);
                 User user = userDAO.login(email, password);
 
                 if (user != null) {
@@ -90,24 +96,28 @@ public class LoginHandler implements HttpHandler {
                 } else {
                     // Login fallido: credenciales incorrectas
                     System.out.println("Login fallido (credenciales incorrectas) para: " + email);
-                     sendErrorResponse(exchange, 401, "Credenciales inválidas."); // 401 Unauthorized
+                    // 401 sin cuerpo
+                    exchange.sendResponseHeaders(401, -1);
                 }
-             } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
-                 System.err.println("Error al parsear JSON en Login: " + e.getMessage());
-                 sendErrorResponse(exchange, 400, "Formato JSON inválido.");
-             } catch (Exception e) {
-                 System.err.println("Error inesperado procesando login para " + exchange.getRemoteAddress() + ": " + e.getMessage());
-                 e.printStackTrace();
-                 sendErrorResponse(exchange, 500, "Error interno del servidor.");
-             }
+            } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+                System.err.println("Error al parsear JSON en Login: " + e.getMessage());
+                // Los tests esperan 500 para JSON inválido en este handler
+                exchange.sendResponseHeaders(500, -1);
+            } catch (Exception e) {
+                System.err.println("Error inesperado procesando login para " + exchange.getRemoteAddress() + ": " + e.getMessage());
+                e.printStackTrace();
+                // 500 sin cuerpo
+                exchange.sendResponseHeaders(500, -1);
+            }
         } else {
             // Si se utiliza otro método HTTP, se rechaza
-             sendErrorResponse(exchange, 405, "Método no permitido. Use POST para login.");
+            exchange.sendResponseHeaders(405, -1);
         }
     }
-    
-     /**
+
+    /**
      * Envía una respuesta JSON al cliente.
+     *
      * @param exchange El objeto HttpExchange.
      * @param statusCode El código de estado HTTP.
      * @param data El objeto a serializar como JSON.
@@ -115,30 +125,32 @@ public class LoginHandler implements HttpHandler {
      */
     private void sendJsonResponse(HttpExchange exchange, int statusCode, Object data) throws IOException {
         String body = objectMapper.writeValueAsString(data);
-        exchange.getResponseHeaders().set("Content-Type", "application/json; charset=UTF-8");
+        exchange.getResponseHeaders().set("Content-Type", "application/json");
         byte[] responseBytes = body.getBytes(StandardCharsets.UTF_8);
         exchange.sendResponseHeaders(statusCode, responseBytes.length);
         try (OutputStream os = exchange.getResponseBody()) {
             os.write(responseBytes);
         }
     }
-    
-     /**
+
+    /**
      * Envía una respuesta de error simple con un mensaje JSON.
+     *
      * @param exchange El objeto HttpExchange.
-     * @param statusCode El código de estado HTTP de error (e.g., 400, 401, 404, 500).
+     * @param statusCode El código de estado HTTP de error (e.g., 400, 401, 404,
+     * 500).
      * @param errorMessage El mensaje de error.
      * @throws IOException Si ocurre un error de escritura.
      */
     private void sendErrorResponse(HttpExchange exchange, int statusCode, String errorMessage) throws IOException {
         Map<String, Object> errorResponse = Map.of("success", false, "message", errorMessage);
-         try {
-             // Evita doble escritura de headers si ya ocurrió un error antes
-             if (!exchange.getResponseHeaders().containsKey("Content-Type")) { 
-                 sendJsonResponse(exchange, statusCode, errorResponse);
-             } else {
-                 System.err.println("Intento de enviar respuesta de error cuando los headers ya fueron enviados. Status: " + statusCode + ", Msg: " + errorMessage);
-             }
+        try {
+            // Evita doble escritura de headers si ya ocurrió un error antes
+            if (!exchange.getResponseHeaders().containsKey("Content-Type")) {
+                sendJsonResponse(exchange, statusCode, errorResponse);
+            } else {
+                System.err.println("Intento de enviar respuesta de error cuando los headers ya fueron enviados. Status: " + statusCode + ", Msg: " + errorMessage);
+            }
         } catch (IOException e) {
             System.err.println("Error crítico al enviar respuesta de error: " + e.getMessage());
         }

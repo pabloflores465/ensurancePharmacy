@@ -48,7 +48,7 @@ public class ServiceHandler implements HttpHandler {
         }
 
         // Seleccionar operación según el método HTTP
-        switch (exchange.getRequestMethod().toUpperCase()){
+        switch (exchange.getRequestMethod().toUpperCase()) {
             case "GET":
                 handleGet(exchange);
                 break;
@@ -65,34 +65,34 @@ public class ServiceHandler implements HttpHandler {
 
     private void handleGet(HttpExchange exchange) throws IOException {
         String query = exchange.getRequestURI().getQuery();
-        if(query != null && query.contains("id=")){
+        if (query != null && query.contains("id=")) {
             Map<String, String> params = parseQuery(query);
             try {
                 Long id = Long.parseLong(params.get("id"));
                 // Usamos el método que trae las asociaciones (detalles)
                 Service service = serviceDAO.findByIdWithDetails(id);
-                if(service != null){
+                if (service != null) {
                     String jsonResponse = objectMapper.writeValueAsString(service);
-                    exchange.getResponseHeaders().set("Content-Type","application/json");
+                    exchange.getResponseHeaders().set("Content-Type", "application/json");
                     byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
                     exchange.sendResponseHeaders(200, responseBytes.length);
-                    try(OutputStream os = exchange.getResponseBody()){
+                    try (OutputStream os = exchange.getResponseBody()) {
                         os.write(responseBytes);
                     }
                 } else {
                     exchange.sendResponseHeaders(404, -1);
                 }
-            } catch(NumberFormatException e){
+            } catch (NumberFormatException e) {
                 exchange.sendResponseHeaders(400, -1);
             }
         } else {
             // Recuperamos todos los servicios con sus detalles
             List<Service> list = serviceDAO.findAllWithDetails();
             String jsonResponse = objectMapper.writeValueAsString(list);
-            exchange.getResponseHeaders().set("Content-Type","application/json");
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
             byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
             exchange.sendResponseHeaders(200, responseBytes.length);
-            try(OutputStream os = exchange.getResponseBody()){
+            try (OutputStream os = exchange.getResponseBody()) {
                 os.write(responseBytes);
             }
         }
@@ -104,18 +104,21 @@ public class ServiceHandler implements HttpHandler {
             // Mapea el JSON a un objeto Service (se espera que incluya los objetos Hospital, Category y Subcategory)
             Service service = objectMapper.readValue(requestBody, Service.class);
             Service created = serviceDAO.create(service);
-            if(created != null){
+            if (created != null) {
                 String jsonResponse = objectMapper.writeValueAsString(created);
-                exchange.getResponseHeaders().set("Content-Type","application/json");
+                exchange.getResponseHeaders().set("Content-Type", "application/json");
                 byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
                 exchange.sendResponseHeaders(201, responseBytes.length);
-                try(OutputStream os = exchange.getResponseBody()){
+                try (OutputStream os = exchange.getResponseBody()) {
                     os.write(responseBytes);
                 }
             } else {
                 exchange.sendResponseHeaders(500, -1);
             }
-        } catch(Exception e){
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            // JSON inválido -> 500 sin cuerpo
+            exchange.sendResponseHeaders(500, -1);
+        } catch (Exception e) {
             e.printStackTrace();
             exchange.sendResponseHeaders(500, -1);
         }
@@ -125,12 +128,12 @@ public class ServiceHandler implements HttpHandler {
         String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
         Service service = objectMapper.readValue(requestBody, Service.class);
         Service updated = serviceDAO.update(service);
-        if(updated != null){
+        if (updated != null) {
             String jsonResponse = objectMapper.writeValueAsString(updated);
-            exchange.getResponseHeaders().set("Content-Type","application/json");
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
             byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
             exchange.sendResponseHeaders(200, responseBytes.length);
-            try(OutputStream os = exchange.getResponseBody()){
+            try (OutputStream os = exchange.getResponseBody()) {
                 os.write(responseBytes);
             }
         } else {
@@ -138,7 +141,7 @@ public class ServiceHandler implements HttpHandler {
         }
     }
 
-    private Map<String, String> parseQuery(String query){
+    private Map<String, String> parseQuery(String query) {
         return Arrays.stream(query.split("&"))
                 .map(param -> param.split("="))
                 .collect(Collectors.toMap(

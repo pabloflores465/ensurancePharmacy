@@ -98,7 +98,7 @@ class ServiceCategoryDAOTest {
         Long serviceId = 1L;
         Long categoryId = 2L;
         when(mockSession.get(Service.class, serviceId)).thenReturn(null);
-        when(mockSession.get(Category.class, categoryId)).thenReturn(mockCategory);
+        lenient().when(mockSession.get(Category.class, categoryId)).thenReturn(mockCategory);
 
         // Act & Assert
         Exception exception = assertThrows(RuntimeException.class, () -> {
@@ -111,7 +111,7 @@ class ServiceCategoryDAOTest {
         verify(mockTransaction).rollback();
         verify(mockTransaction, never()).commit();
     }
-    
+
     @Test
     void create_CategoryNotFound() {
         // Arrange
@@ -184,8 +184,8 @@ class ServiceCategoryDAOTest {
         // Assert
         assertNull(result);
     }
-    
-     @Test
+
+    @Test
     void findById_Exception() {
         // Arrange
         Long serviceId = 1L;
@@ -213,8 +213,8 @@ class ServiceCategoryDAOTest {
         assertEquals(expectedList, result);
         verify(mockSession).createQuery("FROM ServiceCategory", ServiceCategory.class);
     }
-    
-     @Test
+
+    @Test
     void findAll_Exception() {
         // Arrange
         when(mockQuery.getResultList()).thenThrow(new RuntimeException("DB Error"));
@@ -256,4 +256,4 @@ class ServiceCategoryDAOTest {
         verify(mockTransaction).rollback();
         verify(mockTransaction, never()).commit();
     }
-} 
+}

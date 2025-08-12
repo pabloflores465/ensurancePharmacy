@@ -10,20 +10,33 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * Clase de utilidad para realizar peticiones HTTP (GET, POST, PUT, DELETE).
- * Proporciona métodos estáticos simples para interactuar con APIs REST.
- * Incluye manejo básico de timeouts y errores.
+ * Proporciona métodos estáticos simples para interactuar con APIs REST. Incluye
+ * manejo básico de timeouts y errores.
  */
 public class HttpClientUtil {
-    
+
     /**
-     * Constructor privado para prevenir la instanciación de la clase de utilidad.
+     * Constructor privado para prevenir la instanciación de la clase de
+     * utilidad.
      */
-    private HttpClientUtil() {}
-    
+    private HttpClientUtil() {
+    }
+
     private static final int TIMEOUT = 5000; // 5 segundos
-    
+
+    /**
+     * Punto de extensión para tests: abre una conexión HTTP para la URL dada.
+     * Los tests pueden mockear este método estático para inyectar un
+     * HttpURLConnection.
+     */
+    public static HttpURLConnection open(String urlString) throws IOException {
+        URL url = new URL(urlString);
+        return (HttpURLConnection) url.openConnection();
+    }
+
     /**
      * Realiza una petición GET a la URL especificada
+     *
      * @param urlString URL de destino
      * @return Respuesta como String, o null si hay error
      */
@@ -31,25 +44,25 @@ public class HttpClientUtil {
         HttpURLConnection connection = null;
         try {
             System.out.println("Realizando GET a: " + urlString);
-            URL url = new URL(urlString);
-            connection = (HttpURLConnection) url.openConnection();
+            connection = open(urlString);
+            // Asegurar que el método quede seteado explícitamente para verificaciones de test
             connection.setRequestMethod("GET");
             connection.setConnectTimeout(TIMEOUT);
             connection.setReadTimeout(TIMEOUT);
             connection.setRequestProperty("Accept", "application/json");
-            
+
             int responseCode = connection.getResponseCode();
             System.out.println("Código de respuesta: " + responseCode);
-            
+
             if (responseCode >= 200 && responseCode < 300) {
                 String response = readResponse(connection);
                 System.out.println("Respuesta recibida, longitud: " + (response != null ? response.length() : 0));
                 return response;
             } else {
                 String errorResponse = readErrorResponse(connection);
-                System.err.println("Error en petición GET a " + urlString + 
-                                  ": Código " + responseCode + 
-                                  ", Respuesta: " + errorResponse);
+                System.err.println("Error en petición GET a " + urlString
+                        + ": Código " + responseCode
+                        + ", Respuesta: " + errorResponse);
                 return null;
             }
         } catch (java.net.SocketTimeoutException e) {
@@ -71,9 +84,10 @@ public class HttpClientUtil {
             }
         }
     }
-    
+
     /**
      * Realiza una petición POST a la URL especificada
+     *
      * @param urlString URL de destino
      * @param jsonBody Cuerpo de la petición en formato JSON
      * @return Respuesta como String, o null si hay error
@@ -81,9 +95,10 @@ public class HttpClientUtil {
     public static String post(String urlString, String jsonBody) {
         return sendWithBody(urlString, "POST", jsonBody);
     }
-    
+
     /**
      * Realiza una petición PUT a la URL especificada
+     *
      * @param urlString URL de destino
      * @param jsonBody Cuerpo de la petición en formato JSON
      * @return Respuesta como String, o null si hay error
@@ -91,9 +106,10 @@ public class HttpClientUtil {
     public static String put(String urlString, String jsonBody) {
         return sendWithBody(urlString, "PUT", jsonBody);
     }
-    
+
     /**
      * Realiza una petición DELETE a la URL especificada
+     *
      * @param urlString URL de destino
      * @return Respuesta como String, o null si hay error
      */
@@ -101,24 +117,23 @@ public class HttpClientUtil {
         HttpURLConnection connection = null;
         try {
             System.out.println("Realizando DELETE a: " + urlString);
-            URL url = new URL(urlString);
-            connection = (HttpURLConnection) url.openConnection();
+            connection = open(urlString);
             connection.setRequestMethod("DELETE");
             connection.setConnectTimeout(TIMEOUT);
             connection.setReadTimeout(TIMEOUT);
-            
+
             int responseCode = connection.getResponseCode();
             System.out.println("Código de respuesta: " + responseCode);
-            
+
             if (responseCode >= 200 && responseCode < 300) {
                 String response = readResponse(connection);
                 System.out.println("Respuesta recibida, longitud: " + (response != null ? response.length() : 0));
                 return response;
             } else {
                 String errorResponse = readErrorResponse(connection);
-                System.err.println("Error en petición DELETE a " + urlString + 
-                                  ": Código " + responseCode + 
-                                  ", Respuesta: " + errorResponse);
+                System.err.println("Error en petición DELETE a " + urlString
+                        + ": Código " + responseCode
+                        + ", Respuesta: " + errorResponse);
                 return null;
             }
         } catch (Exception e) {
@@ -131,7 +146,7 @@ public class HttpClientUtil {
             }
         }
     }
-    
+
     /**
      * Método auxiliar para enviar peticiones con cuerpo (POST/PUT)
      */
@@ -142,16 +157,16 @@ public class HttpClientUtil {
             if (jsonBody != null) {
                 System.out.println("Body: " + jsonBody);
             }
-            
-            URL url = new URL(urlString);
-            connection = (HttpURLConnection) url.openConnection();
+
+            connection = open(urlString);
+            // Asegurar setRequestMethod para POST/PUT acorde a tests
             connection.setRequestMethod(method);
             connection.setConnectTimeout(TIMEOUT);
             connection.setReadTimeout(TIMEOUT);
             connection.setRequestProperty("Content-Type", "application/json");
             connection.setRequestProperty("Accept", "application/json");
             connection.setDoOutput(true);
-            
+
             // Escribir el cuerpo de la petición
             if (jsonBody != null && !jsonBody.isEmpty()) {
                 try (OutputStream os = connection.getOutputStream()) {
@@ -159,19 +174,19 @@ public class HttpClientUtil {
                     os.write(input, 0, input.length);
                 }
             }
-            
+
             int responseCode = connection.getResponseCode();
             System.out.println("Código de respuesta: " + responseCode);
-            
+
             if (responseCode >= 200 && responseCode < 300) {
                 String response = readResponse(connection);
                 System.out.println("Respuesta recibida, longitud: " + (response != null ? response.length() : 0));
                 return response;
             } else {
                 String errorResponse = readErrorResponse(connection);
-                System.err.println("Error en petición " + method + " a " + urlString + 
-                                  ": Código " + responseCode + 
-                                  ", Respuesta: " + errorResponse);
+                System.err.println("Error en petición " + method + " a " + urlString
+                        + ": Código " + responseCode
+                        + ", Respuesta: " + errorResponse);
                 return null;
             }
         } catch (Exception e) {
@@ -184,7 +199,7 @@ public class HttpClientUtil {
             }
         }
     }
-    
+
     /**
      * Lee la respuesta de una conexión HTTP
      */
@@ -199,7 +214,7 @@ public class HttpClientUtil {
             return response.toString();
         }
     }
-    
+
     /**
      * Lee la respuesta de error de una conexión HTTP
      */
@@ -216,4 +231,4 @@ public class HttpClientUtil {
             return "No se pudo leer la respuesta de error: " + e.getMessage();
         }
     }
-} 
+}

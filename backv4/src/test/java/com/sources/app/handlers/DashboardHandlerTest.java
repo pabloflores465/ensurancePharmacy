@@ -80,10 +80,10 @@ class DashboardHandlerTest {
 
     @BeforeEach
     void setUp() {
-        mockedHibernateUtil = Mockito.mockStatic(HibernateUtil.class);
-        mockedHibernateUtil.when(HibernateUtil::getSessionFactory).thenReturn(mockSessionFactory);
+        mockedHibernateUtil = Mockito.mockStatic(HibernateUtil.class, Mockito.CALLS_REAL_METHODS);
+        HibernateUtil.setSessionFactory(mockSessionFactory);
         mockedHibernateUtil.when(() -> HibernateUtil.setCorsHeaders(any(HttpExchange.class))).thenCallRealMethod();
-        
+
         lenient().when(mockHttpExchange.getResponseHeaders()).thenReturn(mockResponseHeaders);
         lenient().when(mockHttpExchange.getResponseBody()).thenReturn(mockResponseBody);
         lenient().when(mockHttpExchange.getRequestHeaders()).thenReturn(mockRequestHeaders);
@@ -94,13 +94,14 @@ class DashboardHandlerTest {
         mockedHibernateUtil.close();
         // verify(mockResponseBody, atLeastOnce()).close(); // Add if needed
     }
-    
+
     @Test
     void handle_OptionsRequest_SendsNoContent() throws IOException {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(ENDPOINT_DASHBOARD)); // Path needed for CORS
         when(mockHttpExchange.getRequestMethod()).thenReturn("OPTIONS");
         dashboardHandler.handle(mockHttpExchange);
         verify(mockHttpExchange).sendResponseHeaders(eq(204), eq(-1L));
+        // No necesidad de stubs de DAOs; asegurar que no se usen
         verifyNoInteractions(mockServiceApprovalDAO, mockHospitalDAO, mockInsuranceServiceDAO);
     }
 
@@ -112,34 +113,56 @@ class DashboardHandlerTest {
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
         verifyNoInteractions(mockServiceApprovalDAO, mockHospitalDAO, mockInsuranceServiceDAO);
     }
-    
+
     @Test
     void handle_UnsupportedMethodForDashboard_SendsMethodNotAllowed() throws IOException {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(ENDPOINT_DASHBOARD));
-        when(mockHttpExchange.getRequestMethod()).thenReturn("POST"); 
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
         dashboardHandler.handle(mockHttpExchange);
         verify(mockHttpExchange).sendResponseHeaders(eq(405), eq(-1L));
     }
-    
-     @Test
+
+    @Test
     void handle_UnsupportedMethodForStatus_SendsMethodNotAllowed() throws IOException {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(ENDPOINT_STATUS));
-        when(mockHttpExchange.getRequestMethod()).thenReturn("POST"); 
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
         dashboardHandler.handle(mockHttpExchange);
         verify(mockHttpExchange).sendResponseHeaders(eq(405), eq(-1L));
     }
 
     // --- GET /dashboard Tests ---
-    
     @Test
     void handleDashboardGet_Success_AggregatesData() throws IOException {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(ENDPOINT_DASHBOARD));
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
 
         // Mock DAO responses
-        ServiceApproval app1 = new ServiceApproval(); app1.setId(1L); app1.setStatus("APPROVED"); app1.setApprovalCode("AP1"); app1.setServiceName("S1"); app1.setServiceCost(100.0); app1.setCoveredAmount(80.0); app1.setPatientAmount(20.0); app1.setApprovalDate(new Date());
-        ServiceApproval app2 = new ServiceApproval(); app2.setId(2L); app2.setStatus("PENDING"); app2.setApprovalCode("AP2"); app2.setServiceName("S2"); app2.setServiceCost(50.0); app2.setCoveredAmount(40.0); app2.setPatientAmount(10.0); app2.setPrescriptionId(101L); 
-        ServiceApproval app3 = new ServiceApproval(); app3.setId(3L); app3.setStatus("COMPLETED"); app3.setApprovalCode("AP3"); app3.setServiceName("S3"); app3.setServiceCost(200.0); app3.setCoveredAmount(160.0); app3.setPatientAmount(40.0);
+        ServiceApproval app1 = new ServiceApproval();
+        app1.setId(1L);
+        app1.setStatus("APPROVED");
+        app1.setApprovalCode("AP1");
+        app1.setServiceName("S1");
+        app1.setServiceCost(100.0);
+        app1.setCoveredAmount(80.0);
+        app1.setPatientAmount(20.0);
+        app1.setApprovalDate(new Date());
+        ServiceApproval app2 = new ServiceApproval();
+        app2.setId(2L);
+        app2.setStatus("PENDING");
+        app2.setApprovalCode("AP2");
+        app2.setServiceName("S2");
+        app2.setServiceCost(50.0);
+        app2.setCoveredAmount(40.0);
+        app2.setPatientAmount(10.0);
+        app2.setPrescriptionId(101L);
+        ServiceApproval app3 = new ServiceApproval();
+        app3.setId(3L);
+        app3.setStatus("COMPLETED");
+        app3.setApprovalCode("AP3");
+        app3.setServiceName("S3");
+        app3.setServiceCost(200.0);
+        app3.setCoveredAmount(160.0);
+        app3.setPatientAmount(40.0);
         List<ServiceApproval> approvals = Arrays.asList(app1, app2, app3);
         when(mockServiceApprovalDAO.findAll()).thenReturn(approvals);
         when(mockHospitalDAO.findAll()).thenReturn(Collections.singletonList(new Hospital()));
@@ -157,7 +180,8 @@ class DashboardHandlerTest {
 
         // Deserialize and verify dashboard structure/content
         String jsonResponse = new String(responseBodyCaptor.getValue(), StandardCharsets.UTF_8);
-        Map<String, Object> dashboardData = objectMapper.readValue(jsonResponse, new TypeReference<Map<String, Object>>() {});
+        Map<String, Object> dashboardData = objectMapper.readValue(jsonResponse, new TypeReference<Map<String, Object>>() {
+        });
 
         assertNotNull(dashboardData);
         assertTrue(dashboardData.containsKey("approvalStats"));
@@ -183,13 +207,14 @@ class DashboardHandlerTest {
 
         List<Map<String, Object>> recentTransactions = (List<Map<String, Object>>) dashboardData.get("recentTransactions");
         assertEquals(3, recentTransactions.size()); // Should show up to 10, we provided 3
-        assertEquals(app1.getId(), recentTransactions.get(0).get("id"));
+        // Comparar numéricamente para evitar Integer vs Long en Map deserializado
+        assertEquals(app1.getId().longValue(), ((Number) recentTransactions.get(0).get("id")).longValue());
         assertEquals(app1.getStatus(), recentTransactions.get(0).get("status"));
     }
-    
+
     @Test
     void handleDashboardGet_DaoException_SendsError() throws IOException {
-         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(ENDPOINT_DASHBOARD));
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(ENDPOINT_DASHBOARD));
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
         // Simulate exception when calling DAO
         when(mockServiceApprovalDAO.findAll()).thenThrow(new RuntimeException("Database connection failed"));
@@ -207,7 +232,6 @@ class DashboardHandlerTest {
     }
 
     // --- GET /status Tests ---
-    
     @Test
     void handleStatusGet_Success() throws IOException {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(ENDPOINT_STATUS));
@@ -221,7 +245,8 @@ class DashboardHandlerTest {
         verify(mockResponseBody).close();
 
         String jsonResponse = new String(responseBodyCaptor.getValue(), StandardCharsets.UTF_8);
-        Map<String, Object> statusData = objectMapper.readValue(jsonResponse, new TypeReference<Map<String, Object>>() {});
+        Map<String, Object> statusData = objectMapper.readValue(jsonResponse, new TypeReference<Map<String, Object>>() {
+        });
 
         assertNotNull(statusData);
         assertEquals(true, statusData.get("hospitalConnection")); // Currently hardcoded true
@@ -229,4 +254,4 @@ class DashboardHandlerTest {
         assertEquals(true, statusData.get("databaseConnection"));
         assertTrue(statusData.containsKey("timestamp"));
     }
-} 
+}

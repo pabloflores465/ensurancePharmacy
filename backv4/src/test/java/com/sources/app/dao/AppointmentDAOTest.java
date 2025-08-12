@@ -94,7 +94,7 @@ class AppointmentDAOTest {
         Long hospitalId = 1L;
         Long userId = 2L;
         when(mockSession.get(Hospital.class, hospitalId)).thenReturn(null); // Hospital not found
-        when(mockSession.get(User.class, userId)).thenReturn(mockUser);
+        lenient().when(mockSession.get(User.class, userId)).thenReturn(mockUser);
 
         // Act & Assert
         Exception exception = assertThrows(RuntimeException.class, () -> {
@@ -107,7 +107,7 @@ class AppointmentDAOTest {
         verify(mockTransaction).rollback();
         verify(mockTransaction, never()).commit();
     }
-    
+
     @Test
     void create_UserNotFound() {
         // Arrange
@@ -169,7 +169,7 @@ class AppointmentDAOTest {
         verify(mockSession).createQuery("FROM Appointment a WHERE a.user.idUser = :userId", Appointment.class); // Adjusted assumption
         verify(mockQuery).setParameter("userId", userId);
     }
-    
+
     @Test
     void findByUserId_Exception() {
         // Arrange
@@ -212,7 +212,7 @@ class AppointmentDAOTest {
         // Assert
         assertNull(result);
     }
-    
+
     @Test
     void findById_Exception() {
         // Arrange
@@ -240,7 +240,7 @@ class AppointmentDAOTest {
         assertEquals(expectedList, result);
         verify(mockSession).createQuery("FROM Appointment", Appointment.class);
     }
-    
+
     @Test
     void findAll_Exception() {
         // Arrange
@@ -283,4 +283,4 @@ class AppointmentDAOTest {
         verify(mockTransaction).rollback();
         verify(mockTransaction, never()).commit();
     }
-} 
+}
