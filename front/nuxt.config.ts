@@ -1,22 +1,21 @@
 import tailwindcss from "@tailwindcss/vite";
 export default defineNuxtConfig({
   compatibilityDate: "2024-11-01",
-  css: ['./main.css'],
+  css: ["./main.css"],
   devtools: {
     enabled: true,
     timeline: {
-      enabled: true
-    }
+      enabled: true,
+    },
   },
   vite: {
-    plugins: [
-      tailwindcss(),
-    ],
+    plugins: [tailwindcss()],
   },
   runtimeConfig: {
     // Variables que quieras exponer al cliente deben ir dentro de `public`
     public: {
-      ip: process.env.IP || '127.0.0.1',
+      ip: process.env.IP || "127.0.0.1",
+      ensuranceApiUrl: process.env.NUXT_PUBLIC_ENSURANCE_API_URL || "",
     },
   },
 });

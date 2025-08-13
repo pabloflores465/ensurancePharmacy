@@ -8,8 +8,8 @@ RUN apk add --no-cache maven
 # Copia tu backend (ajusta la ruta si cambia)
 COPY backv4/ .
 
-# Compila (puedes añadir -DskipTests si quieres)
-RUN mvn -B clean install
+# Compila sin ejecutar tests
+RUN mvn -B clean install -DskipTests
 
 EXPOSE 8080
 

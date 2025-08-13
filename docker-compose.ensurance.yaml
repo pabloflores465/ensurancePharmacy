@@ -5,8 +5,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.ensurance.backend  # backv4 (HTTP default 8080)
+    environment:
+      SERVER_HOST: "0.0.0.0"
+      SERVER_PORT: "8080"
     ports:
-      - "5172:8080"                             # http://localhost:5172 -> container:8080
+      - "${ENS_BACKEND_HOST_PORT:-8081}:8080"   # host -> container:8080
     restart: unless-stopped
 
   ensurance-frontend:
@@ -16,10 +19,9 @@ services:
     ports:
       - "5175:5173"                             # http://localhost:5175
     environment:
-      VITE_API_URL: "http://localhost:5172"
-      REACT_APP_API_URL: "http://localhost:5172"
-      VUE_APP_API_URL: "http://localhost:5172"
-      API_BASE_URL: "http://localhost:5172"
+      # URLs base para que el frontend apunte al backend expuesto
+      VITE_ENSURANCE_API_URL: "${VITE_ENSURANCE_API_URL:-http://localhost:${ENS_BACKEND_HOST_PORT:-8081}/api}"
+      VITE_PHARMACY_API_URL:  "${VITE_PHARMACY_API_URL:-http://localhost:${PHARM_BACKEND_HOST_PORT:-8082}/api2}"
     depends_on:
       - ensurance-backend
     restart: unless-stopped
