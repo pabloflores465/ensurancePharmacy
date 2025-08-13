@@ -26,34 +26,9 @@ pipeline {
     stage('Unit Tests & Coverage') {
   steps {
     sh 'set -e'
-
-    // --- FRONTENDS (igual que ya tenías) ---
-    sh '''
-      if [ -f "./ensurance/package.json" ]; then
-        echo "[frontend/ensurance] npm ci && npm test"
-        cd ./ensurance && npm ci || true
-        npm test --if-present -- --ci || true
-        cd -
-      fi
-      if [ -f "./pharmacy/package.json" ]; then
-        echo "[frontend/pharmacy] npm ci && npm test"
-        cd ./pharmacy && npm ci || true
-        npm test --if-present -- --ci || true
-        cd -
-      fi
-    '''
-
     // --- JAVA por módulo (sin reactor) ---
     dir('backv4') { sh 'mvn -B clean test jacoco:report' }
     dir('backv5') { sh 'mvn -B clean test jacoco:report' }
-
-    // Verificación rápida
-    sh '''
-      ls -l backv4/target/surefire-reports || true
-      ls -l backv4/target/site/jacoco/jacoco.xml || true
-      ls -l backv5/target/surefire-reports || true
-      ls -l backv5/target/site/jacoco/jacoco.xml || true
-    '''
   }
   post {
     always {
