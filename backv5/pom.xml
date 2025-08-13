@@ -119,8 +119,47 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M5</version>
                 <configuration>
-                    <argLine>--enable-preview</argLine>
+                    <argLine>${surefireArgLine} --enable-preview</argLine>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <propertyName>surefireArgLine</propertyName>
+                            <excludes>
+                                <exclude>java/*</exclude>
+                                <exclude>javax/*</exclude>
+                                <exclude>sun/*</exclude>
+                                <exclude>com/sun/*</exclude>
+                                <exclude>jdk/*</exclude>
+                                <exclude>**/*$HibernateProxy*</exclude>
+                                <exclude>**/*$HibernateInstantiator*</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <reports>
+                                <xml enabled="true"/>
+                                <csv enabled="false"/>
+                                <html enabled="false"/>
+                            </reports>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

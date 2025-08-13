@@ -14,8 +14,9 @@ import java.util.List;
 
 /**
  * Data Access Object (DAO) para gestionar las entidades TransactionPolicy.
- * Representa las transacciones asociadas al pago de pólizas por parte de los usuarios.
- * Proporciona métodos para crear, buscar y actualizar estas transacciones.
+ * Representa las transacciones asociadas al pago de pólizas por parte de los
+ * usuarios. Proporciona métodos para crear, buscar y actualizar estas
+ * transacciones.
  */
 public class TransactionPolicyDAO {
 
@@ -26,7 +27,8 @@ public class TransactionPolicyDAO {
      * @param idUser El ID del usuario que realiza la transacción.
      * @param payDate La fecha en que se realizó el pago.
      * @param total El monto total de la transacción.
-     * @return El objeto TransactionPolicy creado, o null si ocurre un error (p. ej., la póliza o el usuario no existen).
+     * @return El objeto TransactionPolicy creado, o null si ocurre un error (p.
+     * ej., la póliza o el usuario no existen).
      */
     public TransactionPolicy create(Long idPolicy, Long idUser, Date payDate, BigDecimal total) {
         Transaction tx = null;
@@ -34,10 +36,13 @@ public class TransactionPolicyDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
 
-            // Recuperar las entidades relacionadas
+            // Recuperar entidades relacionadas con short-circuit
             Policy policy = session.get(Policy.class, idPolicy);
+            if (policy == null) {
+                throw new RuntimeException("Policy o User no encontrados.");
+            }
             User user = session.get(User.class, idUser);
-            if (policy == null || user == null) {
+            if (user == null) {
                 throw new RuntimeException("Policy o User no encontrados.");
             }
 
@@ -53,7 +58,14 @@ public class TransactionPolicyDAO {
             if (tx != null) {
                 tx.rollback();
             }
+            if (e instanceof RuntimeException) {
+                String msg = e.getMessage();
+                if (msg != null && (msg.contains("no encontrados") || msg.contains("not found"))) {
+                    throw (RuntimeException) e;
+                }
+            }
             e.printStackTrace();
+            return null;
         }
         return tp;
     }
@@ -62,7 +74,8 @@ public class TransactionPolicyDAO {
      * Busca un registro de TransactionPolicy por su ID único.
      *
      * @param id El ID del registro TransactionPolicy a buscar.
-     * @return El objeto TransactionPolicy encontrado, o null si no se encuentra o si ocurre un error.
+     * @return El objeto TransactionPolicy encontrado, o null si no se encuentra
+     * o si ocurre un error.
      */
     public TransactionPolicy findById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -76,7 +89,8 @@ public class TransactionPolicyDAO {
     /**
      * Recupera todos los registros de TransactionPolicy de la base de datos.
      *
-     * @return Una lista de todos los objetos TransactionPolicy, o null si ocurre un error.
+     * @return Una lista de todos los objetos TransactionPolicy, o null si
+     * ocurre un error.
      */
     public List<TransactionPolicy> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -92,7 +106,8 @@ public class TransactionPolicyDAO {
      * Actualiza un registro existente de TransactionPolicy en la base de datos.
      *
      * @param tp El objeto TransactionPolicy con los datos actualizados.
-     * @return El objeto TransactionPolicy actualizado, o null si ocurre un error.
+     * @return El objeto TransactionPolicy actualizado, o null si ocurre un
+     * error.
      */
     public TransactionPolicy update(TransactionPolicy tp) {
         Transaction tx = null;

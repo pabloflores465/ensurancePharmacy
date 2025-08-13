@@ -13,8 +13,8 @@ import java.util.List;
 
 /**
  * Data Access Object (DAO) para gestionar las entidades de TotalHospital.
- * Representa los totales diarios para cada hospital.
- * Proporciona métodos para crear, buscar y actualizar estos totales.
+ * Representa los totales diarios para cada hospital. Proporciona métodos para
+ * crear, buscar y actualizar estos totales.
  */
 public class TotalHospitalDAO {
 
@@ -24,7 +24,8 @@ public class TotalHospitalDAO {
      * @param idHospital El ID del hospital para el cual se registra el total.
      * @param totalDate La fecha a la que corresponde el total.
      * @param total El monto total registrado para esa fecha.
-     * @return El objeto TotalHospital creado, o null si ocurre un error (p. ej., el hospital no existe).
+     * @return El objeto TotalHospital creado, o null si ocurre un error (p.
+     * ej., el hospital no existe).
      */
     public TotalHospital create(Long idHospital, Date totalDate, BigDecimal total) {
         Transaction tx = null;
@@ -49,7 +50,15 @@ public class TotalHospitalDAO {
             if (tx != null) {
                 tx.rollback();
             }
+            // Propagar únicamente cuando falten entidades relacionadas; en errores de guardado devolver null
+            if (e instanceof RuntimeException) {
+                String msg = e.getMessage();
+                if (msg != null && (msg.contains("no encontrado") || msg.contains("not found"))) {
+                    throw (RuntimeException) e;
+                }
+            }
             e.printStackTrace();
+            return null;
         }
         return th;
     }
@@ -58,7 +67,8 @@ public class TotalHospitalDAO {
      * Busca un registro de TotalHospital por su ID único.
      *
      * @param id El ID del registro TotalHospital a buscar.
-     * @return El objeto TotalHospital encontrado, o null si no se encuentra o si ocurre un error.
+     * @return El objeto TotalHospital encontrado, o null si no se encuentra o
+     * si ocurre un error.
      */
     public TotalHospital findById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -72,7 +82,8 @@ public class TotalHospitalDAO {
     /**
      * Recupera todos los registros de TotalHospital de la base de datos.
      *
-     * @return Una lista de todos los objetos TotalHospital, o null si ocurre un error.
+     * @return Una lista de todos los objetos TotalHospital, o null si ocurre un
+     * error.
      */
     public List<TotalHospital> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

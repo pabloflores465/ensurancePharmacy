@@ -71,11 +71,11 @@ class PharmacyInsuranceHandlerTest {
 
     @BeforeEach
     void setUp() {
-        // Mock static HibernateUtil.setCorsHeaders if needed, or assume it works
-        mockedHibernateUtil = Mockito.mockStatic(HibernateUtil.class);
+        mockedHibernateUtil = Mockito.mockStatic(HibernateUtil.class, Mockito.CALLS_REAL_METHODS);
+        // Let CORS headers run as in production for verifiable side effects
         mockedHibernateUtil.when(() -> HibernateUtil.setCorsHeaders(any(HttpExchange.class)))
-                           .thenAnswer(invocation -> null); 
-        
+                .thenCallRealMethod();
+
         lenient().when(mockHttpExchange.getResponseHeaders()).thenReturn(mockResponseHeaders);
         lenient().when(mockHttpExchange.getResponseBody()).thenReturn(mockResponseBody);
         lenient().when(mockHttpExchange.getRequestHeaders()).thenReturn(mockRequestHeaders);
@@ -86,8 +86,8 @@ class PharmacyInsuranceHandlerTest {
         mockedHibernateUtil.close();
         // verify(mockResponseBody, atLeastOnce()).close(); // Add if needed
     }
-    
-     @Test
+
+    @Test
     void handle_OptionsRequest_SendsNoContent() throws IOException {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(VALIDATE_ENDPOINT));
         when(mockHttpExchange.getRequestMethod()).thenReturn("OPTIONS");
@@ -103,25 +103,24 @@ class PharmacyInsuranceHandlerTest {
         pharmacyInsuranceHandler.handle(mockHttpExchange);
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
     }
-    
-     @Test
+
+    @Test
     void handle_WrongMethodForValidate_SendsMethodNotAllowed() throws IOException {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(VALIDATE_ENDPOINT));
-        when(mockHttpExchange.getRequestMethod()).thenReturn("GET"); 
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
         pharmacyInsuranceHandler.handle(mockHttpExchange);
         verify(mockHttpExchange).sendResponseHeaders(eq(405), eq(-1L));
     }
-    
-     @Test
+
+    @Test
     void handle_WrongMethodForCheckCoverage_SendsMethodNotAllowed() throws IOException {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(CHECK_COVERAGE_ENDPOINT_BASE + "123"));
-        when(mockHttpExchange.getRequestMethod()).thenReturn("POST"); 
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
         pharmacyInsuranceHandler.handle(mockHttpExchange);
         verify(mockHttpExchange).sendResponseHeaders(eq(405), eq(-1L));
     }
 
     // --- POST /validate-prescription Tests ---
-
     @Test
     void handleValidatePrescription_Success() throws IOException {
         String approvalCode = "AP123";
@@ -159,15 +158,16 @@ class PharmacyInsuranceHandlerTest {
         verify(mockHttpExchange).sendResponseHeaders(eq(200), anyLong());
         verify(mockResponseBody).write(responseBodyCaptor.capture());
         String responseJson = new String(responseBodyCaptor.getValue(), StandardCharsets.UTF_8);
-        Map<String, Object> responseMap = objectMapper.readValue(responseJson, new TypeReference<Map<String, Object>>() {});
+        Map<String, Object> responseMap = objectMapper.readValue(responseJson, new TypeReference<Map<String, Object>>() {
+        });
         assertEquals(true, responseMap.get("success"));
         assertEquals(approvalCode, responseMap.get("approvalCode"));
         assertEquals(prescriptionId.intValue(), responseMap.get("prescriptionId")); // Jackson might deserialize Long as Integer
         assertEquals(totalAmount * 0.7, responseMap.get("coveredAmount"));
-        assertEquals(totalAmount * 0.3, (Double)responseMap.get("patientAmount"), 0.001);
+        assertEquals(totalAmount * 0.3, (Double) responseMap.get("patientAmount"), 0.001);
         verify(mockResponseBody).close();
     }
-    
+
     @Test
     void handleValidatePrescription_MissingData_SendsBadRequest() throws IOException {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(VALIDATE_ENDPOINT));
@@ -184,8 +184,8 @@ class PharmacyInsuranceHandlerTest {
         assertTrue(errorJson.contains("Faltan campos requeridos"));
         verifyNoInteractions(mockServiceApprovalDAO);
     }
-    
-     @Test
+
+    @Test
     void handleValidatePrescription_ApprovalNotFound() throws IOException {
         String approvalCode = "AP_NOTFOUND";
         Map<String, Object> requestMap = Map.of("approvalCode", approvalCode, "prescriptionId", 1L, "totalAmount", 100.0);
@@ -205,15 +205,16 @@ class PharmacyInsuranceHandlerTest {
         String errorJson = new String(responseBodyCaptor.getValue(), StandardCharsets.UTF_8);
         assertTrue(errorJson.contains("Código de aprobación no encontrado"));
     }
-    
+
     @Test
     void handleValidatePrescription_ApprovalNotApprovedStatus() throws IOException {
         String approvalCode = "AP_PENDING";
         Map<String, Object> requestMap = Map.of("approvalCode", approvalCode, "prescriptionId", 1L, "totalAmount", 100.0);
         String requestJson = objectMapper.writeValueAsString(requestMap);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
-        ServiceApproval pendingApproval = new ServiceApproval(); pendingApproval.setStatus("PENDING");
-        
+        ServiceApproval pendingApproval = new ServiceApproval();
+        pendingApproval.setStatus("PENDING");
+
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(VALIDATE_ENDPOINT));
         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
@@ -227,17 +228,17 @@ class PharmacyInsuranceHandlerTest {
         String errorJson = new String(responseBodyCaptor.getValue(), StandardCharsets.UTF_8);
         assertTrue(errorJson.contains("El servicio no está en estado aprobado"));
     }
-    
+
     @Test
     void handleValidatePrescription_AlreadyHasPrescription() throws IOException {
         String approvalCode = "AP_USED";
         Map<String, Object> requestMap = Map.of("approvalCode", approvalCode, "prescriptionId", 1L, "totalAmount", 100.0);
         String requestJson = objectMapper.writeValueAsString(requestMap);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
-        ServiceApproval usedApproval = new ServiceApproval(); 
+        ServiceApproval usedApproval = new ServiceApproval();
         usedApproval.setStatus("APPROVED");
         usedApproval.setPrescriptionId(99L); // Already has a prescription ID
-        
+
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(VALIDATE_ENDPOINT));
         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
@@ -251,15 +252,16 @@ class PharmacyInsuranceHandlerTest {
         String errorJson = new String(responseBodyCaptor.getValue(), StandardCharsets.UTF_8);
         assertTrue(errorJson.contains("Este servicio ya tiene una receta asociada"));
     }
-    
-     @Test
+
+    @Test
     void handleValidatePrescription_DaoUpdateFails() throws IOException {
         String approvalCode = "AP_UPDATE_FAIL";
         Map<String, Object> requestMap = Map.of("approvalCode", approvalCode, "prescriptionId", 1L, "totalAmount", 100.0);
         String requestJson = objectMapper.writeValueAsString(requestMap);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
-        ServiceApproval approval = new ServiceApproval(); approval.setStatus("APPROVED");
-        
+        ServiceApproval approval = new ServiceApproval();
+        approval.setStatus("APPROVED");
+
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(VALIDATE_ENDPOINT));
         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
@@ -274,7 +276,6 @@ class PharmacyInsuranceHandlerTest {
     }
 
     // --- GET /check-coverage/{id} Tests ---
-    
     @Test
     void handleCheckCoverage_Success() throws IOException {
         Long prescriptionId = 77L;
@@ -290,13 +291,13 @@ class PharmacyInsuranceHandlerTest {
         approval.setStatus("COMPLETED");
         when(mockServiceApprovalDAO.findByPrescriptionId(prescriptionId)).thenReturn(approval);
         String expectedJson = objectMapper.writeValueAsString(Map.of(
-            "success", true,
-            "approvalCode", "AP777",
-            "prescriptionId", prescriptionId,
-            "coveredAmount", 70.0,
-            "patientAmount", 30.0,
-            "totalAmount", 100.0,
-            "status", "COMPLETED"
+                "success", true,
+                "approvalCode", "AP777",
+                "prescriptionId", prescriptionId,
+                "coveredAmount", 70.0,
+                "patientAmount", 30.0,
+                "totalAmount", 100.0,
+                "status", "COMPLETED"
         ));
         byte[] expectedBytes = expectedJson.getBytes(StandardCharsets.UTF_8);
 
@@ -305,8 +306,8 @@ class PharmacyInsuranceHandlerTest {
         verify(mockServiceApprovalDAO).findByPrescriptionId(prescriptionId);
         verifyResponseSent(200, expectedBytes);
     }
-    
-     @Test
+
+    @Test
     void handleCheckCoverage_NotFound() throws IOException {
         Long prescriptionId = 88L;
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(CHECK_COVERAGE_ENDPOINT_BASE + prescriptionId));
@@ -317,12 +318,12 @@ class PharmacyInsuranceHandlerTest {
 
         verify(mockServiceApprovalDAO).findByPrescriptionId(prescriptionId);
         verify(mockHttpExchange).sendResponseHeaders(eq(404), anyLong());
-         verify(mockResponseBody).write(responseBodyCaptor.capture());
+        verify(mockResponseBody).write(responseBodyCaptor.capture());
         String errorJson = new String(responseBodyCaptor.getValue(), StandardCharsets.UTF_8);
         assertTrue(errorJson.contains("No se encontró aprobación para esta receta"));
     }
-    
-     @Test
+
+    @Test
     void handleCheckCoverage_InvalidIdFormat() throws IOException {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(CHECK_COVERAGE_ENDPOINT_BASE + "abc"));
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
@@ -330,7 +331,7 @@ class PharmacyInsuranceHandlerTest {
         // The exception happens during path parsing before the handler method is called
         // The main handle method catches it and sends 500
         pharmacyInsuranceHandler.handle(mockHttpExchange);
-        
+
         verify(mockServiceApprovalDAO, never()).findByPrescriptionId(anyLong());
         verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
     }
@@ -344,6 +345,6 @@ class PharmacyInsuranceHandlerTest {
 
         assertEquals(expectedStatusCode, statusCodeCaptor.getValue());
         assertArrayEquals(expectedBodyBytes, responseBodyCaptor.getValue());
-        assertEquals((long)expectedBodyBytes.length, responseLengthCaptor.getValue());
+        assertEquals((long) expectedBodyBytes.length, responseLengthCaptor.getValue());
     }
-} 
+}

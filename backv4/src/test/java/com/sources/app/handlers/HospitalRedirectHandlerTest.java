@@ -64,7 +64,7 @@ class HospitalRedirectHandlerTest {
         lenient().when(mockHttpExchange.getResponseHeaders()).thenReturn(mockResponseHeaders);
         lenient().when(mockHttpExchange.getResponseBody()).thenReturn(mockResponseBody);
         lenient().when(mockHttpExchange.getRequestHeaders()).thenReturn(mockRequestHeaders);
-        
+
         // Mock static HttpClientUtil methods
         mockedHttpClientUtil = Mockito.mockStatic(HttpClientUtil.class);
     }
@@ -92,19 +92,18 @@ class HospitalRedirectHandlerTest {
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
         mockedHttpClientUtil.verifyNoInteractions();
     }
-    
+
     @Test
     void handle_UnsupportedMethod_SendsMethodNotAllowed() throws IOException {
         // This handler forwards based on method, so 405 happens in the switch
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "/somepath"));
-        when(mockHttpExchange.getRequestMethod()).thenReturn("PATCH"); 
+        when(mockHttpExchange.getRequestMethod()).thenReturn("PATCH");
         hospitalRedirectHandler.handle(mockHttpExchange);
         verify(mockHttpExchange).sendResponseHeaders(eq(405), eq(-1L));
         mockedHttpClientUtil.verifyNoInteractions(); // No HTTP client call for unsupported method
     }
 
     // --- Forwarding Tests ---
-    
     @Test
     void handleGet_ForwardsRequestCorrectly() throws IOException {
         String subPath = "/hospitals";
@@ -122,8 +121,8 @@ class HospitalRedirectHandlerTest {
         mockedHttpClientUtil.verify(() -> HttpClientUtil.get(eq(expectedForwardUrl)));
         verifyResponseSent(200, expectedBytes);
     }
-    
-     @Test
+
+    @Test
     void handleGet_RootPath_ForwardsToApiRoot() throws IOException {
         String expectedForwardUrl = HOSPITAL_API_BASE_URL + "/"; // Root of the target API
         String mockHospitalResponse = "{\"message\": \"Hospital API Root\"}";
@@ -176,7 +175,7 @@ class HospitalRedirectHandlerTest {
         hospitalRedirectHandler.handle(mockHttpExchange);
 
         mockedHttpClientUtil.verify(() -> HttpClientUtil.put(eq(expectedForwardUrl), eq(requestBody)));
-        verifyResponseSent(200, expectedBytes); 
+        verifyResponseSent(200, expectedBytes);
     }
 
     @Test
@@ -195,7 +194,23 @@ class HospitalRedirectHandlerTest {
         mockedHttpClientUtil.verify(() -> HttpClientUtil.delete(eq(expectedForwardUrl)));
         verifyResponseSent(200, expectedBytes);
     }
-    
+
+    @Test
+    void handleGet_BackendReturnsNullBody_InternalError() throws IOException {
+        String subPath = "/empty";
+        String expectedForwardUrl = HOSPITAL_API_BASE_URL + subPath;
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + subPath));
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
+        mockedHttpClientUtil.when(() -> HttpClientUtil.get(eq(expectedForwardUrl))).thenReturn(null);
+
+        hospitalRedirectHandler.handle(mockHttpExchange);
+
+        verify(mockHttpExchange).sendResponseHeaders(eq(500), anyLong());
+        verify(mockResponseBody).write(responseBodyCaptor.capture());
+        String errorJson = new String(responseBodyCaptor.getValue(), StandardCharsets.UTF_8);
+        assertTrue(errorJson.contains("Error al conectar con el servicio del hospital"));
+    }
+
     @Test
     void handle_HttpClientReturnsNull_SendsInternalError() throws IOException {
         String subPath = "/status";
@@ -213,8 +228,8 @@ class HospitalRedirectHandlerTest {
         assertTrue(errorJson.contains("Error al conectar con el servicio del hospital"));
         verify(mockResponseBody).close();
     }
-    
-     @Test
+
+    @Test
     void handle_HttpClientThrowsException_SendsInternalError() throws IOException {
         String subPath = "/data";
         String expectedForwardUrl = HOSPITAL_API_BASE_URL + subPath;
@@ -222,7 +237,7 @@ class HospitalRedirectHandlerTest {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + subPath));
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
         mockedHttpClientUtil.when(() -> HttpClientUtil.get(eq(expectedForwardUrl)))
-                           .thenThrow(new RuntimeException(exceptionMessage)); // Simulate client throwing exception
+                .thenThrow(new RuntimeException(exceptionMessage)); // Simulate client throwing exception
 
         hospitalRedirectHandler.handle(mockHttpExchange);
 
@@ -234,6 +249,26 @@ class HospitalRedirectHandlerTest {
         verify(mockResponseBody).close();
     }
 
+    @Test
+    void handlePost_WithQueryString_ForwardsAndReturns200() throws IOException {
+        String subPath = "/patients";
+        String query = "q=1";
+        String expectedUrl = HOSPITAL_API_BASE_URL + subPath + "?" + query;
+        String requestBody = "{\"n\":1}";
+        String backendResponse = "{\"ok\":true}";
+        byte[] expectedBytes = backendResponse.getBytes(StandardCharsets.UTF_8);
+
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + subPath + "?" + query));
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        when(mockHttpExchange.getRequestBody()).thenReturn(new ByteArrayInputStream(requestBody.getBytes(StandardCharsets.UTF_8)));
+        mockedHttpClientUtil.when(() -> HttpClientUtil.post(eq(expectedUrl), eq(requestBody))).thenReturn(backendResponse);
+
+        hospitalRedirectHandler.handle(mockHttpExchange);
+
+        mockedHttpClientUtil.verify(() -> HttpClientUtil.post(eq(expectedUrl), eq(requestBody)));
+        verifyResponseSent(200, expectedBytes);
+    }
+
     // Helper to verify response sending
     private void verifyResponseSent(int expectedStatusCode, byte[] expectedBodyBytes) throws IOException {
         verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
@@ -243,6 +278,6 @@ class HospitalRedirectHandlerTest {
 
         assertEquals(expectedStatusCode, statusCodeCaptor.getValue());
         assertArrayEquals(expectedBodyBytes, responseBodyCaptor.getValue());
-        assertEquals((long)expectedBodyBytes.length, responseLengthCaptor.getValue());
+        assertEquals((long) expectedBodyBytes.length, responseLengthCaptor.getValue());
     }
-} 
+}

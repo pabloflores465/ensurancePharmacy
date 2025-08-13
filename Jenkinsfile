@@ -1,77 +1,62 @@
 pipeline {
   agent any
+  tools {
+    nodejs 'NodeJS_24_5_0'       // Global Tool: NodeJS
+    maven  'Maven_3_9_11'        // Global Tool: Maven
+    jdk    'JDK_23'              // Global Tool: JDK
+  }
 
   environment {
-    // Nombre del servidor SonarQube que configuraste en Jenkins → System
-    SONARQUBE_SERVER = 'sonarqube'
-    // Direcciones para notificaciones (ajústalas)
+    SONARQUBE_SERVER = 'sonarqube'                     // Nombre del server en Jenkins > System
     EMAIL_TO = 'pablopolis2016@gmail.com'
   }
 
   options { timestamps() }
 
   stages {
+
     stage('Checkout') {
-      steps { checkout scm }
+      steps {
+        deleteDir()                          // limpia workspace para evitar artefactos viejos
+        checkout scm
+        sh 'git rev-parse HEAD'              // log del commit exacto
+      }
     }
 
-    stage('Unit Tests & Coverage (auto-detect)') {
-      steps {
-        sh '''
+    stage('Unit Tests & Coverage') {
+  steps {
+    sh 'set -e'
+    // --- JAVA por módulo (sin reactor) ---
+    dir('backv4') { sh 'mvn -B clean test jacoco:report' }
+    dir('backv5') { sh 'mvn -B clean test jacoco:report' }
+  }
+  post {
+    always {
+      junit testResults: '**/target/surefire-reports/*.xml', allowEmptyResults: true
+      archiveArtifacts artifacts: '**/target/site/jacoco/jacoco.xml', allowEmptyArchive: true
+    }
+  }
+}
+stage('SonarQube Analysis') {
+  steps {
+    script {
+      // Debe coincidir con el nombre del SonarScanner configurado en Jenkins > Global Tool Configuration
+      def scannerHome = tool 'Scanner'
+      withSonarQubeEnv("${SONARQUBE_SERVER}") {
+        sh """
           set -e
-          # Frontend (Node) - si existe package.json en ./ensurance o ./front ajusta al path que uses
-          if [ -f "./ensurance/package.json" ]; then
-            echo "[frontend] npm ci && npm test"
-            cd ./ensurance
-            npm ci || true
-            npm test -- --ci || true
-            cd -
-          fi
+          echo "Sonar host: $SONAR_HOST_URL"
+          echo "Version: ${BUILD_NUMBER}"
 
-          # Backend (Node/Java/Python) – intenta detectar:
-          if [ -f "./pharmacy/package.json" ]; then
-            echo "[backend] npm ci && npm test"
-            cd ./pharmacy
-            npm ci || true
-            npm test -- --ci || true
-            cd -
-          elif [ -f "pom.xml" ]; then
-            echo "[backend] mvn -B -DskipTests=false test"
-            mvn -B -DskipTests=false test || true
-          elif [ -f "build.gradle" ] || [ -f "gradlew" ]; then
-            echo "[backend] gradle test"
-            ./gradlew test || true
-          elif [ -f "requirements.txt" ] && command -v pytest >/dev/null 2>&1; then
-            echo "[backend] pytest"
-            pytest || true
-          else
-            echo "No se detectaron tests automáticamente. (OK para primera corrida)"
-          fi
-        '''
-      }
-      post {
-        unsuccessful {
-          emailext to: "${env.EMAIL_TO}",
-                   subject: "❌ Tests fallaron: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                   body: "Revisa la consola: ${env.BUILD_URL}"
-        }
+          "${scannerHome}/bin/sonar-scanner" \
+            -Dsonar.projectVersion=${BUILD_NUMBER} \
+            -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes \
+            -Dsonar.coverage.jacoco.xmlReportPaths="**/target/site/jacoco/jacoco.xml"
+        """
       }
     }
-
-    stage('SonarQube Analysis') {
-      steps {
-        withSonarQubeEnv("${SONARQUBE_SERVER}") {
-          // Usa sonar-project.properties en la raíz
-          sh '''
-            if ! command -v sonar-scanner >/dev/null 2>&1; then
-              echo "Instala SonarScanner en Global Tool Config y expórtalo en el PATH"
-              exit 1
-            fi
-            sonar-scanner -Dsonar.projectVersion=${BUILD_NUMBER}
-          '''
-        }
-      }
-    }
+  }
+}
 
     stage('Quality Gate') {
       steps {
@@ -83,7 +68,7 @@ pipeline {
         unsuccessful {
           emailext to: "${env.EMAIL_TO}",
                    subject: "⛔ Quality Gate no aprobado: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                   body: "Se bloquea el merge por incumplir el gate (no nueva deuda técnica). ${env.BUILD_URL}"
+                   body: "Se bloquea el pipeline por Quality Gate. Ver: ${env.BUILD_URL}"
         }
       }
     }
@@ -93,7 +78,7 @@ pipeline {
       steps {
         sh '''
           echo "Deploy DEV → backend1/frontend1"
-          docker compose -f docker-compose.ensurance.yaml up -d --build ensurance-db ensurance-backend1 ensurance-frontend1
+          docker compose -f docker-compose.ensurance.yaml up -d --build
         '''
       }
     }
@@ -103,7 +88,7 @@ pipeline {
       steps {
         sh '''
           echo "Deploy UAT → backend2/frontend2"
-          docker compose -f docker-compose.ensurance.yaml up -d --build ensurance-db ensurance-backend2 ensurance-frontend2
+          docker compose -f docker-compose.ensurance.yaml up -d --build
         '''
       }
     }
@@ -113,7 +98,7 @@ pipeline {
       steps {
         sh '''
           echo "Deploy PROD → backend3/frontend3"
-          docker compose -f docker-compose.ensurance.yaml up -d --build ensurance-db ensurance-backend3 ensurance-frontend3
+          docker compose -f docker-compose.ensurance.yaml up -d --build
         '''
       }
     }
@@ -128,5 +113,7 @@ pipeline {
                subject: "⚠️ Pipeline fallido: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                body: "Detalle: ${env.BUILD_URL}"
     }
+    // Si tienes instalado el plugin "Workspace Cleanup":
+    // always { cleanWs() }
   }
 }

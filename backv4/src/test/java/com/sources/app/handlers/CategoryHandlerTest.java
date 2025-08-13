@@ -79,8 +79,8 @@ class CategoryHandlerTest {
     void tearDown() throws IOException {
         // verify(mockResponseBody, atLeastOnce()).close(); // Add where applicable
     }
-    
-     @Test
+
+    @Test
     void handle_OptionsRequest_SendsNoContent() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("OPTIONS");
         categoryHandler.handle(mockHttpExchange);
@@ -96,7 +96,25 @@ class CategoryHandlerTest {
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
         verifyNoInteractions(mockCategoryDAO);
     }
-    
+
+    @Test
+    void handleGet_UnknownQuery_ListsAll() throws IOException {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?foo=bar"));
+        java.util.List<com.sources.app.entities.Category> list = java.util.Arrays.asList(new com.sources.app.entities.Category());
+        when(mockCategoryDAO.findAll()).thenReturn(list);
+        String expected = objectMapper.writeValueAsString(list);
+        byte[] expectedBytes = expected.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+
+        categoryHandler.handle(mockHttpExchange);
+
+        verify(mockCategoryDAO).findAll();
+        verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
+        verify(mockHttpExchange).sendResponseHeaders(eq(200), anyLong());
+        verify(mockResponseBody).write(any(byte[].class));
+        verify(mockResponseBody).close();
+    }
+
     @Test
     void handle_UnsupportedMethod_SendsMethodNotAllowed() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("DELETE"); // Unsupported
@@ -106,7 +124,6 @@ class CategoryHandlerTest {
     }
 
     // --- GET Tests ---
-
     @Test
     void handleGet_FindAll_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
@@ -120,7 +137,7 @@ class CategoryHandlerTest {
 
         verify(mockCategoryDAO).findAll();
         verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
-        verify(mockHttpExchange).sendResponseHeaders(eq(200), eq((long)expectedBytes.length));
+        verify(mockHttpExchange).sendResponseHeaders(eq(200), eq((long) expectedBytes.length));
         verify(mockResponseBody).write(expectedBytes);
         verify(mockResponseBody).close();
     }
@@ -130,7 +147,8 @@ class CategoryHandlerTest {
         Long testId = 5L;
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?id=" + testId));
-        Category category = new Category(); category.setIdCategory(testId);
+        Category category = new Category();
+        category.setIdCategory(testId);
         when(mockCategoryDAO.findById(testId)).thenReturn(category);
         String expectedJson = objectMapper.writeValueAsString(category);
         byte[] expectedBytes = expectedJson.getBytes(StandardCharsets.UTF_8);
@@ -139,11 +157,11 @@ class CategoryHandlerTest {
 
         verify(mockCategoryDAO).findById(testId);
         verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
-        verify(mockHttpExchange).sendResponseHeaders(eq(200), eq((long)expectedBytes.length));
+        verify(mockHttpExchange).sendResponseHeaders(eq(200), eq((long) expectedBytes.length));
         verify(mockResponseBody).write(expectedBytes);
         verify(mockResponseBody).close();
     }
-    
+
     @Test
     void handleGet_FindById_NotFound() throws IOException {
         Long testId = 99L;
@@ -156,8 +174,8 @@ class CategoryHandlerTest {
         verify(mockCategoryDAO).findById(testId);
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
     }
-    
-     @Test
+
+    @Test
     void handleGet_FindById_InvalidIdFormat() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?id=abc"));
@@ -169,7 +187,6 @@ class CategoryHandlerTest {
     }
 
     // --- POST Tests ---
-
     @Test
     void handlePost_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
@@ -192,15 +209,17 @@ class CategoryHandlerTest {
 
         verify(mockCategoryDAO).create(eq("New Category"), eq(1));
         verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
-        verify(mockHttpExchange).sendResponseHeaders(eq(201), eq((long)expectedBytes.length));
+        verify(mockHttpExchange).sendResponseHeaders(eq(201), eq((long) expectedBytes.length));
         verify(mockResponseBody).write(expectedBytes);
         verify(mockResponseBody).close();
     }
-    
-     @Test
+
+    @Test
     void handlePost_DaoCreateFails() throws IOException {
-         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
-        Category requestCategory = new Category(); requestCategory.setName("Fail Cat"); requestCategory.setEnabled(1);
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        Category requestCategory = new Category();
+        requestCategory.setName("Fail Cat");
+        requestCategory.setEnabled(1);
         String requestJson = objectMapper.writeValueAsString(requestCategory);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
@@ -212,10 +231,10 @@ class CategoryHandlerTest {
         verify(mockCategoryDAO).create(anyString(), anyInt());
         verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
     }
-    
+
     @Test
     void handlePost_JsonParseException() throws IOException {
-         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
         String invalidJson = "{\"name\": \"Test Cat\", \"enabled\": "; // Malformed
         InputStream requestBodyStream = new ByteArrayInputStream(invalidJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
@@ -227,11 +246,10 @@ class CategoryHandlerTest {
     }
 
     // --- PUT Tests ---
-
     @Test
     void handlePut_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
-        Category categoryToUpdate = new Category(); 
+        Category categoryToUpdate = new Category();
         categoryToUpdate.setIdCategory(1L); // Must have ID for update
         categoryToUpdate.setName("Updated Category");
         categoryToUpdate.setEnabled(0);
@@ -250,14 +268,14 @@ class CategoryHandlerTest {
         assertEquals(categoryToUpdate.getIdCategory(), capturedCategory.getIdCategory());
         assertEquals(categoryToUpdate.getName(), capturedCategory.getName());
         assertEquals(categoryToUpdate.getEnabled(), capturedCategory.getEnabled());
-        
+
         verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
-        verify(mockHttpExchange).sendResponseHeaders(eq(200), eq((long)expectedBytes.length));
+        verify(mockHttpExchange).sendResponseHeaders(eq(200), eq((long) expectedBytes.length));
         verify(mockResponseBody).write(expectedBytes);
         verify(mockResponseBody).close();
     }
-    
-     @Test
+
+    @Test
     void handlePut_DaoUpdateFails() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
         Category categoryToUpdate = new Category();
@@ -272,4 +290,4 @@ class CategoryHandlerTest {
         verify(mockCategoryDAO).update(any(Category.class));
         verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
     }
-} 
+}

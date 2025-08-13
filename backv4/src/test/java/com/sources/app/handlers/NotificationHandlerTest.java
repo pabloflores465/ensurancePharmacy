@@ -49,7 +49,6 @@ class NotificationHandlerTest {
 
     // We don't mock DAOs here as this handler doesn't use them directly
     // It uses jakarta.mail which we'll mock statically
-
     @InjectMocks
     private NotificationHandler notificationHandler;
 
@@ -72,7 +71,7 @@ class NotificationHandlerTest {
         lenient().when(mockHttpExchange.getResponseHeaders()).thenReturn(mockResponseHeaders);
         lenient().when(mockHttpExchange.getResponseBody()).thenReturn(mockResponseBody);
         lenient().when(mockHttpExchange.getRequestHeaders()).thenReturn(mockRequestHeaders);
-        
+
         // Mock the static Transport.send method
         mockedTransport = Mockito.mockStatic(Transport.class);
         // Default behavior: do nothing when send is called
@@ -84,7 +83,7 @@ class NotificationHandlerTest {
         mockedTransport.close();
         // verify(mockResponseBody, atLeastOnce()).close(); // Add if needed
     }
-    
+
     @Test
     void handle_OptionsRequest_SendsNoContent() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("OPTIONS");
@@ -101,8 +100,30 @@ class NotificationHandlerTest {
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
         mockedTransport.verifyNoInteractions();
     }
-    
-     @Test
+
+    @Test
+    void handle_PostMissingFields_SendsBadRequest() throws IOException {
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create("/api/notifications/email"));
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        String invalidJson = "{\"to\":\"recipient@example.com\"}"; // missing subject/body
+        when(mockHttpExchange.getRequestBody()).thenReturn(new java.io.ByteArrayInputStream(invalidJson.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+
+        notificationHandler.handle(mockHttpExchange);
+
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
+    }
+
+    @Test
+    void handle_GetMethodNotAllowed_Sends405() throws IOException {
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create("/api/notifications/email"));
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
+
+        notificationHandler.handle(mockHttpExchange);
+
+        verify(mockHttpExchange).sendResponseHeaders(eq(405), eq(-1L));
+    }
+
+    @Test
     void handle_GetRequest_SendsMethodNotAllowed() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET"); // Unsupported
         notificationHandler.handle(mockHttpExchange);
@@ -110,7 +131,6 @@ class NotificationHandlerTest {
     }
 
     // --- POST Tests ---
-
     @Test
     void handlePost_SendEmail_Success() throws IOException, MessagingException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
@@ -133,7 +153,7 @@ class NotificationHandlerTest {
         assertEquals(to, capturedMessage.getRecipients(Message.RecipientType.TO)[0].toString());
         assertEquals(subject, capturedMessage.getSubject());
         // Note: Verifying body might require more complex handling depending on content type
-        assertTrue(((String)capturedMessage.getContent()).contains(body)); 
+        assertTrue(((String) capturedMessage.getContent()).contains(body));
 
         // Verify success response
         verify(mockHttpExchange).sendResponseHeaders(eq(200), anyLong());
@@ -143,7 +163,7 @@ class NotificationHandlerTest {
         assertTrue(responseJson.contains("Email enviado con éxito"));
         verify(mockResponseBody).close();
     }
-    
+
     @Test
     void handlePost_SendEmail_TransportThrowsException() throws IOException, MessagingException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
@@ -162,12 +182,69 @@ class NotificationHandlerTest {
         verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
         verify(mockResponseBody, never()).write(any(byte[].class)); // No response body on 500
     }
-    
+
+    @Test
+    void handlePost_MissingCredentials_ReturnsInternalError() throws Exception {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        String to = "r@e.com";
+        String subject = "S";
+        String body = "B";
+        String requestJson = objectMapper.writeValueAsString(Map.of("to", to, "subject", subject, "body", body));
+        InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
+        when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
+
+        // Forzar credenciales faltantes via reflexión
+        java.lang.reflect.Field senderEmailField = NotificationHandler.class.getDeclaredField("senderEmail");
+        senderEmailField.setAccessible(true);
+        senderEmailField.set(notificationHandler, null);
+        java.lang.reflect.Field senderPasswordField = NotificationHandler.class.getDeclaredField("senderPassword");
+        senderPasswordField.setAccessible(true);
+        senderPasswordField.set(notificationHandler, null);
+
+        notificationHandler.handle(mockHttpExchange);
+
+        // Al faltar credenciales, sendEmail devuelve false y el handler responde 500
+        verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
+        mockedTransport.verifyNoInteractions();
+    }
+
+    @Test
+    void handlePost_SmtpMissingHostOrPort_ReturnsInternalError() throws Exception {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        String to = "r@e.com";
+        String subject = "S";
+        String body = "B";
+        String requestJson = objectMapper.writeValueAsString(Map.of("to", to, "subject", subject, "body", body));
+        InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
+        when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
+
+        // Forzar ausencia de host/port SMTP mediante reflexión sobre mailProperties
+        java.lang.reflect.Field propsField = NotificationHandler.class.getDeclaredField("mailProperties");
+        propsField.setAccessible(true);
+        java.util.Properties props = new java.util.Properties();
+        // No setear mail.smtp.host ni mail.smtp.port
+        props.setProperty("mail.smtp.auth", "true");
+        props.setProperty("mail.smtp.starttls.enable", "true");
+        java.lang.reflect.Field senderEmailField = NotificationHandler.class.getDeclaredField("senderEmail");
+        senderEmailField.setAccessible(true);
+        java.lang.reflect.Field senderPasswordField = NotificationHandler.class.getDeclaredField("senderPassword");
+        senderPasswordField.setAccessible(true);
+
+        propsField.set(notificationHandler, props);
+        senderEmailField.set(notificationHandler, "sender@example.com");
+        senderPasswordField.set(notificationHandler, "secret");
+
+        notificationHandler.handle(mockHttpExchange);
+
+        // Faltando host/port, sendEmail devuelve false -> handler responde 500
+        verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
+    }
+
     @Test
     void handlePost_MissingData_SendsBadRequest() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
         // Missing 'subject'
-        Map<String, String> requestMap = Map.of("to", "r@e.com", "body", "B"); 
+        Map<String, String> requestMap = Map.of("to", "r@e.com", "body", "B");
         String requestJson = objectMapper.writeValueAsString(requestMap);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
@@ -177,7 +254,7 @@ class NotificationHandlerTest {
         verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
         mockedTransport.verifyNoInteractions(); // Should not attempt to send email
     }
-    
+
     @Test
     void handlePost_InvalidJson_SendsInternalError() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
@@ -190,4 +267,4 @@ class NotificationHandlerTest {
         verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L)); // Caught by generic Exception handler
         mockedTransport.verifyNoInteractions();
     }
-} 
+}

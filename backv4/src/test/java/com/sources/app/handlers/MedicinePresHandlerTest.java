@@ -98,8 +98,8 @@ class MedicinePresHandlerTest {
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
         verifyNoInteractions(mockMedicinePresDAO);
     }
-    
-     @Test
+
+    @Test
     void handle_UnsupportedMethod_SendsMethodNotAllowed() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("DELETE"); // Unsupported
         medicinePresHandler.handle(mockHttpExchange);
@@ -107,7 +107,6 @@ class MedicinePresHandlerTest {
     }
 
     // --- GET Tests ---
-
     @Test
     void handleGet_FindAll_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
@@ -138,13 +137,13 @@ class MedicinePresHandlerTest {
         verify(mockMedicinePresDAO).findById(presId, medId);
         verifyResponseSent(200, expectedBytes);
     }
-    
+
     @Test
     void handleGet_FindById_MissingParam() throws IOException {
         Long presId = 10L;
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
         // Missing idMedicine param
-        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?idPrescription=" + presId)); 
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?idPrescription=" + presId));
         // Since findById isn't called, it falls through to findAll
         List<MedicinePres> relations = Collections.singletonList(new MedicinePres());
         when(mockMedicinePresDAO.findAll()).thenReturn(relations);
@@ -155,10 +154,10 @@ class MedicinePresHandlerTest {
 
         verify(mockMedicinePresDAO, never()).findById(anyLong(), anyLong());
         verify(mockMedicinePresDAO).findAll();
-        verifyResponseSent(200, expectedBytes); 
+        verifyResponseSent(200, expectedBytes);
     }
 
-     @Test
+    @Test
     void handleGet_FindById_NotFound() throws IOException {
         Long presId = 99L;
         Long medId = 98L;
@@ -171,28 +170,43 @@ class MedicinePresHandlerTest {
         verify(mockMedicinePresDAO).findById(presId, medId);
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
     }
-    
-     @Test
+
+    @Test
     void handleGet_FindById_InvalidIdFormat() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?idPrescription=abc&idMedicine=123"));
-        
+
         medicinePresHandler.handle(mockHttpExchange);
 
         verify(mockMedicinePresDAO, never()).findById(anyLong(), anyLong());
         verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
     }
 
-    // --- POST Tests ---
+    @Test
+    void handleGet_UnknownParam_ListsAll() throws IOException {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?foo=bar"));
+        List<MedicinePres> list = Arrays.asList(new MedicinePres());
+        when(mockMedicinePresDAO.findAll()).thenReturn(list);
+        String expected = objectMapper.writeValueAsString(list);
+        byte[] expectedBytes = expected.getBytes(java.nio.charset.StandardCharsets.UTF_8);
 
+        medicinePresHandler.handle(mockHttpExchange);
+
+        verify(mockMedicinePresDAO).findAll();
+        verifyResponseSent(200, expectedBytes);
+    }
+
+    // --- POST Tests ---
     @Test
     void handlePost_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
-        Long presId = 1L; Long medId = 2L;
+        Long presId = 1L;
+        Long medId = 2L;
         // Request body needs nested objects with IDs
         String requestJson = String.format(
-            "{\"prescription\":{\"idPrescription\":%d}, \"medicine\":{\"idMedicine\":%d}}", 
-            presId, medId
+                "{\"prescription\":{\"idPrescription\":%d}, \"medicine\":{\"idMedicine\":%d}}",
+                presId, medId
         );
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
@@ -207,23 +221,23 @@ class MedicinePresHandlerTest {
         verify(mockMedicinePresDAO).create(eq(presId), eq(medId));
         verifyResponseSent(201, expectedBytes);
     }
-    
-     @Test
+
+    @Test
     void handlePost_MissingPrescriptionId() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
-         String requestJson = "{\"medicine\":{\"idMedicine\":2}}"; // Missing prescription
+        String requestJson = "{\"medicine\":{\"idMedicine\":2}}"; // Missing prescription
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
-        
+
         medicinePresHandler.handle(mockHttpExchange);
 
         verify(mockMedicinePresDAO, never()).create(anyLong(), anyLong());
-        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L)); 
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
     }
-    
-     @Test
+
+    @Test
     void handlePost_DaoCreateFails() throws IOException {
-         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
         String requestJson = "{\"prescription\":{\"idPrescription\":1}, \"medicine\":{\"idMedicine\":2}}";
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
@@ -234,10 +248,10 @@ class MedicinePresHandlerTest {
         verify(mockMedicinePresDAO).create(eq(1L), eq(2L));
         verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
     }
-    
+
     @Test
     void handlePost_InvalidJson() throws IOException {
-         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
         String invalidJson = "{\"prescription\":{\"idPrescription\":1}, invalid}";
         InputStream requestBodyStream = new ByteArrayInputStream(invalidJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
@@ -249,18 +263,19 @@ class MedicinePresHandlerTest {
     }
 
     // --- PUT Tests ---
-
     @Test
     void handlePut_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
         // PUT usually updates based on existing composite key implicitly present in the object
-        MedicinePres relationToUpdate = new MedicinePres(); 
-        Prescription p = new Prescription(); p.setIdPrescription(1L);
-        Medicine m = new Medicine(); m.setIdMedicine(2L);
-        relationToUpdate.setPrescription(p); 
+        MedicinePres relationToUpdate = new MedicinePres();
+        Prescription p = new Prescription();
+        p.setIdPrescription(1L);
+        Medicine m = new Medicine();
+        m.setIdMedicine(2L);
+        relationToUpdate.setPrescription(p);
         relationToUpdate.setMedicine(m);
         // Add any other fields that might be updatable if the entity had more
-        
+
         String requestJson = objectMapper.writeValueAsString(relationToUpdate);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
@@ -275,13 +290,13 @@ class MedicinePresHandlerTest {
         // Verify the captured object has the expected state (IDs from the JSON)
         assertEquals(p.getIdPrescription(), medicinePresCaptor.getValue().getPrescription().getIdPrescription());
         assertEquals(m.getIdMedicine(), medicinePresCaptor.getValue().getMedicine().getIdMedicine());
-        
+
         verifyResponseSent(200, expectedBytes);
     }
-    
-     @Test
+
+    @Test
     void handlePut_DaoUpdateFails() throws IOException {
-         when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
+        when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
         MedicinePres relationToUpdate = new MedicinePres();
         String requestJson = objectMapper.writeValueAsString(relationToUpdate);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
@@ -294,7 +309,7 @@ class MedicinePresHandlerTest {
         verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
     }
 
-     // Helper method to verify JSON response sending
+    // Helper method to verify JSON response sending
     private void verifyResponseSent(int expectedStatusCode, byte[] expectedBodyBytes) throws IOException {
         verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
         verify(mockHttpExchange).sendResponseHeaders(statusCodeCaptor.capture(), responseLengthCaptor.capture());
@@ -303,6 +318,6 @@ class MedicinePresHandlerTest {
 
         assertEquals(expectedStatusCode, statusCodeCaptor.getValue());
         assertArrayEquals(expectedBodyBytes, responseBodyCaptor.getValue());
-        assertEquals((long)expectedBodyBytes.length, responseLengthCaptor.getValue());
+        assertEquals((long) expectedBodyBytes.length, responseLengthCaptor.getValue());
     }
-} 
+}

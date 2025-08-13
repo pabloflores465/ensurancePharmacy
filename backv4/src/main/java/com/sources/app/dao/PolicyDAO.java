@@ -10,7 +10,8 @@ import java.util.List;
 
 /**
  * Data Access Object (DAO) para gestionar las entidades Policy (Póliza).
- * Proporciona métodos para operaciones CRUD (Crear, Leer, Actualizar, Eliminar) sobre las pólizas.
+ * Proporciona métodos para operaciones CRUD (Crear, Leer, Actualizar, Eliminar)
+ * sobre las pólizas.
  */
 public class PolicyDAO {
 
@@ -21,7 +22,8 @@ public class PolicyDAO {
      * @param creation_date Fecha de creación de la póliza.
      * @param exp_date Fecha de expiración de la póliza.
      * @param cost Costo de la póliza.
-     * @param enabled Estado de habilitación de la póliza (1 habilitado, 0 deshabilitado).
+     * @param enabled Estado de habilitación de la póliza (1 habilitado, 0
+     * deshabilitado).
      * @return El objeto Policy creado, o null si ocurre un error.
      */
     public Policy create(Float percentage, Date creation_date, Date exp_date, Float cost, Integer enabled) {
@@ -43,7 +45,6 @@ public class PolicyDAO {
             tx.commit();
         } catch (Exception e) {
             e.printStackTrace();
-            // Verificamos si la transacción está activa antes de hacer rollback
             if (tx != null && tx.isActive()) {
                 try {
                     tx.rollback();
@@ -51,16 +52,17 @@ public class PolicyDAO {
                     rollbackEx.printStackTrace();
                 }
             }
+            return null;
         }
         return policy;
     }
-
 
     /**
      * Busca una póliza por su ID único.
      *
      * @param idPolicy El ID de la póliza a buscar.
-     * @return El objeto Policy encontrado, o null si no se encuentra o si ocurre un error.
+     * @return El objeto Policy encontrado, o null si no se encuentra o si
+     * ocurre un error.
      */
     public Policy find(Long idPolicy) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -100,7 +102,9 @@ public class PolicyDAO {
             tx.commit();
             return policy;
         } catch (Exception e) {
-            if (tx != null) tx.rollback();
+            if (tx != null) {
+                tx.rollback();
+            }
             e.printStackTrace();
             return null;
         }
@@ -110,7 +114,8 @@ public class PolicyDAO {
      * Elimina una póliza de la base de datos por su ID.
      *
      * @param idPolicy El ID de la póliza a eliminar.
-     * @return true si la póliza fue eliminada con éxito, false en caso contrario.
+     * @return true si la póliza fue eliminada con éxito, false en caso
+     * contrario.
      */
     public boolean delete(Long idPolicy) {
         Transaction tx = null;
@@ -123,7 +128,9 @@ public class PolicyDAO {
                 return true;
             }
         } catch (Exception e) {
-            if (tx != null) tx.rollback();
+            if (tx != null) {
+                tx.rollback();
+            }
             e.printStackTrace();
         }
         return false;

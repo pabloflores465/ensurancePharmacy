@@ -10,14 +10,16 @@ import java.util.List;
 
 /**
  * Data Access Object (DAO) para gestionar las entidades Category (Categoría).
- * Proporciona métodos para operaciones CRUD (Crear, Leer, Actualizar) sobre las categorías.
+ * Proporciona métodos para operaciones CRUD (Crear, Leer, Actualizar) sobre las
+ * categorías.
  */
 public class CategoryDAO {
 
     /**
      * Constructor por defecto para CategoryDAO.
      */
-    public CategoryDAO() {}
+    public CategoryDAO() {
+    }
 
     /**
      * Crea una nueva categoría en la base de datos.
@@ -43,6 +45,7 @@ public class CategoryDAO {
                 tx.rollback();
             }
             e.printStackTrace();
+            return null;
         }
         return category;
     }
@@ -51,7 +54,8 @@ public class CategoryDAO {
      * Busca una categoría por su ID único.
      *
      * @param id El ID de la categoría a buscar.
-     * @return El objeto Category encontrado, o null si no se encuentra o si ocurre un error.
+     * @return El objeto Category encontrado, o null si no se encuentra o si
+     * ocurre un error.
      */
     public Category findById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -65,7 +69,8 @@ public class CategoryDAO {
     /**
      * Recupera todas las categorías de la base de datos.
      *
-     * @return Una lista de todos los objetos Category, o null si ocurre un error.
+     * @return Una lista de todos los objetos Category, o null si ocurre un
+     * error.
      */
     public List<Category> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

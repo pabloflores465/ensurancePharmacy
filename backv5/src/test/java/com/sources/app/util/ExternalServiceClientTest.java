@@ -11,4 +11,11 @@ public class ExternalServiceClientTest {
         ExternalServiceClient instance = new ExternalServiceClient();
         assertNotNull(instance);
     }
+
+    @Test
+    public void testGetBaseUrlValidation() {
+        ExternalServiceClient client = new ExternalServiceClient();
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> client.get("unknown", "/ping"));
+        assertTrue(ex.getMessage().toLowerCase().contains("tipo de servicio"));
+    }
 }

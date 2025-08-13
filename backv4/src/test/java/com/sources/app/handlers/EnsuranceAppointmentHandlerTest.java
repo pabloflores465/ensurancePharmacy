@@ -79,16 +79,15 @@ class EnsuranceAppointmentHandlerTest {
         lenient().when(mockHttpExchange.getResponseBody()).thenReturn(mockResponseBody);
         lenient().when(mockHttpExchange.getRequestHeaders()).thenReturn(mockRequestHeaders);
         // Default URI for most tests, specific tests can override
-        lenient().when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT)); 
+        lenient().when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT));
     }
 
     @AfterEach
     void tearDown() throws IOException {
-       // verify(mockResponseBody, atLeastOnce()).close(); // Add where applicable
+        // verify(mockResponseBody, atLeastOnce()).close(); // Add where applicable
     }
 
     // --- General Handling Tests ---
-
     @Test
     void handle_OptionsRequest_SendsNoContent() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("OPTIONS");
@@ -105,7 +104,6 @@ class EnsuranceAppointmentHandlerTest {
     }
 
     // --- GET Tests ---
-
     @Test
     void handleGet_FindAll_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
@@ -125,7 +123,8 @@ class EnsuranceAppointmentHandlerTest {
         String hospitalId = "HOSP123";
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?hospitalId=" + hospitalId));
-        EnsuranceAppointment appointment = new EnsuranceAppointment(); appointment.setHospitalAppointmentId(hospitalId);
+        EnsuranceAppointment appointment = new EnsuranceAppointment();
+        appointment.setHospitalAppointmentId(hospitalId);
         when(mockAppointmentDAO.findByHospitalAppointmentId(hospitalId)).thenReturn(appointment);
         String expectedJson = objectMapper.writeValueAsString(appointment);
         byte[] expectedBytes = expectedJson.getBytes(StandardCharsets.UTF_8);
@@ -148,7 +147,7 @@ class EnsuranceAppointmentHandlerTest {
         verify(mockAppointmentDAO).findByHospitalAppointmentId(hospitalId);
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
     }
-    
+
     @Test
     void handleGet_FindByUserId_Success() throws IOException {
         Long userId = 50L;
@@ -164,7 +163,7 @@ class EnsuranceAppointmentHandlerTest {
         verify(mockAppointmentDAO).findByUserId(userId);
         verifyResponseSent(200, expectedBytes);
     }
-    
+
     @Test
     void handleGet_FindByUserId_InvalidFormat() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
@@ -190,8 +189,8 @@ class EnsuranceAppointmentHandlerTest {
         verify(mockAppointmentDAO).findTodayAppointments();
         verifyResponseSent(200, expectedBytes);
     }
-    
-     @Test
+
+    @Test
     void handleGet_FindByDate_Success() throws IOException, java.text.ParseException {
         String dateStr = "2024-05-20";
         Date expectedDate = new SimpleDateFormat("yyyy-MM-dd").parse(dateStr);
@@ -206,11 +205,11 @@ class EnsuranceAppointmentHandlerTest {
 
         verify(mockAppointmentDAO).findByDate(dateCaptor.capture());
         // Assert dates are equal ignoring time part if format is just yyyy-MM-dd
-        assertEquals(expectedDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate(), 
-                     dateCaptor.getValue().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate());
+        assertEquals(expectedDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate(),
+                dateCaptor.getValue().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate());
         verifyResponseSent(200, expectedBytes);
     }
-    
+
     @Test
     void handleGet_FindByDate_InvalidFormat() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
@@ -219,11 +218,107 @@ class EnsuranceAppointmentHandlerTest {
         ensuranceAppointmentHandler.handle(mockHttpExchange);
 
         verify(mockAppointmentDAO, never()).findByDate(any());
-        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L)); 
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
+    }
+
+    @Test
+    void handleGet_FindById_Success() throws IOException {
+        Long id = 77L;
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?id=" + id));
+        EnsuranceAppointment appt = new EnsuranceAppointment();
+        appt.setIdAppointment(id);
+        when(mockAppointmentDAO.findById(id)).thenReturn(appt);
+
+        String expected = objectMapper.writeValueAsString(appt);
+        byte[] expectedBytes = expected.getBytes(StandardCharsets.UTF_8);
+
+        ensuranceAppointmentHandler.handle(mockHttpExchange);
+
+        verify(mockAppointmentDAO).findById(id);
+        verifyResponseSent(200, expectedBytes);
+    }
+
+    @Test
+    void handleGet_FindById_NotFound() throws IOException {
+        Long id = 999L;
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?id=" + id));
+        when(mockAppointmentDAO.findById(id)).thenReturn(null);
+
+        ensuranceAppointmentHandler.handle(mockHttpExchange);
+
+        verify(mockAppointmentDAO).findById(id);
+        verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
+    }
+
+    @Test
+    void handlePost_MissingRequiredFields_SendsBadRequest() throws IOException {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        // Missing idUser and appointmentDate
+        String json = "{\"hospitalAppointmentId\":\"H1\"}";
+        InputStream body = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
+        when(mockHttpExchange.getRequestBody()).thenReturn(body);
+
+        ensuranceAppointmentHandler.handle(mockHttpExchange);
+
+        verify(mockAppointmentDAO, never()).create(anyString(), anyLong(), any(Date.class), anyString(), anyString());
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
+    }
+
+    @Test
+    void handlePut_DaoReturnsNull_SendsNotFound() throws IOException {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
+        EnsuranceAppointment toUpdate = new EnsuranceAppointment();
+        toUpdate.setIdAppointment(5L);
+        String json = objectMapper.writeValueAsString(toUpdate);
+        InputStream body = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
+        when(mockHttpExchange.getRequestBody()).thenReturn(body);
+
+        when(mockAppointmentDAO.update(any(EnsuranceAppointment.class))).thenReturn(null);
+
+        ensuranceAppointmentHandler.handle(mockHttpExchange);
+
+        verify(mockAppointmentDAO).update(any(EnsuranceAppointment.class));
+        verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
+    }
+
+    @Test
+    void handlePut_Success_UpdatesAppointment() throws IOException {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
+        EnsuranceAppointment toUpdate = new EnsuranceAppointment();
+        toUpdate.setIdAppointment(10L);
+        toUpdate.setDoctorName("Dr Y");
+        String json = objectMapper.writeValueAsString(toUpdate);
+        InputStream body = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
+        when(mockHttpExchange.getRequestBody()).thenReturn(body);
+
+        EnsuranceAppointment updated = new EnsuranceAppointment();
+        updated.setIdAppointment(10L);
+        updated.setDoctorName("Dr Y");
+        when(mockAppointmentDAO.update(any(EnsuranceAppointment.class))).thenReturn(updated);
+
+        String expected = objectMapper.writeValueAsString(updated);
+        byte[] expectedBytes = expected.getBytes(StandardCharsets.UTF_8);
+
+        ensuranceAppointmentHandler.handle(mockHttpExchange);
+
+        verify(mockAppointmentDAO).update(any(EnsuranceAppointment.class));
+        verifyResponseSent(200, expectedBytes);
+    }
+
+    @Test
+    void handleGet_UnknownParam_SendsBadRequest() throws IOException {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?foo=bar"));
+
+        ensuranceAppointmentHandler.handle(mockHttpExchange);
+
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
+        verifyNoInteractions(mockAppointmentDAO);
     }
 
     // --- POST Tests ---
-
     @Test
     void handlePost_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
@@ -231,7 +326,7 @@ class EnsuranceAppointmentHandlerTest {
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
 
-        EnsuranceAppointment createdAppointment = new EnsuranceAppointment(); 
+        EnsuranceAppointment createdAppointment = new EnsuranceAppointment();
         createdAppointment.setIdAppointment(55L);
         when(mockAppointmentDAO.create(eq("H1"), eq(10L), any(Date.class), eq("Dr.X"), eq("R1"))).thenReturn(createdAppointment);
         String expectedJson = objectMapper.writeValueAsString(createdAppointment);
@@ -242,7 +337,7 @@ class EnsuranceAppointmentHandlerTest {
         verify(mockAppointmentDAO).create(eq("H1"), eq(10L), any(Date.class), eq("Dr.X"), eq("R1"));
         verifyResponseSent(201, expectedBytes);
     }
-    
+
     @Test
     void handlePost_DaoCreateFails() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
@@ -256,8 +351,8 @@ class EnsuranceAppointmentHandlerTest {
         verify(mockAppointmentDAO).create(anyString(), anyLong(), any(), anyString(), anyString());
         verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
     }
-    
-     @Test
+
+    @Test
     void handlePost_InvalidJson() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
         String invalidJson = "{\"hospitalAppointmentId\": \"H1\", \"idUser\": BAD }";
@@ -270,8 +365,34 @@ class EnsuranceAppointmentHandlerTest {
         verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
     }
 
-    // --- DELETE Tests ---
+    // --- PUT Tests ---
+    @Test
+    void handlePut_MissingId_SendsBadRequest() throws IOException {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
+        String bodyJson = "{\"hospitalAppointmentId\":\"H1\",\"idUser\":10,\"appointmentDate\":\"2024-06-01\"}"; // no idAppointment
+        InputStream bodyStream = new ByteArrayInputStream(bodyJson.getBytes(StandardCharsets.UTF_8));
+        when(mockHttpExchange.getRequestBody()).thenReturn(bodyStream);
 
+        ensuranceAppointmentHandler.handle(mockHttpExchange);
+
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
+        verify(mockAppointmentDAO, never()).update(any());
+    }
+
+    @Test
+    void handlePut_InvalidJson_SendsBadRequest() throws IOException {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
+        String invalidJson = "{\"idAppointment\":1, \"appointmentDate\":"; // malformed
+        InputStream bodyStream = new ByteArrayInputStream(invalidJson.getBytes(StandardCharsets.UTF_8));
+        when(mockHttpExchange.getRequestBody()).thenReturn(bodyStream);
+
+        ensuranceAppointmentHandler.handle(mockHttpExchange);
+
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
+        verify(mockAppointmentDAO, never()).update(any());
+    }
+
+    // --- DELETE Tests ---
     @Test
     void handleDeleteByHospitalId_Success() throws IOException {
         String hospitalId = "HOSP_DEL_1";
@@ -297,7 +418,7 @@ class EnsuranceAppointmentHandlerTest {
         verify(mockAppointmentDAO).deleteByHospitalAppointmentId(hospitalId);
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
     }
-    
+
     @Test
     void handleDeleteByHospitalId_MissingId() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("DELETE");
@@ -308,7 +429,18 @@ class EnsuranceAppointmentHandlerTest {
         verify(mockAppointmentDAO, never()).deleteByHospitalAppointmentId(anyString());
         verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
     }
-    
+
+    @Test
+    void handleDeleteByHospitalId_EmptyId_SendsBadRequest() throws IOException {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("DELETE");
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?hospitalId="));
+
+        ensuranceAppointmentHandler.handle(mockHttpExchange);
+
+        verify(mockAppointmentDAO, never()).deleteByHospitalAppointmentId(anyString());
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
+    }
+
     // Helper method to verify JSON response
     private void verifyResponseSent(int expectedStatusCode, byte[] expectedBodyBytes) throws IOException {
         verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
@@ -318,6 +450,6 @@ class EnsuranceAppointmentHandlerTest {
 
         assertEquals(expectedStatusCode, statusCodeCaptor.getValue());
         assertArrayEquals(expectedBodyBytes, responseBodyCaptor.getValue());
-        assertEquals((long)expectedBodyBytes.length, responseLengthCaptor.getValue());
+        assertEquals((long) expectedBodyBytes.length, responseLengthCaptor.getValue());
     }
-} 
+}

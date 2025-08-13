@@ -75,9 +75,9 @@ class ConfigurableAmountHandlerTest {
 
     @AfterEach
     void tearDown() throws IOException {
-       // verify(mockResponseBody, atLeastOnce()).close(); // Add where applicable
+        // verify(mockResponseBody, atLeastOnce()).close(); // Add where applicable
     }
-    
+
     @Test
     void handle_OptionsRequest_SendsNoContent() throws IOException {
         // when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(ENDPOINT_CURRENT)); // Likely unnecessary for OPTIONS check
@@ -95,7 +95,19 @@ class ConfigurableAmountHandlerTest {
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
         verifyNoInteractions(mockConfigDAO);
     }
-    
+
+    @Test
+    void handleGet_NoExistingConfig_UsesDefault() throws IOException {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(ENDPOINT_CURRENT));
+        when(mockConfigDAO.findCurrentConfig()).thenReturn(null);
+
+        configurableAmountHandler.handle(mockHttpExchange);
+
+        verify(mockHttpExchange).sendResponseHeaders(eq(200), anyLong());
+        verify(mockResponseBody).write(any());
+    }
+
     @Test
     void handle_UnsupportedMethodForCurrent_SendsNotFound() throws IOException {
         // This handler routes based on path first, then method within the private handlers.
@@ -106,7 +118,7 @@ class ConfigurableAmountHandlerTest {
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L)); // Because path matched, but method didn't in specific handlers
         verifyNoInteractions(mockConfigDAO);
     }
-    
+
     @Test
     void handle_UnsupportedMethodForUpdate_SendsNotFound() throws IOException {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(ENDPOINT_UPDATE));
@@ -117,12 +129,11 @@ class ConfigurableAmountHandlerTest {
     }
 
     // --- GET /current Tests ---
-
     @Test
     void handleGetCurrentConfig_Found_Success() throws IOException {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(ENDPOINT_CURRENT));
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
-        
+
         ConfigurableAmount config = new ConfigurableAmount();
         config.setIdConfigurableAmount(1L);
         config.setPrescriptionAmount(new BigDecimal("300.00"));
@@ -134,11 +145,11 @@ class ConfigurableAmountHandlerTest {
 
         verify(mockConfigDAO).findCurrentConfig();
         verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
-        verify(mockHttpExchange).sendResponseHeaders(eq(200), eq((long)expectedBytes.length));
+        verify(mockHttpExchange).sendResponseHeaders(eq(200), eq((long) expectedBytes.length));
         verify(mockResponseBody).write(expectedBytes);
         verify(mockResponseBody).close();
     }
-    
+
     @Test
     void handleGetCurrentConfig_NotFound_ReturnsDefault() throws IOException {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(ENDPOINT_CURRENT));
@@ -155,16 +166,15 @@ class ConfigurableAmountHandlerTest {
 
         verify(mockConfigDAO).findCurrentConfig();
         verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
-        verify(mockHttpExchange).sendResponseHeaders(eq(200), eq((long)expectedBytes.length));
+        verify(mockHttpExchange).sendResponseHeaders(eq(200), eq((long) expectedBytes.length));
         verify(mockResponseBody).write(responseBodyCaptor.capture());
         // Verify the response body matches the default object JSON
         String actualJson = new String(responseBodyCaptor.getValue(), StandardCharsets.UTF_8);
-        assertEquals(expectedJson, actualJson); 
+        assertEquals(expectedJson, actualJson);
         verify(mockResponseBody).close();
     }
 
     // --- PUT /update Tests ---
-
     @Test
     void handleUpdateConfig_ExistingConfig_Success() throws IOException {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(ENDPOINT_UPDATE));
@@ -180,7 +190,7 @@ class ConfigurableAmountHandlerTest {
         existingConfig.setIdConfigurableAmount(1L);
         existingConfig.setPrescriptionAmount(new BigDecimal("250.00"));
         when(mockConfigDAO.findCurrentConfig()).thenReturn(existingConfig);
-        
+
         // Mock the update call - it should return the updated object
         when(mockConfigDAO.update(any(ConfigurableAmount.class))).thenAnswer(invocation -> {
             ConfigurableAmount updatedConfig = invocation.getArgument(0);
@@ -229,14 +239,14 @@ class ConfigurableAmountHandlerTest {
         verify(mockConfigDAO).findCurrentConfig();
         verify(mockConfigDAO).create(eq(newAmount));
         verify(mockConfigDAO, never()).update(any());
-        
+
         verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
-        verify(mockHttpExchange).sendResponseHeaders(eq(200), eq((long)expectedBytes.length)); // Should still be 200 OK as per code
+        verify(mockHttpExchange).sendResponseHeaders(eq(200), eq((long) expectedBytes.length)); // Should still be 200 OK as per code
         verify(mockResponseBody).write(expectedBytes);
         verify(mockResponseBody).close();
     }
-    
-     @Test
+
+    @Test
     void handleUpdateConfig_DaoUpdateFails() throws IOException {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(ENDPOINT_UPDATE));
         when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
@@ -256,8 +266,8 @@ class ConfigurableAmountHandlerTest {
         verify(mockConfigDAO).update(any(ConfigurableAmount.class));
         verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
     }
-    
-     @Test
+
+    @Test
     void handleUpdateConfig_DaoCreateFailsWhenNoExisting() throws IOException {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(ENDPOINT_UPDATE));
         when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
@@ -277,8 +287,8 @@ class ConfigurableAmountHandlerTest {
         verify(mockConfigDAO, never()).update(any());
         verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
     }
-    
-     @Test
+
+    @Test
     void handleUpdateConfig_InvalidJsonBody() throws IOException {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(ENDPOINT_UPDATE));
         when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
@@ -294,4 +304,4 @@ class ConfigurableAmountHandlerTest {
         verify(mockConfigDAO, never()).update(any());
         verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L)); // Exception leads to 500
     }
-} 
+}
