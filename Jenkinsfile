@@ -71,12 +71,10 @@ stage('SonarQube Analysis') {
         sh """
           set -e
           echo "Sonar host: $SONAR_HOST_URL"
-          echo "Branch: ${BRANCH_NAME}"
           echo "Version: ${BUILD_NUMBER}"
 
           "${scannerHome}/bin/sonar-scanner" \
             -Dsonar.projectVersion=${BUILD_NUMBER} \
-            -Dsonar.branch.name=${BRANCH_NAME} \
             -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes \
             -Dsonar.coverage.jacoco.xmlReportPaths="**/target/site/jacoco/jacoco.xml"
         """
