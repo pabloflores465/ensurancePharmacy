@@ -1,4 +1,4 @@
-FROM container-registry.oracle.com/java/jdk:24-oraclelinux9
+FROM eclipse-temurin:24-jdk
 
 WORKDIR /app
 
