@@ -114,8 +114,7 @@ stage('SonarQube Analysis') {
       steps {
         sh '''
           echo "Deploy UAT → backend2/frontend2"
-          docker compose -f docker-compose.ensurance.yaml up -d --build \
-            ensurance-db ensurance-backend2 ensurance-frontend2
+          docker compose -f docker-compose.ensurance.yaml up -d --build
         '''
       }
     }
@@ -125,8 +124,7 @@ stage('SonarQube Analysis') {
       steps {
         sh '''
           echo "Deploy PROD → backend3/frontend3"
-          docker compose -f docker-compose.ensurance.yaml up -d --build \
-            ensurance-db ensurance-backend3 ensurance-frontend3
+          docker compose -f docker-compose.ensurance.yaml up -d --build
         '''
       }
     }
