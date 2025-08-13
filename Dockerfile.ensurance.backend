@@ -1,13 +1,17 @@
-FROM container-registry.oracle.com/java/jdk:24-oraclelinux9
+FROM eclipse-temurin:24-jdk-alpine
 
 WORKDIR /app
 
-COPY backv4 /app
+# Instala Maven en Alpine
+RUN apk add --no-cache maven
 
-RUN dnf install maven -y
+# Copia tu backend (ajusta la ruta si cambia)
+COPY backv4/ .
 
-RUN mvn clean install
+# Compila (puedes añadir -DskipTests si quieres)
+RUN mvn -B clean install
 
 EXPOSE 8080
 
-CMD ["/bin/sh", "-c", "mvn clean compile exec:java -Dexec.mainClass='com.sources.app.App'"]
+# Ejecuta con el exec-maven-plugin (no uses bash en Alpine)
+CMD ["sh","-lc","mvn -q exec:java -Dexec.mainClass=com.sources.app.App"]

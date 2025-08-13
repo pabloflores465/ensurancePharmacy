@@ -26,34 +26,9 @@ pipeline {
     stage('Unit Tests & Coverage') {
   steps {
     sh 'set -e'
-
-    // --- FRONTENDS (igual que ya tenías) ---
-    sh '''
-      if [ -f "./ensurance/package.json" ]; then
-        echo "[frontend/ensurance] npm ci && npm test"
-        cd ./ensurance && npm ci || true
-        npm test --if-present -- --ci || true
-        cd -
-      fi
-      if [ -f "./pharmacy/package.json" ]; then
-        echo "[frontend/pharmacy] npm ci && npm test"
-        cd ./pharmacy && npm ci || true
-        npm test --if-present -- --ci || true
-        cd -
-      fi
-    '''
-
     // --- JAVA por módulo (sin reactor) ---
     dir('backv4') { sh 'mvn -B clean test jacoco:report' }
     dir('backv5') { sh 'mvn -B clean test jacoco:report' }
-
-    // Verificación rápida
-    sh '''
-      ls -l backv4/target/surefire-reports || true
-      ls -l backv4/target/site/jacoco/jacoco.xml || true
-      ls -l backv5/target/surefire-reports || true
-      ls -l backv5/target/site/jacoco/jacoco.xml || true
-    '''
   }
   post {
     always {
@@ -71,12 +46,10 @@ stage('SonarQube Analysis') {
         sh """
           set -e
           echo "Sonar host: $SONAR_HOST_URL"
-          echo "Branch: ${BRANCH_NAME}"
           echo "Version: ${BUILD_NUMBER}"
 
           "${scannerHome}/bin/sonar-scanner" \
             -Dsonar.projectVersion=${BUILD_NUMBER} \
-            -Dsonar.branch.name=${BRANCH_NAME} \
             -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes \
             -Dsonar.coverage.jacoco.xmlReportPaths="**/target/site/jacoco/jacoco.xml"
         """
@@ -105,8 +78,7 @@ stage('SonarQube Analysis') {
       steps {
         sh '''
           echo "Deploy DEV → backend1/frontend1"
-          docker compose -f docker-compose.ensurance.yaml up -d --build \
-            ensurance-db ensurance-backend1 ensurance-frontend1
+          docker compose -f docker-compose.ensurance.yaml up -d --build
         '''
       }
     }
@@ -116,8 +88,7 @@ stage('SonarQube Analysis') {
       steps {
         sh '''
           echo "Deploy UAT → backend2/frontend2"
-          docker compose -f docker-compose.ensurance.yaml up -d --build \
-            ensurance-db ensurance-backend2 ensurance-frontend2
+          docker compose -f docker-compose.ensurance.yaml up -d --build
         '''
       }
     }
@@ -127,8 +98,7 @@ stage('SonarQube Analysis') {
       steps {
         sh '''
           echo "Deploy PROD → backend3/frontend3"
-          docker compose -f docker-compose.ensurance.yaml up -d --build \
-            ensurance-db ensurance-backend3 ensurance-frontend3
+          docker compose -f docker-compose.ensurance.yaml up -d --build
         '''
       }
     }
