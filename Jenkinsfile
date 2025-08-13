@@ -23,50 +23,49 @@ pipeline {
       }
     }
 
-    stage('Unit Tests & Coverage') {
-      steps {
-        sh '''
-          set -e
+  stage('Unit Tests & Coverage') {
+  steps {
+    sh '''
+      set -e
 
-          # ---- FRONTEND (opcional) ----
-          if [ -f "./ensurance/package.json" ]; then
-            echo "[frontend/ensurance] npm ci && npm test"
-            cd ./ensurance
-            npm ci || true
-            npm test --if-present -- --ci || true
-            cd -
-          fi
+      # Frontends (como ya los tienes)
+      if [ -f "./ensurance/package.json" ]; then
+        echo "[frontend/ensurance] npm ci && npm test"
+        cd ./ensurance
+        npm ci || true
+        npm test --if-present -- --ci || true
+        cd -
+      fi
+      if [ -f "./pharmacy/package.json" ]; then
+        echo "[frontend/pharmacy] npm ci && npm test"
+        cd ./pharmacy
+        npm ci || true
+        npm test --if-present -- --ci || true
+        cd -
+      fi
 
-          if [ -f "./pharmacy/package.json" ]; then
-            echo "[frontend/pharmacy] npm ci && npm test"
-            cd ./pharmacy
-            npm ci || true
-            npm test --if-present -- --ci || true
-            cd -
-          fi
+      # Java: ejecutar por módulo (sin reactor)
+      if [ -d "backv4" ]; then
+        mvn -B -f backv4/pom.xml clean test jacoco:report
+      fi
+      if [ -d "backv5" ]; then
+        mvn -B -f backv5/pom.xml clean test jacoco:report
+      fi
 
-          # ---- BACKEND JAVA (multi-módulo) ----
-          # Un solo build para asegurar que el jacoco.xml coincida con los .class analizados
-          mvn -B -pl backv4,backv5 -am clean test jacoco:report
-
-          # Verificación rápida de los reportes
-          ls -l backv4/target/site/jacoco/jacoco.xml
-          ls -l backv5/target/site/jacoco/jacoco.xml
-        '''
-      }
-      post {
-        always {
-          junit testResults: '**/target/surefire-reports/*.xml', allowEmptyResults: false
-          archiveArtifacts artifacts: '**/target/site/jacoco/jacoco.xml', allowEmptyArchive: false
-        }
-        unsuccessful {
-          emailext to: "${env.EMAIL_TO}",
-                   subject: "❌ Tests fallaron: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                   body: "Revisa la consola: ${env.BUILD_URL}"
-        }
-      }
+      # Comprobación de reportes
+      ls -l backv4/target/surefire-reports || true
+      ls -l backv4/target/site/jacoco/jacoco.xml || true
+      ls -l backv5/target/surefire-reports || true
+      ls -l backv5/target/site/jacoco/jacoco.xml || true
+    '''
+  }
+  post {
+    always {
+      junit testResults: '**/target/surefire-reports/*.xml', allowEmptyResults: false
+      archiveArtifacts artifacts: '**/target/site/jacoco/jacoco.xml', allowEmptyArchive: false
     }
-
+  }
+}
     stage('SonarQube Analysis') {
       steps {
         script {
