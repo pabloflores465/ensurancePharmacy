@@ -1,13 +1,17 @@
-FROM eclipse-temurin:24-jdk
+FROM eclipse-temurin:24-jdk-alpine
 
 WORKDIR /app
 
-COPY backv5 /app
+# Instala Maven en Alpine
+RUN apk add --no-cache maven
 
-RUN dnf install maven -y
+# Copia el backend v5
+COPY backv5/ .
 
-RUN mvn clean install -DskipTests
+# Build (sin tests)
+RUN mvn -B clean install -DskipTests
 
 EXPOSE 8081
 
-CMD ["/bin/sh", "-c", "mvn clean compile exec:java -Dexec.mainClass='com.sources.app.App'"]
+# Ejecuta con exec-maven-plugin
+CMD ["sh","-lc","mvn -q exec:java -Dexec.mainClass=com.sources.app.App"]
