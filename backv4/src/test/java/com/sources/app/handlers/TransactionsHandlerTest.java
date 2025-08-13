@@ -79,7 +79,7 @@ class TransactionsHandlerTest {
         lenient().when(mockHttpExchange.getResponseBody()).thenReturn(mockResponseBody);
         lenient().when(mockHttpExchange.getRequestHeaders()).thenReturn(mockRequestHeaders);
     }
-    
+
     @AfterEach
     void tearDown() throws IOException {
         // verify(mockResponseBody, atLeastOnce()).close(); // Add if needed
@@ -101,8 +101,8 @@ class TransactionsHandlerTest {
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
         verifyNoInteractions(mockTransactionsDAO);
     }
-    
-     @Test
+
+    @Test
     void handle_UnsupportedMethod_SendsMethodNotAllowed() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("DELETE"); // Unsupported
         transactionsHandler.handle(mockHttpExchange);
@@ -110,7 +110,6 @@ class TransactionsHandlerTest {
     }
 
     // --- GET Tests ---
-
     @Test
     void handleGet_FindAll_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
@@ -130,7 +129,8 @@ class TransactionsHandlerTest {
         Long testId = 1L;
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?id=" + testId));
-        Transactions transaction = new Transactions(); transaction.setIdTransaction(testId);
+        Transactions transaction = new Transactions();
+        transaction.setIdTransaction(testId);
         when(mockTransactionsDAO.findById(testId)).thenReturn(transaction);
         String expectedJson = objectMapper.writeValueAsString(transaction);
         byte[] expectedBytes = expectedJson.getBytes(StandardCharsets.UTF_8);
@@ -156,7 +156,7 @@ class TransactionsHandlerTest {
         verify(mockTransactionsDAO).findByUserId(userId);
         verifyResponseSent(200, expectedBytes);
     }
-    
+
     @Test
     void handleGet_FindByUserId_WithUnderscore_Success() throws IOException {
         Long userId = 6L;
@@ -173,7 +173,44 @@ class TransactionsHandlerTest {
         verifyResponseSent(200, expectedBytes);
     }
 
-     @Test
+    @Test
+    void handleGet_FindByUserId_InvalidFormat() throws IOException {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?userId=abc"));
+
+        transactionsHandler.handle(mockHttpExchange);
+
+        verify(mockTransactionsDAO, never()).findByUserId(anyLong());
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
+    }
+
+    @Test
+    void handleGet_FindByUserId_Underscore_InvalidFormat() throws IOException {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?user_id=abc"));
+
+        transactionsHandler.handle(mockHttpExchange);
+
+        verify(mockTransactionsDAO, never()).findByUserId(anyLong());
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
+    }
+
+    @Test
+    void handleGet_UnknownParam_ListsAll() throws IOException {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?foo=bar"));
+        List<Transactions> list = Arrays.asList(new Transactions());
+        when(mockTransactionsDAO.findAll()).thenReturn(list);
+        String expected = objectMapper.writeValueAsString(list);
+        byte[] expectedBytes = expected.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+
+        transactionsHandler.handle(mockHttpExchange);
+
+        verify(mockTransactionsDAO).findAll();
+        verifyResponseSent(200, expectedBytes);
+    }
+
+    @Test
     void handleGet_FindById_NotFound() throws IOException {
         Long testId = 99L;
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
@@ -185,12 +222,12 @@ class TransactionsHandlerTest {
         verify(mockTransactionsDAO).findById(testId);
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
     }
-    
+
     @Test
     void handleGet_FindById_InvalidId() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?id=invalid"));
-        
+
         transactionsHandler.handle(mockHttpExchange);
 
         verify(mockTransactionsDAO, never()).findById(anyLong());
@@ -198,13 +235,15 @@ class TransactionsHandlerTest {
     }
 
     // --- POST Tests ---
-
     @Test
     void handlePost_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
-        Long userId = 1L; Long hospitalId = 2L;
-        User user = new User(); user.setIdUser(userId);
-        Hospital hospital = new Hospital(); hospital.setIdHospital(hospitalId);
+        Long userId = 1L;
+        Long hospitalId = 2L;
+        User user = new User();
+        user.setIdUser(userId);
+        Hospital hospital = new Hospital();
+        hospital.setIdHospital(hospitalId);
         Transactions requestTx = new Transactions();
         requestTx.setUser(user);
         requestTx.setHospital(hospital);
@@ -215,14 +254,15 @@ class TransactionsHandlerTest {
         requestTx.setResult("OK");
         requestTx.setCovered(1);
         requestTx.setAuth("A1");
-        
+
         String requestJson = objectMapper.writeValueAsString(requestTx);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
 
-        Transactions createdTx = new Transactions(); createdTx.setIdTransaction(50L);
+        Transactions createdTx = new Transactions();
+        createdTx.setIdTransaction(50L);
         when(mockTransactionsDAO.create(anyLong(), anyLong(), any(Date.class), any(Double.class), any(Double.class), anyString(), anyString(), anyInt(), anyString()))
-               .thenReturn(createdTx);
+                .thenReturn(createdTx);
         String expectedJson = objectMapper.writeValueAsString(createdTx);
         byte[] expectedBytes = expectedJson.getBytes(StandardCharsets.UTF_8);
 
@@ -231,12 +271,13 @@ class TransactionsHandlerTest {
         verify(mockTransactionsDAO).create(eq(userId), eq(hospitalId), any(Date.class), eq(requestTx.getTotal()), eq(requestTx.getCopay()), eq(requestTx.getTransactionComment()), eq(requestTx.getResult()), eq(requestTx.getCovered()), eq(requestTx.getAuth()));
         verifyResponseSent(201, expectedBytes);
     }
-    
+
     @Test
     void handlePost_MissingUserId_SendsBadRequest() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
         Transactions requestTx = new Transactions(); // Missing User
-        requestTx.setTransDate(new Date()); requestTx.setTotal(10.0);
+        requestTx.setTransDate(new Date());
+        requestTx.setTotal(10.0);
         String requestJson = objectMapper.writeValueAsString(requestTx);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
@@ -244,16 +285,22 @@ class TransactionsHandlerTest {
         transactionsHandler.handle(mockHttpExchange);
 
         verify(mockTransactionsDAO, never()).create(anyLong(), anyLong(), any(), any(), any(), any(), any(), any(), any());
-        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L)); 
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
     }
-    
-     @Test
+
+    @Test
     void handlePost_DaoCreateFails() throws IOException {
-         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
-        User user = new User(); user.setIdUser(1L);
-        Hospital hospital = new Hospital(); hospital.setIdHospital(2L);
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        User user = new User();
+        user.setIdUser(1L);
+        Hospital hospital = new Hospital();
+        hospital.setIdHospital(2L);
         Transactions requestTx = new Transactions();
-        requestTx.setUser(user); requestTx.setHospital(hospital); requestTx.setTransDate(new Date()); requestTx.setTotal(1.0); requestTx.setCopay(0.0);
+        requestTx.setUser(user);
+        requestTx.setHospital(hospital);
+        requestTx.setTransDate(new Date());
+        requestTx.setTotal(1.0);
+        requestTx.setCopay(0.0);
         String requestJson = objectMapper.writeValueAsString(requestTx);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
@@ -264,10 +311,10 @@ class TransactionsHandlerTest {
         verify(mockTransactionsDAO).create(anyLong(), anyLong(), any(), any(), any(), any(), any(), any(), any());
         verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
     }
-    
-     @Test
+
+    @Test
     void handlePost_InvalidJson() throws IOException {
-         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
         String invalidJson = "{\"user\": invalid}";
         InputStream requestBodyStream = new ByteArrayInputStream(invalidJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
@@ -279,11 +326,11 @@ class TransactionsHandlerTest {
     }
 
     // --- PUT Tests ---
-
     @Test
     void handlePut_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
-        Transactions transactionToUpdate = new Transactions(); transactionToUpdate.setIdTransaction(1L);
+        Transactions transactionToUpdate = new Transactions();
+        transactionToUpdate.setIdTransaction(1L);
         transactionToUpdate.setResult("Updated Result");
         String requestJson = objectMapper.writeValueAsString(transactionToUpdate);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
@@ -300,10 +347,10 @@ class TransactionsHandlerTest {
         assertEquals(transactionToUpdate.getResult(), transactionCaptor.getValue().getResult());
         verifyResponseSent(200, expectedBytes);
     }
-    
+
     @Test
     void handlePut_DaoUpdateFails() throws IOException {
-         when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
+        when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
         Transactions transactionToUpdate = new Transactions();
         String requestJson = objectMapper.writeValueAsString(transactionToUpdate);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
@@ -316,7 +363,38 @@ class TransactionsHandlerTest {
         verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
     }
 
-     // Helper method to verify JSON response
+    @Test
+    void handlePut_InvalidJson_ThrowsIOException() {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
+        String invalidJson = "{\"idTransaction\":1, \"result\":"; // malformed
+        InputStream requestBodyStream = new ByteArrayInputStream(invalidJson.getBytes(StandardCharsets.UTF_8));
+        when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
+
+        assertThrows(IOException.class, () -> transactionsHandler.handle(mockHttpExchange));
+        verify(mockTransactionsDAO, never()).update(any(Transactions.class));
+    }
+
+    @Test
+    void handlePost_MissingHospitalId_SendsBadRequest() throws IOException {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        // Missing hospital inside body
+        User user = new User();
+        user.setIdUser(1L);
+        Transactions tx = new Transactions();
+        tx.setUser(user);
+        tx.setTransDate(new Date());
+        tx.setTotal(10.0);
+        String body = objectMapper.writeValueAsString(tx);
+        InputStream bodyStream = new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8));
+        when(mockHttpExchange.getRequestBody()).thenReturn(bodyStream);
+
+        transactionsHandler.handle(mockHttpExchange);
+
+        verify(mockTransactionsDAO, never()).create(anyLong(), anyLong(), any(), any(), any(), any(), any(), any(), any());
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
+    }
+
+    // Helper method to verify JSON response
     private void verifyResponseSent(int expectedStatusCode, byte[] expectedBodyBytes) throws IOException {
         verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
         verify(mockHttpExchange).sendResponseHeaders(statusCodeCaptor.capture(), responseLengthCaptor.capture());
@@ -325,6 +403,6 @@ class TransactionsHandlerTest {
 
         assertEquals(expectedStatusCode, statusCodeCaptor.getValue());
         assertArrayEquals(expectedBodyBytes, responseBodyCaptor.getValue());
-        assertEquals((long)expectedBodyBytes.length, responseLengthCaptor.getValue());
+        assertEquals((long) expectedBodyBytes.length, responseLengthCaptor.getValue());
     }
-} 
+}

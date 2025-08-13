@@ -79,6 +79,8 @@ class InsuranceServiceHandlerTest {
     private static final String BASE_ENDPOINT = "/api/insurance-services";
     private static final String HOSPITAL_SVC_ENDPOINT = BASE_ENDPOINT + "/hospital-services";
     private static final String APPROVE_SVC_ENDPOINT = BASE_ENDPOINT + "/approve-hospital-service";
+    private static final String REGISTER_SVC_ENDPOINT = BASE_ENDPOINT + "/register";
+    private static final String REGISTER_MED_ENDPOINT = "/api/pharmacy-medications/register";
 
     private MockedStatic<HttpClientUtil> mockedHttpClientUtil;
 
@@ -335,6 +337,20 @@ class InsuranceServiceHandlerTest {
         verifyResponseSent(200, expectedBytes);
     }
 
+    @Test
+    void handleGet_ByCategory_InvalidParam_BadRequest() throws IOException {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "?category_id=abc"));
+
+        insuranceServiceHandler.handle(mockHttpExchange);
+
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), anyLong());
+        verify(mockResponseBody).write(responseBodyCaptor.capture());
+        String errorJson = new String(responseBodyCaptor.getValue(), StandardCharsets.UTF_8);
+        assertTrue(errorJson.contains("category_id"));
+        verify(mockCategoryDAO, never()).findById(anyLong());
+    }
+
     // --- POST/PUT/DELETE for InsuranceService (standard CRUD) ---
     @Test
     void handleCreate_Success() throws IOException {
@@ -371,6 +387,39 @@ class InsuranceServiceHandlerTest {
         assertEquals(category, serviceCaptor.getValue().getCategory());
         assertEquals(subcategory, serviceCaptor.getValue().getSubcategory());
         verifyResponseSent(201, expectedBytes);
+    }
+
+    @Test
+    void handleApproveHospitalService_MissingIds_BadRequest() throws IOException {
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(APPROVE_SVC_ENDPOINT));
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        String json = objectMapper.writeValueAsString(Map.of("name", "X"));
+        InputStream body = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
+        when(mockHttpExchange.getRequestBody()).thenReturn(body);
+
+        insuranceServiceHandler.handle(mockHttpExchange);
+
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), anyLong());
+        verify(mockResponseBody).write(responseBodyCaptor.capture());
+        String errorJson = new String(responseBodyCaptor.getValue(), StandardCharsets.UTF_8);
+        assertTrue(errorJson.contains("Falta el campo 'id'"));
+        verifyNoInteractions(mockInsuranceServiceDAO);
+    }
+
+    @Test
+    void handleApproveHospitalService_CategoryNotFound_NotFound() throws IOException {
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(APPROVE_SVC_ENDPOINT));
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        String json = objectMapper.writeValueAsString(Map.of("hospitalServiceId", "H1", "categoryId", 99));
+        InputStream body = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
+        when(mockHttpExchange.getRequestBody()).thenReturn(body);
+
+        when(mockCategoryDAO.findById(99L)).thenReturn(null);
+
+        insuranceServiceHandler.handle(mockHttpExchange);
+
+        verify(mockCategoryDAO).findById(99L);
+        verify(mockHttpExchange).sendResponseHeaders(eq(404), anyLong());
     }
 
     @Test
@@ -443,6 +492,211 @@ class InsuranceServiceHandlerTest {
 
         verify(mockInsuranceServiceDAO).delete(serviceId);
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
+    }
+
+    @Test
+    void handleGet_ById_Success() throws IOException {
+        Long id = 7L;
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "/" + id));
+
+        InsuranceService service = new InsuranceService();
+        service.setIdInsuranceService(id);
+        when(mockInsuranceServiceDAO.findById(id)).thenReturn(service);
+        String expectedJson = objectMapper.writeValueAsString(service);
+        byte[] expectedBytes = expectedJson.getBytes(StandardCharsets.UTF_8);
+
+        insuranceServiceHandler.handle(mockHttpExchange);
+
+        verify(mockInsuranceServiceDAO).findById(id);
+        verifyResponseSent(200, expectedBytes);
+    }
+
+    // --- POST /register (servicio) Tests ---
+    @Test
+    void handleRegisterService_Success_CreatesAndReturns201() throws IOException {
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(REGISTER_SVC_ENDPOINT));
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+
+        Long categoryId = 3L;
+        Map<String, Object> requestMap = Map.of(
+                "name", "Srv X",
+                "description", "Desc",
+                "price", 12.5,
+                "category_id", categoryId
+        );
+        String requestJson = objectMapper.writeValueAsString(requestMap);
+        InputStream body = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
+        when(mockHttpExchange.getRequestBody()).thenReturn(body);
+
+        Category category = new Category();
+        category.setIdCategory(categoryId);
+        when(mockCategoryDAO.findById(categoryId)).thenReturn(category);
+
+        InsuranceService created = new InsuranceService();
+        created.setIdInsuranceService(99L);
+        when(mockInsuranceServiceDAO.create(any(InsuranceService.class))).thenReturn(created);
+        String expectedJson = objectMapper.writeValueAsString(created);
+        byte[] expectedBytes = expectedJson.getBytes(StandardCharsets.UTF_8);
+
+        insuranceServiceHandler.handle(mockHttpExchange);
+
+        verify(mockCategoryDAO).findById(categoryId);
+        verify(mockInsuranceServiceDAO).create(any(InsuranceService.class));
+        verifyResponseSent(201, expectedBytes);
+    }
+
+    @Test
+    void handleRegisterService_DaoReturnsNull_Still201WithPayload() throws IOException {
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(REGISTER_SVC_ENDPOINT));
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+
+        Map<String, Object> requestMap = Map.of(
+                "name", "Srv Y",
+                "description", "",
+                "price", 0.0
+        );
+        String requestJson = objectMapper.writeValueAsString(requestMap);
+        InputStream body = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
+        when(mockHttpExchange.getRequestBody()).thenReturn(body);
+
+        when(mockInsuranceServiceDAO.create(any(InsuranceService.class))).thenReturn(null);
+
+        insuranceServiceHandler.handle(mockHttpExchange);
+
+        verify(mockInsuranceServiceDAO).create(any(InsuranceService.class));
+        verify(mockHttpExchange).sendResponseHeaders(eq(201), anyLong());
+        verify(mockResponseBody).write(any(byte[].class));
+        verify(mockResponseBody).close();
+    }
+
+    // --- PUT /api/pharmacy-medications/register Tests ---
+    @Test
+    void handleRegisterMedication_PathNotUnderEndpoint_Returns404() throws IOException {
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(REGISTER_MED_ENDPOINT));
+        when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
+
+        insuranceServiceHandler.handle(mockHttpExchange);
+
+        verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
+    }
+
+    @Test
+    void handleRegisterMedication_InvalidJson_Still404DueToBasePath() throws IOException {
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(REGISTER_MED_ENDPOINT));
+        when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
+
+        insuranceServiceHandler.handle(mockHttpExchange);
+
+        verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
+    }
+
+    // --- GET con query desconocida y subrutas ---
+    @Test
+    void handleGet_All_WithUnknownQuery_ListsAll() throws IOException {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "?foo=bar"));
+        List<InsuranceService> list = Collections.singletonList(new InsuranceService());
+        when(mockInsuranceServiceDAO.findAll()).thenReturn(list);
+        String expected = objectMapper.writeValueAsString(list);
+        byte[] expectedBytes = expected.getBytes(StandardCharsets.UTF_8);
+
+        insuranceServiceHandler.handle(mockHttpExchange);
+
+        verify(mockInsuranceServiceDAO).findAll();
+        verifyResponseSent(200, expectedBytes);
+    }
+
+    @Test
+    void handleGet_ById_WithSubrouteDetails_Success() throws IOException {
+        Long id = 12L;
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "/" + id + "/details"));
+        InsuranceService service = new InsuranceService();
+        service.setIdInsuranceService(id);
+        when(mockInsuranceServiceDAO.findById(id)).thenReturn(service);
+        String expected = objectMapper.writeValueAsString(service);
+        byte[] expectedBytes = expected.getBytes(StandardCharsets.UTF_8);
+
+        insuranceServiceHandler.handle(mockHttpExchange);
+
+        verify(mockInsuranceServiceDAO).findById(id);
+        verifyResponseSent(200, expectedBytes);
+    }
+
+    // --- PUT validaciones extra ---
+    @Test
+    void handleUpdate_NameConflict_SendsConflict() throws IOException {
+        Long serviceId = 5L;
+        when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "/" + serviceId));
+
+        // Existing service
+        InsuranceService existing = new InsuranceService();
+        existing.setIdInsuranceService(serviceId);
+        Category currentCat = new Category();
+        currentCat.setIdCategory(1L);
+        currentCat.setName("CAT");
+        existing.setCategory(currentCat);
+        existing.setName("Old");
+        when(mockInsuranceServiceDAO.findById(serviceId)).thenReturn(existing);
+
+        // Update tries to set name to a name already used in same category by another service
+        Map<String, Object> update = Map.of("name", "ConflictName", "category_id", 1);
+        String updateJson = objectMapper.writeValueAsString(update);
+        when(mockHttpExchange.getRequestBody()).thenReturn(new ByteArrayInputStream(updateJson.getBytes(StandardCharsets.UTF_8)));
+
+        // ensure category exists so handler proceeds to conflict validation
+        when(mockCategoryDAO.findById(1L)).thenReturn(currentCat);
+
+        InsuranceService other = new InsuranceService();
+        other.setIdInsuranceService(999L);
+        other.setName("ConflictName");
+        other.setCategory(currentCat);
+        when(mockInsuranceServiceDAO.findAll()).thenReturn(Arrays.asList(existing, other));
+
+        insuranceServiceHandler.handle(mockHttpExchange);
+
+        verify(mockInsuranceServiceDAO).findById(serviceId);
+        verify(mockInsuranceServiceDAO).findAll();
+        verify(mockHttpExchange).sendResponseHeaders(eq(409), anyLong());
+        verify(mockResponseBody).write(any(byte[].class));
+        verify(mockResponseBody).close();
+        verify(mockInsuranceServiceDAO, never()).update(any());
+    }
+
+    @Test
+    void handleUpdate_InvalidEnabledFlag_BadRequest() throws IOException {
+        Long serviceId = 6L;
+        when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "/" + serviceId));
+
+        InsuranceService existing = new InsuranceService();
+        existing.setIdInsuranceService(serviceId);
+        when(mockInsuranceServiceDAO.findById(serviceId)).thenReturn(existing);
+
+        Map<String, Object> update = Map.of("enabled", "maybe");
+        String updateJson = objectMapper.writeValueAsString(update);
+        when(mockHttpExchange.getRequestBody()).thenReturn(new ByteArrayInputStream(updateJson.getBytes(StandardCharsets.UTF_8)));
+
+        insuranceServiceHandler.handle(mockHttpExchange);
+
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), anyLong());
+        verify(mockResponseBody).write(any(byte[].class));
+        verify(mockInsuranceServiceDAO, never()).update(any());
+    }
+
+    @Test
+    void handleGetById_DaoThrows_InternalError() throws IOException {
+        Long id = 44L;
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "/" + id));
+        when(mockInsuranceServiceDAO.findById(id)).thenThrow(new RuntimeException("boom"));
+
+        insuranceServiceHandler.handle(mockHttpExchange);
+
+        verify(mockHttpExchange).sendResponseHeaders(eq(500), anyLong());
+        verify(mockResponseBody).write(any(byte[].class));
     }
 
     // Helper method to verify JSON response sending

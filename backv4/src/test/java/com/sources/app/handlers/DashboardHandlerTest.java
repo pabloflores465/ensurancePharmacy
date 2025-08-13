@@ -130,6 +130,30 @@ class DashboardHandlerTest {
         verify(mockHttpExchange).sendResponseHeaders(eq(405), eq(-1L));
     }
 
+    @Test
+    void handleDashboardGet_EmptyData_SuccessWithZeros() throws IOException {
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(ENDPOINT_DASHBOARD));
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
+
+        when(mockServiceApprovalDAO.findAll()).thenReturn(Collections.emptyList());
+        when(mockHospitalDAO.findAll()).thenReturn(Collections.emptyList());
+        when(mockInsuranceServiceDAO.findAll()).thenReturn(Collections.emptyList());
+
+        dashboardHandler.handle(mockHttpExchange);
+
+        verify(mockHttpExchange).sendResponseHeaders(eq(200), anyLong());
+        verify(mockResponseBody).write(responseBodyCaptor.capture());
+        String jsonResponse = new String(responseBodyCaptor.getValue(), StandardCharsets.UTF_8);
+        Map<String, Object> dashboardData = objectMapper.readValue(jsonResponse, new TypeReference<Map<String, Object>>() {
+        });
+        Map<String, Object> approvalStats = (Map<String, Object>) dashboardData.get("approvalStats");
+        assertEquals(0, approvalStats.get("total"));
+        assertEquals(0, dashboardData.get("hospitalCount"));
+        assertEquals(0, dashboardData.get("serviceCount"));
+        List<Map<String, Object>> recent = (List<Map<String, Object>>) dashboardData.get("recentTransactions");
+        assertEquals(0, recent.size());
+    }
+
     // --- GET /dashboard Tests ---
     @Test
     void handleDashboardGet_Success_AggregatesData() throws IOException {

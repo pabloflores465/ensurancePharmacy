@@ -100,16 +100,25 @@ class TransactionPolicyHandlerTest {
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
         verifyNoInteractions(mockTransactionPolicyDAO);
     }
-    
+
     @Test
-    void handle_UnsupportedMethod_SendsMethodNotAllowed() throws IOException {
+    void handle_UnsupportedMethodPatch_SendsMethodNotAllowed() throws IOException {
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create("/api/transactionpolicy"));
+        when(mockHttpExchange.getRequestMethod()).thenReturn("PATCH");
+
+        transactionPolicyHandler.handle(mockHttpExchange);
+
+        verify(mockHttpExchange).sendResponseHeaders(eq(405), eq(-1L));
+    }
+
+    @Test
+    void handle_UnsupportedMethodDelete_SendsMethodNotAllowed() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("DELETE"); // Unsupported
         transactionPolicyHandler.handle(mockHttpExchange);
         verify(mockHttpExchange).sendResponseHeaders(eq(405), eq(-1L));
     }
 
     // --- GET Tests ---
-
     @Test
     void handleGet_FindAll_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
@@ -129,7 +138,8 @@ class TransactionPolicyHandlerTest {
         Long testId = 1L;
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?id=" + testId));
-        TransactionPolicy tp = new TransactionPolicy(); tp.setIdTransactionPolicy(testId);
+        TransactionPolicy tp = new TransactionPolicy();
+        tp.setIdTransactionPolicy(testId);
         when(mockTransactionPolicyDAO.findById(testId)).thenReturn(tp);
         String expectedJson = objectMapper.writeValueAsString(tp);
         byte[] expectedBytes = expectedJson.getBytes(StandardCharsets.UTF_8);
@@ -140,7 +150,7 @@ class TransactionPolicyHandlerTest {
         verifyResponseSent(200, expectedBytes);
     }
 
-     @Test
+    @Test
     void handleGet_FindById_NotFound() throws IOException {
         Long testId = 99L;
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
@@ -152,12 +162,12 @@ class TransactionPolicyHandlerTest {
         verify(mockTransactionPolicyDAO).findById(testId);
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
     }
-    
+
     @Test
     void handleGet_FindById_InvalidId() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?id=abc"));
-        
+
         transactionPolicyHandler.handle(mockHttpExchange);
 
         verify(mockTransactionPolicyDAO, never()).findById(anyLong());
@@ -165,13 +175,15 @@ class TransactionPolicyHandlerTest {
     }
 
     // --- POST Tests ---
-
     @Test
     void handlePost_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
-        Long policyId = 1L; Long userId = 2L;
-        Policy policy = new Policy(); policy.setIdPolicy(policyId);
-        User user = new User(); user.setIdUser(userId);
+        Long policyId = 1L;
+        Long userId = 2L;
+        Policy policy = new Policy();
+        policy.setIdPolicy(policyId);
+        User user = new User();
+        user.setIdUser(userId);
         TransactionPolicy requestTp = new TransactionPolicy();
         requestTp.setPolicy(policy);
         requestTp.setUser(user);
@@ -181,9 +193,10 @@ class TransactionPolicyHandlerTest {
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
 
-        TransactionPolicy createdTp = new TransactionPolicy(); createdTp.setIdTransactionPolicy(50L);
+        TransactionPolicy createdTp = new TransactionPolicy();
+        createdTp.setIdTransactionPolicy(50L);
         when(mockTransactionPolicyDAO.create(anyLong(), anyLong(), any(Date.class), any(BigDecimal.class)))
-               .thenReturn(createdTp);
+                .thenReturn(createdTp);
         String expectedJson = objectMapper.writeValueAsString(createdTp);
         byte[] expectedBytes = expectedJson.getBytes(StandardCharsets.UTF_8);
 
@@ -192,13 +205,15 @@ class TransactionPolicyHandlerTest {
         verify(mockTransactionPolicyDAO).create(eq(policyId), eq(userId), any(Date.class), eq(requestTp.getTotal()));
         verifyResponseSent(201, expectedBytes);
     }
-    
+
     @Test
     void handlePost_MissingPolicyId_SendsBadRequest() throws IOException {
-         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
         TransactionPolicy requestTp = new TransactionPolicy(); // Missing Policy
-        requestTp.setUser(new User()); requestTp.getUser().setIdUser(1L);
-        requestTp.setPayDate(new Date()); requestTp.setTotal(BigDecimal.TEN);
+        requestTp.setUser(new User());
+        requestTp.getUser().setIdUser(1L);
+        requestTp.setPayDate(new Date());
+        requestTp.setTotal(BigDecimal.TEN);
         String requestJson = objectMapper.writeValueAsString(requestTp);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
@@ -206,16 +221,21 @@ class TransactionPolicyHandlerTest {
         transactionPolicyHandler.handle(mockHttpExchange);
 
         verify(mockTransactionPolicyDAO, never()).create(anyLong(), anyLong(), any(), any());
-        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L)); 
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
     }
-    
-     @Test
+
+    @Test
     void handlePost_DaoCreateFails() throws IOException {
-         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
-        Policy policy = new Policy(); policy.setIdPolicy(1L);
-        User user = new User(); user.setIdUser(2L);
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        Policy policy = new Policy();
+        policy.setIdPolicy(1L);
+        User user = new User();
+        user.setIdUser(2L);
         TransactionPolicy requestTp = new TransactionPolicy();
-        requestTp.setPolicy(policy); requestTp.setUser(user); requestTp.setPayDate(new Date()); requestTp.setTotal(BigDecimal.ONE);
+        requestTp.setPolicy(policy);
+        requestTp.setUser(user);
+        requestTp.setPayDate(new Date());
+        requestTp.setTotal(BigDecimal.ONE);
         String requestJson = objectMapper.writeValueAsString(requestTp);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
@@ -226,10 +246,10 @@ class TransactionPolicyHandlerTest {
         verify(mockTransactionPolicyDAO).create(anyLong(), anyLong(), any(), any());
         verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
     }
-    
-     @Test
+
+    @Test
     void handlePost_InvalidJson() throws IOException {
-         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
         String invalidJson = "{\"total\": invalid}";
         InputStream requestBodyStream = new ByteArrayInputStream(invalidJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
@@ -241,11 +261,11 @@ class TransactionPolicyHandlerTest {
     }
 
     // --- PUT Tests ---
-
     @Test
     void handlePut_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
-        TransactionPolicy tpToUpdate = new TransactionPolicy(); tpToUpdate.setIdTransactionPolicy(1L);
+        TransactionPolicy tpToUpdate = new TransactionPolicy();
+        tpToUpdate.setIdTransactionPolicy(1L);
         tpToUpdate.setTotal(new BigDecimal("150.00"));
         String requestJson = objectMapper.writeValueAsString(tpToUpdate);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
@@ -262,10 +282,10 @@ class TransactionPolicyHandlerTest {
         assertEquals(tpToUpdate.getTotal(), transactionPolicyCaptor.getValue().getTotal());
         verifyResponseSent(200, expectedBytes);
     }
-    
+
     @Test
     void handlePut_DaoUpdateFails() throws IOException {
-         when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
+        when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
         TransactionPolicy tpToUpdate = new TransactionPolicy();
         String requestJson = objectMapper.writeValueAsString(tpToUpdate);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
@@ -287,6 +307,6 @@ class TransactionPolicyHandlerTest {
 
         assertEquals(expectedStatusCode, statusCodeCaptor.getValue());
         assertArrayEquals(expectedBodyBytes, responseBodyCaptor.getValue());
-        assertEquals((long)expectedBodyBytes.length, responseLengthCaptor.getValue());
+        assertEquals((long) expectedBodyBytes.length, responseLengthCaptor.getValue());
     }
-} 
+}

@@ -117,6 +117,24 @@ class AppointmentHandlerTest {
     }
 
     @Test
+    void handleGet_UnknownQuery_ListsAll() throws IOException {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?foo=bar"));
+        java.util.List<com.sources.app.entities.Appointment> list = java.util.Arrays.asList(new com.sources.app.entities.Appointment());
+        when(mockAppointmentDAO.findAll()).thenReturn(list);
+        String expected = objectMapper.writeValueAsString(list);
+        byte[] expectedBytes = expected.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+
+        appointmentHandler.handle(mockHttpExchange);
+
+        verify(mockAppointmentDAO).findAll();
+        verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
+        verify(mockHttpExchange).sendResponseHeaders(eq(200), anyLong());
+        verify(mockResponseBody).write(any(byte[].class));
+        verify(mockResponseBody).close();
+    }
+
+    @Test
     void handle_UnsupportedMethod_SendsMethodNotAllowed() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("PATCH"); // Unsupported
 
@@ -128,7 +146,6 @@ class AppointmentHandlerTest {
     }
 
     // --- GET Tests ---
-
     @Test
     void handleGet_FindAll_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
@@ -147,7 +164,7 @@ class AppointmentHandlerTest {
         assertTrue(responseLengthCaptor.getValue() > 0);
         String jsonResponse = new String(responseBodyCaptor.getValue(), StandardCharsets.UTF_8);
         // Basic check, could use JSONAssert for detailed comparison
-        assertTrue(jsonResponse.startsWith("[")); 
+        assertTrue(jsonResponse.startsWith("["));
         assertTrue(jsonResponse.endsWith("]"));
         verify(mockResponseBody).close();
     }
@@ -169,10 +186,10 @@ class AppointmentHandlerTest {
         verify(mockResponseBody).write(responseBodyCaptor.capture());
         String jsonResponse = new String(responseBodyCaptor.getValue(), StandardCharsets.UTF_8);
         assertTrue(jsonResponse.contains("\"idAppointment\":" + testId));
-         verify(mockResponseBody).close();
+        verify(mockResponseBody).close();
     }
-    
-     @Test
+
+    @Test
     void handleGet_FindById_NotFound() throws IOException {
         Long testId = 99L;
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
@@ -185,8 +202,8 @@ class AppointmentHandlerTest {
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
         verify(mockResponseBody, never()).write(any(byte[].class));
     }
-    
-     @Test
+
+    @Test
     void handleGet_FindById_InvalidIdFormat() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?id=abc"));
@@ -195,10 +212,10 @@ class AppointmentHandlerTest {
 
         verify(mockAppointmentDAO, never()).findById(anyLong());
         verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
-         verify(mockResponseBody, never()).write(any(byte[].class));
+        verify(mockResponseBody, never()).write(any(byte[].class));
     }
-    
-     @Test
+
+    @Test
     void handleGet_FindByUserId_Success() throws IOException {
         Long userId = 10L;
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
@@ -214,7 +231,7 @@ class AppointmentHandlerTest {
         verify(mockResponseBody).write(any(byte[].class));
         verify(mockResponseBody).close();
     }
-    
+
     @Test
     void handleGet_FindByUserId_InvalidIdFormat() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
@@ -224,20 +241,21 @@ class AppointmentHandlerTest {
 
         verify(mockAppointmentDAO, never()).findByUserId(anyLong());
         verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
-         verify(mockResponseBody, never()).write(any(byte[].class));
+        verify(mockResponseBody, never()).write(any(byte[].class));
     }
 
     // --- POST Tests ---
-
     @Test
     void handlePost_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
-        
+
         // Prepare request body
         Long hospitalId = 1L;
         Long userId = 2L;
-        Hospital hospital = new Hospital(); hospital.setIdHospital(hospitalId);
-        User user = new User(); user.setIdUser(userId);
+        Hospital hospital = new Hospital();
+        hospital.setIdHospital(hospitalId);
+        User user = new User();
+        user.setIdUser(userId);
         Appointment requestAppointment = new Appointment();
         requestAppointment.setHospital(hospital);
         requestAppointment.setUser(user);
@@ -266,8 +284,8 @@ class AppointmentHandlerTest {
         assertTrue(responseJson.contains("\"idAppointment\":99"));
         verify(mockResponseBody).close();
     }
-    
-     @Test
+
+    @Test
     void handlePost_MissingHospitalInBody() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
         Appointment requestAppointment = new Appointment();
@@ -277,18 +295,20 @@ class AppointmentHandlerTest {
         String requestJson = objectMapper.writeValueAsString(requestAppointment);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
-        
+
         appointmentHandler.handle(mockHttpExchange);
 
         verify(mockAppointmentDAO, never()).create(anyLong(), anyLong(), any(), any());
         verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
     }
-    
-     @Test
+
+    @Test
     void handlePost_DaoCreateFails() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
-        Hospital hospital = new Hospital(); hospital.setIdHospital(1L);
-        User user = new User(); user.setIdUser(2L);
+        Hospital hospital = new Hospital();
+        hospital.setIdHospital(1L);
+        User user = new User();
+        user.setIdUser(2L);
         Appointment requestAppointment = new Appointment();
         requestAppointment.setHospital(hospital);
         requestAppointment.setUser(user);
@@ -297,19 +317,19 @@ class AppointmentHandlerTest {
         String requestJson = objectMapper.writeValueAsString(requestAppointment);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
-        
+
         // Simulate DAO returning null
         when(mockAppointmentDAO.create(anyLong(), anyLong(), any(), any())).thenReturn(null);
-        
+
         appointmentHandler.handle(mockHttpExchange);
 
         verify(mockAppointmentDAO).create(anyLong(), anyLong(), any(), any());
         verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
     }
-    
+
     @Test
     void handlePost_JsonParseException() throws IOException {
-         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
         String invalidJson = "{\"hospital\":{\"idHospital\":1}, \"user\":{\"idUser\":2}, \"invalidField\":\"abc\" }"; // Malformed JSON - FIXED Closing quote
         InputStream requestBodyStream = new ByteArrayInputStream(invalidJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
@@ -321,11 +341,10 @@ class AppointmentHandlerTest {
     }
 
     // --- PUT Tests ---
-
     @Test
     void handlePut_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
-        
+
         Appointment appointmentToUpdate = new Appointment();
         appointmentToUpdate.setIdAppointment(1L);
         appointmentToUpdate.setEnabled(0); // Example update
@@ -342,18 +361,18 @@ class AppointmentHandlerTest {
         Appointment capturedAppointment = appointmentCaptor.getValue();
         assertEquals(appointmentToUpdate.getIdAppointment(), capturedAppointment.getIdAppointment());
         assertEquals(appointmentToUpdate.getEnabled(), capturedAppointment.getEnabled());
-        
+
         verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
         verify(mockHttpExchange).sendResponseHeaders(eq(200), anyLong());
         verify(mockResponseBody).write(any(byte[].class));
         verify(mockResponseBody).close();
     }
-    
-     @Test
+
+    @Test
     void handlePut_DaoUpdateFails() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
         Appointment appointmentToUpdate = new Appointment();
-         String requestJson = objectMapper.writeValueAsString(appointmentToUpdate);
+        String requestJson = objectMapper.writeValueAsString(appointmentToUpdate);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
 
@@ -365,4 +384,4 @@ class AppointmentHandlerTest {
         verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
     }
 
-} 
+}

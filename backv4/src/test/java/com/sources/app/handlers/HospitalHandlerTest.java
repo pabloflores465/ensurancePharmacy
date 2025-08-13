@@ -97,8 +97,26 @@ class HospitalHandlerTest {
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
         verifyNoInteractions(mockHospitalDAO);
     }
-    
-     @Test
+
+    @Test
+    void handleGet_UnknownQuery_ListsAll() throws IOException {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?foo=bar"));
+        java.util.List<com.sources.app.entities.Hospital> list = java.util.Arrays.asList(new com.sources.app.entities.Hospital());
+        when(mockHospitalDAO.findAll()).thenReturn(list);
+        String expected = objectMapper.writeValueAsString(list);
+        byte[] expectedBytes = expected.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+
+        hospitalHandler.handle(mockHttpExchange);
+
+        verify(mockHospitalDAO).findAll();
+        verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
+        verify(mockHttpExchange).sendResponseHeaders(eq(200), anyLong());
+        verify(mockResponseBody).write(any(byte[].class));
+        verify(mockResponseBody).close();
+    }
+
+    @Test
     void handle_UnsupportedMethod_SendsMethodNotAllowed() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("DELETE"); // Unsupported
         hospitalHandler.handle(mockHttpExchange);
@@ -106,7 +124,6 @@ class HospitalHandlerTest {
     }
 
     // --- GET Tests ---
-
     @Test
     void handleGet_FindAll_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
@@ -126,7 +143,8 @@ class HospitalHandlerTest {
         Long testId = 10L;
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?id=" + testId));
-        Hospital hospital = new Hospital(); hospital.setIdHospital(testId);
+        Hospital hospital = new Hospital();
+        hospital.setIdHospital(testId);
         when(mockHospitalDAO.findById(testId)).thenReturn(hospital);
         String expectedJson = objectMapper.writeValueAsString(hospital);
         byte[] expectedBytes = expectedJson.getBytes(StandardCharsets.UTF_8);
@@ -137,7 +155,7 @@ class HospitalHandlerTest {
         verifyResponseSent(200, expectedBytes);
     }
 
-     @Test
+    @Test
     void handleGet_FindById_NotFound() throws IOException {
         Long testId = 99L;
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
@@ -149,12 +167,12 @@ class HospitalHandlerTest {
         verify(mockHospitalDAO).findById(testId);
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
     }
-    
+
     @Test
     void handleGet_FindById_InvalidId() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?id=invalid"));
-        
+
         hospitalHandler.handle(mockHttpExchange);
 
         verify(mockHospitalDAO, never()).findById(anyLong());
@@ -162,7 +180,6 @@ class HospitalHandlerTest {
     }
 
     // --- POST Tests ---
-
     @Test
     void handlePost_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
@@ -176,7 +193,8 @@ class HospitalHandlerTest {
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
 
-        Hospital createdHospital = new Hospital(); createdHospital.setIdHospital(50L);
+        Hospital createdHospital = new Hospital();
+        createdHospital.setIdHospital(50L);
         when(mockHospitalDAO.create(anyString(), anyString(), anyLong(), anyString(), anyInt()))
                 .thenReturn(createdHospital);
         String expectedJson = objectMapper.writeValueAsString(createdHospital);
@@ -187,11 +205,11 @@ class HospitalHandlerTest {
         verify(mockHospitalDAO).create(eq("New Hosp"), eq("Addr"), eq(123L), eq("e@mail.com"), eq(1));
         verifyResponseSent(201, expectedBytes);
     }
-    
+
     @Test
     void handlePost_DaoCreateFails() throws IOException {
-         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
-        Hospital requestHospital = new Hospital(); 
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        Hospital requestHospital = new Hospital();
         String requestJson = objectMapper.writeValueAsString(requestHospital);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
@@ -203,10 +221,10 @@ class HospitalHandlerTest {
         verify(mockHospitalDAO).create(any(), any(), any(), any(), any());
         verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
     }
-    
+
     @Test
     void handlePost_InvalidJson() throws IOException {
-         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
         String invalidJson = "{\"name\": \"Hosp\", \"phone\": wrong}";
         InputStream requestBodyStream = new ByteArrayInputStream(invalidJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
@@ -218,11 +236,11 @@ class HospitalHandlerTest {
     }
 
     // --- PUT Tests ---
-
     @Test
     void handlePut_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
-        Hospital hospitalToUpdate = new Hospital(); hospitalToUpdate.setIdHospital(1L);
+        Hospital hospitalToUpdate = new Hospital();
+        hospitalToUpdate.setIdHospital(1L);
         hospitalToUpdate.setName("Updated Hosp Name");
         String requestJson = objectMapper.writeValueAsString(hospitalToUpdate);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
@@ -239,11 +257,11 @@ class HospitalHandlerTest {
         assertEquals(hospitalToUpdate.getName(), hospitalCaptor.getValue().getName());
         verifyResponseSent(200, expectedBytes);
     }
-    
+
     @Test
     void handlePut_DaoUpdateFails() throws IOException {
-         when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
-        Hospital hospitalToUpdate = new Hospital(); 
+        when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
+        Hospital hospitalToUpdate = new Hospital();
         String requestJson = objectMapper.writeValueAsString(hospitalToUpdate);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
@@ -254,8 +272,8 @@ class HospitalHandlerTest {
         verify(mockHospitalDAO).update(any(Hospital.class));
         verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
     }
-    
-     // Helper method to verify JSON response
+
+    // Helper method to verify JSON response
     private void verifyResponseSent(int expectedStatusCode, byte[] expectedBodyBytes) throws IOException {
         verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
         verify(mockHttpExchange).sendResponseHeaders(statusCodeCaptor.capture(), responseLengthCaptor.capture());
@@ -264,6 +282,6 @@ class HospitalHandlerTest {
 
         assertEquals(expectedStatusCode, statusCodeCaptor.getValue());
         assertArrayEquals(expectedBodyBytes, responseBodyCaptor.getValue());
-        assertEquals((long)expectedBodyBytes.length, responseLengthCaptor.getValue());
+        assertEquals((long) expectedBodyBytes.length, responseLengthCaptor.getValue());
     }
-} 
+}
