@@ -9,10 +9,15 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sources.app.entities.Bill;
 import com.sources.app.entities.Prescription;
+import com.sources.app.entities.Hospital;
+import com.sources.app.entities.User;
 
 public class BillDAOTest {
 
     private BillDAO billDAO = new BillDAO();
+    private PrescriptionDAO prescriptionDAO = new PrescriptionDAO();
+    private HospitalDAO hospitalDAO = new HospitalDAO();
+    private UserDAO userDAO = new UserDAO();
     private ObjectMapper mapper = new ObjectMapper();
 
     /**
@@ -40,8 +45,13 @@ public class BillDAOTest {
         assertNotNull(is, "No se encontró el archivo bill.json");
         Bill billFromJson = mapper.readValue(is, Bill.class);
 
-        // Crear un objeto dummy de Prescription para la prueba
-        Prescription prescription = new Prescription();
+        // Preparar entidades relacionadas persistidas: Hospital, User y Prescription
+        Hospital hospital = hospitalDAO.create("Hosp Test", "555-0000", "h@test.com", "Addr", '1');
+        assertNotNull(hospital, "El hospital debe persistirse");
+        User user = userDAO.create("User Test", "123", "555", "u@test.com", new java.util.Date(), "Addr", "pwd");
+        assertNotNull(user, "El usuario debe persistirse");
+        Prescription prescription = prescriptionDAO.create(hospital, user, 'Y');
+        assertNotNull(prescription, "La prescripción debe persistirse");
 
         // Usar los datos del JSON para crear un Bill a través del DAO
         Bill createdBill = billDAO.create(prescription, billFromJson.getTaxes(), billFromJson.getSubtotal(), billFromJson.getCopay(), billFromJson.getTotal());
