@@ -1,15 +1,63 @@
 package com.sources.app;
 
-import com.sources.app.dao.*;
-import com.sources.app.handlers.*;
-import com.sources.app.util.HibernateUtil;
-import com.sun.net.httpserver.HttpServer;
-import org.hibernate.Session;
+import java.net.Inet4Address;
 import java.net.InetAddress;
-import java.net.*;
+import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.Enumeration;
 
-import java.net.InetSocketAddress;
+import org.hibernate.Session;
+
+import com.sources.app.dao.AppointmentDAO;
+import com.sources.app.dao.AppointmentMadeDAO;
+import com.sources.app.dao.CategoryDAO;
+import com.sources.app.dao.ConfigurableAmountDAO;
+import com.sources.app.dao.EnsuranceAppointmentDAO;
+import com.sources.app.dao.HospitalDAO;
+import com.sources.app.dao.HospitalInsuranceServiceDAO;
+import com.sources.app.dao.InsuranceServiceDAO;
+import com.sources.app.dao.MedicineDAO;
+import com.sources.app.dao.MedicinePresDAO;
+import com.sources.app.dao.PharmacyDAO;
+import com.sources.app.dao.PolicyDAO;
+import com.sources.app.dao.PrescriptionApprovalDAO;
+import com.sources.app.dao.PrescriptionDAO;
+import com.sources.app.dao.ServiceCategoryDAO;
+import com.sources.app.dao.ServiceDAO;
+import com.sources.app.dao.TotalHospitalDAO;
+import com.sources.app.dao.TotalPharmacyDAO;
+import com.sources.app.dao.TransactionPolicyDAO;
+import com.sources.app.dao.TransactionsDAO;
+import com.sources.app.dao.UserDAO;
+import com.sources.app.handlers.AppointmentHandler;
+import com.sources.app.handlers.AppointmentMadeHandler;
+import com.sources.app.handlers.CategoryHandler;
+import com.sources.app.handlers.ConfigurableAmountHandler;
+import com.sources.app.handlers.EnsuranceAppointmentHandler;
+import com.sources.app.handlers.HospitalHandler;
+import com.sources.app.handlers.HospitalInsuranceServiceHandler;
+import com.sources.app.handlers.HospitalRedirectHandler;
+import com.sources.app.handlers.HospitalServiceProxyHandler;
+import com.sources.app.handlers.InsuranceServiceHandler;
+import com.sources.app.handlers.LoginHandler;
+import com.sources.app.handlers.MedicineHandler;
+import com.sources.app.handlers.MedicinePresHandler;
+import com.sources.app.handlers.NotificationHandler;
+import com.sources.app.handlers.PharmacyHandler;
+import com.sources.app.handlers.PolicyHandler;
+import com.sources.app.handlers.PrescriptionApprovalHandler;
+import com.sources.app.handlers.PrescriptionHandler;
+import com.sources.app.handlers.ServiceCategoryHandler;
+import com.sources.app.handlers.ServiceHandler;
+import com.sources.app.handlers.TotalHospitalHandler;
+import com.sources.app.handlers.TotalPharmacyHandler;
+import com.sources.app.handlers.TransactionPolicyHandler;
+import com.sources.app.handlers.TransactionsHandler;
+import com.sources.app.handlers.UserByEmailHandler;
+import com.sources.app.handlers.UserHandler;
+import com.sources.app.util.HibernateUtil;
+import com.sun.net.httpserver.HttpServer;
 
 /**
  * Clase principal de la aplicación para el backend de Ensurance Pharmacy.
@@ -174,6 +222,6 @@ public class App {
 
         server.setExecutor(null); // Usa el executor por defecto
         server.start();
-        System.out.println("Servidor iniciado en http://" + ip + ":" + port + "/api");
+        System.out.println("Servidor iniciado en http://" + host + ":" + port + "/api");
     }
 }
