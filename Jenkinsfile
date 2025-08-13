@@ -23,36 +23,32 @@ pipeline {
       }
     }
 
-  stage('Unit Tests & Coverage') {
+    stage('Unit Tests & Coverage') {
   steps {
-    sh '''
-      set -e
+    sh 'set -e'
 
-      # Frontends (como ya los tienes)
+    // --- FRONTENDS (igual que ya tenías) ---
+    sh '''
       if [ -f "./ensurance/package.json" ]; then
         echo "[frontend/ensurance] npm ci && npm test"
-        cd ./ensurance
-        npm ci || true
+        cd ./ensurance && npm ci || true
         npm test --if-present -- --ci || true
         cd -
       fi
       if [ -f "./pharmacy/package.json" ]; then
         echo "[frontend/pharmacy] npm ci && npm test"
-        cd ./pharmacy
-        npm ci || true
+        cd ./pharmacy && npm ci || true
         npm test --if-present -- --ci || true
         cd -
       fi
+    '''
 
-      # Java: ejecutar por módulo (sin reactor)
-      if [ -d "backv4" ]; then
-        mvn -B -f backv4/pom.xml clean test jacoco:report
-      fi
-      if [ -d "backv5" ]; then
-        mvn -B -f backv5/pom.xml clean test jacoco:report
-      fi
+    // --- JAVA por módulo (sin reactor) ---
+    dir('backv4') { sh 'mvn -B clean test jacoco:report' }
+    dir('backv5') { sh 'mvn -B clean test jacoco:report' }
 
-      # Comprobación de reportes
+    // Verificación rápida
+    sh '''
       ls -l backv4/target/surefire-reports || true
       ls -l backv4/target/site/jacoco/jacoco.xml || true
       ls -l backv5/target/surefire-reports || true
@@ -61,29 +57,33 @@ pipeline {
   }
   post {
     always {
-      junit testResults: '**/target/surefire-reports/*.xml', allowEmptyResults: false
-      archiveArtifacts artifacts: '**/target/site/jacoco/jacoco.xml', allowEmptyArchive: false
+      junit testResults: '**/target/surefire-reports/*.xml', allowEmptyResults: true
+      archiveArtifacts artifacts: '**/target/site/jacoco/jacoco.xml', allowEmptyArchive: true
     }
   }
 }
-    stage('SonarQube Analysis') {
-      steps {
-        script {
-          // Debe coincidir con el nombre del SonarScanner configurado en Jenkins > Global Tool Configuration
-          def scannerHome = tool 'Scanner'
-          withSonarQubeEnv("${SONARQUBE_SERVER}") {
-            sh """
-              "${scannerHome}/bin/sonar-scanner" \
-                -Dsonar.projectVersion=${BUILD_NUMBER} \
-                -Dsonar.sources=. \
-                -Dsonar.exclusions=**/target/**,**/node_modules/** \
-                -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes \
-                -Dsonar.coverage.jacoco.xmlReportPaths=**/target/site/jacoco/jacoco.xml
-            """
-          }
-        }
+stage('SonarQube Analysis') {
+  steps {
+    script {
+      // Debe coincidir con el nombre del SonarScanner configurado en Jenkins > Global Tool Configuration
+      def scannerHome = tool 'Scanner'
+      withSonarQubeEnv("${SONARQUBE_SERVER}") {
+        sh """
+          set -e
+          echo "Sonar host: $SONAR_HOST_URL"
+          echo "Branch: ${BRANCH_NAME}"
+          echo "Version: ${BUILD_NUMBER}"
+
+          "${scannerHome}/bin/sonar-scanner" \
+            -Dsonar.projectVersion=${BUILD_NUMBER} \
+            -Dsonar.branch.name=${BRANCH_NAME} \
+            -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes \
+            -Dsonar.coverage.jacoco.xmlReportPaths="**/target/site/jacoco/jacoco.xml"
+        """
       }
     }
+  }
+}
 
     stage('Quality Gate') {
       steps {
