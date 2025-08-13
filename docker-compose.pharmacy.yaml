@@ -1,61 +1,27 @@
-services:
-  pharmacy-db:
-    build:
-      context: .
-      dockerfile: Dockerfile.pharmacy.db
-    ports:
-      - "8080:1521"
-      - "8081:5500"
-    volumes:
-      - db-data2:/app/oracle/oradata
-  pharmacy-backend1:
-    build:
-      context: .
-      dockerfile: Dockerfile.pharmacy.backend
-    ports:
-      - "8086:8080"
-    depends_on:
-      - pharmacy-db
-  pharmacy-backend2:
-    build:
-      context: .
-      dockerfile: Dockerfile.pharmacy.backend
-    ports:
-      - "8087:8080"
-    depends_on:
-      - pharmacy-db
-  pharmacy-backend3:
-    build:
-      context: .
-      dockerfile: Dockerfile.pharmacy.backend
-    ports:
-      - "8088:8080"
-    depends_on:
-      - pharmacy-db
-  pharmacy-frontend1:
-    build:
-      context: .
-      dockerfile: Dockerfile.pharmacy.frontend
-    ports:
-      - "8089:8080"
-    depends_on:
-      - pharmacy-backend1
-  pharmacy-frontend2:
-    build:
-      context: .
-      dockerfile: Dockerfile.pharmacy.frontend
-    ports:
-      - "8090:8080"
-    depends_on:
-      - pharmacy-backend2
-  pharmacy-frontend3:
-    build:
-      context: .
-      dockerfile: Dockerfile.pharmacy.frontend
-    ports:
-      - "8091:8080"
-    depends_on:
-      - pharmacy-backend3
+version: "3.9"
 
-volumes:
-  db-data2:
+services:
+  pharmacy-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.pharmacy.backend   # backv5 (HTTP default 8081)
+    ports:
+      - "8086:8081"                             # http://localhost:8086 -> container:8081
+    restart: unless-stopped
+
+  pharmacy-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.pharmacy.frontend  # Vue/SPA dev server (EXPOSE 8080)
+    ports:
+      - "8089:8080"                             # http://localhost:8089
+    environment:
+      # Pongo varias variantes por si tu frontend usa Vite/React/Vue
+      VITE_API_URL: "http://localhost:8086"
+      REACT_APP_API_URL: "http://localhost:8086"
+      VUE_APP_API_URL: "http://localhost:8086"
+      API_BASE_URL: "http://localhost:8086"
+    depends_on:
+      - pharmacy-backend
+    restart: unless-stopped
+
