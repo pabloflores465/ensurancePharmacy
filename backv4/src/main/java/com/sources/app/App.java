@@ -13,10 +13,12 @@ import java.net.InetSocketAddress;
 
 /**
  * Clase principal de la aplicación para el backend de Ensurance Pharmacy.
- * Inicializa la conexión a la base de datos, los DAOs, el servidor HTTP y configura los endpoints de la API.
- * También incluye lógica para verificaciones periódicas como la expiración de servicios.
+ * Inicializa la conexión a la base de datos, los DAOs, el servidor HTTP y
+ * configura los endpoints de la API. También incluye lógica para verificaciones
+ * periódicas como la expiración de servicios.
  */
 public class App {
+
     private static final UserDAO userDAO = new UserDAO();
     private static final PolicyDAO policyDAO = new PolicyDAO();
     private static final AppointmentDAO appointmentDAO = new AppointmentDAO();
@@ -40,7 +42,8 @@ public class App {
     private static final PrescriptionApprovalDAO prescriptionApprovalDAO = new PrescriptionApprovalDAO();
 
     /**
-     * Constructor privado para prevenir la instanciación de la clase de utilidad.
+     * Constructor privado para prevenir la instanciación de la clase de
+     * utilidad.
      */
     private App() {
         // Prevent instantiation
@@ -52,7 +55,9 @@ public class App {
             while (interfaces.hasMoreElements()) {
                 NetworkInterface iface = interfaces.nextElement();
                 // Ignora interfaces inactivas o de loopback
-                if (!iface.isUp() || iface.isLoopback()) continue;
+                if (!iface.isUp() || iface.isLoopback()) {
+                    continue;
+                }
                 Enumeration<InetAddress> addresses = iface.getInetAddresses();
                 while (addresses.hasMoreElements()) {
                     InetAddress addr = addresses.nextElement();
@@ -68,15 +73,16 @@ public class App {
         return "127.0.0.1";
     }
 
-
     /**
-     * El punto de entrada principal de la aplicación.
-     * Inicializa el servidor, configura los manejadores de contexto para varios endpoints de la API,
-     * realiza comprobaciones iniciales de la base de datos e inicia el servidor HTTP.
-     * También programa una tarea diaria para verificar los servicios de usuario expirados.
+     * El punto de entrada principal de la aplicación. Inicializa el servidor,
+     * configura los manejadores de contexto para varios endpoints de la API,
+     * realiza comprobaciones iniciales de la base de datos e inicia el servidor
+     * HTTP. También programa una tarea diaria para verificar los servicios de
+     * usuario expirados.
      *
      * @param args Argumentos de línea de comandos (no utilizados).
-     * @throws Exception Si hay un error al iniciar el servidor o conectarse a la base de datos.
+     * @throws Exception Si hay un error al iniciar el servidor o conectarse a
+     * la base de datos.
      */
     public static void main(String[] args) throws Exception {
         // Prueba de conexión a la base de datos
@@ -91,27 +97,31 @@ public class App {
             e.printStackTrace();
         }
 
-        String ip = getLocalExternalIp();
+        // Host/puerto desde variables de entorno con valores por defecto
+        String host = System.getenv("SERVER_HOST");
+        if (host == null || host.isEmpty()) {
+            host = "0.0.0.0";
+        }
 
-        // Solicitar puerto por consola
-        System.out.println("Ingrese el puerto para iniciar el servidor (predeterminado: 8080): ");
-        java.util.Scanner scanner = new java.util.Scanner(System.in);
-        String portInput = scanner.nextLine().trim();
-        
+        String portEnv = System.getenv("SERVER_PORT");
+        if (portEnv == null || portEnv.isEmpty()) {
+            portEnv = System.getenv("PORT");
+        }
+
         int port = 8080; // Puerto predeterminado
-        if (!portInput.isEmpty()) {
-            try {
-                port = Integer.parseInt(portInput);
-            } catch (NumberFormatException e) {
-                System.out.println("Formato de puerto inválido. Se usará el puerto predeterminado 8080.");
+        try {
+            if (portEnv != null && !portEnv.isEmpty()) {
+                port = Integer.parseInt(portEnv);
             }
+        } catch (NumberFormatException e) {
+            System.out.println("Formato de puerto inválido. Se usará el puerto predeterminado 8080.");
         }
 
         // Verificar servicios expirados al iniciar
         System.out.println("Verificando servicios expirados...");
         int updatedUsers = userDAO.checkAllUsersServiceExpiration();
         System.out.println("Se actualizaron " + updatedUsers + " usuarios con servicios expirados.");
-        
+
         // Programar tarea para verificar servicios expirados cada día
         java.util.Timer timer = new java.util.Timer(true);
         timer.scheduleAtFixedRate(new java.util.TimerTask() {
@@ -121,12 +131,12 @@ public class App {
                 int count = userDAO.checkAllUsersServiceExpiration();
                 System.out.println("Verificación programada: se actualizaron " + count + " usuarios con servicios expirados.");
             }
-        }, 
-        // Ejecutar cada 24 horas (en milisegundos)
-        86400000, 86400000);
+        },
+                // Ejecutar cada 24 horas (en milisegundos)
+                86400000, 86400000);
 
         // Crear y configurar el servidor HTTP
-        HttpServer server = HttpServer.create(new InetSocketAddress(ip, port), 0);
+        HttpServer server = HttpServer.create(new InetSocketAddress(host, port), 0);
         server.createContext("/api/login", new LoginHandler(userDAO));
         server.createContext("/api/users", new UserHandler(userDAO));
         server.createContext("/api/policy", new PolicyHandler(policyDAO));
@@ -161,7 +171,7 @@ public class App {
         server.createContext("/api/configurable-amount/", new ConfigurableAmountHandler(configurableAmountDAO));
         // Registrar el nuevo handler para proxy de servicios de hospital
         server.createContext("/api/hospital-proxy", new HospitalServiceProxyHandler(hospitalDAO));
-        
+
         server.setExecutor(null); // Usa el executor por defecto
         server.start();
         System.out.println("Servidor iniciado en http://" + ip + ":" + port + "/api");
