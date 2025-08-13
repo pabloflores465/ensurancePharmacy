@@ -1,73 +1,64 @@
 pipeline {
   agent any
   tools {
-    nodejs 'NodeJS_24_5_0'         // <-- Global Tool: NodeJS
-    maven 'Maven_3_9_11'
-    jdk 'JDK_23'
+    nodejs 'NodeJS_24_5_0'       // Global Tool: NodeJS
+    maven  'Maven_3_9_11'        // Global Tool: Maven
+    jdk    'JDK_23'              // Global Tool: JDK
   }
 
   environment {
-    // Nombre del servidor SonarQube que configuraste en Jenkins → System
-    SONARQUBE_SERVER = 'sonarqube'
-    // Direcciones para notificaciones (ajústalas)
+    SONARQUBE_SERVER = 'sonarqube'                     // Nombre del server en Jenkins > System
     EMAIL_TO = 'pablopolis2016@gmail.com'
   }
 
   options { timestamps() }
 
   stages {
+
     stage('Checkout') {
-      steps { checkout scm }
+      steps {
+        deleteDir()                          // limpia workspace para evitar artefactos viejos
+        checkout scm
+        sh 'git rev-parse HEAD'              // log del commit exacto
+      }
     }
 
-    stage('Unit Tests & Coverage (auto-detect)') {
+    stage('Unit Tests & Coverage') {
       steps {
         sh '''
           set -e
-          # Frontend (Node) - si existe package.json en ./ensurance o ./front ajusta al path que uses
+
+          # ---- FRONTEND (opcional) ----
           if [ -f "./ensurance/package.json" ]; then
-            echo "[frontend] npm ci && npm test"
+            echo "[frontend/ensurance] npm ci && npm test"
             cd ./ensurance
             npm ci || true
-            npm test  --if-present -- --ci
+            npm test --if-present -- --ci || true
             cd -
           fi
 
-          # Backend (Node/Java/Python) – ejecuta cada stack si existe
           if [ -f "./pharmacy/package.json" ]; then
-            echo "[backend] npm ci && npm test"
+            echo "[frontend/pharmacy] npm ci && npm test"
             cd ./pharmacy
             npm ci || true
-            npm test  --if-present -- --ci
+            npm test --if-present -- --ci || true
             cd -
           fi
 
-          if [ -d "backv4" ]; then
-            echo "[backv4] mvn verify con ignore de fallos para generar jacoco.xml"
-            mvn -B -f backv4/pom.xml -DtestFailureIgnore=true verify || true
-          fi
-          if [ -d "backv5" ]; then
-            echo "[backv5] mvn verify con ignore de fallos para generar jacoco.xml"
-            mvn -B -f backv5/pom.xml -DtestFailureIgnore=true verify || true
-          fi
+          # ---- BACKEND JAVA (multi-módulo) ----
+          # Un solo build para asegurar que el jacoco.xml coincida con los .class analizados
+          mvn -B -pl backv4,backv5 -am clean test jacoco:report
 
-          if [ -f "pom.xml" ]; then
-            echo "[backend-root] mvn -B -DskipTests=false test"
-            mvn -B -DskipTests=false test || true
-          fi
-
-          if [ -f "build.gradle" ] || [ -f "gradlew" ]; then
-            echo "[backend] gradle test"
-            ./gradlew test || true
-          fi
-
-          if [ -f "requirements.txt" ] && command -v pytest >/dev/null 2>&1; then
-            echo "[backend] pytest"
-            pytest || true
-          fi
+          # Verificación rápida de los reportes
+          ls -l backv4/target/site/jacoco/jacoco.xml
+          ls -l backv5/target/site/jacoco/jacoco.xml
         '''
       }
       post {
+        always {
+          junit testResults: '**/target/surefire-reports/*.xml', allowEmptyResults: false
+          archiveArtifacts artifacts: '**/target/site/jacoco/jacoco.xml', allowEmptyArchive: false
+        }
         unsuccessful {
           emailext to: "${env.EMAIL_TO}",
                    subject: "❌ Tests fallaron: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
@@ -79,14 +70,16 @@ pipeline {
     stage('SonarQube Analysis') {
       steps {
         script {
-          // Toma la ruta real del SonarQube Scanner instalado en "Global Tool Configuration"
-          def scannerHome = tool 'Scanner'   // <-- el nombre debe coincidir con el que pusiste
+          // Debe coincidir con el nombre del SonarScanner configurado en Jenkins > Global Tool Configuration
+          def scannerHome = tool 'Scanner'
           withSonarQubeEnv("${SONARQUBE_SERVER}") {
             sh """
               "${scannerHome}/bin/sonar-scanner" \
-              -Dsonar.projectVersion=${BUILD_NUMBER} \
-              -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes \
-              -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml,backv5/target/site/jacoco/jacoco.xml
+                -Dsonar.projectVersion=${BUILD_NUMBER} \
+                -Dsonar.sources=. \
+                -Dsonar.exclusions=**/target/**,**/node_modules/** \
+                -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes \
+                -Dsonar.coverage.jacoco.xmlReportPaths=**/target/site/jacoco/jacoco.xml
             """
           }
         }
@@ -103,7 +96,7 @@ pipeline {
         unsuccessful {
           emailext to: "${env.EMAIL_TO}",
                    subject: "⛔ Quality Gate no aprobado: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                   body: "Se bloquea el merge por incumplir el gate (no nueva deuda técnica). ${env.BUILD_URL}"
+                   body: "Se bloquea el pipeline por Quality Gate. Ver: ${env.BUILD_URL}"
         }
       }
     }
@@ -113,7 +106,8 @@ pipeline {
       steps {
         sh '''
           echo "Deploy DEV → backend1/frontend1"
-          docker compose -f docker-compose.ensurance.yaml up -d --build ensurance-db ensurance-backend1 ensurance-frontend1
+          docker compose -f docker-compose.ensurance.yaml up -d --build \
+            ensurance-db ensurance-backend1 ensurance-frontend1
         '''
       }
     }
@@ -123,7 +117,8 @@ pipeline {
       steps {
         sh '''
           echo "Deploy UAT → backend2/frontend2"
-          docker compose -f docker-compose.ensurance.yaml up -d --build ensurance-db ensurance-backend2 ensurance-frontend2
+          docker compose -f docker-compose.ensurance.yaml up -d --build \
+            ensurance-db ensurance-backend2 ensurance-frontend2
         '''
       }
     }
@@ -133,7 +128,8 @@ pipeline {
       steps {
         sh '''
           echo "Deploy PROD → backend3/frontend3"
-          docker compose -f docker-compose.ensurance.yaml up -d --build ensurance-db ensurance-backend3 ensurance-frontend3
+          docker compose -f docker-compose.ensurance.yaml up -d --build \
+            ensurance-db ensurance-backend3 ensurance-frontend3
         '''
       }
     }
@@ -148,5 +144,7 @@ pipeline {
                subject: "⚠️ Pipeline fallido: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                body: "Detalle: ${env.BUILD_URL}"
     }
+    // Si tienes instalado el plugin "Workspace Cleanup":
+    // always { cleanWs() }
   }
 }
