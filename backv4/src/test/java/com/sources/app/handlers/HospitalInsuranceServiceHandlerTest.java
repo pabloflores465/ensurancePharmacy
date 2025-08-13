@@ -89,7 +89,7 @@ class HospitalInsuranceServiceHandlerTest {
     void tearDown() throws IOException {
         // verify(mockResponseBody, atLeastOnce()).close(); // Add if needed
     }
-    
+
     @Test
     void handle_OptionsRequest_SendsNoContent() throws IOException {
         // when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT)); // Unnecessary stubbing reported at line 95
@@ -106,8 +106,8 @@ class HospitalInsuranceServiceHandlerTest {
         handler.handle(mockHttpExchange);
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
     }
-    
-     @Test
+
+    @Test
     void handle_UnsupportedMethodForBase_SendsMethodNotAllowed() throws IOException {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT));
         when(mockHttpExchange.getRequestMethod()).thenReturn("PATCH");
@@ -116,11 +116,11 @@ class HospitalInsuranceServiceHandlerTest {
     }
 
     // --- GET /api/hospital-services Tests ---
-
     @Test
     void handleGet_ByHospitalFilter_Success() throws IOException {
         Long hospitalId = 1L;
-        Hospital hospital = new Hospital(); hospital.setIdHospital(hospitalId);
+        Hospital hospital = new Hospital();
+        hospital.setIdHospital(hospitalId);
         List<HospitalInsuranceService> relations = Arrays.asList(new HospitalInsuranceService(), new HospitalInsuranceService());
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "?hospital=" + hospitalId));
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
@@ -135,8 +135,8 @@ class HospitalInsuranceServiceHandlerTest {
         verify(mockHospInsSvcDAO).findApprovedByHospital(hospital);
         verifyResponseSent(200, expectedBytes);
     }
-    
-     @Test
+
+    @Test
     void handleGet_ByHospitalFilter_HospitalNotFound() throws IOException {
         Long hospitalId = 99L;
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "?hospital=" + hospitalId));
@@ -149,11 +149,12 @@ class HospitalInsuranceServiceHandlerTest {
         verify(mockHospInsSvcDAO, never()).findApprovedByHospital(any());
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
     }
-    
+
     @Test
     void handleGet_ByServiceFilter_Success() throws IOException {
         Long serviceId = 2L;
-        InsuranceService service = new InsuranceService(); service.setIdInsuranceService(serviceId);
+        InsuranceService service = new InsuranceService();
+        service.setIdInsuranceService(serviceId);
         List<HospitalInsuranceService> relations = Collections.singletonList(new HospitalInsuranceService());
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "?service=" + serviceId));
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
@@ -168,8 +169,8 @@ class HospitalInsuranceServiceHandlerTest {
         verify(mockHospInsSvcDAO).findHospitalsByService(service);
         verifyResponseSent(200, expectedBytes);
     }
-    
-     @Test
+
+    @Test
     void handleGet_ByServiceFilter_ServiceNotFound() throws IOException {
         Long serviceId = 98L;
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "?service=" + serviceId));
@@ -182,26 +183,61 @@ class HospitalInsuranceServiceHandlerTest {
         verify(mockHospInsSvcDAO, never()).findHospitalsByService(any());
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
     }
-    
-     @Test
+
+    @Test
+    void handleGet_ByHospitalFilter_InvalidIdFormat() throws IOException {
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "?hospital=abc"));
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
+
+        handler.handle(mockHttpExchange);
+
+        verify(mockHospitalDAO, never()).findById(anyLong());
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
+    }
+
+    @Test
+    void handleGet_ByServiceFilter_InvalidIdFormat() throws IOException {
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "?service=abc"));
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
+
+        handler.handle(mockHttpExchange);
+
+        verify(mockInsuranceServiceDAO, never()).findById(anyLong());
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
+    }
+
+    @Test
+    void handleGet_NoFilter_SendsBadRequest() throws IOException {
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT));
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
+
+        handler.handle(mockHttpExchange);
+
+        verify(mockHospInsSvcDAO, never()).findApprovedByHospital(any());
+        verify(mockHospInsSvcDAO, never()).findHospitalsByService(any());
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
+    }
+
+    @Test
     void handleGet_ById_Success() throws IOException {
         Long relationId = 5L;
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "/" + relationId));
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
-        HospitalInsuranceService relation = new HospitalInsuranceService(); relation.setIdHospitalService(relationId);
+        HospitalInsuranceService relation = new HospitalInsuranceService();
+        relation.setIdHospitalService(relationId);
         when(mockHospInsSvcDAO.findById(relationId)).thenReturn(relation);
         String expectedJson = objectMapper.writeValueAsString(relation);
         byte[] expectedBytes = expectedJson.getBytes(StandardCharsets.UTF_8);
-        
+
         handler.handle(mockHttpExchange);
-        
+
         verify(mockHospInsSvcDAO).findById(relationId);
         verifyResponseSent(200, expectedBytes);
     }
-    
-     @Test
+
+    @Test
     void handleGet_ById_NotFound() throws IOException {
-         Long relationId = 95L;
+        Long relationId = 95L;
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "/" + relationId));
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
         when(mockHospInsSvcDAO.findById(relationId)).thenReturn(null);
@@ -211,8 +247,8 @@ class HospitalInsuranceServiceHandlerTest {
         verify(mockHospInsSvcDAO).findById(relationId);
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
     }
-    
-     @Test
+
+    @Test
     void handleGet_ById_InvalidId() throws IOException {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "/abc"));
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
@@ -224,14 +260,15 @@ class HospitalInsuranceServiceHandlerTest {
     }
 
     // --- POST /approve Tests ---
-    
     @Test
     void handleApprove_Success() throws IOException {
         Long hospitalId = 1L;
         Long serviceId = 2L;
         String notes = "Approved via API";
-        Hospital hospital = new Hospital(); hospital.setIdHospital(hospitalId);
-        InsuranceService service = new InsuranceService(); service.setIdInsuranceService(serviceId);
+        Hospital hospital = new Hospital();
+        hospital.setIdHospital(hospitalId);
+        InsuranceService service = new InsuranceService();
+        service.setIdInsuranceService(serviceId);
         Map<String, Object> requestMap = Map.of("hospitalId", hospitalId, "serviceId", serviceId, "notes", notes);
         String requestJson = objectMapper.writeValueAsString(requestMap);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
@@ -241,8 +278,8 @@ class HospitalInsuranceServiceHandlerTest {
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
         when(mockHospitalDAO.findById(hospitalId)).thenReturn(hospital);
         when(mockInsuranceServiceDAO.findById(serviceId)).thenReturn(service);
-        
-        HospitalInsuranceService createdRelation = new HospitalInsuranceService(); 
+
+        HospitalInsuranceService createdRelation = new HospitalInsuranceService();
         createdRelation.setIdHospitalService(10L);
         when(mockHospInsSvcDAO.approveService(eq(hospital), eq(service), eq(notes))).thenReturn(createdRelation);
         String expectedJson = objectMapper.writeValueAsString(createdRelation);
@@ -255,11 +292,55 @@ class HospitalInsuranceServiceHandlerTest {
         verify(mockHospInsSvcDAO).approveService(hospital, service, notes);
         verifyResponseSent(201, expectedBytes);
     }
-    
+
+    @Test
+    void handleApprove_DaoReturnsNull_SendsInternalError() throws IOException {
+        Long hospitalId = 1L, serviceId = 2L;
+        String notes = "N";
+        String requestJson = objectMapper.writeValueAsString(Map.of("hospitalId", hospitalId, "serviceId", serviceId, "notes", notes));
+        InputStream body = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "/approve"));
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        when(mockHttpExchange.getRequestBody()).thenReturn(body);
+        when(mockHospitalDAO.findById(hospitalId)).thenReturn(new Hospital());
+        when(mockInsuranceServiceDAO.findById(serviceId)).thenReturn(new InsuranceService());
+        when(mockHospInsSvcDAO.approveService(any(), any(), anyString())).thenReturn(null);
+
+        handler.handle(mockHttpExchange);
+
+        verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
+    }
+
+    @Test
+    void handleApprove_InvalidJson_SendsBadRequest() throws IOException {
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "/approve"));
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        String invalidJson = "{\"hospitalId\": 1, invalid}";
+        when(mockHttpExchange.getRequestBody()).thenReturn(new ByteArrayInputStream(invalidJson.getBytes(StandardCharsets.UTF_8)));
+
+        handler.handle(mockHttpExchange);
+
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
+    }
+
+    @Test
+    void handleApprove_MissingIds_SendsBadRequest() throws IOException {
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "/approve"));
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        String json = objectMapper.writeValueAsString(Map.of("notes", "x"));
+        when(mockHttpExchange.getRequestBody()).thenReturn(new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8)));
+
+        handler.handle(mockHttpExchange);
+
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
+    }
+
     @Test
     void handleApprove_HospitalNotFound() throws IOException {
-         Long hospitalId = 1L; Long serviceId = 2L; String notes = "N";
-         Map<String, Object> requestMap = Map.of("hospitalId", hospitalId, "serviceId", serviceId, "notes", notes);
+        Long hospitalId = 1L;
+        Long serviceId = 2L;
+        String notes = "N";
+        Map<String, Object> requestMap = Map.of("hospitalId", hospitalId, "serviceId", serviceId, "notes", notes);
         String requestJson = objectMapper.writeValueAsString(requestMap);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
 
@@ -276,15 +357,16 @@ class HospitalInsuranceServiceHandlerTest {
         verify(mockHospInsSvcDAO, never()).approveService(any(), any(), any());
         verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
     }
-    
+
     // --- POST /revoke Tests ---
-    
-     @Test
+    @Test
     void handleRevoke_Success() throws IOException {
         Long hospitalId = 1L;
         Long serviceId = 2L;
-        Hospital hospital = new Hospital(); hospital.setIdHospital(hospitalId);
-        InsuranceService service = new InsuranceService(); service.setIdInsuranceService(serviceId);
+        Hospital hospital = new Hospital();
+        hospital.setIdHospital(hospitalId);
+        InsuranceService service = new InsuranceService();
+        service.setIdInsuranceService(serviceId);
         Map<String, Object> requestMap = Map.of("hospitalId", hospitalId, "serviceId", serviceId);
         String requestJson = objectMapper.writeValueAsString(requestMap);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
@@ -305,12 +387,14 @@ class HospitalInsuranceServiceHandlerTest {
         verify(mockHospInsSvcDAO).revokeApproval(hospital, service);
         verifyResponseSent(200, expectedBytes);
     }
-    
-     @Test
+
+    @Test
     void handleRevoke_NotFoundOrFailed() throws IOException {
-         Long hospitalId = 1L; Long serviceId = 2L;
-         Hospital hospital = new Hospital(); InsuranceService service = new InsuranceService();
-         Map<String, Object> requestMap = Map.of("hospitalId", hospitalId, "serviceId", serviceId);
+        Long hospitalId = 1L;
+        Long serviceId = 2L;
+        Hospital hospital = new Hospital();
+        InsuranceService service = new InsuranceService();
+        Map<String, Object> requestMap = Map.of("hospitalId", hospitalId, "serviceId", serviceId);
         String requestJson = objectMapper.writeValueAsString(requestMap);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
 
@@ -327,8 +411,57 @@ class HospitalInsuranceServiceHandlerTest {
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
     }
 
-    // --- DELETE Tests ---
+    @Test
+    void handleRevoke_InvalidJson_SendsBadRequest() throws IOException {
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "/revoke"));
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        String invalidJson = "{\"hospitalId\": 1, invalid}";
+        when(mockHttpExchange.getRequestBody()).thenReturn(new ByteArrayInputStream(invalidJson.getBytes(StandardCharsets.UTF_8)));
 
+        handler.handle(mockHttpExchange);
+
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
+    }
+
+    @Test
+    void handleRevoke_MissingIds_SendsBadRequest() throws IOException {
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "/revoke"));
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        String json = objectMapper.writeValueAsString(Map.of());
+        when(mockHttpExchange.getRequestBody()).thenReturn(new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8)));
+
+        handler.handle(mockHttpExchange);
+
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
+    }
+
+    @Test
+    void handleRevoke_HospitalNotFound_SendsNotFound() throws IOException {
+        Long hospitalId = 1L, serviceId = 2L;
+        String json = objectMapper.writeValueAsString(Map.of("hospitalId", hospitalId, "serviceId", serviceId));
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "/revoke"));
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        when(mockHttpExchange.getRequestBody()).thenReturn(new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8)));
+        when(mockHospitalDAO.findById(hospitalId)).thenReturn(null);
+        when(mockInsuranceServiceDAO.findById(serviceId)).thenReturn(new InsuranceService());
+
+        handler.handle(mockHttpExchange);
+
+        verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
+    }
+
+    @Test
+    void handleDelete_MissingIdInPath_SendsBadRequest() throws IOException {
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT));
+        when(mockHttpExchange.getRequestMethod()).thenReturn("DELETE");
+
+        handler.handle(mockHttpExchange);
+
+        verify(mockHospInsSvcDAO, never()).delete(anyLong());
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
+    }
+
+    // --- DELETE Tests ---
     @Test
     void handleDelete_Success() throws IOException {
         Long relationId = 15L;
@@ -343,8 +476,8 @@ class HospitalInsuranceServiceHandlerTest {
         verify(mockHospInsSvcDAO).delete(relationId);
         verifyResponseSent(200, expectedBytes);
     }
-    
-     @Test
+
+    @Test
     void handleDelete_NotFound() throws IOException {
         Long relationId = 95L;
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "/" + relationId));
@@ -356,8 +489,8 @@ class HospitalInsuranceServiceHandlerTest {
         verify(mockHospInsSvcDAO).delete(relationId);
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
     }
-    
-     @Test
+
+    @Test
     void handleDelete_InvalidId() throws IOException {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(BASE_ENDPOINT + "/abc"));
         when(mockHttpExchange.getRequestMethod()).thenReturn("DELETE");
@@ -377,6 +510,6 @@ class HospitalInsuranceServiceHandlerTest {
 
         assertEquals(expectedStatusCode, statusCodeCaptor.getValue());
         assertArrayEquals(expectedBodyBytes, responseBodyCaptor.getValue());
-        assertEquals((long)expectedBodyBytes.length, responseLengthCaptor.getValue());
+        assertEquals((long) expectedBodyBytes.length, responseLengthCaptor.getValue());
     }
-} 
+}

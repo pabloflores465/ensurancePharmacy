@@ -81,8 +81,8 @@ class AppointmentMadeHandlerTest {
         // Verify close only if write was expected
         // verify(mockResponseBody, atLeastOnce()).close(); // Be careful with this
     }
-    
-     @Test
+
+    @Test
     void handle_OptionsRequest_SendsNoContent() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("OPTIONS");
 
@@ -102,7 +102,25 @@ class AppointmentMadeHandlerTest {
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
         verifyNoInteractions(mockAppointmentMadeDAO);
     }
-    
+
+    @Test
+    void handleGet_UnknownQuery_ListsAll() throws IOException {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?foo=bar"));
+        java.util.List<com.sources.app.entities.AppointmentMade> list = java.util.Arrays.asList(new com.sources.app.entities.AppointmentMade());
+        when(mockAppointmentMadeDAO.findAll()).thenReturn(list);
+        String expected = objectMapper.writeValueAsString(list);
+        byte[] expectedBytes = expected.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+
+        appointmentMadeHandler.handle(mockHttpExchange);
+
+        verify(mockAppointmentMadeDAO).findAll();
+        verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
+        verify(mockHttpExchange).sendResponseHeaders(eq(200), anyLong());
+        verify(mockResponseBody).write(any(byte[].class));
+        verify(mockResponseBody).close();
+    }
+
     @Test
     void handle_UnsupportedMethod_SendsMethodNotAllowed() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("DELETE"); // Unsupported
@@ -114,7 +132,6 @@ class AppointmentMadeHandlerTest {
     }
 
     // --- GET Tests ---
-
     @Test
     void handleGet_FindAll_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
@@ -130,11 +147,11 @@ class AppointmentMadeHandlerTest {
         verify(mockResponseBody).write(any(byte[].class));
         verify(mockResponseBody).close();
     }
-    
+
     @Test
     void handleGet_FindAll_EmptyList() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
-        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT)); 
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT));
         List<AppointmentMade> emptyList = Collections.emptyList();
         when(mockAppointmentMadeDAO.findAll()).thenReturn(emptyList);
         String expectedJsonResponse = objectMapper.writeValueAsString(emptyList);
@@ -144,7 +161,7 @@ class AppointmentMadeHandlerTest {
 
         verify(mockAppointmentMadeDAO).findAll();
         verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
-        verify(mockHttpExchange).sendResponseHeaders(eq(200), eq((long)expectedBytes.length));
+        verify(mockHttpExchange).sendResponseHeaders(eq(200), eq((long) expectedBytes.length));
         verify(mockResponseBody).write(expectedBytes);
         verify(mockResponseBody).close();
     }
@@ -154,7 +171,7 @@ class AppointmentMadeHandlerTest {
         Long testId = 5L;
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?id=" + testId));
-        AppointmentMade appointment = new AppointmentMade(); 
+        AppointmentMade appointment = new AppointmentMade();
         appointment.setIdCita(testId); // Assuming ID matches idCita for this find
         when(mockAppointmentMadeDAO.findById(testId)).thenReturn(appointment);
         String expectedJsonResponse = objectMapper.writeValueAsString(appointment);
@@ -164,11 +181,11 @@ class AppointmentMadeHandlerTest {
 
         verify(mockAppointmentMadeDAO).findById(testId);
         verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
-        verify(mockHttpExchange).sendResponseHeaders(eq(200), eq((long)expectedBytes.length));
+        verify(mockHttpExchange).sendResponseHeaders(eq(200), eq((long) expectedBytes.length));
         verify(mockResponseBody).write(expectedBytes);
         verify(mockResponseBody).close();
     }
-    
+
     @Test
     void handleGet_FindById_NotFound() throws IOException {
         Long testId = 99L;
@@ -182,7 +199,7 @@ class AppointmentMadeHandlerTest {
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
         verify(mockResponseBody, never()).write(any(byte[].class));
     }
-    
+
     @Test
     void handleGet_FindById_InvalidIdFormat() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
@@ -195,7 +212,6 @@ class AppointmentMadeHandlerTest {
     }
 
     // --- POST Tests ---
-
     @Test
     void handlePost_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
@@ -216,16 +232,18 @@ class AppointmentMadeHandlerTest {
 
         verify(mockAppointmentMadeDAO).create(eq(10L), eq(20L), any(Date.class));
         verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
-        verify(mockHttpExchange).sendResponseHeaders(eq(201), eq((long)expectedBytes.length));
+        verify(mockHttpExchange).sendResponseHeaders(eq(201), eq((long) expectedBytes.length));
         verify(mockResponseBody).write(expectedBytes);
         verify(mockResponseBody).close();
     }
-    
+
     @Test
     void handlePost_DaoCreateFails() throws IOException {
-         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
         AppointmentMade requestApp = new AppointmentMade();
-        requestApp.setIdCita(10L); requestApp.setIdUser(20L); requestApp.setAppointmentMadeDate(new Date());
+        requestApp.setIdCita(10L);
+        requestApp.setIdUser(20L);
+        requestApp.setAppointmentMadeDate(new Date());
         String requestJson = objectMapper.writeValueAsString(requestApp);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
@@ -237,10 +255,10 @@ class AppointmentMadeHandlerTest {
         verify(mockAppointmentMadeDAO).create(anyLong(), anyLong(), any());
         verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
     }
-    
-     @Test
+
+    @Test
     void handlePost_InvalidJson() throws IOException {
-         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
         String invalidJson = "{\"idCita\":1, \"invalid\": } "; // Malformed - FIXED Closing quote
         InputStream requestBodyStream = new ByteArrayInputStream(invalidJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
@@ -252,7 +270,6 @@ class AppointmentMadeHandlerTest {
     }
 
     // --- PUT Tests ---
-
     @Test
     void handlePut_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
@@ -277,14 +294,14 @@ class AppointmentMadeHandlerTest {
         // Compare dates formatted as strings due to ObjectMapper configuration
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         assertEquals(sdf.format(appToUpdate.getAppointmentMadeDate()), sdf.format(capturedApp.getAppointmentMadeDate()));
-        
+
         verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
-        verify(mockHttpExchange).sendResponseHeaders(eq(200), eq((long)expectedBytes.length));
+        verify(mockHttpExchange).sendResponseHeaders(eq(200), eq((long) expectedBytes.length));
         verify(mockResponseBody).write(expectedBytes);
         verify(mockResponseBody).close();
     }
-    
-     @Test
+
+    @Test
     void handlePut_DaoUpdateFails() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
         AppointmentMade appToUpdate = new AppointmentMade();
@@ -299,4 +316,4 @@ class AppointmentMadeHandlerTest {
         verify(mockAppointmentMadeDAO).update(any(AppointmentMade.class));
         verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
     }
-} 
+}

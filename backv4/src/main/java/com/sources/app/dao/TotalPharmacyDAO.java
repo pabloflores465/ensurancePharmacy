@@ -13,8 +13,8 @@ import java.util.List;
 
 /**
  * Data Access Object (DAO) para gestionar las entidades de TotalPharmacy.
- * Representa los totales diarios para cada farmacia.
- * Proporciona métodos para crear, buscar y actualizar estos totales.
+ * Representa los totales diarios para cada farmacia. Proporciona métodos para
+ * crear, buscar y actualizar estos totales.
  */
 public class TotalPharmacyDAO {
 
@@ -24,7 +24,8 @@ public class TotalPharmacyDAO {
      * @param idPharmacy El ID de la farmacia para la cual se registra el total.
      * @param totalDate La fecha a la que corresponde el total.
      * @param total El monto total registrado para esa fecha.
-     * @return El objeto TotalPharmacy creado, o null si ocurre un error (p. ej., la farmacia no existe).
+     * @return El objeto TotalPharmacy creado, o null si ocurre un error (p.
+     * ej., la farmacia no existe).
      */
     public TotalPharmacy create(Long idPharmacy, Date totalDate, BigDecimal total) {
         Transaction tx = null;
@@ -49,7 +50,15 @@ public class TotalPharmacyDAO {
             if (tx != null) {
                 tx.rollback();
             }
+            // Propagar únicamente cuando falten entidades relacionadas; en errores de guardado devolver null
+            if (e instanceof RuntimeException) {
+                String msg = e.getMessage();
+                if (msg != null && (msg.contains("no encontrada") || msg.contains("not found"))) {
+                    throw (RuntimeException) e;
+                }
+            }
             e.printStackTrace();
+            return null;
         }
         return tp;
     }
@@ -58,7 +67,8 @@ public class TotalPharmacyDAO {
      * Busca un registro de TotalPharmacy por su ID único.
      *
      * @param id El ID del registro TotalPharmacy a buscar.
-     * @return El objeto TotalPharmacy encontrado, o null si no se encuentra o si ocurre un error.
+     * @return El objeto TotalPharmacy encontrado, o null si no se encuentra o
+     * si ocurre un error.
      */
     public TotalPharmacy findById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -72,7 +82,8 @@ public class TotalPharmacyDAO {
     /**
      * Recupera todos los registros de TotalPharmacy de la base de datos.
      *
-     * @return Una lista de todos los objetos TotalPharmacy, o null si ocurre un error.
+     * @return Una lista de todos los objetos TotalPharmacy, o null si ocurre un
+     * error.
      */
     public List<TotalPharmacy> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

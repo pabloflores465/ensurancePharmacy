@@ -12,9 +12,10 @@ import org.hibernate.query.Query;
 import java.util.List;
 
 /**
- * Data Access Object (DAO) para gestionar la entidad de relación ServiceCategory.
- * Representa la asociación entre Servicios (Service) y Categorías (Category).
- * Proporciona métodos para crear, buscar y actualizar estas relaciones.
+ * Data Access Object (DAO) para gestionar la entidad de relación
+ * ServiceCategory. Representa la asociación entre Servicios (Service) y
+ * Categorías (Category). Proporciona métodos para crear, buscar y actualizar
+ * estas relaciones.
  */
 public class ServiceCategoryDAO {
 
@@ -23,7 +24,8 @@ public class ServiceCategoryDAO {
      *
      * @param idService El ID del servicio.
      * @param idCategory El ID de la categoría.
-     * @return El objeto ServiceCategory creado, o null si ocurre un error (p. ej., el servicio o la categoría no existen).
+     * @return El objeto ServiceCategory creado, o null si ocurre un error (p.
+     * ej., el servicio o la categoría no existen).
      */
     public ServiceCategory create(Long idService, Long idCategory) {
         Transaction tx = null;
@@ -31,11 +33,13 @@ public class ServiceCategoryDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
 
-            // Recuperar las entidades relacionadas
+            // Recuperar entidades con short-circuit
             Service service = session.get(Service.class, idService);
+            if (service == null) {
+                throw new RuntimeException("Service o Category no encontrado.");
+            }
             Category category = session.get(Category.class, idCategory);
-
-            if (service == null || category == null) {
+            if (category == null) {
                 throw new RuntimeException("Service o Category no encontrado.");
             }
 
@@ -49,17 +53,26 @@ public class ServiceCategoryDAO {
             if (tx != null) {
                 tx.rollback();
             }
+            if (e instanceof RuntimeException) {
+                String msg = e.getMessage();
+                if (msg != null && (msg.contains("no encontrado") || msg.contains("not found"))) {
+                    throw (RuntimeException) e;
+                }
+            }
             e.printStackTrace();
+            return null;
         }
         return serviceCategory;
     }
 
     /**
-     * Busca una relación ServiceCategory por su ID compuesto (ID de servicio e ID de categoría).
+     * Busca una relación ServiceCategory por su ID compuesto (ID de servicio e
+     * ID de categoría).
      *
      * @param idService El ID del servicio.
      * @param idCategory El ID de la categoría.
-     * @return El objeto ServiceCategory encontrado, o null si no se encuentra o si ocurre un error.
+     * @return El objeto ServiceCategory encontrado, o null si no se encuentra o
+     * si ocurre un error.
      */
     public ServiceCategory findById(Long idService, Long idCategory) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -74,7 +87,8 @@ public class ServiceCategoryDAO {
     /**
      * Recupera todas las relaciones ServiceCategory de la base de datos.
      *
-     * @return Una lista de todos los objetos ServiceCategory, o null si ocurre un error.
+     * @return Una lista de todos los objetos ServiceCategory, o null si ocurre
+     * un error.
      */
     public List<ServiceCategory> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -88,11 +102,13 @@ public class ServiceCategoryDAO {
 
     /**
      * Actualiza una relación ServiceCategory existente en la base de datos.
-     * Nota: Dado que la clave primaria es compuesta y define la relación, 
-     * generalmente no hay atributos adicionales en ServiceCategory para actualizar.
-     * Este método podría ser útil si se añaden más campos a la tabla de unión.
+     * Nota: Dado que la clave primaria es compuesta y define la relación,
+     * generalmente no hay atributos adicionales en ServiceCategory para
+     * actualizar. Este método podría ser útil si se añaden más campos a la
+     * tabla de unión.
      *
-     * @param serviceCategory El objeto ServiceCategory con los datos actualizados.
+     * @param serviceCategory El objeto ServiceCategory con los datos
+     * actualizados.
      * @return El objeto ServiceCategory actualizado, o null si ocurre un error.
      */
     public ServiceCategory update(ServiceCategory serviceCategory) {

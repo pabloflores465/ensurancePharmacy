@@ -74,7 +74,7 @@ class ServiceHandlerTest {
         lenient().when(mockHttpExchange.getResponseBody()).thenReturn(mockResponseBody);
         lenient().when(mockHttpExchange.getRequestHeaders()).thenReturn(mockRequestHeaders);
     }
-    
+
     @AfterEach
     void tearDown() throws IOException {
         // verify(mockResponseBody, atLeastOnce()).close(); // Add if needed
@@ -96,16 +96,30 @@ class ServiceHandlerTest {
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
         verifyNoInteractions(mockServiceDAO);
     }
-    
-     @Test
+
+    @Test
     void handle_UnsupportedMethod_SendsMethodNotAllowed() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("DELETE"); // Unsupported
         serviceHandler.handle(mockHttpExchange);
         verify(mockHttpExchange).sendResponseHeaders(eq(405), eq(-1L));
     }
 
-    // --- GET Tests ---
+    @Test
+    void handleGet_WithUnknownQuery_StillListsAll() throws IOException {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?foo=bar"));
+        java.util.List<com.sources.app.entities.Service> list = java.util.Arrays.asList(new com.sources.app.entities.Service());
+        when(mockServiceDAO.findAllWithDetails()).thenReturn(list);
+        String expected = objectMapper.writeValueAsString(list);
+        byte[] expectedBytes = expected.getBytes(java.nio.charset.StandardCharsets.UTF_8);
 
+        serviceHandler.handle(mockHttpExchange);
+
+        verify(mockServiceDAO).findAllWithDetails();
+        verifyResponseSent(200, expectedBytes);
+    }
+
+    // --- GET Tests ---
     @Test
     void handleGet_FindAll_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
@@ -125,7 +139,8 @@ class ServiceHandlerTest {
         Long testId = 1L;
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?id=" + testId));
-        Service service = new Service(); service.setIdService(testId);
+        Service service = new Service();
+        service.setIdService(testId);
         when(mockServiceDAO.findByIdWithDetails(testId)).thenReturn(service); // Handler calls findByIdWithDetails
         String expectedJson = objectMapper.writeValueAsString(service);
         byte[] expectedBytes = expectedJson.getBytes(StandardCharsets.UTF_8);
@@ -135,8 +150,8 @@ class ServiceHandlerTest {
         verify(mockServiceDAO).findByIdWithDetails(testId);
         verifyResponseSent(200, expectedBytes);
     }
-    
-     @Test
+
+    @Test
     void handleGet_FindById_NotFound() throws IOException {
         Long testId = 99L;
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
@@ -148,12 +163,12 @@ class ServiceHandlerTest {
         verify(mockServiceDAO).findByIdWithDetails(testId);
         verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
     }
-    
+
     @Test
     void handleGet_FindById_InvalidId() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT + "?id=invalid"));
-        
+
         serviceHandler.handle(mockHttpExchange);
 
         verify(mockServiceDAO, never()).findByIdWithDetails(anyLong());
@@ -161,7 +176,6 @@ class ServiceHandlerTest {
     }
 
     // --- POST Tests ---
-
     @Test
     void handlePost_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
@@ -170,7 +184,8 @@ class ServiceHandlerTest {
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
 
-        Service createdService = new Service(); createdService.setIdService(50L);
+        Service createdService = new Service();
+        createdService.setIdService(50L);
         when(mockServiceDAO.create(any(Service.class))).thenReturn(createdService);
         String expectedJson = objectMapper.writeValueAsString(createdService);
         byte[] expectedBytes = expectedJson.getBytes(StandardCharsets.UTF_8);
@@ -180,11 +195,11 @@ class ServiceHandlerTest {
         verify(mockServiceDAO).create(any(Service.class));
         verifyResponseSent(201, expectedBytes);
     }
-    
+
     @Test
     void handlePost_DaoCreateFails() throws IOException {
-         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
-        Service requestService = new Service(); 
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        Service requestService = new Service();
         String requestJson = objectMapper.writeValueAsString(requestService);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
@@ -195,10 +210,10 @@ class ServiceHandlerTest {
         verify(mockServiceDAO).create(any(Service.class));
         verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
     }
-    
-     @Test
+
+    @Test
     void handlePost_InvalidJson() throws IOException {
-         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
         String invalidJson = "{\"name\": \"Svc\", \"cost\": invalid}";
         InputStream requestBodyStream = new ByteArrayInputStream(invalidJson.getBytes(StandardCharsets.UTF_8));
         when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
@@ -210,11 +225,11 @@ class ServiceHandlerTest {
     }
 
     // --- PUT Tests ---
-
     @Test
     void handlePut_Success() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
-        Service serviceToUpdate = new Service(); serviceToUpdate.setIdService(1L);
+        Service serviceToUpdate = new Service();
+        serviceToUpdate.setIdService(1L);
         serviceToUpdate.setName("Updated Service Name");
         String requestJson = objectMapper.writeValueAsString(serviceToUpdate);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
@@ -231,10 +246,10 @@ class ServiceHandlerTest {
         assertEquals(serviceToUpdate.getName(), serviceCaptor.getValue().getName());
         verifyResponseSent(200, expectedBytes);
     }
-    
+
     @Test
     void handlePut_DaoUpdateFails() throws IOException {
-         when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
+        when(mockHttpExchange.getRequestMethod()).thenReturn("PUT");
         Service serviceToUpdate = new Service();
         String requestJson = objectMapper.writeValueAsString(serviceToUpdate);
         InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
@@ -247,7 +262,7 @@ class ServiceHandlerTest {
         verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
     }
 
-     // Helper method to verify JSON response
+    // Helper method to verify JSON response
     private void verifyResponseSent(int expectedStatusCode, byte[] expectedBodyBytes) throws IOException {
         verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
         verify(mockHttpExchange).sendResponseHeaders(statusCodeCaptor.capture(), responseLengthCaptor.capture());
@@ -256,6 +271,6 @@ class ServiceHandlerTest {
 
         assertEquals(expectedStatusCode, statusCodeCaptor.getValue());
         assertArrayEquals(expectedBodyBytes, responseBodyCaptor.getValue());
-        assertEquals((long)expectedBodyBytes.length, responseLengthCaptor.getValue());
+        assertEquals((long) expectedBodyBytes.length, responseLengthCaptor.getValue());
     }
-} 
+}

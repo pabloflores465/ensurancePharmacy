@@ -3,9 +3,10 @@ package com.sources.app.handlers;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-// TODO: Import necessary dependencies for the class under test (e.g., DAOs, Entities)
 import com.sources.app.dao.MedicineDAO;
-import com.sources.app.entities.Medicine; // Assuming entity is needed
+import com.sources.app.entities.Medicine;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpContext;
@@ -20,9 +21,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.ArrayList;
 
-public class XMLMedicineHandlerTest {
+public class SearchMedicineHandlerTest {
 
-    // Simple inline mock for MedicineDAO con datos en memoria
     private static class MockMedicineDAO extends MedicineDAO {
 
         private final List<Medicine> data;
@@ -157,80 +157,82 @@ public class XMLMedicineHandlerTest {
     }
 
     @Test
-    public void testXMLMedicineHandlerInstantiation() {
-        // TODO: Instantiate XMLMedicineHandler with required dependencies.
-
-        // Create mock DAO instance
+    public void testSearchMedicineHandlerInstantiation() {
         MedicineDAO mockDao = new MockMedicineDAO(List.of());
-        // Instantiate the handler with mock DAO
-        XMLMedicineHandler instance = new XMLMedicineHandler(mockDao);
-
-        // Placeholder assertion - replace with actual test logic
-        assertNotNull(instance, "Instance should not be null");
+        SearchMedicineHandler handler = new SearchMedicineHandler(mockDao);
+        assertNotNull(handler);
     }
 
     @Test
-    public void testGetXmlSuccess() throws Exception {
+    public void testHandleSearchByActiveMedicament() throws Exception {
         List<Medicine> data = new ArrayList<>();
-        Medicine m1 = new Medicine("A", "X", "desc", "img", "10mg", 1.0, 5, "brand", false, 1.5, 0);
-        m1.setIdMedicine(1L);
-        Medicine m2 = new Medicine("B", "Y", null, null, null, 2.0, 0, null, true, 2.5, 10);
-        m2.setIdMedicine(2L);
-        XMLMedicineHandler handler = new XMLMedicineHandler(new MockMedicineDAO(data));
-        data.add(m1);
-        data.add(m2);
+        data.add(new Medicine("DolorOff", "Paracetamol", "d", "i", "c", 1.0, 10, "b", false, 10.0, 0));
+        data.add(new Medicine("Paracetamol Plus", "PARACETAMOL", "d", "i", "c", 1.0, 10, "b", false, 12.0, 0));
+        data.add(new Medicine("Aspirina", "Ácido acetilsalicílico", "d", "i", "c", 1.0, 10, "b", false, 8.0, 0));
 
-        MockHttpExchange ex = new MockHttpExchange("GET", "http://localhost/api2/medicines-xml");
+        SearchMedicineHandler handler = new SearchMedicineHandler(new MockMedicineDAO(data));
+        MockHttpExchange ex = new MockHttpExchange("GET", "http://localhost/api2/medicines/search?activeMedicament=paracetamol");
         handler.handle(ex);
 
         assertEquals(200, ex.getResponseCode());
-        assertEquals("application/xml", ex.getResponseHeaders().getFirst("Content-Type"));
-        String xml = new String(ex.getResponseBytes());
-        assertTrue(xml.contains("<medicines>"));
-        assertTrue(xml.contains("<medicine>"));
-        assertTrue(xml.contains("<name>A</name>"));
-        assertTrue(xml.contains("<idMedicine>1</idMedicine>"));
+        ObjectMapper mapper = new ObjectMapper();
+        List<?> resp = mapper.readValue(ex.getResponseBytes(), new TypeReference<List<Object>>() {
+        });
+        assertEquals(2, resp.size());
         assertEquals("*", ex.getResponseHeaders().getFirst("Access-Control-Allow-Origin"));
     }
 
     @Test
-    public void testXmlEscaping() throws Exception {
+    public void testHandleSearchByName() throws Exception {
         List<Medicine> data = new ArrayList<>();
-        Medicine m = new Medicine("A & B <C>", "X > Y \"q\" 'z'", "&<>\"'", null, null, 1.0, 1, null, false, 1.0, 0);
-        m.setIdMedicine(3L);
-        data.add(m);
-        XMLMedicineHandler handler = new XMLMedicineHandler(new MockMedicineDAO(data));
+        data.add(new Medicine("Ibuprofeno Forte", "Ibuprofeno", "d", "i", "c", 1.0, 10, "b", false, 15.0, 0));
+        data.add(new Medicine("Jarabe de Tos", "Dextrometorfano", "d", "i", "c", 1.0, 10, "b", false, 9.0, 0));
+        data.add(new Medicine("Ibu Light", "Ibuprofeno", "d", "i", "c", 1.0, 10, "b", false, 7.0, 0));
 
-        MockHttpExchange ex = new MockHttpExchange("GET", "http://localhost/api2/medicines-xml");
+        SearchMedicineHandler handler = new SearchMedicineHandler(new MockMedicineDAO(data));
+        MockHttpExchange ex = new MockHttpExchange("GET", "http://localhost/api2/medicines/search?name=ibu");
         handler.handle(ex);
-        String xml = new String(ex.getResponseBytes());
-        assertTrue(xml.contains("A &amp; B &lt;C&gt;"));
-        assertTrue(xml.contains("X &gt; Y &quot;q&quot; &apos;z&apos;"));
-        assertTrue(xml.contains("&amp;&lt;&gt;&quot;&apos;"));
+
+        assertEquals(200, ex.getResponseCode());
+        ObjectMapper mapper = new ObjectMapper();
+        List<?> resp = mapper.readValue(ex.getResponseBytes(), new TypeReference<List<Object>>() {
+        });
+        assertEquals(2, resp.size());
     }
 
     @Test
-    public void testOptionsCors() throws Exception {
-        XMLMedicineHandler handler = new XMLMedicineHandler(new MockMedicineDAO(List.of()));
-        MockHttpExchange ex = new MockHttpExchange("OPTIONS", "http://localhost/api2/medicines-xml");
+    public void testHandleSearchNoParamsReturnsAll() throws Exception {
+        List<Medicine> data = new ArrayList<>();
+        data.add(new Medicine("A", "X", "d", "i", "c", 1.0, 10, "b", false, 1.0, 0));
+        data.add(new Medicine("B", "Y", "d", "i", "c", 1.0, 10, "b", false, 2.0, 0));
+
+        SearchMedicineHandler handler = new SearchMedicineHandler(new MockMedicineDAO(data));
+        MockHttpExchange ex = new MockHttpExchange("GET", "http://localhost/api2/medicines/search");
+        handler.handle(ex);
+
+        assertEquals(200, ex.getResponseCode());
+        ObjectMapper mapper = new ObjectMapper();
+        List<?> resp = mapper.readValue(ex.getResponseBytes(), new TypeReference<List<Object>>() {
+        });
+        assertEquals(2, resp.size());
+    }
+
+    @Test
+    public void testHandleOptionsCors() throws Exception {
+        SearchMedicineHandler handler = new SearchMedicineHandler(new MockMedicineDAO(List.of()));
+        MockHttpExchange ex = new MockHttpExchange("OPTIONS", "http://localhost/api2/medicines/search");
         handler.handle(ex);
         assertEquals(204, ex.getResponseCode());
         assertEquals("*", ex.getResponseHeaders().getFirst("Access-Control-Allow-Origin"));
     }
 
     @Test
-    public void testWrongPathNotFound() throws Exception {
-        XMLMedicineHandler handler = new XMLMedicineHandler(new MockMedicineDAO(List.of()));
-        MockHttpExchange ex = new MockHttpExchange("GET", "http://localhost/api2/not-medicines-xml");
-        handler.handle(ex);
-        assertEquals(404, ex.getResponseCode());
-    }
-
-    @Test
-    public void testMethodNotAllowed() throws Exception {
-        XMLMedicineHandler handler = new XMLMedicineHandler(new MockMedicineDAO(List.of()));
-        MockHttpExchange ex = new MockHttpExchange("POST", "http://localhost/api2/medicines-xml");
+    public void testHandleMethodNotAllowed() throws Exception {
+        SearchMedicineHandler handler = new SearchMedicineHandler(new MockMedicineDAO(List.of()));
+        MockHttpExchange ex = new MockHttpExchange("POST", "http://localhost/api2/medicines/search");
         handler.handle(ex);
         assertEquals(405, ex.getResponseCode());
+        String body = new String(ex.getResponseBytes());
+        assertTrue(body.contains("Método no permitido"));
     }
 }

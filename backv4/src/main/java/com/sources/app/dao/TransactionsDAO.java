@@ -32,17 +32,20 @@ public class TransactionsDAO {
      * @return El objeto Transactions creado, o null si ocurre un error.
      */
     public Transactions create(Long idUser, Long idHospital, Date transDate, Double total,
-                               Double copay, String transactionComment, String result,
-                               Integer covered, String auth) {
+            Double copay, String transactionComment, String result,
+            Integer covered, String auth) {
         Transaction tx = null;
         Transactions t = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
 
-            // Recuperar las entidades relacionadas a partir de sus IDs
+            // Recuperar entidades relacionadas con short-circuit
             User user = session.get(User.class, idUser);
+            if (user == null) {
+                throw new RuntimeException("User or Hospital not found.");
+            }
             Hospital hospital = session.get(Hospital.class, idHospital);
-            if (user == null || hospital == null) {
+            if (hospital == null) {
                 throw new RuntimeException("User or Hospital not found.");
             }
 
@@ -63,7 +66,15 @@ public class TransactionsDAO {
             if (tx != null) {
                 tx.rollback();
             }
+            // Propagar únicamente cuando falten entidades relacionadas; en errores de guardado devolver null
+            if (e instanceof RuntimeException) {
+                String msg = e.getMessage();
+                if (msg != null && (msg.contains("User or Hospital not found") || msg.contains("not found") || msg.contains("no encontrado"))) {
+                    throw (RuntimeException) e;
+                }
+            }
             e.printStackTrace();
+            return null;
         }
         return t;
     }
@@ -72,7 +83,8 @@ public class TransactionsDAO {
      * Busca una transacción por su ID único.
      *
      * @param id El ID de la transacción a buscar.
-     * @return El objeto Transactions encontrado, o null si no se encuentra o si ocurre un error.
+     * @return El objeto Transactions encontrado, o null si no se encuentra o si
+     * ocurre un error.
      */
     public Transactions findById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -87,7 +99,8 @@ public class TransactionsDAO {
      * Busca todas las transacciones asociadas a un ID de usuario específico.
      *
      * @param idUser El ID del usuario cuyas transacciones se quieren buscar.
-     * @return Una lista de objetos Transactions asociados al usuario, o null si ocurre un error.
+     * @return Una lista de objetos Transactions asociados al usuario, o null si
+     * ocurre un error.
      */
     public List<Transactions> findByUserId(Long idUser) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -103,11 +116,11 @@ public class TransactionsDAO {
         }
     }
 
-
     /**
      * Recupera todas las transacciones existentes en la base de datos.
      *
-     * @return Una lista de todos los objetos Transactions, o null si ocurre un error.
+     * @return Una lista de todos los objetos Transactions, o null si ocurre un
+     * error.
      */
     public List<Transactions> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

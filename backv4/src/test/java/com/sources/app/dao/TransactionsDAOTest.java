@@ -1,32 +1,42 @@
 package com.sources.app.dao;
 
-import com.sources.app.entities.Hospital;
-import com.sources.app.entities.Transactions;
-import com.sources.app.entities.User;
-import com.sources.app.util.HibernateUtil;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Date;
-import java.util.Collections;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import com.sources.app.entities.Hospital;
+import com.sources.app.entities.Transactions;
+import com.sources.app.entities.User;
+import com.sources.app.util.HibernateUtil;
 
 @ExtendWith(MockitoExtension.class)
 class TransactionsDAOTest {
@@ -51,10 +61,10 @@ class TransactionsDAOTest {
 
     @BeforeEach
     void setUp() {
-        mockedHibernateUtil = Mockito.mockStatic(HibernateUtil.class);
-        mockedHibernateUtil.when(HibernateUtil::getSessionFactory).thenReturn(mockSessionFactory);
-        lenient().doReturn(mockSession).when(mockSessionFactory).openSession();
-        lenient().doReturn(mockTransaction).when(mockSession).beginTransaction();
+        mockedHibernateUtil = Mockito.mockStatic(HibernateUtil.class, Mockito.CALLS_REAL_METHODS);
+        HibernateUtil.setSessionFactory(mockSessionFactory);
+        lenient().when(mockSessionFactory.openSession()).thenReturn(mockSession);
+        lenient().when(mockSession.beginTransaction()).thenReturn(mockTransaction);
     }
 
     @AfterEach
@@ -103,7 +113,7 @@ class TransactionsDAOTest {
 
         // Act & Assert
         Exception exception = assertThrows(RuntimeException.class, () -> {
-             transactionsDAO.create(userId, 2L, new Date(), 100.0, 10.0, "c", "r", 1, "a");
+            transactionsDAO.create(userId, 2L, new Date(), 100.0, 10.0, "c", "r", 1, "a");
         });
         assertTrue(exception.getMessage().contains("User or Hospital not found"));
         verify(mockSession).get(User.class, userId);
@@ -111,10 +121,10 @@ class TransactionsDAOTest {
         verify(mockSession, never()).save(any(Transactions.class));
         verify(mockTransaction, never()).commit(); // Should not commit if exception before save
         // Depending on implementation, rollback might happen or not before rethrowing
-        verify(mockTransaction, atLeastOnce()).rollback(); 
+        verify(mockTransaction, atLeastOnce()).rollback();
     }
-    
-     @Test
+
+    @Test
     void create_HospitalNotFound() {
         // Arrange
         Long userId = 1L;
@@ -124,7 +134,7 @@ class TransactionsDAOTest {
 
         // Act & Assert
         Exception exception = assertThrows(RuntimeException.class, () -> {
-             transactionsDAO.create(userId, hospitalId, new Date(), 100.0, 10.0, "c", "r", 1, "a");
+            transactionsDAO.create(userId, hospitalId, new Date(), 100.0, 10.0, "c", "r", 1, "a");
         });
         assertTrue(exception.getMessage().contains("User or Hospital not found"));
         verify(mockSession).get(User.class, userId);
@@ -152,7 +162,6 @@ class TransactionsDAOTest {
         verify(mockTransaction).rollback();
         verify(mockTransaction, never()).commit();
     }
-
 
     @Test
     void findById_Found() {
@@ -183,7 +192,7 @@ class TransactionsDAOTest {
         assertNull(result);
         verify(mockSession).get(Transactions.class, id);
     }
-    
+
     @Test
     void findById_Exception() {
         // Arrange
@@ -216,7 +225,7 @@ class TransactionsDAOTest {
         verify(mockSession).createQuery("FROM Transactions t WHERE t.user.idUser = :idUser", Transactions.class);
         verify(mockQuery).setParameter("idUser", userId);
     }
-    
+
     @Test
     void findByUserId_Exception() {
         // Arrange
@@ -249,7 +258,7 @@ class TransactionsDAOTest {
         assertEquals(expectedList, result);
         verify(mockSession).createQuery("FROM Transactions", Transactions.class);
     }
-    
+
     @Test
     void findAll_Exception() {
         // Arrange
@@ -294,4 +303,4 @@ class TransactionsDAOTest {
         verify(mockTransaction).rollback();
         verify(mockTransaction, never()).commit();
     }
-} 
+}
