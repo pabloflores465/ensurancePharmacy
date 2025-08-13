@@ -103,8 +103,7 @@ stage('SonarQube Analysis') {
       steps {
         sh '''
           echo "Deploy DEV → backend1/frontend1"
-          docker compose -f docker-compose.ensurance.yaml up -d --build \
-            ensurance-db ensurance-backend1 ensurance-frontend1
+          docker compose -f docker-compose.ensurance.yaml up -d --build
         '''
       }
     }
