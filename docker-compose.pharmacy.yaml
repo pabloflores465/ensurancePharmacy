@@ -39,8 +39,8 @@ services:
       - "8089:8080"                             # http://localhost:8089
     environment:
       # Bases de API para conexión frontend -> backend
-      VUE_APP_PHARMACY_API_URL:  "${VUE_APP_PHARMACY_API_URL:-http://localhost:${PHARM_BACKEND_HOST_PORT:-8082}/api2}"
-      VUE_APP_ENSURANCE_API_URL: "${VUE_APP_ENSURANCE_API_URL:-http://localhost:${ENS_BACKEND_HOST_PORT:-8081}/api}"
+      VUE_APP_PHARMACY_API_URL:  "${VUE_APP_PHARMACY_API_URL:-http://localhost:8082/api2}"
+      VUE_APP_ENSURANCE_API_URL: "${VUE_APP_ENSURANCE_API_URL:-http://localhost:8081/api}"
     depends_on:
       - pharmacy-backend
     restart: unless-stopped
