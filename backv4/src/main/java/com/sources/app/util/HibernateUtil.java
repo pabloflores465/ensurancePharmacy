@@ -22,8 +22,19 @@ public class HibernateUtil {
     }
 
     private static SessionFactory buildSessionFactory() {
-        return new Configuration()
-                .configure() // Carga hibernate.cfg.xml
+        Configuration configuration = new Configuration()
+                .configure(); // Carga hibernate.cfg.xml
+
+        // Configurar esquema desde variable de entorno
+        String dbSchema = System.getenv("DB_SCHEMA_ENSURANCE");
+        if (dbSchema != null && !dbSchema.trim().isEmpty()) {
+            System.out.println("🔧 Configurando esquema de BD para seguros: " + dbSchema);
+            configuration.setProperty("hibernate.default_schema", dbSchema);
+        } else {
+            System.out.println("⚠️ Variable DB_SCHEMA_ENSURANCE no definida, usando esquema por defecto");
+        }
+
+        return configuration
                 .addAnnotatedClass(User.class) // Registra la entidad User
                 .buildSessionFactory();
     }

@@ -88,6 +88,10 @@ pipeline {
           export ENS_BACKEND_API_URL="http://localhost:${ENS_BACKEND_HOST_PORT}/api"
           export PHARM_BACKEND_API_URL="http://localhost:${PHARM_BACKEND_HOST_PORT}/api2"
 
+          # Variables de esquemas de base de datos para DEV
+          export DB_SCHEMA_ENSURANCE="USUARIODEV"
+          export DB_SCHEMA_PHARMACY="FARMACIADEV"
+
           echo "Deploy DEV → backend1/frontend1"
           echo "🧹 Limpiando servicios existentes..."
           docker compose -f docker-compose.ensurance.yaml down -v --remove-orphans || true
@@ -118,6 +122,10 @@ pipeline {
           export ENS_BACKEND_API_URL="http://localhost:${ENS_BACKEND_HOST_PORT}/api"
           export PHARM_BACKEND_API_URL="http://localhost:${PHARM_BACKEND_HOST_PORT}/api2"
 
+          # Variables de esquemas de base de datos para UAT
+          export DB_SCHEMA_ENSURANCE="USUARIOUAT"
+          export DB_SCHEMA_PHARMACY="FARMACIAUAT"
+
           echo "Deploy UAT → backend2/frontend2"
           echo "🧹 Limpiando servicios existentes..."
           docker compose -f docker-compose.ensurance.yaml down -v --remove-orphans || true
@@ -147,6 +155,10 @@ pipeline {
           # Variables para APIs internas de backends
           export ENS_BACKEND_API_URL="http://localhost:${ENS_BACKEND_HOST_PORT}/api"
           export PHARM_BACKEND_API_URL="http://localhost:${PHARM_BACKEND_HOST_PORT}/api2"
+
+          # Variables de esquemas de base de datos para PROD
+          export DB_SCHEMA_ENSURANCE="USUARIO"
+          export DB_SCHEMA_PHARMACY="FARMACIA"
 
           echo "Deploy PROD → backend3/frontend3"
           echo "🧹 Limpiando servicios existentes..."
