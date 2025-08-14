@@ -9,7 +9,7 @@
         <property name="hibernate.connection.password">admin123</property>
         
         <!-- Configure default schema -->
-        <property name="hibernate.default_schema">USUARIOS</property>
+        <property name="hibernate.default_schema">USUARIO</property>
         
         <!-- Connection pool settings (optional) -->
         <property name="hibernate.connection.pool_size">10</property>
