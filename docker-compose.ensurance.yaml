@@ -9,9 +9,9 @@ services:
         echo '🧹 Limpiando contenedores en puertos del backend de ensurance...';
         docker ps -q --filter 'publish=${ENS_BACKEND_HOST_PORT:-8081}' | xargs -r docker stop;
         docker ps -aq --filter 'publish=${ENS_BACKEND_HOST_PORT:-8081}' | xargs -r docker rm;
-        echo '🧹 Limpiando contenedores en puerto 5175 (frontend ensurance)...';
-        docker ps -q --filter 'publish=5175' | xargs -r docker stop;
-        docker ps -aq --filter 'publish=5175' | xargs -r docker rm;
+        echo '🧹 Limpiando contenedores en puerto ${ENS_FRONTEND_HOST_PORT:-5175} (frontend ensurance)...';
+        docker ps -q --filter 'publish=${ENS_FRONTEND_HOST_PORT:-5175}' | xargs -r docker stop;
+        docker ps -aq --filter 'publish=${ENS_FRONTEND_HOST_PORT:-5175}' | xargs -r docker rm;
         echo '✅ Limpieza completada para servicios de ensurance';
       "
     profiles:
@@ -38,7 +38,7 @@ services:
       context: .
       dockerfile: Dockerfile.ensurance.frontend # Vite dev server (EXPOSE 5173)
     ports:
-      - "5175:5173"                             # http://localhost:5175
+      - "${ENS_FRONTEND_HOST_PORT:-5175}:5173"  # http://localhost:${ENS_FRONTEND_HOST_PORT}
     environment:
       # URLs base para que el frontend apunte al backend expuesto
       VITE_ENSURANCE_API_URL: "${VITE_ENSURANCE_API_URL:-http://localhost:8081/api}"

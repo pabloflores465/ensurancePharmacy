@@ -78,6 +78,8 @@ pipeline {
           # Variables de entorno para DEV
           export ENS_BACKEND_HOST_PORT=8081
           export PHARM_BACKEND_HOST_PORT=8082
+          export ENS_FRONTEND_HOST_PORT=5175
+          export PHARM_FRONTEND_HOST_PORT=8089
           export VITE_ENSURANCE_API_URL="http://localhost:${ENS_BACKEND_HOST_PORT}/api"
           export VITE_PHARMACY_API_URL="http://localhost:${PHARM_BACKEND_HOST_PORT}/api2"
           export VUE_APP_PHARMACY_API_URL="${VITE_PHARMACY_API_URL}"
@@ -112,6 +114,8 @@ pipeline {
           # Variables de entorno para UAT
           export ENS_BACKEND_HOST_PORT=9081
           export PHARM_BACKEND_HOST_PORT=9082
+          export ENS_FRONTEND_HOST_PORT=6175
+          export PHARM_FRONTEND_HOST_PORT=9089
           export VITE_ENSURANCE_API_URL="http://localhost:${ENS_BACKEND_HOST_PORT}/api"
           export VITE_PHARMACY_API_URL="http://localhost:${PHARM_BACKEND_HOST_PORT}/api2"
           export VUE_APP_PHARMACY_API_URL="${VITE_PHARMACY_API_URL}"
@@ -146,6 +150,8 @@ pipeline {
           # Variables de entorno para PROD
           export ENS_BACKEND_HOST_PORT=80
           export PHARM_BACKEND_HOST_PORT=81
+          export ENS_FRONTEND_HOST_PORT=7175
+          export PHARM_FRONTEND_HOST_PORT=7089
           export VITE_ENSURANCE_API_URL="http://localhost:${ENS_BACKEND_HOST_PORT}/api"
           export VITE_PHARMACY_API_URL="http://localhost:${PHARM_BACKEND_HOST_PORT}/api2"
           export VUE_APP_PHARMACY_API_URL="${VITE_PHARMACY_API_URL}"
