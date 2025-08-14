@@ -3,7 +3,7 @@ import { ref, onMounted } from "vue";
 import type { Ref } from "vue";
 import axios, { type AxiosResponse } from "axios";
 import router from "../router";
-import eventBus from '../eventBus';
+import eventBus from "../eventBus";
 import { checkMissingRequiredFields } from "../utils/profile-utils";
 import { getInsuranceApiUrl } from "../utils/api";
 // La prop msg es opcional
@@ -35,54 +35,70 @@ const login: () => Promise<void> = async (): Promise<void> => {
   try {
     loading.value = true;
     error.value = "";
-    
+
     console.log("Intentando login con:", email.value);
-    
+
+    // Debug: Verificar variables de entorno y URL construida
+    console.log(
+      "VITE_ENSURANCE_API_URL:",
+      import.meta.env.VITE_ENSURANCE_API_URL
+    );
+    console.log("URL de login calculada:", getInsuranceApiUrl("/login"));
+
     const response = await axios.post(getInsuranceApiUrl("/login"), {
       email: email.value,
       password: password.value,
     });
-    
+
     console.log("Respuesta del servidor:", response.data);
-    
+
     if (response.status === 200 && response.data) {
       // Verificar si ya existe información de perfil completado para este usuario
       const previousUserData = localStorage.getItem("user");
       let profileCompletedFlag = false;
       let profileData = null;
-      
+
       if (previousUserData) {
         try {
           const prevUser = JSON.parse(previousUserData);
-          if (prevUser && prevUser.email === response.data.email && prevUser.profile_completed) {
+          if (
+            prevUser &&
+            prevUser.email === response.data.email &&
+            prevUser.profile_completed
+          ) {
             profileCompletedFlag = true;
             profileData = prevUser.profile_data || null;
-            console.log("Se encontró información de perfil completado para este usuario");
+            console.log(
+              "Se encontró información de perfil completado para este usuario"
+            );
           }
         } catch (e) {
           console.error("Error al parsear datos de usuario previo:", e);
         }
       }
-      
+
       // Combinar datos del servidor con datos de perfil previos si existen
       const userData = {
         ...response.data,
         ...(profileCompletedFlag ? { profile_completed: true } : {}),
-        ...(profileData ? { profile_data: profileData } : {})
+        ...(profileData ? { profile_data: profileData } : {}),
       };
-      
+
       localStorage.setItem("user", JSON.stringify(userData));
       console.log("Usuario guardado en localStorage:", userData);
       console.log("Rol del usuario:", userData.role);
       console.log("Estado de activación:", userData.enabled);
       console.log("Estado de perfil completado:", userData.profile_completed);
-      
-      eventBus.emit('login');
-      
+
+      eventBus.emit("login");
+
       if (userData.enabled !== 1) {
         console.log("Redirigiendo a cuenta inactiva");
         router.push("/inactive-account");
-      } else if (!profileCompletedFlag && checkMissingRequiredFields(userData)) {
+      } else if (
+        !profileCompletedFlag &&
+        checkMissingRequiredFields(userData)
+      ) {
         console.log("Redirigiendo a completar perfil");
         router.push("/profile-completion");
       } else {
@@ -95,7 +111,7 @@ const login: () => Promise<void> = async (): Promise<void> => {
     }
   } catch (err: any) {
     console.error("Error en la petición:", err);
-    
+
     if (err.response?.status === 401) {
       error.value = "Usuario o contraseña incorrectos";
     } else {
@@ -109,9 +125,9 @@ const login: () => Promise<void> = async (): Promise<void> => {
 onMounted(() => {
   const profileStr = localStorage.getItem("user");
   console.log("Profile en localStorage:", profileStr);
-  
+
   const profile = profileStr ? JSON.parse(profileStr) : null;
-  
+
   if (profile && profile !== null && profile !== "null") {
     console.log("Usuario ya logueado, redirigiendo a home");
     router.push("/home");

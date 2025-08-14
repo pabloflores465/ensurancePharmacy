@@ -64,11 +64,20 @@ export const getInsuranceApiUrl = (endpoint: string): string => {
   const cleanEndpoint = endpoint.startsWith("/")
     ? endpoint.substring(1)
     : endpoint;
+
+  // Debug logs
+  console.log("ENSURANCE_API_BASE:", ENSURANCE_API_BASE);
+  console.log("ip:", ip);
+  console.log("portConfig.ensurance:", portConfig.ensurance);
+
   // Si se define base por variable, usarla
-  if (ENSURANCE_API_BASE)
+  if (ENSURANCE_API_BASE && ENSURANCE_API_BASE.trim() !== "")
     return `${ENSURANCE_API_BASE.replace(/\/$/, "")}/${cleanEndpoint}`;
-  // Fallback a host:puerto configurables
-  return `http://${ip}:${portConfig.ensurance}/api/${cleanEndpoint}`;
+
+  // Fallback a host:puerto configurables con verificación robusta
+  const host = ip || "localhost";
+  const port = portConfig.ensurance || "8081";
+  return `http://${host}:${port}/api/${cleanEndpoint}`;
 };
 
 /**
