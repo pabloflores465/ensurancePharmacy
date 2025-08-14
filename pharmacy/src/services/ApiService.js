@@ -3,12 +3,15 @@
  */
 
 // Importar variables de entorno
-const ip = process.env.VUE_APP_API_HOST || process.env.VUE_APP_IP || 'localhost';
+const ip =
+  process.env.VUE_APP_API_HOST || process.env.VUE_APP_IP || "localhost";
+const PHARMACY_API_BASE = process.env.VUE_APP_PHARMACY_API_URL || "";
+const ENSURANCE_API_BASE = process.env.VUE_APP_ENSURANCE_API_URL || "";
 
 // Configuración de puertos por defecto
 const defaultPortConfig = {
-  pharmacy: '8081',    // Puerto por defecto para pharmacy
-  ensurance: '8080'    // Puerto por defecto para ensurance
+  pharmacy: "8081", // Puerto por defecto para pharmacy
+  ensurance: "8080", // Puerto por defecto para ensurance
 };
 
 // Almacenar la configuración de puertos
@@ -21,11 +24,13 @@ let portConfig = { ...defaultPortConfig };
 export const configureApiPorts = (ports) => {
   if (ports.pharmacy) portConfig.pharmacy = ports.pharmacy;
   if (ports.ensurance) portConfig.ensurance = ports.ensurance;
-  
+
   // Guardar la configuración en localStorage para persistencia
   localStorage.setItem("apiPortConfig", JSON.stringify(portConfig));
-  
-  console.log(`Puertos configurados: Pharmacy=${portConfig.pharmacy}, Ensurance=${portConfig.ensurance}`);
+
+  console.log(
+    `Puertos configurados: Pharmacy=${portConfig.pharmacy}, Ensurance=${portConfig.ensurance}`
+  );
 };
 
 /**
@@ -37,7 +42,9 @@ export const loadPortConfiguration = () => {
     try {
       const config = JSON.parse(savedConfig);
       portConfig = { ...portConfig, ...config };
-      console.log(`Configuración de puertos cargada: Pharmacy=${portConfig.pharmacy}, Ensurance=${portConfig.ensurance}`);
+      console.log(
+        `Configuración de puertos cargada: Pharmacy=${portConfig.pharmacy}, Ensurance=${portConfig.ensurance}`
+      );
     } catch (error) {
       console.warn("Error al cargar configuración de puertos:", error);
     }
@@ -46,28 +53,36 @@ export const loadPortConfiguration = () => {
 
 /**
  * Obtiene la URL de la API de farmacia con el puerto configurado
- * 
+ *
  * @param {string} endpoint - El endpoint de la API sin la barra inicial
  * @returns {string} URL completa con el puerto correcto
  */
 export const getPharmacyApiUrl = (endpoint) => {
   // Eliminar la barra inicial del endpoint si existe
-  const cleanEndpoint = endpoint.startsWith("/") ? endpoint.substring(1) : endpoint;
-  
+  const cleanEndpoint = endpoint.startsWith("/")
+    ? endpoint.substring(1)
+    : endpoint;
+  // Si hay base por variable, usarla
+  if (PHARMACY_API_BASE)
+    return `${PHARMACY_API_BASE.replace(/\/$/, "")}/${cleanEndpoint}`;
   // Construir la URL completa
   return `http://${ip}:${portConfig.pharmacy}/api2/${cleanEndpoint}`;
 };
 
 /**
  * Obtiene la URL de la API de seguros con el puerto configurado
- * 
+ *
  * @param {string} endpoint - El endpoint de la API sin la barra inicial
  * @returns {string} URL completa con el puerto correcto
  */
 export const getEnsuranceApiUrl = (endpoint) => {
   // Eliminar la barra inicial del endpoint si existe
-  const cleanEndpoint = endpoint.startsWith("/") ? endpoint.substring(1) : endpoint;
-  
+  const cleanEndpoint = endpoint.startsWith("/")
+    ? endpoint.substring(1)
+    : endpoint;
+  // Si hay base por variable, usarla
+  if (ENSURANCE_API_BASE)
+    return `${ENSURANCE_API_BASE.replace(/\/$/, "")}/${cleanEndpoint}`;
   // Construir la URL completa
   return `http://${ip}:${portConfig.ensurance}/api2/${cleanEndpoint}`;
 };
@@ -78,5 +93,5 @@ export default {
   loadPortConfiguration,
   getPharmacyApiUrl,
   getEnsuranceApiUrl,
-  defaultPortConfig
-}; 
+  defaultPortConfig,
+};

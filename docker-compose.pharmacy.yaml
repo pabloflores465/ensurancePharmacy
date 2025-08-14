@@ -5,8 +5,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.pharmacy.backend   # backv5 (HTTP default 8081)
+    environment:
+      SERVER_HOST: "0.0.0.0"
+      SERVER_PORT: "8081"
     ports:
-      - "8086:8081"                             # http://localhost:8086 -> container:8081
+      - "${PHARM_BACKEND_HOST_PORT:-8082}:8081" # host -> container:8081
     restart: unless-stopped
 
   pharmacy-frontend:
@@ -16,11 +19,9 @@ services:
     ports:
       - "8089:8080"                             # http://localhost:8089
     environment:
-      # Pongo varias variantes por si tu frontend usa Vite/React/Vue
-      VITE_API_URL: "http://localhost:8086"
-      REACT_APP_API_URL: "http://localhost:8086"
-      VUE_APP_API_URL: "http://localhost:8086"
-      API_BASE_URL: "http://localhost:8086"
+      # Bases de API para conexión frontend -> backend
+      VUE_APP_PHARMACY_API_URL:  "${VUE_APP_PHARMACY_API_URL:-http://localhost:${PHARM_BACKEND_HOST_PORT:-8082}/api2}"
+      VUE_APP_ENSURANCE_API_URL: "${VUE_APP_ENSURANCE_API_URL:-http://localhost:${ENS_BACKEND_HOST_PORT:-8081}/api}"
     depends_on:
       - pharmacy-backend
     restart: unless-stopped
