@@ -1,6 +1,24 @@
 version: "3.9"
 
 services:
+  # Servicio de limpieza que se ejecuta antes que los demás
+  cleanup:
+    image: docker:24-cli
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: >
+      sh -c "
+        echo '🧹 Limpiando contenedores en puertos del backend de farmacia...';
+        docker ps -q --filter 'publish=${PHARM_BACKEND_HOST_PORT:-8082}' | xargs -r docker stop;
+        docker ps -aq --filter 'publish=${PHARM_BACKEND_HOST_PORT:-8082}' | xargs -r docker rm;
+        echo '🧹 Limpiando contenedores en puerto 8089 (frontend farmacia)...';
+        docker ps -q --filter 'publish=8089' | xargs -r docker stop;
+        docker ps -aq --filter 'publish=8089' | xargs -r docker rm;
+        echo '✅ Limpieza completada para servicios de farmacia';
+      "
+    profiles:
+      - cleanup
+
   pharmacy-backend:
     build:
       context: .
@@ -14,6 +32,9 @@ services:
     ports:
       - "${PHARM_BACKEND_HOST_PORT:-8082}:8081" # host -> container:8081
     restart: unless-stopped
+    depends_on:
+      cleanup:
+        condition: service_completed_successfully
 
   pharmacy-frontend:
     build:
@@ -26,6 +47,9 @@ services:
       VUE_APP_PHARMACY_API_URL:  "${VUE_APP_PHARMACY_API_URL:-http://localhost:${PHARM_BACKEND_HOST_PORT:-8082}/api2}"
       VUE_APP_ENSURANCE_API_URL: "${VUE_APP_ENSURANCE_API_URL:-http://localhost:${ENS_BACKEND_HOST_PORT:-8081}/api}"
     depends_on:
-      - pharmacy-backend
+      cleanup:
+        condition: service_completed_successfully
+      pharmacy-backend:
+        condition: service_started
     restart: unless-stopped
 

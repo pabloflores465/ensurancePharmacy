@@ -1,6 +1,24 @@
 version: "3.9"
 
 services:
+  # Servicio de limpieza que se ejecuta antes que los demás
+  cleanup:
+    image: docker:24-cli
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: >
+      sh -c "
+        echo '🧹 Limpiando contenedores en puertos del backend de ensurance...';
+        docker ps -q --filter 'publish=${ENS_BACKEND_HOST_PORT:-8081}' | xargs -r docker stop;
+        docker ps -aq --filter 'publish=${ENS_BACKEND_HOST_PORT:-8081}' | xargs -r docker rm;
+        echo '🧹 Limpiando contenedores en puerto 5175 (frontend ensurance)...';
+        docker ps -q --filter 'publish=5175' | xargs -r docker stop;
+        docker ps -aq --filter 'publish=5175' | xargs -r docker rm;
+        echo '✅ Limpieza completada para servicios de ensurance';
+      "
+    profiles:
+      - cleanup
+
   ensurance-backend:
     build:
       context: .
@@ -14,6 +32,9 @@ services:
     ports:
       - "${ENS_BACKEND_HOST_PORT:-8081}:8080"   # host -> container:8080
     restart: unless-stopped
+    depends_on:
+      cleanup:
+        condition: service_completed_successfully
 
   ensurance-frontend:
     build:
@@ -26,6 +47,9 @@ services:
       VITE_ENSURANCE_API_URL: "${VITE_ENSURANCE_API_URL:-http://localhost:${ENS_BACKEND_HOST_PORT:-8081}/api}"
       VITE_PHARMACY_API_URL:  "${VITE_PHARMACY_API_URL:-http://localhost:${PHARM_BACKEND_HOST_PORT:-8082}/api2}"
     depends_on:
-      - ensurance-backend
+      cleanup:
+        condition: service_completed_successfully
+      ensurance-backend:
+        condition: service_started
     restart: unless-stopped
 
