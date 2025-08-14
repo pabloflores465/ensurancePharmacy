@@ -89,6 +89,10 @@ pipeline {
           export PHARM_BACKEND_API_URL="http://localhost:${PHARM_BACKEND_HOST_PORT}/api2"
 
           echo "Deploy DEV → backend1/frontend1"
+          echo "🧹 Limpiando servicios existentes..."
+          docker compose -f docker-compose.ensurance.yaml --profile cleanup up --abort-on-container-exit
+          docker compose -f docker-compose.pharmacy.yaml --profile cleanup up --abort-on-container-exit
+          echo "🚀 Iniciando servicios limpios..."
           docker compose -f docker-compose.ensurance.yaml up -d --build
           docker compose -f docker-compose.pharmacy.yaml up -d --build
         '''
@@ -113,6 +117,10 @@ pipeline {
           export PHARM_BACKEND_API_URL="http://localhost:${PHARM_BACKEND_HOST_PORT}/api2"
 
           echo "Deploy UAT → backend2/frontend2"
+          echo "🧹 Limpiando servicios existentes..."
+          docker compose -f docker-compose.ensurance.yaml --profile cleanup up --abort-on-container-exit
+          docker compose -f docker-compose.pharmacy.yaml --profile cleanup up --abort-on-container-exit
+          echo "🚀 Iniciando servicios limpios..."
           docker compose -f docker-compose.ensurance.yaml up -d --build
           docker compose -f docker-compose.pharmacy.yaml up -d --build
         '''
@@ -137,6 +145,10 @@ pipeline {
           export PHARM_BACKEND_API_URL="http://localhost:${PHARM_BACKEND_HOST_PORT}/api2"
 
           echo "Deploy PROD → backend3/frontend3"
+          echo "🧹 Limpiando servicios existentes..."
+          docker compose -f docker-compose.ensurance.yaml --profile cleanup up --abort-on-container-exit
+          docker compose -f docker-compose.pharmacy.yaml --profile cleanup up --abort-on-container-exit
+          echo "🚀 Iniciando servicios limpios..."
           docker compose -f docker-compose.ensurance.yaml up -d --build
           docker compose -f docker-compose.pharmacy.yaml up -d --build
         '''
