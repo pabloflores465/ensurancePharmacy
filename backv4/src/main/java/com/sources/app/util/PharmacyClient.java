@@ -1,6 +1,5 @@
 package com.sources.app.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,12 +8,16 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * Cliente para realizar llamadas a la API de Farmacia
  */
 public class PharmacyClient {
 
-    private static final String PHARMACY_API_BASE_URL = "http://localhost:8082/api2";
+    // URL configurable desde variable de entorno
+    private static final String PHARMACY_API_BASE_URL = System.getenv("PHARM_BACKEND_API_URL") != null
+            ? System.getenv("PHARM_BACKEND_API_URL") : "http://localhost:8082/api2";
     private static final int TIMEOUT = 10000; // 10 segundos
     private static final ObjectMapper objectMapper = new ObjectMapper();
 

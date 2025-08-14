@@ -84,6 +84,10 @@ pipeline {
           export VUE_APP_ENSURANCE_API_URL="${VITE_ENSURANCE_API_URL}"
           export NUXT_PUBLIC_ENSURANCE_API_URL="${VITE_ENSURANCE_API_URL}"
 
+          # Variables para APIs internas de backends
+          export ENS_BACKEND_API_URL="http://localhost:${ENS_BACKEND_HOST_PORT}/api"
+          export PHARM_BACKEND_API_URL="http://localhost:${PHARM_BACKEND_HOST_PORT}/api2"
+
           echo "Deploy DEV → backend1/frontend1"
           docker compose -f docker-compose.ensurance.yaml up -d --build
           docker compose -f docker-compose.pharmacy.yaml up -d --build
@@ -104,6 +108,10 @@ pipeline {
           export VUE_APP_ENSURANCE_API_URL="${VITE_ENSURANCE_API_URL}"
           export NUXT_PUBLIC_ENSURANCE_API_URL="${VITE_ENSURANCE_API_URL}"
 
+          # Variables para APIs internas de backends
+          export ENS_BACKEND_API_URL="http://localhost:${ENS_BACKEND_HOST_PORT}/api"
+          export PHARM_BACKEND_API_URL="http://localhost:${PHARM_BACKEND_HOST_PORT}/api2"
+
           echo "Deploy UAT → backend2/frontend2"
           docker compose -f docker-compose.ensurance.yaml up -d --build
           docker compose -f docker-compose.pharmacy.yaml up -d --build
@@ -123,6 +131,10 @@ pipeline {
           export VUE_APP_PHARMACY_API_URL="${VITE_PHARMACY_API_URL}"
           export VUE_APP_ENSURANCE_API_URL="${VITE_ENSURANCE_API_URL}"
           export NUXT_PUBLIC_ENSURANCE_API_URL="${VITE_ENSURANCE_API_URL}"
+
+          # Variables para APIs internas de backends
+          export ENS_BACKEND_API_URL="http://localhost:${ENS_BACKEND_HOST_PORT}/api"
+          export PHARM_BACKEND_API_URL="http://localhost:${PHARM_BACKEND_HOST_PORT}/api2"
 
           echo "Deploy PROD → backend3/frontend3"
           docker compose -f docker-compose.ensurance.yaml up -d --build

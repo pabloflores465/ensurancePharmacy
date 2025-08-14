@@ -84,7 +84,7 @@ export const getEnsuranceApiUrl = (endpoint) => {
   if (ENSURANCE_API_BASE)
     return `${ENSURANCE_API_BASE.replace(/\/$/, "")}/${cleanEndpoint}`;
   // Construir la URL completa
-  return `http://${ip}:${portConfig.ensurance}/api2/${cleanEndpoint}`;
+  return `http://${ip}:${portConfig.ensurance}/api/${cleanEndpoint}`;
 };
 
 // Exportar funciones y configuración por defecto

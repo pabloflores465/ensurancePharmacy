@@ -8,6 +8,9 @@ services:
     environment:
       SERVER_HOST: "0.0.0.0"
       SERVER_PORT: "8081"
+      # Variables para comunicación interna entre backends  
+      ENS_BACKEND_API_URL: "${ENS_BACKEND_API_URL:-http://localhost:8081/api}"
+      HOSPITAL_API_URL: "${HOSPITAL_API_URL:-http://localhost:8000/api}"
     ports:
       - "${PHARM_BACKEND_HOST_PORT:-8082}:8081" # host -> container:8081
     restart: unless-stopped

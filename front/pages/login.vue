@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import {setProfile} from "~/composables/useProfile";
+import { setProfile } from "~/composables/useProfile";
 
 const dark = darkMode();
 
 import { ref } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
+import { getInsuranceApiUrl } from "~/utils/api";
 
 const email = ref("");
 const password = ref("");
@@ -23,7 +24,7 @@ const handleLogin = async () => {
       description: "Procesando tu solicitud, por favor espera...",
     });
     const response = await axios.post(
-      `http://${ip}:8080/api/login`, // URL de tu endpoint de login
+      getInsuranceApiUrl("login"), // URL de tu endpoint de login
       {
         email: email.value,
         password: password.value,
@@ -51,8 +52,6 @@ const handleLogin = async () => {
     errorMessage.value = "Credenciales incorrectas o error en el servidor.";
   }
 };
-
-
 </script>
 <template>
   <main
