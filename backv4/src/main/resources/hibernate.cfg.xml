@@ -3,10 +3,13 @@
     <session-factory>
         <!-- JDBC Database connection settings -->
         <property name="hibernate.connection.driver_class">oracle.jdbc.driver.OracleDriver</property>
-        <!-- Example URL for Oracle XE; update host, port, and SID/service name as needed -->
+        <!-- Oracle connection URL with correct database -->
         <property name="hibernate.connection.url">jdbc:oracle:thin:@//64.225.58.196:1521/XEPDB1</property>
-        <property name="hibernate.connection.username">USUARIO</property>
-        <property name="hibernate.connection.password">user123</property>
+        <property name="hibernate.connection.username">ADMIN</property>
+        <property name="hibernate.connection.password">updatedpassword</property>
+        
+        <!-- Configure default schema -->
+        <property name="hibernate.default_schema">USUARIOS</property>
         
         <!-- Connection pool settings (optional) -->
         <property name="hibernate.connection.pool_size">10</property>
