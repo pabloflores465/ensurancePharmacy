@@ -14,7 +14,9 @@
     <div v-else-if="medicine" class="medicine-details">
       <div class="medicine-header">
         <h2>{{ medicine.name }}</h2>
-        <span class="medicine-badge" v-if="medicine.prescription">Requiere receta médica</span>
+        <span class="medicine-badge" v-if="medicine.prescription"
+          >Requiere receta médica</span
+        >
       </div>
 
       <div class="medicine-data">
@@ -37,21 +39,27 @@
           </div>
           <div class="data-item">
             <span class="label">Total:</span>
-            <span class="value total">Q{{ (medicine.price * quantity).toFixed(2) }}</span>
+            <span class="value total"
+              >Q{{ (medicine.price * quantity).toFixed(2) }}</span
+            >
           </div>
         </div>
       </div>
 
       <!-- Verificación de stock -->
-      <div class="verification-card stock-card" :class="{ 'status-success': hasStock, 'status-error': !hasStock }">
-        <div class="card-icon">{{ hasStock ? '✓' : '✗' }}</div>
+      <div
+        class="verification-card stock-card"
+        :class="{ 'status-success': hasStock, 'status-error': !hasStock }"
+      >
+        <div class="card-icon">{{ hasStock ? "✓" : "✗" }}</div>
         <div class="card-content">
           <h3>Verificación de Stock</h3>
           <p v-if="hasStock">
             Hay suficiente stock disponible ({{ medicine.stock }} unidades)
           </p>
           <p v-else>
-            No hay suficiente stock disponible. Solo quedan {{ medicine.stock }} unidades.
+            No hay suficiente stock disponible. Solo quedan
+            {{ medicine.stock }} unidades.
           </p>
         </div>
       </div>
@@ -59,139 +67,206 @@
       <!-- Verificación de receta médica -->
       <div v-if="medicine.prescription" class="prescription-section">
         <h3>Recetas Médicas Disponibles</h3>
-         <div class="prescription-container">
-            <!-- Lista de recetas a la izquierda -->
-            <div class="prescription-list">
-              <div v-if="isPrescriptionPending" class="loading-recipes">
-                <div class="loading-spinner-small"></div>
-                <p>Cargando recetas...</p>
-              </div>
-              
-              <div v-else-if="!userRecipes || userRecipes.length === 0" class="no-recipes">
-                <p>No se encontraron recetas disponibles</p>
-                <button @click="recargarRecetas" class="reload-button">
-                  <span class="reload-icon">⟳</span> Recargar recetas
+        <div class="prescription-container">
+          <!-- Lista de recetas a la izquierda -->
+          <div class="prescription-list">
+            <div v-if="isPrescriptionPending" class="loading-recipes">
+              <div class="loading-spinner-small"></div>
+              <p>Cargando recetas...</p>
+            </div>
+
+            <div
+              v-else-if="!userRecipes || userRecipes.length === 0"
+              class="no-recipes"
+            >
+              <p>No se encontraron recetas disponibles</p>
+              <button @click="recargarRecetas" class="reload-button">
+                <span class="reload-icon">⟳</span> Recargar recetas
+              </button>
+              <div class="prescription-input">
+                <label for="prescription">Adjuntar nueva receta:</label>
+                <input
+                  type="file"
+                  id="prescription"
+                  @change="handlePrescriptionUpload"
+                />
+                <button @click="verifyPrescription" class="verify-button">
+                  Verificar receta
                 </button>
-                <div class="prescription-input">
-                  <label for="prescription">Adjuntar nueva receta:</label>
-                  <input type="file" id="prescription" @change="handlePrescriptionUpload" />
-                  <button @click="verifyPrescription" class="verify-button">Verificar receta</button>
-                </div>
-              </div>
-              
-              <div v-else>
-                <div class="recipe-actions top">
-                  <button @click="recargarRecetas" class="reload-button small">
-                    <span class="reload-icon">⟳</span> Actualizar
-                  </button>
-                </div>
-                <div 
-                  v-for="recipe in userRecipes" 
-                  :key="recipe._id" 
-                  class="recipe-item"
-                  :class="{ 'active': selectedRecipe && selectedRecipe._id === recipe._id }"
-                  @click="forceSelectRecipe(recipe)"
-                >
-                  <div class="recipe-header">
-                    <span class="recipe-code">{{ recipe.formatted_code }}</span>
-                    <span class="recipe-date">{{ recipe.formatted_date }}</span>
-                  </div>
-                  <div class="recipe-doctor">Dr. {{ recipe.doctor }}</div>
-                </div>
               </div>
             </div>
-            
-            <!-- Detalle de la receta a la derecha -->
-            <div class="prescription-detail">
-              <div v-if="selectedRecipe" class="recipe-detail-content">
-                <h4>Detalle de la Receta</h4>
-                <div class="recipe-info">
-                  <p><strong>Código:</strong> {{ selectedRecipe.formatted_code }}</p>
-                  <p><strong>Fecha:</strong> {{ selectedRecipe.formatted_date }}</p>
-                  <p><strong>Doctor:</strong> {{ selectedRecipe.doctor }}</p>
-                  <p v-if="selectedRecipe.special_notes"><strong>Notas:</strong> {{ selectedRecipe.special_notes }}</p>
-                </div>
-                
-                <h4>Medicamentos recetados:</h4>
-                <div class="medicine-list">
-                  <div v-for="(med, index) in selectedRecipe.medicines" :key="index" class="medicine-item"
-                       :class="{'matching-medicine': medicine && med.principioActivo === medicine.activeMedicament}">
-                    <p><strong>{{ med.principioActivo }}</strong> {{ med.concentracion }}</p>
-                    <p v-if="med.presentacion">Presentación: {{ med.presentacion }}</p>
-                    <p>Dosis: {{ med.dosis }} unidades | Frecuencia: {{ med.frecuencia }} veces al día | Duración: {{ med.duracion }} días</p>
-                    <p v-if="med.diagnostico">Diagnóstico: {{ med.diagnostico }}</p>
-                    <div v-if="medicine && med.principioActivo === medicine.activeMedicament" class="calculation-details">
-                      <p class="calculation-text">
-                        <strong>Cálculo:</strong> 
-                        {{ med.dosis }} unidades × 
-                        {{ med.frecuencia }} veces/día × 
-                        {{ med.duracion }} días = 
-                        <strong>{{ parseInt(med.dosis) * parseInt(med.frecuencia) * parseInt(med.duracion) }} unidades totales</strong>
-                      </p>
-                      <p class="calculation-text">
-                        <strong>Paquetes necesarios:</strong> 
-                        ⌈{{ parseInt(med.dosis) * parseInt(med.frecuencia) * parseInt(med.duracion) }} 
-                        ÷ {{ medicine.presentacion }}⌉ = 
-                        <strong>{{ Math.ceil((parseInt(med.dosis) * parseInt(med.frecuencia) * parseInt(med.duracion)) / medicine.presentacion) }} paquete(s)</strong>
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="recipe-actions">
-                  <button 
-                    @click="useSelectedRecipe" 
-                    class="use-recipe-button"
-                    :disabled="!canUseSelectedRecipe"
-                  >
-                    Usar esta receta
-                  </button>
-                </div>
+
+            <div v-else>
+              <div class="recipe-actions top">
+                <button @click="recargarRecetas" class="reload-button small">
+                  <span class="reload-icon">⟳</span> Actualizar
+                </button>
               </div>
-              
-              <div v-else class="no-recipe-selected">
-                <p>Seleccione una receta para ver detalles</p>
+              <div
+                v-for="recipe in userRecipes"
+                :key="recipe._id"
+                class="recipe-item"
+                :class="{
+                  active: selectedRecipe && selectedRecipe._id === recipe._id,
+                }"
+                @click="forceSelectRecipe(recipe)"
+              >
+                <div class="recipe-header">
+                  <span class="recipe-code">{{ recipe.formatted_code }}</span>
+                  <span class="recipe-date">{{ recipe.formatted_date }}</span>
+                </div>
+                <div class="recipe-doctor">Dr. {{ recipe.doctor }}</div>
               </div>
             </div>
           </div>
+
+          <!-- Detalle de la receta a la derecha -->
+          <div class="prescription-detail">
+            <div v-if="selectedRecipe" class="recipe-detail-content">
+              <h4>Detalle de la Receta</h4>
+              <div class="recipe-info">
+                <p>
+                  <strong>Código:</strong> {{ selectedRecipe.formatted_code }}
+                </p>
+                <p>
+                  <strong>Fecha:</strong> {{ selectedRecipe.formatted_date }}
+                </p>
+                <p><strong>Doctor:</strong> {{ selectedRecipe.doctor }}</p>
+                <p v-if="selectedRecipe.special_notes">
+                  <strong>Notas:</strong> {{ selectedRecipe.special_notes }}
+                </p>
+              </div>
+
+              <h4>Medicamentos recetados:</h4>
+              <div class="medicine-list">
+                <div
+                  v-for="(med, index) in selectedRecipe.medicines"
+                  :key="index"
+                  class="medicine-item"
+                  :class="{
+                    'matching-medicine':
+                      medicine &&
+                      med.principioActivo === medicine.activeMedicament,
+                  }"
+                >
+                  <p>
+                    <strong>{{ med.principioActivo }}</strong>
+                    {{ med.concentracion }}
+                  </p>
+                  <p v-if="med.presentacion">
+                    Presentación: {{ med.presentacion }}
+                  </p>
+                  <p>
+                    Dosis: {{ med.dosis }} unidades | Frecuencia:
+                    {{ med.frecuencia }} veces al día | Duración:
+                    {{ med.duracion }} días
+                  </p>
+                  <p v-if="med.diagnostico">
+                    Diagnóstico: {{ med.diagnostico }}
+                  </p>
+                  <div
+                    v-if="
+                      medicine &&
+                      med.principioActivo === medicine.activeMedicament
+                    "
+                    class="calculation-details"
+                  >
+                    <p class="calculation-text">
+                      <strong>Cálculo:</strong>
+                      {{ med.dosis }} unidades × {{ med.frecuencia }} veces/día
+                      × {{ med.duracion }} días =
+                      <strong
+                        >{{
+                          parseInt(med.dosis) *
+                          parseInt(med.frecuencia) *
+                          parseInt(med.duracion)
+                        }}
+                        unidades totales</strong
+                      >
+                    </p>
+                    <p class="calculation-text">
+                      <strong>Paquetes necesarios:</strong>
+                      ⌈{{
+                        parseInt(med.dosis) *
+                        parseInt(med.frecuencia) *
+                        parseInt(med.duracion)
+                      }}
+                      ÷ {{ medicine.presentacion }}⌉ =
+                      <strong
+                        >{{
+                          Math.ceil(
+                            (parseInt(med.dosis) *
+                              parseInt(med.frecuencia) *
+                              parseInt(med.duracion)) /
+                              medicine.presentacion
+                          )
+                        }}
+                        paquete(s)</strong
+                      >
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="recipe-actions">
+                <button
+                  @click="useSelectedRecipe"
+                  class="use-recipe-button"
+                  :disabled="!canUseSelectedRecipe"
+                >
+                  Usar esta receta
+                </button>
+              </div>
+            </div>
+
+            <div v-else class="no-recipe-selected">
+              <p>Seleccione una receta para ver detalles</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Verificación de seguro -->
-      <div v-if="userStore.user" class="verification-card insurance-card" :class="{ 'status-success': hasInsurance, 'status-neutral': !hasInsurance }">
-        <div class="card-icon">{{ hasInsurance ? '✓' : 'ⓘ' }}</div>
+      <div
+        v-if="userStore.user"
+        class="verification-card insurance-card"
+        :class="{
+          'status-success': hasInsurance,
+          'status-neutral': !hasInsurance,
+        }"
+      >
+        <div class="card-icon">{{ hasInsurance ? "✓" : "ⓘ" }}</div>
         <div class="card-content">
           <h3>Seguro Médico</h3>
           <p v-if="hasInsurance">
             Su seguro médico cubrirá {{ coveragePercentage }}% del costo
           </p>
-          <p v-else>
-            No se detectó seguro médico. Pagará el precio completo.
-          </p>
+          <p v-else>No se detectó seguro médico. Pagará el precio completo.</p>
         </div>
       </div>
-      
+
       <!-- Formulario de Tarjeta de Crédito -->
       <div class="payment-section">
         <h3>Información de Pago</h3>
         <div class="card-form">
           <div class="form-group">
             <label for="card-name">Titular de la Tarjeta</label>
-            <input 
-              type="text" 
-              id="card-name" 
-              v-model="cardName" 
+            <input
+              type="text"
+              id="card-name"
+              v-model="cardName"
               placeholder="Nombre como aparece en la tarjeta"
               @input="validateAllCardFields"
             />
           </div>
-          
+
           <div class="form-group">
             <label for="card-number">Número de Tarjeta</label>
             <div class="card-number-wrapper">
-              <input 
-                type="text" 
-                id="card-number" 
-                v-model="cardNumber" 
+              <input
+                type="text"
+                id="card-number"
+                v-model="cardNumber"
                 placeholder="1234 5678 9012 3456"
                 @input="formatCardNumber"
                 maxlength="19"
@@ -201,45 +276,68 @@
               </div>
             </div>
           </div>
-          
+
           <div class="form-row">
             <div class="form-group col">
               <label for="card-expiry">Fecha de Expiración</label>
-              <input 
-                type="text" 
-                id="card-expiry" 
-                v-model="cardExpiry" 
-                placeholder="MM/AA" 
+              <input
+                type="text"
+                id="card-expiry"
+                v-model="cardExpiry"
+                placeholder="MM/AA"
                 @input="formatCardExpiry"
                 maxlength="5"
               />
             </div>
-            
+
             <div class="form-group col">
               <label for="card-cvc">CVC</label>
-              <input 
-                type="text" 
-                id="card-cvc" 
-                v-model="cardCVC" 
-                placeholder="123" 
+              <input
+                type="text"
+                id="card-cvc"
+                v-model="cardCVC"
+                placeholder="123"
                 @input="validateAllCardFields"
                 maxlength="4"
               />
             </div>
           </div>
-          
+
           <div class="card-validation" v-if="cardNumber">
-            <div class="validation-indicator" :class="{'valid': validateCardNumber()}">
-              <i :class="validateCardNumber() ? 'fas fa-check' : 'fas fa-times'"></i>
-              <span>Número de tarjeta {{ validateCardNumber() ? 'válido' : 'inválido' }}</span>
+            <div
+              class="validation-indicator"
+              :class="{ valid: validateCardNumber() }"
+            >
+              <i
+                :class="validateCardNumber() ? 'fas fa-check' : 'fas fa-times'"
+              ></i>
+              <span
+                >Número de tarjeta
+                {{ validateCardNumber() ? "válido" : "inválido" }}</span
+              >
             </div>
-            <div v-if="cardExpiry" class="validation-indicator" :class="{'valid': validateCardExpiry()}">
-              <i :class="validateCardExpiry() ? 'fas fa-check' : 'fas fa-times'"></i>
-              <span>Fecha de expiración {{ validateCardExpiry() ? 'válida' : 'inválida' }}</span>
+            <div
+              v-if="cardExpiry"
+              class="validation-indicator"
+              :class="{ valid: validateCardExpiry() }"
+            >
+              <i
+                :class="validateCardExpiry() ? 'fas fa-check' : 'fas fa-times'"
+              ></i>
+              <span
+                >Fecha de expiración
+                {{ validateCardExpiry() ? "válida" : "inválida" }}</span
+              >
             </div>
-            <div v-if="cardCVC" class="validation-indicator" :class="{'valid': validateCardCVC()}">
-              <i :class="validateCardCVC() ? 'fas fa-check' : 'fas fa-times'"></i>
-              <span>CVC {{ validateCardCVC() ? 'válido' : 'inválido' }}</span>
+            <div
+              v-if="cardCVC"
+              class="validation-indicator"
+              :class="{ valid: validateCardCVC() }"
+            >
+              <i
+                :class="validateCardCVC() ? 'fas fa-check' : 'fas fa-times'"
+              ></i>
+              <span>CVC {{ validateCardCVC() ? "válido" : "inválido" }}</span>
             </div>
           </div>
         </div>
@@ -254,7 +352,13 @@
         </div>
         <div v-if="hasInsurance" class="summary-item discount">
           <span>Cobertura del seguro ({{ coveragePercentage }}%):</span>
-          <span>-Q{{ ((medicine.price * quantity) * (coveragePercentage / 100)).toFixed(2) }}</span>
+          <span
+            >-Q{{
+              (medicine.price * quantity * (coveragePercentage / 100)).toFixed(
+                2
+              )
+            }}</span
+          >
         </div>
         <div class="summary-item total">
           <span>Total a pagar:</span>
@@ -266,10 +370,10 @@
       <div class="action-buttons">
         <button @click="goBack" class="cancel-button">Cancelar</button>
         <button @click="viewDetail" class="detail-button">Ver Detalle</button>
-        <button 
-          @click="confirmPurchase" 
+        <button
+          @click="confirmPurchase"
           class="confirm-button"
-          :disabled="!canConfirmPurchase" 
+          :disabled="!canConfirmPurchase"
         >
           Confirmar Compra
         </button>
@@ -285,86 +389,156 @@
     <!-- Modal de detalle de compra -->
     <div v-if="showDetailModal" class="modal-overlay">
       <div class="modal-content detail-modal">
-          <div class="modal-header">
-            <h3>Detalle de la Compra</h3>
-            <button @click="closeDetailModal" class="close-icon">&times;</button>
-          </div>
-          
-          <div class="detail-content" v-if="medicine"> 
-            <div class="detail-section">
-              <h4>Medicamento</h4>
-              <div class="detail-info">
-                <p><strong>Nombre:</strong> {{ medicine.name }}</p>
-                <p><strong>Principio Activo:</strong> {{ medicine.activeMedicament }}</p>
-                <p><strong>Presentación:</strong> {{ medicine.presentacion }}</p>
-                <p><strong>Precio Unitario:</strong> Q{{ medicine.price.toFixed(2) }}</p>
-              </div>
-            </div>
-            
-            <div class="detail-section">
-              <h4>Detalles de la Compra</h4>
-              <div class="detail-info">
-                <p><strong>Cantidad (paquetes):</strong> {{ quantity }}</p>
-                <p><strong>Subtotal:</strong> Q{{ (medicine.price * quantity).toFixed(2) }}</p>
-                <p v-if="hasInsurance"><strong>Descuento Seguro:</strong> Q{{ ((medicine.price * quantity) * (coveragePercentage / 100)).toFixed(2) }}</p>
-                <p><strong>Total a Pagar:</strong> Q{{ calculateTotalToPay().toFixed(2) }}</p>
-              </div>
-            </div>
-            
-            <div v-if="selectedRecipe" class="detail-section">
-              <h4>Receta Médica Utilizada</h4>
-              <div class="detail-info">
-                <p><strong>Código:</strong> {{ selectedRecipe.formatted_code }}</p>
-                <p><strong>Fecha:</strong> {{ selectedRecipe.formatted_date }}</p>
-                <p><strong>Doctor:</strong> {{ selectedRecipe.doctor }}</p>
-                <div v-if="medicineMatch" class="calculation-details">
-                  <p class="calculation-text">
-                    <strong>Cálculo:</strong> 
-                    {{ medicineMatch.dosis }} unidades × 
-                    {{ medicineMatch.frecuencia }} veces/día × 
-                    {{ medicineMatch.duracion }} días = 
-                    <strong>{{ parseInt(medicineMatch.dosis) * parseInt(medicineMatch.frecuencia) * parseInt(medicineMatch.duracion) }} unidades totales</strong>
-                  </p>
-                  <p class="calculation-text">
-                    <strong>Paquetes necesarios:</strong> 
-                    ⌈{{ parseInt(medicineMatch.dosis) * parseInt(medicineMatch.frecuencia) * parseInt(medicineMatch.duracion) }} 
-                    ÷ {{ medicine.presentacion }}⌉ = 
-                    <strong>{{ Math.ceil((parseInt(medicineMatch.dosis) * parseInt(medicineMatch.frecuencia) * parseInt(medicineMatch.duracion)) / medicine.presentacion) }} paquete(s)</strong>
-                  </p>
-                </div>
-              </div>
-            </div>
-             <div v-else-if="medicine.prescription" class="detail-section">
-                <h4>Receta Médica</h4>
-                 <div class="detail-info">
-                    <p class="status-warning">Se requiere receta, pero no se ha seleccionado ninguna.</p>
-                 </div>
-             </div>
-            
-            <div class="detail-section">
-              <h4>Estado de la Compra</h4>
-              <div class="detail-info">
-                <p><strong>Stock disponible:</strong> <span :class="hasStock ? 'status-ok' : 'status-error'">{{ hasStock ? 'Sí' : 'No' }}</span></p>
-                <p v-if="medicine.prescription"><strong>Receta médica:</strong> <span :class="hasPrescription ? 'status-ok' : 'status-pending'">{{ hasPrescription ? 'Validada' : 'Pendiente/No seleccionada' }}</span></p>
-                <p><strong>Seguro médico:</strong> <span :class="hasInsurance ? 'status-ok' : 'status-info'">{{ hasInsurance ? `Cobertura del ${coveragePercentage}%` : 'No disponible' }}</span></p>
-              </div>
+        <div class="modal-header">
+          <h3>Detalle de la Compra</h3>
+          <button @click="closeDetailModal" class="close-icon">&times;</button>
+        </div>
+
+        <div class="detail-content" v-if="medicine">
+          <div class="detail-section">
+            <h4>Medicamento</h4>
+            <div class="detail-info">
+              <p><strong>Nombre:</strong> {{ medicine.name }}</p>
+              <p>
+                <strong>Principio Activo:</strong>
+                {{ medicine.activeMedicament }}
+              </p>
+              <p><strong>Presentación:</strong> {{ medicine.presentacion }}</p>
+              <p>
+                <strong>Precio Unitario:</strong> Q{{
+                  medicine.price.toFixed(2)
+                }}
+              </p>
             </div>
           </div>
-           <div v-else class="detail-content">
-                <p>Cargando detalles...</p>
-           </div>
-          
-          <div class="modal-actions">
-            <button @click="closeDetailModal" class="cancel-button">Cerrar</button>
-            <button 
-              @click="confirmPurchase" 
-              class="confirm-button"
-              :disabled="!canConfirmPurchase"
-            >
-              Confirmar Compra
-            </button>
+
+          <div class="detail-section">
+            <h4>Detalles de la Compra</h4>
+            <div class="detail-info">
+              <p><strong>Cantidad (paquetes):</strong> {{ quantity }}</p>
+              <p>
+                <strong>Subtotal:</strong> Q{{
+                  (medicine.price * quantity).toFixed(2)
+                }}
+              </p>
+              <p v-if="hasInsurance">
+                <strong>Descuento Seguro:</strong> Q{{
+                  (
+                    medicine.price *
+                    quantity *
+                    (coveragePercentage / 100)
+                  ).toFixed(2)
+                }}
+              </p>
+              <p>
+                <strong>Total a Pagar:</strong> Q{{
+                  calculateTotalToPay().toFixed(2)
+                }}
+              </p>
+            </div>
+          </div>
+
+          <div v-if="selectedRecipe" class="detail-section">
+            <h4>Receta Médica Utilizada</h4>
+            <div class="detail-info">
+              <p>
+                <strong>Código:</strong> {{ selectedRecipe.formatted_code }}
+              </p>
+              <p><strong>Fecha:</strong> {{ selectedRecipe.formatted_date }}</p>
+              <p><strong>Doctor:</strong> {{ selectedRecipe.doctor }}</p>
+              <div v-if="medicineMatch" class="calculation-details">
+                <p class="calculation-text">
+                  <strong>Cálculo:</strong>
+                  {{ medicineMatch.dosis }} unidades ×
+                  {{ medicineMatch.frecuencia }} veces/día ×
+                  {{ medicineMatch.duracion }} días =
+                  <strong
+                    >{{
+                      parseInt(medicineMatch.dosis) *
+                      parseInt(medicineMatch.frecuencia) *
+                      parseInt(medicineMatch.duracion)
+                    }}
+                    unidades totales</strong
+                  >
+                </p>
+                <p class="calculation-text">
+                  <strong>Paquetes necesarios:</strong>
+                  ⌈{{
+                    parseInt(medicineMatch.dosis) *
+                    parseInt(medicineMatch.frecuencia) *
+                    parseInt(medicineMatch.duracion)
+                  }}
+                  ÷ {{ medicine.presentacion }}⌉ =
+                  <strong
+                    >{{
+                      Math.ceil(
+                        (parseInt(medicineMatch.dosis) *
+                          parseInt(medicineMatch.frecuencia) *
+                          parseInt(medicineMatch.duracion)) /
+                          medicine.presentacion
+                      )
+                    }}
+                    paquete(s)</strong
+                  >
+                </p>
+              </div>
+            </div>
+          </div>
+          <div v-else-if="medicine.prescription" class="detail-section">
+            <h4>Receta Médica</h4>
+            <div class="detail-info">
+              <p class="status-warning">
+                Se requiere receta, pero no se ha seleccionado ninguna.
+              </p>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h4>Estado de la Compra</h4>
+            <div class="detail-info">
+              <p>
+                <strong>Stock disponible:</strong>
+                <span :class="hasStock ? 'status-ok' : 'status-error'">{{
+                  hasStock ? "Sí" : "No"
+                }}</span>
+              </p>
+              <p v-if="medicine.prescription">
+                <strong>Receta médica:</strong>
+                <span
+                  :class="hasPrescription ? 'status-ok' : 'status-pending'"
+                  >{{
+                    hasPrescription ? "Validada" : "Pendiente/No seleccionada"
+                  }}</span
+                >
+              </p>
+              <p>
+                <strong>Seguro médico:</strong>
+                <span :class="hasInsurance ? 'status-ok' : 'status-info'">{{
+                  hasInsurance
+                    ? `Cobertura del ${coveragePercentage}%`
+                    : "No disponible"
+                }}</span>
+              </p>
+            </div>
           </div>
         </div>
+        <div v-else class="detail-content">
+          <p>Cargando detalles...</p>
+        </div>
+
+        <div class="modal-actions">
+          <button @click="closeDetailModal" class="cancel-button">
+            Cerrar
+          </button>
+          <button
+            @click="confirmPurchase"
+            class="confirm-button"
+            :disabled="!canConfirmPurchase"
+          >
+            Confirmar Compra
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Modal de confirmación -->
@@ -375,7 +549,11 @@
         <div class="confirmation-details">
           <p><strong>Medicamento:</strong> {{ medicine?.name }}</p>
           <p><strong>Cantidad:</strong> {{ quantity }}</p>
-          <p><strong>Total pagado:</strong> Q{{ calculateTotalToPay().toFixed(2) }}</p>
+          <p>
+            <strong>Total pagado:</strong> Q{{
+              calculateTotalToPay().toFixed(2)
+            }}
+          </p>
         </div>
         <button @click="finishPurchase" class="finish-button">Continuar</button>
       </div>
@@ -384,11 +562,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useUserStore } from '@/stores/userStore';
-import axios from 'axios';
-import ApiService from '../services/ApiService';  
+import { ref, computed, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useUserStore } from "@/stores/userStore";
+import axios from "axios";
+import ApiService from "../services/ApiService";
 const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
@@ -409,10 +587,10 @@ const showDetailModal = ref(false);
 const medicineMatch = ref(null);
 
 // Nuevos estados para tarjeta y seguro
-const cardNumber = ref('');
-const cardName = ref('');
-const cardExpiry = ref('');
-const cardCVC = ref('');
+const cardNumber = ref("");
+const cardName = ref("");
+const cardExpiry = ref("");
+const cardCVC = ref("");
 const isCardValid = ref(false);
 const isCheckingInsurance = ref(false);
 const insuranceDetails = ref(null);
@@ -425,69 +603,73 @@ const canConfirmPurchase = computed(() => {
 // Verificar si se puede usar la receta seleccionada
 const canUseSelectedRecipe = computed(() => {
   if (!selectedRecipe.value || !medicine.value) return false;
-  
+
   // Verificar si la receta contiene el medicamento actual
-  const matchFound = selectedRecipe.value.medicines.find(med => 
-    med.principioActivo === medicine.value.activeMedicament
+  const matchFound = selectedRecipe.value.medicines.find(
+    (med) => med.principioActivo === medicine.value.activeMedicament
   );
-  
+
   return !!matchFound;
 });
 
 // Verificar stock disponible
 function verificarStock() {
   if (!medicine.value) {
-    console.error('No hay un medicamento para verificar stock');
+    console.error("No hay un medicamento para verificar stock");
     hasStock.value = false;
     return false;
   }
-  
+
   // Verificar si hay suficiente stock (siempre para cantidad 1)
   hasStock.value = medicine.value.stock >= 1;
-  
-  console.log(`Verificación de stock: ${medicine.value.stock} disponibles, resultado: ${hasStock.value ? 'Disponible' : 'No disponible'}`);
-  
+
+  console.log(
+    `Verificación de stock: ${medicine.value.stock} disponibles, resultado: ${hasStock.value ? "Disponible" : "No disponible"}`
+  );
+
   return hasStock.value;
 }
 
 // Forzar la selección de receta con cálculo visible
 function forceSelectRecipe(recipe) {
-  console.log('Forzando selección de receta:', recipe);
+  console.log("Forzando selección de receta:", recipe);
   selectedRecipe.value = recipe;
-  
+
   if (!medicine.value) {
-    console.warn('No hay medicamento cargado');
+    console.warn("No hay medicamento cargado");
     return;
   }
-  
+
   // Encuentra el medicamento que coincide
-  const matchingMedicine = recipe.medicines.find(med => 
-    med.principioActivo === medicine.value.activeMedicament
+  const matchingMedicine = recipe.medicines.find(
+    (med) => med.principioActivo === medicine.value.activeMedicament
   );
-  
+
   if (matchingMedicine) {
     medicineMatch.value = matchingMedicine;
     hasPrescription.value = true;
-    
+
     // Calcular explícitamente
     const dosis = parseInt(matchingMedicine.dosis) || 0;
     const frecuencia = parseInt(matchingMedicine.frecuencia) || 0;
     const duracion = parseInt(matchingMedicine.duracion) || 0;
     const unidadesTotales = dosis * frecuencia * duracion;
-    const paquetesNecesarios = Math.ceil(unidadesTotales / medicine.value.presentacion);
-    
+    const paquetesNecesarios = Math.ceil(
+      unidadesTotales / medicine.value.presentacion
+    );
+
     // Actualizar cantidad
     quantity.value = paquetesNecesarios || 1;
-    
-    console.log('Resultado del cálculo:', {
+
+    console.log("Resultado del cálculo:", {
       dosis,
-      frecuencia, 
+      frecuencia,
       duracion,
       unidadesTotales,
       unidadesPorPresentacion: medicine.value.presentacion,
-      paquetesNecesarios
+      paquetesNecesarios,
     });
-    
+
     // Aplicar seguro si existe
     if (recipe.has_insurance && userStore.user && userStore.user.policy) {
       hasInsurance.value = true;
@@ -500,7 +682,7 @@ function forceSelectRecipe(recipe) {
     medicineMatch.value = null;
     hasPrescription.value = false;
     quantity.value = 1;
-    alert('Esta receta no contiene el medicamento seleccionado');
+    alert("Esta receta no contiene el medicamento seleccionado");
   }
 }
 
@@ -515,11 +697,11 @@ async function loadRecipes() {
   try {
     if (userStore.user && userStore.user.idUser) {
       // En un entorno real, deberías obtener las recetas del usuario desde el backend
-      console.log('Cargando recetas para el usuario:', userStore.user.idUser);
-      
+      console.log("Cargando recetas para el usuario:", userStore.user.idUser);
+
       // Simulamos una llamada a la API
       // En producción, aquí iría: const response = await axios.get(`http://${ip}:${apiPort}/api2/prescriptions/user/${userStore.user.idUser}`);
-      
+
       // Por ahora, usamos datos de ejemplo
       setTimeout(() => {
         const recetasEjemplo = [
@@ -542,22 +724,22 @@ async function loadRecipes() {
                 dosis: "2",
                 frecuencia: "1",
                 duracion: "4",
-                diagnostico: "2"
-              }
-            ]
-          }
+                diagnostico: "2",
+              },
+            ],
+          },
         ];
-        
+
         userRecipes.value = recetasEjemplo;
-        console.log('Recetas cargadas:', userRecipes.value);
+        console.log("Recetas cargadas:", userRecipes.value);
         isPrescriptionPending.value = false;
       }, 500);
     } else {
-      console.warn('No hay usuario logueado para cargar recetas');
+      console.warn("No hay usuario logueado para cargar recetas");
       isPrescriptionPending.value = false;
     }
   } catch (error) {
-    console.error('Error al cargar recetas:', error);
+    console.error("Error al cargar recetas:", error);
     isPrescriptionPending.value = false;
   }
 }
@@ -566,16 +748,16 @@ async function loadRecipes() {
 function handlePrescriptionUpload(event) {
   const file = event.target.files[0];
   if (file) {
-    console.log('Archivo de receta seleccionado:', file.name);
+    console.log("Archivo de receta seleccionado:", file.name);
   } else {
-    console.log('No se seleccionó ningún archivo');
+    console.log("No se seleccionó ningún archivo");
   }
 }
 
 // Calcular total a pagar
 function calculateTotalToPay() {
   if (!medicine.value) return 0;
-  
+
   const subtotal = medicine.value.price * quantity.value;
   if (hasInsurance.value) {
     const discount = subtotal * (coveragePercentage.value / 100);
@@ -597,37 +779,37 @@ function closeDetailModal() {
 // Validar formato de tarjeta
 function validateCardNumber() {
   // Implementación básica de validación (Luhn algorithm)
-  const value = cardNumber.value.replace(/\s/g, '');
-  
+  const value = cardNumber.value.replace(/\s/g, "");
+
   // Verificar longitud
   if (value.length < 13 || value.length > 19) {
     return false;
   }
-  
+
   // Verificar que sean solo dígitos
   if (!/^\d+$/.test(value)) {
     return false;
   }
-  
+
   // Implementación del algoritmo de Luhn
   let sum = 0;
   let double = false;
-  
+
   // Recorrer de derecha a izquierda
   for (let i = value.length - 1; i >= 0; i--) {
     let digit = parseInt(value.charAt(i));
-    
+
     if (double) {
       digit *= 2;
       if (digit > 9) {
         digit -= 9;
       }
     }
-    
+
     sum += digit;
     double = !double;
   }
-  
+
   // Valid si es divisible por 10
   return sum % 10 === 0;
 }
@@ -638,27 +820,30 @@ function validateCardExpiry() {
   if (!value || !/^\d{2}\/\d{2}$/.test(value)) {
     return false;
   }
-  
-  const [month, year] = value.split('/').map(num => parseInt(num, 10));
-  
+
+  const [month, year] = value.split("/").map((num) => parseInt(num, 10));
+
   // Verificar que el mes sea válido (1-12)
   if (month < 1 || month > 12) {
     return false;
   }
-  
+
   // Obtener año actual y convertir el año de 2 dígitos a 4 dígitos
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear() % 100; // últimos 2 dígitos
   const currentMonth = currentDate.getMonth() + 1; // 1-12
-  
+
   // Convertir año de tarjeta a número de 2 dígitos para comparación
   const expYear = year;
-  
+
   // Verificar si la tarjeta ya está vencida
-  if (expYear < currentYear || (expYear === currentYear && month < currentMonth)) {
+  if (
+    expYear < currentYear ||
+    (expYear === currentYear && month < currentMonth)
+  ) {
     return false;
   }
-  
+
   return true;
 }
 
@@ -670,31 +855,31 @@ function validateCardCVC() {
 
 // Formatear número de tarjeta mientras se escribe
 function formatCardNumber(e) {
-  let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-  
+  let value = e.target.value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
+
   // Limitar a 16 dígitos
   if (value.length > 16) {
     value = value.substr(0, 16);
   }
-  
+
   // Formato 4 dígitos - 4 dígitos - 4 dígitos - 4 dígitos
   const parts = [];
   for (let i = 0; i < value.length; i += 4) {
     parts.push(value.substr(i, 4));
   }
-  
-  cardNumber.value = parts.join(' ');
+
+  cardNumber.value = parts.join(" ");
 }
 
 // Formatear fecha de expiración mientras se escribe
 function formatCardExpiry(e) {
-  let value = e.target.value.replace(/[^0-9]/g, '');
-  
+  let value = e.target.value.replace(/[^0-9]/g, "");
+
   // Limitar a 4 dígitos
   if (value.length > 4) {
     value = value.substr(0, 4);
   }
-  
+
   // Formato MM/YY
   if (value.length > 2) {
     cardExpiry.value = `${value.substr(0, 2)}/${value.substr(2)}`;
@@ -705,59 +890,66 @@ function formatCardExpiry(e) {
 
 // Verificar todos los campos de tarjeta
 function validateAllCardFields() {
-  isCardValid.value = 
-    cardNumber.value.trim() !== '' && validateCardNumber() &&
-    cardName.value.trim() !== '' &&
-    cardExpiry.value.trim() !== '' && validateCardExpiry() &&
-    cardCVC.value.trim() !== '' && validateCardCVC();
-  
+  isCardValid.value =
+    cardNumber.value.trim() !== "" &&
+    validateCardNumber() &&
+    cardName.value.trim() !== "" &&
+    cardExpiry.value.trim() !== "" &&
+    validateCardExpiry() &&
+    cardCVC.value.trim() !== "" &&
+    validateCardCVC();
+
   return isCardValid.value;
 }
 
 // Verificar seguro médico del usuario
 async function checkInsurance() {
   if (!userStore.user || !userStore.user.email) {
-    console.warn('No hay email de usuario para verificar seguro');
+    console.warn("No hay email de usuario para verificar seguro");
     hasInsurance.value = false;
     coveragePercentage.value = 0;
     return;
   }
-  
+
   isCheckingInsurance.value = true;
-  
+
   try {
     const emailPaciente = userStore.user.email;
     console.log(`Verificando seguro para: ${emailPaciente}`);
-    
-    const insuranceResponse = await axios.get(ApiService.getInsuranceApiUrl(`/users/by-email/${encodeURIComponent(emailPaciente)}`));
-    console.log('Respuesta de API de seguros:', insuranceResponse.data);
-    
+
+    const insuranceResponse = await axios.get(
+      ApiService.getEnsuranceApiUrl(
+        `/users/by-email/${encodeURIComponent(emailPaciente)}`
+      )
+    );
+    console.log("Respuesta de API de seguros:", insuranceResponse.data);
+
     if (insuranceResponse.data && insuranceResponse.data.policy) {
       // Usuario tiene seguro
       hasInsurance.value = true;
       insuranceDetails.value = insuranceResponse.data;
-      
+
       // Verificar si cubre el medicamento actual
       if (medicine.value && medicine.value.activeMedicament) {
         // Simulación: validar que el medicamento está cubierto
         const isCovered = true; // En producción, esto vendría desde la API
-        
+
         if (isCovered) {
           coveragePercentage.value = 70; // Porcentaje de cobertura (podría venir de la API)
           console.log(`Medicamento cubierto al ${coveragePercentage.value}%`);
         } else {
           coveragePercentage.value = 0;
-          console.log('Medicamento no cubierto por el seguro');
+          console.log("Medicamento no cubierto por el seguro");
         }
       }
     } else {
       hasInsurance.value = false;
       coveragePercentage.value = 0;
       insuranceDetails.value = null;
-      console.log('Usuario no tiene seguro médico');
+      console.log("Usuario no tiene seguro médico");
     }
   } catch (error) {
-    console.error('Error al verificar seguro:', error);
+    console.error("Error al verificar seguro:", error);
     hasInsurance.value = false;
     coveragePercentage.value = 0;
   } finally {
@@ -767,111 +959,127 @@ async function checkInsurance() {
 
 // Función para confirmar la compra
 async function confirmPurchase() {
-  console.log('[VerificarCompra] Iniciando confirmPurchase...');
-  
+  console.log("[VerificarCompra] Iniciando confirmPurchase...");
+
   // Validar tarjeta de nuevo antes de procesar
   if (!validateAllCardFields()) {
-    alert('Por favor, ingrese una tarjeta válida para continuar con la compra.');
+    alert(
+      "Por favor, ingrese una tarjeta válida para continuar con la compra."
+    );
     return;
   }
-  
+
   try {
     isLoading.value = true;
-    
+
     if (!medicine.value || !medicine.value.idMedicine) {
-      console.error('No hay un medicamento válido para la compra');
-      alert('No se pudo completar la compra: datos de medicamento incompletos');
+      console.error("No hay un medicamento válido para la compra");
+      alert("No se pudo completar la compra: datos de medicamento incompletos");
       isLoading.value = false;
       return;
     }
-    
+
     if (!userStore.user || !userStore.user.idUser) {
-      console.error('No hay información del usuario para la compra');
-      alert('Debe iniciar sesión para completar la compra');
+      console.error("No hay información del usuario para la compra");
+      alert("Debe iniciar sesión para completar la compra");
       isLoading.value = false;
       return;
     }
-    
+
     // Verificar stock nuevamente antes de procesar
     if (!verificarStock()) {
-      alert('No hay suficiente stock para completar la compra');
+      alert("No hay suficiente stock para completar la compra");
       isLoading.value = false;
       return;
     }
-    
+
     // Verificar que la cantidad solicitada no sea mayor al stock disponible
     if (quantity.value > medicine.value.stock) {
-      alert(`Solo hay ${medicine.value.stock} unidades disponibles. Ajuste la cantidad.`);
+      alert(
+        `Solo hay ${medicine.value.stock} unidades disponibles. Ajuste la cantidad.`
+      );
       quantity.value = medicine.value.stock;
       isLoading.value = false;
       return;
     }
-    
-    console.log('Iniciando proceso de compra:', {
+
+    console.log("Iniciando proceso de compra:", {
       medicineId: medicine.value.idMedicine,
       userId: userStore.user.idUser,
       quantity: quantity.value,
       recipeId: selectedRecipe.value?._id, // Incluir ID de receta si está seleccionada
-      stockActual: medicine.value.stock
+      stockActual: medicine.value.stock,
     });
-    
+
     // Simulación de procesamiento de pago
-    console.log('Procesando pago con tarjeta:', cardNumber.value.slice(-4));
+    console.log("Procesando pago con tarjeta:", cardNumber.value.slice(-4));
     // En un entorno real, aquí iría la llamada a un servicio de pago
-    
+
     // PROCESO DE COMPRA
-    
+
     // 1. Actualizar primero el stock del medicamento para reservar el inventario
     try {
-      console.log('Paso 1: Actualizando stock del medicamento...');
+      console.log("Paso 1: Actualizando stock del medicamento...");
       const updatedMedicine = { ...medicine.value };
       const nuevoStock = updatedMedicine.stock - quantity.value;
-      
+
       if (nuevoStock < 0) {
-        throw new Error('Stock insuficiente');
+        throw new Error("Stock insuficiente");
       }
-      
+
       updatedMedicine.stock = nuevoStock;
-      
+
       await axios.put(
-        ApiService.getPharmacyApiUrl(`/medicines/${medicine.value.idMedicine}`), 
+        ApiService.getPharmacyApiUrl(`/medicines/${medicine.value.idMedicine}`),
         updatedMedicine
       );
-      
-      console.log(`Stock actualizado correctamente. Nuevo stock: ${nuevoStock}`);
-      
+
+      console.log(
+        `Stock actualizado correctamente. Nuevo stock: ${nuevoStock}`
+      );
+
       // 2. Crear orden de compra
-      console.log('Paso 2: Creando orden de compra...');
+      console.log("Paso 2: Creando orden de compra...");
       const orderData = {
         user: { idUser: userStore.user.idUser },
-        status: 'Completado'
+        status: "Completado",
       };
-      
-      const orderResponse = await axios.post(ApiService.getPharmacyApiUrl("/orders"), orderData);
+
+      const orderResponse = await axios.post(
+        ApiService.getPharmacyApiUrl("/orders"),
+        orderData
+      );
       const order = orderResponse.data;
-      console.log('Orden creada:', order);
-      
+      console.log("Orden creada:", order);
+
       // 3. Añadir medicamento a la orden
-      console.log('Paso 3: Añadiendo medicamento a la orden...');
+      console.log("Paso 3: Añadiendo medicamento a la orden...");
       const orderMedicineData = {
         orders: order,
         medicine: { idMedicine: medicine.value.idMedicine },
         quantity: quantity.value,
         cost: medicine.value.price,
-        total: medicine.value.price * quantity.value
+        total: medicine.value.price * quantity.value,
       };
-      
-      await axios.post(ApiService.getPharmacyApiUrl("/order_medicines"), orderMedicineData);
-      console.log('Medicamento añadido a la orden con éxito');
-      
+
+      await axios.post(
+        ApiService.getPharmacyApiUrl("/order_medicines"),
+        orderMedicineData
+      );
+      console.log("Medicamento añadido a la orden con éxito");
+
       // 4. Si hay seguro o receta, generar registro de factura
       if (hasInsurance.value || selectedRecipe.value) {
-        console.log('Paso 4: Generando factura...');
-        const insuranceAmount = hasInsurance.value ? 
-          (medicine.value.price * quantity.value) * (coveragePercentage.value / 100) : 0;
-          
-        const patientAmount = (medicine.value.price * quantity.value) - insuranceAmount;
-        
+        console.log("Paso 4: Generando factura...");
+        const insuranceAmount = hasInsurance.value
+          ? medicine.value.price *
+            quantity.value *
+            (coveragePercentage.value / 100)
+          : 0;
+
+        const patientAmount =
+          medicine.value.price * quantity.value - insuranceAmount;
+
         const billData = {
           prescription: selectedRecipe.value ? selectedRecipe.value._id : null,
           total: medicine.value.price * quantity.value,
@@ -880,56 +1088,67 @@ async function confirmPurchase() {
           coveredAmount: insuranceAmount,
           patientAmount: patientAmount,
           copay: hasInsurance.value ? coveragePercentage.value : 0,
-          status: 'Pagado',
-          insuranceApprovalCode: hasInsurance.value ? 'AP' + Math.floor(Math.random() * 100000) : null
+          status: "Pagado",
+          insuranceApprovalCode: hasInsurance.value
+            ? "AP" + Math.floor(Math.random() * 100000)
+            : null,
         };
-        
-        console.log('Datos de factura:', billData);
+
+        console.log("Datos de factura:", billData);
         await axios.post(ApiService.getPharmacyApiUrl("/bills"), billData);
-        console.log('Factura creada con éxito');
+        console.log("Factura creada con éxito");
       }
-      
-      console.log('Compra completada exitosamente');
-      
+
+      console.log("Compra completada exitosamente");
+
       // Actualizamos la referencia local del medicamento para reflejar el nuevo stock
       medicine.value.stock = nuevoStock;
-      
+
       // Cerrar cualquier modal abierto
       closeDetailModal();
-      
+
       // Mostrar confirmación
       showConfirmationModal.value = true;
-      
     } catch (stockError) {
-      console.error('Error al actualizar el stock:', stockError);
-      
+      console.error("Error al actualizar el stock:", stockError);
+
       // Si falló la actualización del stock, intentamos revertir si ya se había actualizado
-      if (stockError.message !== 'Stock insuficiente') {
+      if (stockError.message !== "Stock insuficiente") {
         try {
-          console.warn('Intentando verificar estado actual del stock...');
-          const checkResponse = await axios.get(ApiService.getPharmacyApiUrl(`/medicines/${medicine.value.idMedicine}`));
-          
+          console.warn("Intentando verificar estado actual del stock...");
+          const checkResponse = await axios.get(
+            ApiService.getPharmacyApiUrl(
+              `/medicines/${medicine.value.idMedicine}`
+            )
+          );
+
           // Si el stock ya fue actualizado erróneamente, intentamos restaurarlo
           if (checkResponse.data.stock !== medicine.value.stock) {
-            console.warn('Detectado cambio de stock, intentando restaurar...');
-            await axios.put(ApiService.getPharmacyApiUrl(`/medicines/${medicine.value.idMedicine}`), medicine.value);
-            console.log('Stock restaurado al valor original');
+            console.warn("Detectado cambio de stock, intentando restaurar...");
+            await axios.put(
+              ApiService.getPharmacyApiUrl(
+                `/medicines/${medicine.value.idMedicine}`
+              ),
+              medicine.value
+            );
+            console.log("Stock restaurado al valor original");
           }
         } catch (restoreError) {
-          console.error('Error al restaurar stock:', restoreError);
+          console.error("Error al restaurar stock:", restoreError);
         }
       }
-      
-      if (stockError.message === 'Stock insuficiente') {
-        alert('No hay suficiente stock para completar la compra.');
+
+      if (stockError.message === "Stock insuficiente") {
+        alert("No hay suficiente stock para completar la compra.");
       } else {
-        alert('Error al actualizar el inventario. Inténtelo nuevamente.');
+        alert("Error al actualizar el inventario. Inténtelo nuevamente.");
       }
     }
-    
   } catch (error) {
-    console.error('Error general procesando la compra:', error);
-    alert('Ocurrió un error al procesar su compra. Por favor, inténtelo de nuevo.');
+    console.error("Error general procesando la compra:", error);
+    alert(
+      "Ocurrió un error al procesar su compra. Por favor, inténtelo de nuevo."
+    );
   } finally {
     isLoading.value = false;
   }
@@ -940,9 +1159,9 @@ function finishPurchase() {
   // Cerrar todos los modales
   showConfirmationModal.value = false;
   showDetailModal.value = false;
-  
+
   // Redireccionar al catálogo
-  router.push('/catalogo');
+  router.push("/catalogo");
 }
 
 // Volver atrás
@@ -954,32 +1173,32 @@ function goBack() {
 function useSelectedRecipe() {
   if (selectedRecipe.value && canUseSelectedRecipe.value) {
     hasPrescription.value = true; // Ya debería ser true por selectRecipe
-    console.log('Usando receta:', selectedRecipe.value._id);
-    
+    console.log("Usando receta:", selectedRecipe.value._id);
+
     // Mostrar confirmación visual (si es necesario)
     // ... (código para cambiar estilo del botón si se desea)
   } else {
-    alert('Esta receta no es válida para el medicamento actual.');
+    alert("Esta receta no es válida para el medicamento actual.");
   }
 }
 
 // Simular verificación de receta subida
 function verifyPrescription() {
-  const fileInput = document.getElementById('prescription');
+  const fileInput = document.getElementById("prescription");
   if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
-    alert('Por favor, adjunte una receta médica.');
+    alert("Por favor, adjunte una receta médica.");
     return;
   }
-  
+
   isPrescriptionPending.value = true;
-  console.log('Simulando verificación de receta subida...');
-  
+  console.log("Simulando verificación de receta subida...");
+
   setTimeout(() => {
     // Generar cantidades aleatorias pero realistas para la receta
     const dosis = Math.floor(Math.random() * 2) + 1; // 1 o 2 unidades por dosis
     const frecuencia = Math.floor(Math.random() * 3) + 1; // 1 a 3 veces al día
     const duracion = Math.floor(Math.random() * 7) + 3; // 3 a 10 días
-    
+
     const nuevaReceta = {
       _id: "receta-" + Math.floor(Math.random() * 10000),
       patient: userStore.user?.idUser || "usuario-actual",
@@ -991,25 +1210,25 @@ function verifyPrescription() {
       medicines: [
         {
           _id: "med-" + Math.floor(Math.random() * 10000),
-          principioActivo: medicine.value?.activeMedicament || 'Desconocido',
+          principioActivo: medicine.value?.activeMedicament || "Desconocido",
           concentracion: medicine.value?.concentration || "N/A",
-          presentacion: medicine.value?.presentacion || 'N/A',
+          presentacion: medicine.value?.presentacion || "N/A",
           dosis: dosis.toString(),
           frecuencia: frecuencia.toString(),
           duracion: duracion.toString(),
-          diagnostico: "Subido manualmente"
-        }
-      ]
+          diagnostico: "Subido manualmente",
+        },
+      ],
     };
-    
+
     userRecipes.value.unshift(nuevaReceta);
     forceSelectRecipe(nuevaReceta); // Seleccionar y validar la nueva receta
     isPrescriptionPending.value = false;
-    console.log('Receta subida y verificada (simulado) con cantidades:', {
+    console.log("Receta subida y verificada (simulado) con cantidades:", {
       dosis,
       frecuencia,
       duracion,
-      totalUnidades: dosis * frecuencia * duracion
+      totalUnidades: dosis * frecuencia * duracion,
     });
   }, 1500);
 }
@@ -1017,7 +1236,7 @@ function verifyPrescription() {
 // Recargar recetas (simulación)
 function recargarRecetas() {
   isPrescriptionPending.value = true;
-  console.log('Recargando recetas...');
+  console.log("Recargando recetas...");
   setTimeout(() => {
     loadRecipes();
     isPrescriptionPending.value = false;
@@ -1029,72 +1248,84 @@ onMounted(async () => {
   isLoading.value = true;
   try {
     const medicineId = route.params.id;
-    console.log('Buscando medicamento con ID:', medicineId);
-    
+    console.log("Buscando medicamento con ID:", medicineId);
+
     // Modificamos la URL para buscar directamente por ID en lugar de principio activo
     const searchUrl = ApiService.getPharmacyApiUrl(`/medicines/${medicineId}`);
-    console.log('URL de búsqueda directa:', searchUrl);
-    
+    console.log("URL de búsqueda directa:", searchUrl);
+
     const response = await axios.get(searchUrl);
-    console.log('Respuesta de búsqueda:', response.data);
-    
+    console.log("Respuesta de búsqueda:", response.data);
+
     // La respuesta debería ser el objeto medicina directamente, no un array
     if (response.data && response.data.idMedicine) {
       medicine.value = response.data;
-      console.log('Medicamento encontrado:', medicine.value);
-      
+      console.log("Medicamento encontrado:", medicine.value);
+
       // Verificar stock
       verificarStock();
-      
+
       // Verificar seguro médico
       await checkInsurance();
-      
+
       // Cargar recetas
       await loadRecipes();
-      
+
       // Si hay receta, seleccionar
       if (route.query.recipeId) {
-        const recipeToSelect = userRecipes.value.find(r => r._id === route.query.recipeId);
+        const recipeToSelect = userRecipes.value.find(
+          (r) => r._id === route.query.recipeId
+        );
         if (recipeToSelect) {
-          console.log('Seleccionando receta inicial:', recipeToSelect);
+          console.log("Seleccionando receta inicial:", recipeToSelect);
           selectRecipe(recipeToSelect);
         }
       }
     } else {
       // Si no encuentra por ID directo, intentamos buscar por principio activo como fallback
       try {
-        const fallbackUrl = ApiService.getPharmacyApiUrl(`/medicines/search?activeMedicament=${medicineId}`);
-        console.log('Intentando URL alternativa:', fallbackUrl);
-        
+        const fallbackUrl = ApiService.getPharmacyApiUrl(
+          `/medicines/search?activeMedicament=${medicineId}`
+        );
+        console.log("Intentando URL alternativa:", fallbackUrl);
+
         const fallbackResponse = await axios.get(fallbackUrl);
-        
+
         if (fallbackResponse.data && fallbackResponse.data.length > 0) {
           medicine.value = fallbackResponse.data[0];
-          console.log('Medicamento encontrado con búsqueda alternativa:', medicine.value);
+          console.log(
+            "Medicamento encontrado con búsqueda alternativa:",
+            medicine.value
+          );
           verificarStock();
           await checkInsurance();
           await loadRecipes();
         } else {
-          console.warn('No se encontró el medicamento con ningún método');
+          console.warn("No se encontró el medicamento con ningún método");
           medicine.value = null;
         }
       } catch (fallbackError) {
-        console.error('Error en búsqueda alternativa:', fallbackError);
+        console.error("Error en búsqueda alternativa:", fallbackError);
         medicine.value = null;
       }
     }
   } catch (error) {
-    console.error('Error al buscar el medicamento:', error);
+    console.error("Error al buscar el medicamento:", error);
     // Intentar con otro método si el primero falla
     try {
-      const fallbackUrl = ApiService.getPharmacyApiUrl(`/medicines/search?query=${route.params.id}`);
-      console.log('Intentando URL de respaldo general:', fallbackUrl);
-      
+      const fallbackUrl = ApiService.getPharmacyApiUrl(
+        `/medicines/search?query=${route.params.id}`
+      );
+      console.log("Intentando URL de respaldo general:", fallbackUrl);
+
       const generalSearchResponse = await axios.get(fallbackUrl);
-      
+
       if (generalSearchResponse.data && generalSearchResponse.data.length > 0) {
         medicine.value = generalSearchResponse.data[0];
-        console.log('Medicamento encontrado con búsqueda general:', medicine.value);
+        console.log(
+          "Medicamento encontrado con búsqueda general:",
+          medicine.value
+        );
         verificarStock();
         await checkInsurance();
         await loadRecipes();
@@ -1102,14 +1333,13 @@ onMounted(async () => {
         medicine.value = null;
       }
     } catch (backupError) {
-      console.error('Error en la búsqueda de respaldo:', backupError);
+      console.error("Error en la búsqueda de respaldo:", backupError);
       medicine.value = null;
     }
   } finally {
     isLoading.value = false;
   }
 });
-
 </script>
 
 <style scoped>
@@ -1156,8 +1386,12 @@ onMounted(async () => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .medicine-details {
@@ -1702,7 +1936,8 @@ onMounted(async () => {
 }
 
 .status-pending,
-.status-warning { /* Unificamos estilos */
+.status-warning {
+  /* Unificamos estilos */
   color: #d97706;
   font-weight: 600;
 }
@@ -1723,7 +1958,8 @@ onMounted(async () => {
 
 .modal-content h3 {
   /* Estilo para modal de confirmación (asegurar especificidad si es necesario) */
-  &.confirmation-title { /* Ejemplo de clase para especificidad */
+  &.confirmation-title {
+    /* Ejemplo de clase para especificidad */
     font-size: 1.5rem;
     font-weight: 700;
     color: #16a34a;
@@ -1884,4 +2120,4 @@ onMounted(async () => {
   display: inline-block;
   margin-right: 0.5rem;
 }
-</style> 
+</style>

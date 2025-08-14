@@ -43,7 +43,9 @@ public class HospitalRedirectHandler implements HttpHandler {
      * solicitudes.
      */
     // TODO: Externalizar esta URL a un archivo de configuración
-    private static final String HOSPITAL_API_BASE_URL = "http://localhost:8000/api";
+    // URL configurable desde variable de entorno (integración externa)
+    private static final String HOSPITAL_API_BASE_URL = System.getenv("HOSPITAL_API_URL") != null
+            ? System.getenv("HOSPITAL_API_URL") : "http://localhost:8000/api";
     /**
      * ObjectMapper para serializar respuestas de error en formato JSON.
      */
