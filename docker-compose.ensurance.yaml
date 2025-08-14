@@ -39,8 +39,8 @@ services:
       - "5175:5173"                             # http://localhost:5175
     environment:
       # URLs base para que el frontend apunte al backend expuesto
-      VITE_ENSURANCE_API_URL: "${VITE_ENSURANCE_API_URL:-http://localhost:${ENS_BACKEND_HOST_PORT:-8081}/api}"
-      VITE_PHARMACY_API_URL:  "${VITE_PHARMACY_API_URL:-http://localhost:${PHARM_BACKEND_HOST_PORT:-8082}/api2}"
+      VITE_ENSURANCE_API_URL: "${VITE_ENSURANCE_API_URL:-http://localhost:8081/api}"
+      VITE_PHARMACY_API_URL:  "${VITE_PHARMACY_API_URL:-http://localhost:8082/api2}"
     depends_on:
       - ensurance-backend
     restart: unless-stopped
