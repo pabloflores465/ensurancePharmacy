@@ -90,8 +90,10 @@ pipeline {
 
           echo "Deploy DEV → backend1/frontend1"
           echo "🧹 Limpiando servicios existentes..."
-          docker compose -f docker-compose.ensurance.yaml --profile cleanup up --abort-on-container-exit
-          docker compose -f docker-compose.pharmacy.yaml --profile cleanup up --abort-on-container-exit
+          docker compose -f docker-compose.ensurance.yaml down -v --remove-orphans || true
+          docker compose -f docker-compose.pharmacy.yaml down -v --remove-orphans || true
+          docker compose -f docker-compose.ensurance.yaml run --rm cleanup || true
+          docker compose -f docker-compose.pharmacy.yaml run --rm cleanup || true
           echo "🚀 Iniciando servicios limpios..."
           docker compose -f docker-compose.ensurance.yaml up -d --build
           docker compose -f docker-compose.pharmacy.yaml up -d --build
@@ -118,8 +120,10 @@ pipeline {
 
           echo "Deploy UAT → backend2/frontend2"
           echo "🧹 Limpiando servicios existentes..."
-          docker compose -f docker-compose.ensurance.yaml --profile cleanup up --abort-on-container-exit
-          docker compose -f docker-compose.pharmacy.yaml --profile cleanup up --abort-on-container-exit
+          docker compose -f docker-compose.ensurance.yaml down -v --remove-orphans || true
+          docker compose -f docker-compose.pharmacy.yaml down -v --remove-orphans || true
+          docker compose -f docker-compose.ensurance.yaml run --rm cleanup || true
+          docker compose -f docker-compose.pharmacy.yaml run --rm cleanup || true
           echo "🚀 Iniciando servicios limpios..."
           docker compose -f docker-compose.ensurance.yaml up -d --build
           docker compose -f docker-compose.pharmacy.yaml up -d --build
@@ -146,8 +150,10 @@ pipeline {
 
           echo "Deploy PROD → backend3/frontend3"
           echo "🧹 Limpiando servicios existentes..."
-          docker compose -f docker-compose.ensurance.yaml --profile cleanup up --abort-on-container-exit
-          docker compose -f docker-compose.pharmacy.yaml --profile cleanup up --abort-on-container-exit
+          docker compose -f docker-compose.ensurance.yaml down -v --remove-orphans || true
+          docker compose -f docker-compose.pharmacy.yaml down -v --remove-orphans || true
+          docker compose -f docker-compose.ensurance.yaml run --rm cleanup || true
+          docker compose -f docker-compose.pharmacy.yaml run --rm cleanup || true
           echo "🚀 Iniciando servicios limpios..."
           docker compose -f docker-compose.ensurance.yaml up -d --build
           docker compose -f docker-compose.pharmacy.yaml up -d --build
