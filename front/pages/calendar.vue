@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import axios from 'axios';
+import axios from "axios";
+import { getInsuranceApiUrl } from "~/utils/api";
 const currentWeekStart = ref(getMonday(new Date()));
 const horasDelDia = Array.from({ length: 24 }, (_, i) => i);
 const showModal = ref(false);
@@ -26,8 +27,6 @@ const isLoading = ref(false);
 const config = useRuntimeConfig();
 const ip = config.public.ip;
 
-
-
 const fetchHospitals = async () => {
   try {
     notify({
@@ -36,7 +35,7 @@ const fetchHospitals = async () => {
       description: "Please wait...",
     });
     isLoading.value = true;
-    const response = await axios.get(`http://${ip}:8080/api/hospital`);
+    const response = await axios.get(getInsuranceApiUrl("hospital"));
     hospitals.value = response.data;
     console.log("Hospitals obtenidos:", hospitals.value);
     notify({
@@ -431,7 +430,9 @@ fetchAppointments();
             ></textarea>
           </div>
         </div>
-        <div class="border-primary flex justify-end space-x-2 border-t pt-4 px-4">
+        <div
+          class="border-primary flex justify-end space-x-2 border-t px-4 pt-4"
+        >
           <button class="btn btn-outline" @click="closeModal">Cancelar</button>
           <button class="btn btn-primary" @click="saveAppointment">
             Guardar cita

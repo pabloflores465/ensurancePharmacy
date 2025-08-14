@@ -1,24 +1,26 @@
 package com.sources.app.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Cliente para comunicación con servicios externos (hospitales y farmacias)
  */
 public class ExternalServiceClient {
 
-    private static final String HOSPITAL_BASE_URL = "http://localhost:5051/api";
-    private static final String PHARMACY_BASE_URL = "http://localhost:8080/api";
+    // URLs configurables desde variables de entorno
+    private static final String HOSPITAL_BASE_URL = System.getenv("HOSPITAL_API_URL") != null
+            ? System.getenv("HOSPITAL_API_URL") : "http://localhost:5051/api";
+    private static final String PHARMACY_BASE_URL = System.getenv("PHARMACY_API_URL") != null
+            ? System.getenv("PHARMACY_API_URL") : "http://localhost:8080/api";
     private static final ExecutorService executor = Executors.newFixedThreadPool(5);
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
