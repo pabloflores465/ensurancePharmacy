@@ -5,8 +5,8 @@
         <property name="hibernate.connection.driver_class">oracle.jdbc.driver.OracleDriver</property>
         <!-- Example URL for Oracle XE; update host, port, and SID/service name as needed -->
         <property name="hibernate.connection.url">jdbc:oracle:thin:@//64.225.58.196:1521/XEPDB1</property>
-        <property name="hibernate.connection.username">FARMACIA</property>
-        <property name="hibernate.connection.password">user123</property>
+        <property name="hibernate.connection.username">ADMIN</property>
+        <property name="hibernate.connection.password">admin123</property>
         
         <!-- Connection pool settings (optional) -->
         <property name="hibernate.connection.pool_size">10</property>
