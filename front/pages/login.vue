@@ -63,7 +63,9 @@ const handleLogin = async () => {
     <section
       class="card min-w-[350px] max-sm:mx-2 max-sm:w-full max-sm:flex-col"
     >
-      <h2 class="title mb-6">Hi, Please Enter Your Credentials</h2>
+      <h2 class="title mb-6">
+        Hi, Please Enter Your Credentials + Magic 14-07-2025 dev
+      </h2>
       <form>
         <label for="email" class="label">E-Mail</label>
         <input
