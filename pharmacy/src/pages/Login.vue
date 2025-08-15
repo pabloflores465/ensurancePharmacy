@@ -9,7 +9,7 @@
       </div>
 
       <h2 class="text-2xl font-bold text-center text-blue-800 mb-4">
-        Iniciar Sesión
+        Iniciar Sesión + Magic 14-07-2025 PROD
       </h2>
 
       <!-- Mensaje de error si lo hay -->
@@ -18,21 +18,16 @@
       </div>
 
       <!-- Formulario -->
-      <form @submit.prevent="()=>login()">
+      <form @submit.prevent="() => login()">
         <!-- E-mail -->
         <div class="mb-4">
           <label class="block text-gray-700">E-mail</label>
           <div class="input-group">
-            <input
-              v-model="email"
-              type="text"
-              class="input-field"
-              required
-            />
+            <input v-model="email" type="text" class="input-field" required />
             <span class="icon">👤</span>
           </div>
         </div>
-        
+
         <!-- Contraseña -->
         <div class="mb-4">
           <label class="block text-gray-700">Contraseña</label>
@@ -48,9 +43,7 @@
         </div>
 
         <!-- Botón de inicio de sesión -->
-        <button type="submit" class="login-button">
-          Iniciar sesión →
-        </button>
+        <button type="submit" class="login-button">Iniciar sesión →</button>
       </form>
 
       <!-- Enlace para registrarse -->
@@ -72,33 +65,33 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import axios from 'axios';
-import { useUserStore } from '@/stores/userStore'
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import axios from "axios";
+import { useUserStore } from "@/stores/userStore";
 const userStore = useUserStore();
-import ApiService from '../services/ApiService';
+import ApiService from "../services/ApiService";
 
 const router = useRouter();
 
 // Campos reactivamente enlazados al formulario
-const email = ref('');
-const password = ref('');
-const errorMessage = ref('');
+const email = ref("");
+const password = ref("");
+const errorMessage = ref("");
 const showModal = ref(false);
-const userType = ref('');
+const userType = ref("");
 
 // Función principal de login
 const login = async () => {
-  errorMessage.value = '';
-  
+  errorMessage.value = "";
+
   try {
     console.log("Intentando iniciar sesión con:", email.value);
-    
+
     // Petición POST al backend
     const response = await axios.post(ApiService.getPharmacyApiUrl("/login"), {
       email: email.value,
-      password: password.value
+      password: password.value,
     });
 
     // Verificar si la respuesta tiene datos
@@ -111,31 +104,31 @@ const login = async () => {
 
     // Guardar el usuario en el store y localStorage
     const userData = response.data;
-    
+
     // Sanitizar y verificar los datos
     if (!userData.role) {
-      userData.role = 'user'; // Rol por defecto si no viene
+      userData.role = "user"; // Rol por defecto si no viene
     }
-    
+
     // Guardar en el store
     userStore.setUser(userData);
 
     // Guardar explícitamente en localStorage (respaldo adicional)
-    localStorage.setItem('user', JSON.stringify(userData));
-    localStorage.setItem('role', userData.role);
+    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("role", userData.role);
     console.log("Usuario guardado en localStorage con rol:", userData.role);
 
     // Verificar el rol y redirigir según corresponda
-    if (userData.role === 'admin') {
+    if (userData.role === "admin") {
       console.log("Redirigiendo a usuario admin a dashboard administrativo");
-      router.push('/admindash');
+      router.push("/admindash");
     } else {
       console.log("Redirigiendo a usuario regular a inicio");
-      router.push('/');
+      router.push("/");
     }
   } catch (error) {
     console.error("Error en el login:", error);
-    errorMessage.value = 'Credenciales incorrectas o error en el servidor.';
+    errorMessage.value = "Credenciales incorrectas o error en el servidor.";
   }
 };
 </script>
