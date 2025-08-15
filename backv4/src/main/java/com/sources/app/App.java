@@ -133,6 +133,7 @@ public class App {
      * la base de datos.
      */
     public static void main(String[] args) throws Exception {
+        if(true){
         // Prueba de conexión a la base de datos
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             if (session.isConnected()) {
