@@ -154,60 +154,59 @@ public class App {
      * servidor.
      */
     public static void main(String[] args) throws Exception {
-        if (true) {
-            // Prueba de conexión a la base de datos
-            try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-                if (session.isConnected()) {
-                    System.out.println("Conexión exitosa a la base de datos!");
-                } else {
-                    System.err.println("No se pudo establecer conexión a la base de datos.");
-                }
-            } catch (Exception e) {
-                System.err.println("Error al conectar con la base de datos:");
-                e.printStackTrace();
+        // Prueba de conexión a la base de datos
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            if (session.isConnected()) {
+                System.out.println("Conexión exitosa a la base de datos!");
+            } else {
+                System.err.println("No se pudo establecer conexión a la base de datos.");
             }
-
-            // Host/puerto desde variables de entorno con valores por defecto
-            String host = System.getenv("SERVER_HOST");
-            if (host == null || host.isEmpty()) {
-                host = "0.0.0.0";
-            }
-
-            String portEnv = System.getenv("SERVER_PORT");
-            if (portEnv == null || portEnv.isEmpty()) {
-                portEnv = System.getenv("PORT");
-            }
-
-            int port = 8081; // Puerto predeterminado
-            try {
-                if (portEnv != null && !portEnv.isEmpty()) {
-                    port = Integer.parseInt(portEnv);
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("Formato de puerto inválido. Se usará el puerto predeterminado 8081.");
-            }
-
-            HttpServer server = HttpServer.create(new InetSocketAddress(host, port), 0);
-
-            // Asignamos cada contexto con su respectivo Handler usando el prefijo "/api2"
-            server.createContext("/api2/login", new LoginHandler(userDAO));
-            server.createContext("/api2/users", new UserHandler(userDAO));
-            server.createContext("/api2/bills", new BillHandler(billDAO));
-            server.createContext("/api2/bill_medicines", new BillMedicineHandler(billMedicineDAO));
-            server.createContext("/api2/categories", new CategoryHandler(categoryDAO));
-            server.createContext("/api2/comments", new CommentsHandler(commentsDAO));
-            server.createContext("/api2/hospitals", new HospitalHandler(hospitalDAO));
-            server.createContext("/api2/medicines", new MedicineHandler(medicineDAO));
-            server.createContext("/api2/medicines/search", new SearchMedicineHandler(medicineDAO));
-            server.createContext("/api2/order_medicines", new OrderMedicineHandler(orderMedicineDAO));
-            server.createContext("/api2/orders", new OrdersHandler(ordersDAO));
-            server.createContext("/api2/prescription_medicines", new PrescriptionMedicineHandler(prescriptionMedicineDAO));
-            server.createContext("/api2/prescriptions", new PrescriptionHandler(prescriptionDAO));
-            server.createContext("/api2/subcategories", new SubcategoryHandler(subcategoryDAO));
-            server.createContext("/api2/external_medicines", new ExternalMedicineHandler(externalMedicineDAO));
-            server.createContext("/api2/verification", new VerificationHandler());
-            server.setExecutor(null); // Usa el executor por defecto
-            server.start();
-            System.out.println("Servidor iniciado en http://" + host + ":" + port + "/api2");
+        } catch (Exception e) {
+            System.err.println("Error al conectar con la base de datos:");
+            e.printStackTrace();
         }
+
+        // Host/puerto desde variables de entorno con valores por defecto
+        String host = System.getenv("SERVER_HOST");
+        if (host == null || host.isEmpty()) {
+            host = "0.0.0.0";
+        }
+
+        String portEnv = System.getenv("SERVER_PORT");
+        if (portEnv == null || portEnv.isEmpty()) {
+            portEnv = System.getenv("PORT");
+        }
+
+        int port = 8081; // Puerto predeterminado
+        try {
+            if (portEnv != null && !portEnv.isEmpty()) {
+                port = Integer.parseInt(portEnv);
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Formato de puerto inválido. Se usará el puerto predeterminado 8081.");
+        }
+
+        HttpServer server = HttpServer.create(new InetSocketAddress(host, port), 0);
+
+        // Asignamos cada contexto con su respectivo Handler usando el prefijo "/api2"
+        server.createContext("/api2/login", new LoginHandler(userDAO));
+        server.createContext("/api2/users", new UserHandler(userDAO));
+        server.createContext("/api2/bills", new BillHandler(billDAO));
+        server.createContext("/api2/bill_medicines", new BillMedicineHandler(billMedicineDAO));
+        server.createContext("/api2/categories", new CategoryHandler(categoryDAO));
+        server.createContext("/api2/comments", new CommentsHandler(commentsDAO));
+        server.createContext("/api2/hospitals", new HospitalHandler(hospitalDAO));
+        server.createContext("/api2/medicines", new MedicineHandler(medicineDAO));
+        server.createContext("/api2/medicines/search", new SearchMedicineHandler(medicineDAO));
+        server.createContext("/api2/order_medicines", new OrderMedicineHandler(orderMedicineDAO));
+        server.createContext("/api2/orders", new OrdersHandler(ordersDAO));
+        server.createContext("/api2/prescription_medicines", new PrescriptionMedicineHandler(prescriptionMedicineDAO));
+        server.createContext("/api2/prescriptions", new PrescriptionHandler(prescriptionDAO));
+        server.createContext("/api2/subcategories", new SubcategoryHandler(subcategoryDAO));
+        server.createContext("/api2/external_medicines", new ExternalMedicineHandler(externalMedicineDAO));
+        server.createContext("/api2/verification", new VerificationHandler());
+        server.setExecutor(null); // Usa el executor por defecto
+        server.start();
+        System.out.println("Servidor iniciado en http://" + host + ":" + port + "/api2");
     }
+}
