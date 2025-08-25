@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * HTTP handler for managing CRUD operations for {@link User} entities.
@@ -19,6 +21,7 @@ public class UserHandler implements HttpHandler {
     private final UserDAO userDAO;
     private final ObjectMapper objectMapper;
     private static final String ENDPOINT = "/api2/users";
+    private static final Logger LOGGER = Logger.getLogger(UserHandler.class.getName());
 
     /**
      * Constructor for UserHandler.
@@ -63,7 +66,7 @@ public class UserHandler implements HttpHandler {
                 exchange.sendResponseHeaders(405, -1); // Method Not Allowed
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error processing UserHandler request", e);
             exchange.sendResponseHeaders(500, -1); // Internal Server Error
         }
     }

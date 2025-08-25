@@ -8,6 +8,8 @@ import org.hibernate.query.Query;
 
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Data Access Object (DAO) para gestionar entidades {@link User}.
@@ -15,6 +17,8 @@ import java.util.List;
  * (Crear, Leer, Actualizar) utilizando Hibernate.
  */
 public class UserDAO {
+
+    private static final Logger LOGGER = Logger.getLogger(UserDAO.class.getName());
 
     /**
      * Autentica a un usuario basado en su email y contraseña.
@@ -37,7 +41,7 @@ public class UserDAO {
             query.setParameter("password", password);
             return query.uniqueResult(); // Retorna null si no encuentra el usuario
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error during login for email=" + email, e);
             return null;
         }
     }
@@ -80,7 +84,7 @@ public class UserDAO {
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error creating User (email=" + email + ")", e);
         }
         return user;
     }
@@ -95,7 +99,7 @@ public class UserDAO {
             Query<User> query = session.createQuery("FROM User", User.class);
             return query.list();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching all User records", e);
             return null;
         }
     }
@@ -110,7 +114,7 @@ public class UserDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(User.class, id);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching User by id=" + id, e);
             return null;
         }
     }
@@ -133,7 +137,7 @@ public class UserDAO {
             return user;
         } catch (Exception e) {
             if (tx != null) tx.rollback();
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error updating User (id=" + (user != null ? user.getIdUser() : null) + ")", e);
             return null;
         }
     }

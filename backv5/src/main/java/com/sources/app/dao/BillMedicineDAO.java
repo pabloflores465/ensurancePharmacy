@@ -10,6 +10,8 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Data Access Object (DAO) para gestionar entidades de enlace {@link BillMedicine}.
@@ -18,6 +20,7 @@ import java.util.List;
  * Utiliza Hibernate para interacciones con la base de datos y maneja la clave compuesta {@link BillMedicineId}.
  */
 public class BillMedicineDAO {
+    private static final Logger LOGGER = Logger.getLogger(BillMedicineDAO.class.getName());
 
     /**
      * Crea una nueva asociación entre una Factura (Bill) y un Medicamento (Medicine) en la base de datos.
@@ -50,7 +53,7 @@ public class BillMedicineDAO {
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error creating BillMedicine", e);
         }
         return billMedicine;
     }
@@ -65,7 +68,7 @@ public class BillMedicineDAO {
             Query<BillMedicine> query = session.createQuery("FROM BillMedicine", BillMedicine.class);
             return query.list();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching all BillMedicine records", e);
             return null;
         }
     }
@@ -80,7 +83,7 @@ public class BillMedicineDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(BillMedicine.class, id);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching BillMedicine by id: " + id, e);
             return null;
         }
     }
@@ -101,7 +104,7 @@ public class BillMedicineDAO {
             return billMedicine;
         } catch (Exception e) {
             if (tx != null) tx.rollback();
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error updating BillMedicine", e);
             return null;
         }
     }

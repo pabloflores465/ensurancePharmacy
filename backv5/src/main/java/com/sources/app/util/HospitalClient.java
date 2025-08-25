@@ -13,9 +13,18 @@ import java.nio.charset.StandardCharsets;
  * Cliente para realizar llamadas a la API del Hospital
  */
 public class HospitalClient {
-    private static final String HOSPITAL_API_BASE_URL = "http://localhost:8000";
+    // Base URL configurable y sobreescribible en pruebas
+    private static volatile String HOSPITAL_API_BASE_URL;
     private static final int TIMEOUT = 10000; // 10 segundos
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    static {
+        String env = System.getenv("HOSPITAL_API_URL");
+        HOSPITAL_API_BASE_URL = (env != null && !env.isBlank()) ? env : "http://localhost:8000";
+    }
+    // Método de soporte para pruebas para inyectar base URL con puertos efímeros
+    public static void setBaseUrlForTests(String baseUrl) {
+        HOSPITAL_API_BASE_URL = baseUrl;
+    }
     
     /**
      * Realiza una petición GET a la API del hospital
@@ -120,4 +129,5 @@ public class HospitalClient {
             }
         }
     }
-} 
+}
+ 

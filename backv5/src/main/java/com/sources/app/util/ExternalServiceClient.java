@@ -17,16 +17,35 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class ExternalServiceClient {
 
-    // URLs configurables desde variables de entorno
-    private static final String HOSPITAL_BASE_URL = System.getenv("HOSPITAL_API_URL") != null
-            ? System.getenv("HOSPITAL_API_URL") : "http://localhost:8000/api";
-    private static final String PHARMACY_BASE_URL = System.getenv("PHARM_BACKEND_API_URL") != null
-            ? System.getenv("PHARM_BACKEND_API_URL") : "http://localhost:8082/api";
-    private static final String INSURANCE_BASE_URL = System.getenv("ENS_BACKEND_API_URL") != null
-            ? System.getenv("ENS_BACKEND_API_URL") + "/pharmacy-insurance" : "http://localhost:8080/api/pharmacy-insurance";
+    // URLs configurables desde variables de entorno (inyectables para pruebas)
+    private final String hospitalBaseUrl;
+    private final String pharmacyBaseUrl;
+    private final String insuranceBaseUrl;
     private static final int TIMEOUT = 10000; // 10 segundos
     private static final ExecutorService executor = Executors.newFixedThreadPool(5);
     private static final ObjectMapper mapper = new ObjectMapper();
+
+    /**
+     * Constructor por defecto: lee URLs base desde variables de entorno o usa valores locales.
+     */
+    public ExternalServiceClient() {
+        this.hospitalBaseUrl = System.getenv("HOSPITAL_API_URL") != null
+                ? System.getenv("HOSPITAL_API_URL") : "http://localhost:8000/api";
+        this.pharmacyBaseUrl = System.getenv("PHARM_BACKEND_API_URL") != null
+                ? System.getenv("PHARM_BACKEND_API_URL") : "http://localhost:8082/api";
+        this.insuranceBaseUrl = System.getenv("ENS_BACKEND_API_URL") != null
+                ? System.getenv("ENS_BACKEND_API_URL") + "/pharmacy-insurance"
+                : "http://localhost:8080/api/pharmacy-insurance";
+    }
+
+    /**
+     * Constructor alterno para inyectar URLs base (útil en pruebas con puertos efímeros).
+     */
+    public ExternalServiceClient(String hospitalBaseUrl, String pharmacyBaseUrl, String insuranceBaseUrl) {
+        this.hospitalBaseUrl = hospitalBaseUrl;
+        this.pharmacyBaseUrl = pharmacyBaseUrl;
+        this.insuranceBaseUrl = insuranceBaseUrl;
+    }
 
     /**
      * Realiza una petición GET a un servicio externo
@@ -139,11 +158,11 @@ public class ExternalServiceClient {
     private String getBaseUrl(String serviceType) {
         switch (serviceType.toUpperCase()) {
             case "HOSPITAL":
-                return HOSPITAL_BASE_URL;
+                return hospitalBaseUrl;
             case "PHARMACY":
-                return PHARMACY_BASE_URL;
+                return pharmacyBaseUrl;
             case "INSURANCE":
-                return INSURANCE_BASE_URL;
+                return insuranceBaseUrl;
             default:
                 throw new IllegalArgumentException("Tipo de servicio no válido: " + serviceType);
         }

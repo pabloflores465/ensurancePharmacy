@@ -10,6 +10,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * DAO para acceder a los datos de Recetas (Prescription), incorporando un paso de verificación externa.
@@ -23,6 +25,7 @@ import java.net.URL;
  * </p>
  */
 public class ExternalPrescriptionDAO {
+    private static final Logger LOGGER = Logger.getLogger(ExternalPrescriptionDAO.class.getName());
 
     /**
      * Recupera una receta por su ID, pero solo después de verificar exitosamente el email proporcionado
@@ -43,48 +46,60 @@ public class ExternalPrescriptionDAO {
      *         {@code null} en caso contrario (usuario no verificado, receta no encontrada, o ocurrió un error durante la verificación o la obtención).
      */
     public Prescription getbyId(Long id, String email, HttpExchange exchange) {
+        Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Transaction transaction = session.beginTransaction();
-            String path = exchange.getRequestURI().getPath();
             try {
-                // Crea un objeto URL con el endpoint de la API incluyendo el email proporcionado
-                URL url = new URL(path + "/api2/verification?email=" + email);
-                // Abre una conexión a la URL
-                HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                // Establece el método de solicitud HTTP a GET
-                con.setRequestMethod("GET");
-                // Obtiene el código de respuesta
-                int status = con.getResponseCode();
-                // Lee la respuesta
-                BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-                String inputLine;
-                StringBuilder content = new StringBuilder();
-                while ((inputLine = in.readLine()) != null) {
-                    content.append(inputLine);
-                }
-                in.close();
-                // Desconecta la conexión
-                con.disconnect();
-                // Guarda la respuesta en la variable 'verify'
-                String verify = content.toString();
-                
-                // Si el usuario no está verificado, retornar null
-                if (!"1".equals(verify)) {
+                transaction = session.beginTransaction();
+                String path = exchange.getRequestURI().getPath();
+                try {
+                    // Crea un objeto URL con el endpoint de la API incluyendo el email proporcionado
+                    URL url = new URL(path + "/api2/verification?email=" + email);
+                    // Abre una conexión a la URL
+                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                    // Establece el método de solicitud HTTP a GET
+                    con.setRequestMethod("GET");
+                    // Obtiene el código de respuesta
+                    int status = con.getResponseCode();
+                    // Lee la respuesta
+                    BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                    String inputLine;
+                    StringBuilder content = new StringBuilder();
+                    while ((inputLine = in.readLine()) != null) {
+                        content.append(inputLine);
+                    }
+                    in.close();
+                    // Desconecta la conexión
+                    con.disconnect();
+                    // Guarda la respuesta en la variable 'verify'
+                    String verify = content.toString();
+                    
+                    // Si el usuario no está verificado, retornar null
+                    if (!"1".equals(verify)) {
+                        if (transaction != null) {
+                            try { transaction.rollback(); } catch (Exception re) { LOGGER.log(Level.WARNING, "Rollback failed after unverified user for email=" + email, re); }
+                        }
+                        return null;
+                    }
+                    
+                } catch(Exception e) {
+                    LOGGER.log(Level.SEVERE, "Error verifying user via external service for email: " + email + 
+                            "; path: " + path, e);
+                    if (transaction != null) {
+                        try { transaction.rollback(); } catch (Exception re) { LOGGER.log(Level.WARNING, "Rollback failed after verification error for email=" + email, re); }
+                    }
                     return null;
                 }
                 
-            } catch(Exception e) {
-                e.printStackTrace();
-                transaction.rollback();
+                Prescription prescription = session.get(Prescription.class, id);
+                transaction.commit();
+                return prescription;
+            } catch (Exception e) {
+                if (transaction != null) {
+                    try { transaction.rollback(); } catch (Exception re) { LOGGER.log(Level.WARNING, "Rollback failed after top-level error for id=" + id + ", email=" + email, re); }
+                }
+                LOGGER.log(Level.SEVERE, "Error fetching Prescription by id: " + id + " after external verification for email: " + email, e);
                 return null;
             }
-            
-            Prescription prescription = session.get(Prescription.class, id);
-            transaction.commit();
-            return prescription;
-        } catch(Exception e) {
-            e.printStackTrace();
-            return null;
         }
     }
 }

@@ -71,7 +71,9 @@ fetchMedicines();
 
 // Se busca el producto cuyo idMedicine coincida con productId
 const product = computed(() => {
-  return medicines.value.find(p => String(p.idMedicine) === productId) || {};
+  const found = medicines.value.find(p => String(p.idMedicine) === productId);
+  // Devolver un objeto seguro por defecto para evitar accesos a propiedades indefinidas en el template
+  return found || { comments: [] };
 });
 
 const newComment = ref('');

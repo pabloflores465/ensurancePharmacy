@@ -39,4 +39,39 @@ public class PrescriptionDAOTest {
         assertNotNull(created.getIdPrescription());
         assertEquals(pFromJson.getApproved(), created.getApproved());
     }
+
+    @Test
+    public void testGetAllGetByIdAndUpdate() {
+        java.util.List<Prescription> before = dao.getAll();
+        int base = before == null ? 0 : before.size();
+
+        HospitalDAO hospitalDAO = new HospitalDAO();
+        UserDAO userDAO = new UserDAO();
+        Hospital h = hospitalDAO.create("Hosp A", "555-1111", "a@h.com", "Addr A", '1');
+        User u = userDAO.create("User A", "111", "555-1111", "a@u.com", new java.util.Date(), "Addr A", "pwd");
+        Prescription created = dao.create(h, u, 'Y');
+        assertNotNull(created);
+
+        java.util.List<Prescription> after = dao.getAll();
+        assertNotNull(after);
+        assertTrue(after.size() >= base + 1);
+
+        Prescription byId = dao.getById(created.getIdPrescription());
+        assertNotNull(byId);
+        assertEquals('Y', byId.getApproved());
+
+        byId.setApproved('N');
+        Prescription updated = dao.update(byId);
+        assertNotNull(updated);
+        assertEquals('N', updated.getApproved());
+
+        Prescription reloaded = dao.getById(created.getIdPrescription());
+        assertNotNull(reloaded);
+        assertEquals('N', reloaded.getApproved());
+    }
+
+    @Test
+    public void testGetByIdNegativeReturnsNull() {
+        assertNull(dao.getById(-1L));
+    }
 }

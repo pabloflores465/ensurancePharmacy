@@ -62,6 +62,13 @@ public class OrderMedicineHandlerTest {
         }
     }
 
+    private static class MockOMDAOCreateFail extends MockOMDAO {
+        @Override
+        public OrderMedicine create(Orders orders, Medicine medicine, Integer quantity, Double cost, String total) {
+            return null;
+        }
+    }
+
     private static class MockHttpExchange extends HttpExchange {
 
         private final String method;
@@ -230,5 +237,180 @@ public class OrderMedicineHandlerTest {
         MockHttpExchange ex = new MockHttpExchange("PATCH", "http://localhost/api2/order_medicines");
         handler.handle(ex);
         assertEquals(405, ex.getResponseCode());
+    }
+
+    @Test
+    public void testPostSuccess() throws Exception {
+        OrderMedicineHandler handler = new OrderMedicineHandler(new MockOMDAO());
+        String body = "{" +
+                "\"orders\":{\"idOrder\":1}," +
+                "\"medicine\":{\"idMedicine\":2}," +
+                "\"quantity\":3," +
+                "\"cost\":12.5," +
+                "\"total\":\"37.5\"" +
+                "}";
+        MockHttpExchange ex = new MockHttpExchange("POST", "http://localhost/api2/order_medicines", body.getBytes(StandardCharsets.UTF_8));
+        handler.handle(ex);
+        assertEquals(201, ex.getResponseCode());
+        String resp = new String(ex.getResponseBytes(), StandardCharsets.UTF_8);
+        assertTrue(resp.contains("\"orders\""));
+        assertTrue(resp.contains("\"medicine\""));
+    }
+
+    @Test
+    public void testPostCreateFails() throws Exception {
+        OrderMedicineHandler handler = new OrderMedicineHandler(new MockOMDAOCreateFail());
+        String body = "{" +
+                "\"orders\":{\"idOrder\":1}," +
+                "\"medicine\":{\"idMedicine\":2}," +
+                "\"quantity\":3," +
+                "\"cost\":12.5," +
+                "\"total\":\"37.5\"" +
+                "}";
+        MockHttpExchange ex = new MockHttpExchange("POST", "http://localhost/api2/order_medicines", body.getBytes(StandardCharsets.UTF_8));
+        handler.handle(ex);
+        assertEquals(400, ex.getResponseCode());
+        String resp = new String(ex.getResponseBytes(), StandardCharsets.UTF_8);
+        assertTrue(resp.contains("Failed to create order-medicine association"));
+    }
+
+    @Test
+    public void testGetAllSuccess() throws Exception {
+        MockOMDAO dao = new MockOMDAO();
+        // Pre-populate
+        Orders o = new Orders();
+        o.setIdOrder(1L);
+        Medicine m = new Medicine();
+        m.setIdMedicine(2L);
+        dao.create(o, m, 1, 10.0, "10.0");
+
+        OrderMedicineHandler handler = new OrderMedicineHandler(dao);
+        MockHttpExchange ex = new MockHttpExchange("GET", "http://localhost/api2/order_medicines");
+        handler.handle(ex);
+        assertEquals(200, ex.getResponseCode());
+        String resp = new String(ex.getResponseBytes(), StandardCharsets.UTF_8);
+        assertTrue(resp.startsWith("["));
+        assertTrue(resp.contains("\"orders\""));
+    }
+
+    @Test
+    public void testGetByIdSuccess() throws Exception {
+        MockOMDAO dao = new MockOMDAO();
+        Orders o = new Orders();
+        o.setIdOrder(1L);
+        Medicine m = new Medicine();
+        m.setIdMedicine(2L);
+        dao.create(o, m, 1, 10.0, "10.0");
+
+        OrderMedicineHandler handler = new OrderMedicineHandler(dao);
+        MockHttpExchange ex = new MockHttpExchange("GET", "http://localhost/api2/order_medicines?id=1,2");
+        handler.handle(ex);
+        assertEquals(200, ex.getResponseCode());
+        String resp = new String(ex.getResponseBytes(), StandardCharsets.UTF_8);
+        assertTrue(resp.contains("\"orders\""));
+    }
+
+    @Test
+    public void testGetByIdInvalidParamFormat() throws Exception {
+        OrderMedicineHandler handler = new OrderMedicineHandler(new MockOMDAO());
+        MockHttpExchange ex = new MockHttpExchange("GET", "http://localhost/api2/order_medicines?id=1");
+        handler.handle(ex);
+        assertEquals(400, ex.getResponseCode());
+        String resp = new String(ex.getResponseBytes(), StandardCharsets.UTF_8);
+        assertTrue(resp.contains("Invalid ID parameter format"));
+    }
+
+    @Test
+    public void testPutSuccess() throws Exception {
+        MockOMDAO dao = new MockOMDAO();
+        Orders o = new Orders();
+        o.setIdOrder(1L);
+        Medicine m = new Medicine();
+        m.setIdMedicine(2L);
+        dao.create(o, m, 1, 10.0, "10.0");
+
+        OrderMedicineHandler handler = new OrderMedicineHandler(dao);
+        String body = "{" +
+                "\"id\":{\"orderId\":1,\"medicineId\":2}," +
+                "\"orders\":{\"idOrder\":1}," +
+                "\"medicine\":{\"idMedicine\":2}," +
+                "\"quantity\":5," +
+                "\"cost\":12.5," +
+                "\"total\":\"62.5\"" +
+                "}";
+        MockHttpExchange ex = new MockHttpExchange("PUT", "http://localhost/api2/order_medicines", body.getBytes(StandardCharsets.UTF_8));
+        handler.handle(ex);
+        assertEquals(200, ex.getResponseCode());
+        String resp = new String(ex.getResponseBytes(), StandardCharsets.UTF_8);
+        assertTrue(resp.contains("\"quantity\":5"));
+    }
+
+    @Test
+    public void testPutNotFound() throws Exception {
+        OrderMedicineHandler handler = new OrderMedicineHandler(new MockOMDAO());
+        String body = "{" +
+                "\"id\":{\"orderId\":99,\"medicineId\":88}," +
+                "\"orders\":{\"idOrder\":99}," +
+                "\"medicine\":{\"idMedicine\":88}," +
+                "\"quantity\":1," +
+                "\"cost\":1.0," +
+                "\"total\":\"1.0\"" +
+                "}";
+        MockHttpExchange ex = new MockHttpExchange("PUT", "http://localhost/api2/order_medicines", body.getBytes(StandardCharsets.UTF_8));
+        handler.handle(ex);
+        assertEquals(400, ex.getResponseCode());
+        String resp = new String(ex.getResponseBytes(), StandardCharsets.UTF_8);
+        assertTrue(resp.contains("Failed to update order-medicine association"));
+    }
+
+    @Test
+    public void testDeleteSuccess() throws Exception {
+        MockOMDAO dao = new MockOMDAO();
+        Orders o = new Orders();
+        o.setIdOrder(1L);
+        Medicine m = new Medicine();
+        m.setIdMedicine(2L);
+        dao.create(o, m, 1, 10.0, "10.0");
+
+        OrderMedicineHandler handler = new OrderMedicineHandler(dao);
+        MockHttpExchange ex = new MockHttpExchange("DELETE", "http://localhost/api2/order_medicines?id=1,2");
+        handler.handle(ex);
+        assertEquals(204, ex.getResponseCode());
+    }
+
+    @Test
+    public void testDeleteNotFound() throws Exception {
+        OrderMedicineHandler handler = new OrderMedicineHandler(new MockOMDAO());
+        MockHttpExchange ex = new MockHttpExchange("DELETE", "http://localhost/api2/order_medicines?id=9,8");
+        handler.handle(ex);
+        assertEquals(404, ex.getResponseCode());
+    }
+
+    @Test
+    public void testDeleteInvalidIdFormat() throws Exception {
+        OrderMedicineHandler handler = new OrderMedicineHandler(new MockOMDAO());
+        MockHttpExchange ex = new MockHttpExchange("DELETE", "http://localhost/api2/order_medicines?id=1,abc");
+        handler.handle(ex);
+        assertEquals(400, ex.getResponseCode());
+        String resp = new String(ex.getResponseBytes(), StandardCharsets.UTF_8);
+        assertTrue(resp.contains("Invalid composite ID format"));
+    }
+
+    @Test
+    public void testPostMalformedJsonReturns500() throws Exception {
+        OrderMedicineHandler handler = new OrderMedicineHandler(new MockOMDAO());
+        String body = "{\"orders\":{\"idOrder\":1},"; // malformed JSON
+        MockHttpExchange ex = new MockHttpExchange("POST", "http://localhost/api2/order_medicines", body.getBytes(StandardCharsets.UTF_8));
+        handler.handle(ex);
+        assertEquals(500, ex.getResponseCode());
+    }
+
+    @Test
+    public void testPutMalformedJsonReturns500() throws Exception {
+        OrderMedicineHandler handler = new OrderMedicineHandler(new MockOMDAO());
+        String body = "{\"id\":{\"orderId\":1,\"medicineId\":2}"; // malformed JSON
+        MockHttpExchange ex = new MockHttpExchange("PUT", "http://localhost/api2/order_medicines", body.getBytes(StandardCharsets.UTF_8));
+        handler.handle(ex);
+        assertEquals(500, ex.getResponseCode());
     }
 }

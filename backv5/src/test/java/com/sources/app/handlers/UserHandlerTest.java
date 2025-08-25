@@ -24,9 +24,16 @@ public class UserHandlerTest {
     private static class MockUserDAO extends UserDAO {
 
         List<User> users = new ArrayList<>();
+        boolean throwOnCreate;
+        boolean throwOnGetAll;
+        boolean throwOnGetById;
+        boolean throwOnUpdate;
+        boolean createReturnNull;
 
         @Override
         public User create(String name, String cui, String phone, String email, java.util.Date birthDate, String address, String password) {
+            if (throwOnCreate) throw new RuntimeException("boom");
+            if (createReturnNull) return null;
             User u = new User();
             u.setIdUser((long) (users.size() + 1));
             u.setName(name);
@@ -42,16 +49,19 @@ public class UserHandlerTest {
 
         @Override
         public List<User> getAll() {
+            if (throwOnGetAll) throw new RuntimeException("boom");
             return users;
         }
 
         @Override
         public User getById(Long id) {
+            if (throwOnGetById) throw new RuntimeException("boom");
             return users.stream().filter(u -> id.equals(u.getIdUser())).findFirst().orElse(null);
         }
 
         @Override
         public User update(User user) {
+            if (throwOnUpdate) throw new RuntimeException("boom");
             User existing = getById(user.getIdUser());
             if (existing == null) {
                 return null;
@@ -235,5 +245,99 @@ public class UserHandlerTest {
         MockHttpExchange ex = new MockHttpExchange("DELETE", "http://localhost/api2/users");
         handler.handle(ex);
         assertEquals(405, ex.getResponseCode());
+    }
+
+    @Test
+    public void testPostCreateSuccess201OmitPassword() throws Exception {
+        MockUserDAO dao = new MockUserDAO();
+        UserHandler handler = new UserHandler(dao);
+        String body = "{\"name\":\"John\",\"cui\":\"123\",\"phone\":\"555\",\"email\":\"john@x.com\",\"birthDate\":null,\"address\":\"addr\",\"password\":\"pw\"}";
+        MockHttpExchange ex = new MockHttpExchange("POST", "http://localhost/api2/users", body.getBytes(StandardCharsets.UTF_8));
+        handler.handle(ex);
+        assertEquals(201, ex.getResponseCode());
+        String json = new String(ex.getResponseBytes(), StandardCharsets.UTF_8);
+        assertFalse(json.contains("pw"));
+        assertEquals("*", ex.getResponseHeaders().getFirst("Access-Control-Allow-Origin"));
+    }
+
+    @Test
+    public void testPostCreateReturnsNullYields400() throws Exception {
+        MockUserDAO dao = new MockUserDAO();
+        dao.createReturnNull = true;
+        UserHandler handler = new UserHandler(dao);
+        String body = "{\"name\":\"A\",\"email\":\"a@a.com\",\"password\":\"pw\"}";
+        MockHttpExchange ex = new MockHttpExchange("POST", "http://localhost/api2/users", body.getBytes(StandardCharsets.UTF_8));
+        handler.handle(ex);
+        assertEquals(400, ex.getResponseCode());
+    }
+
+    @Test
+    public void testPostMalformedJsonYields500WithCors() throws Exception {
+        UserHandler handler = new UserHandler(new MockUserDAO());
+        String bad = "{\"name\":\"broken\""; // missing closing brace
+        MockHttpExchange ex = new MockHttpExchange("POST", "http://localhost/api2/users", bad.getBytes(StandardCharsets.UTF_8));
+        handler.handle(ex);
+        assertEquals(500, ex.getResponseCode());
+        assertEquals("*", ex.getResponseHeaders().getFirst("Access-Control-Allow-Origin"));
+    }
+
+    @Test
+    public void testGetByIdSuccess200OmitPassword() throws Exception {
+        MockUserDAO dao = new MockUserDAO();
+        User u = dao.create("Jane", "2", "777", "j@x.com", new java.util.Date(), "addr", "secret");
+        assertNotNull(u);
+        UserHandler handler = new UserHandler(dao);
+        MockHttpExchange ex = new MockHttpExchange("GET", "http://localhost/api2/users?id=" + u.getIdUser());
+        handler.handle(ex);
+        assertEquals(200, ex.getResponseCode());
+        String json = new String(ex.getResponseBytes(), StandardCharsets.UTF_8);
+        assertFalse(json.contains("secret"));
+    }
+
+    @Test
+    public void testGetAllDaoExceptionYields500WithCors() throws Exception {
+        MockUserDAO dao = new MockUserDAO();
+        dao.throwOnGetAll = true;
+        UserHandler handler = new UserHandler(dao);
+        MockHttpExchange ex = new MockHttpExchange("GET", "http://localhost/api2/users");
+        handler.handle(ex);
+        assertEquals(500, ex.getResponseCode());
+        assertEquals("*", ex.getResponseHeaders().getFirst("Access-Control-Allow-Origin"));
+    }
+
+    @Test
+    public void testPutSuccess200OmitPassword() throws Exception {
+        MockUserDAO dao = new MockUserDAO();
+        User existing = dao.create("N", "1", "p", "e@e.com", new java.util.Date(), "addr", "secret");
+        UserHandler handler = new UserHandler(dao);
+        String body = "{\"idUser\":" + existing.getIdUser() + ",\"name\":\"New\",\"address\":\"A\",\"phone\":\"123\"}";
+        MockHttpExchange ex = new MockHttpExchange("PUT", "http://localhost/api2/users", body.getBytes(StandardCharsets.UTF_8));
+        handler.handle(ex);
+        assertEquals(200, ex.getResponseCode());
+        String json = new String(ex.getResponseBytes(), StandardCharsets.UTF_8);
+        assertFalse(json.contains("secret"));
+    }
+
+    @Test
+    public void testPutUpdateNotFoundYields400() throws Exception {
+        MockUserDAO dao = new MockUserDAO();
+        UserHandler handler = new UserHandler(dao);
+        String body = "{\"idUser\":999,\"name\":\"X\"}";
+        MockHttpExchange ex = new MockHttpExchange("PUT", "http://localhost/api2/users", body.getBytes(StandardCharsets.UTF_8));
+        handler.handle(ex);
+        assertEquals(400, ex.getResponseCode());
+    }
+
+    @Test
+    public void testDaoExceptionOnPutYields500WithCors() throws Exception {
+        MockUserDAO dao = new MockUserDAO();
+        User existing = dao.create("N", "1", "p", "e@e.com", new java.util.Date(), "addr", "secret");
+        dao.throwOnUpdate = true;
+        UserHandler handler = new UserHandler(dao);
+        String body = "{\"idUser\":" + existing.getIdUser() + ",\"name\":\"New\"}";
+        MockHttpExchange ex = new MockHttpExchange("PUT", "http://localhost/api2/users", body.getBytes(StandardCharsets.UTF_8));
+        handler.handle(ex);
+        assertEquals(500, ex.getResponseCode());
+        assertEquals("*", ex.getResponseHeaders().getFirst("Access-Control-Allow-Origin"));
     }
 }

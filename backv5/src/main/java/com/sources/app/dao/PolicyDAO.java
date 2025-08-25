@@ -7,6 +7,8 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Data Access Object (DAO) para gestionar entidades {@link Policy}.
@@ -14,6 +16,8 @@ import java.util.List;
  * en registros de Pólizas utilizando Hibernate para interacciones con la base de datos.
  */
 public class PolicyDAO {
+
+    private static final Logger LOGGER = Logger.getLogger(PolicyDAO.class.getName());
 
     /**
      * Crea un nuevo registro de Póliza (Policy) en la base de datos.
@@ -36,7 +40,7 @@ public class PolicyDAO {
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error creating Policy (percentage=" + percentage + ", enabled=" + enabled + ")", e);
         }
         return policy;
     }
@@ -51,7 +55,7 @@ public class PolicyDAO {
             Query<Policy> query = session.createQuery("FROM Policy", Policy.class);
             return query.list();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching all Policy records", e);
             return null;
         }
     }
@@ -66,7 +70,7 @@ public class PolicyDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Policy.class, id);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching Policy by id=" + id, e);
             return null;
         }
     }
@@ -86,7 +90,7 @@ public class PolicyDAO {
             return policy;
         } catch (Exception e) {
             if (tx != null) tx.rollback();
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error updating Policy (entity null=" + (policy == null) + ")", e);
             return null;
         }
     }

@@ -161,8 +161,8 @@ public class App {
             } else {
                 System.err.println("No se pudo establecer conexión a la base de datos.");
             }
-        } catch (Exception e) {
-            System.err.println("Error al conectar con la base de datos:");
+        } catch (Throwable e) {
+            System.err.println("Error al conectar con la base de datos (continuando sin DB):");
             e.printStackTrace();
         }
 

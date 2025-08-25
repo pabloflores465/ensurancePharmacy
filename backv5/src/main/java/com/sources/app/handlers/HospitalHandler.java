@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Manejador HTTP para gestionar las operaciones CRUD de los Hospitales.
@@ -19,6 +21,7 @@ public class HospitalHandler implements HttpHandler {
     private final HospitalDAO hospitalDAO;
     private final ObjectMapper objectMapper;
     private static final String ENDPOINT = "/api2/hospitals";
+    private static final Logger LOGGER = Logger.getLogger(HospitalHandler.class.getName());
 
     /**
      * Constructor para HospitalHandler.
@@ -63,7 +66,7 @@ public class HospitalHandler implements HttpHandler {
                 exchange.sendResponseHeaders(405, -1); // Method Not Allowed
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error handling request", e);
             exchange.sendResponseHeaders(500, -1); // Internal Server Error
         }
     }

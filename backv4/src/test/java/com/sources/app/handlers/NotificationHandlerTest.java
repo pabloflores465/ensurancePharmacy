@@ -7,6 +7,8 @@ import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Transport;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.Authenticator;
+import jakarta.mail.PasswordAuthentication;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -266,5 +268,32 @@ class NotificationHandlerTest {
 
         verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L)); // Caught by generic Exception handler
         mockedTransport.verifyNoInteractions();
+    }
+
+    @Test
+    void authenticator_UsesSenderCredentials() throws Exception {
+        // Set sender credentials via reflection
+        java.lang.reflect.Field senderEmailField = NotificationHandler.class.getDeclaredField("senderEmail");
+        senderEmailField.setAccessible(true);
+        senderEmailField.set(notificationHandler, "sender@example.com");
+        java.lang.reflect.Field senderPasswordField = NotificationHandler.class.getDeclaredField("senderPassword");
+        senderPasswordField.setAccessible(true);
+        senderPasswordField.set(notificationHandler, "s3cr3t");
+
+        // Instantiate the anonymous inner Authenticator class NotificationHandler$1
+        String innerName = NotificationHandler.class.getName() + "$1";
+        Class<?> inner = Class.forName(innerName);
+        java.lang.reflect.Constructor<?> ctor = inner.getDeclaredConstructor(NotificationHandler.class);
+        ctor.setAccessible(true);
+        Object authObj = ctor.newInstance(notificationHandler);
+        Authenticator auth = (Authenticator) authObj;
+
+        // Invoke protected getPasswordAuthentication() via reflection
+        java.lang.reflect.Method m = Authenticator.class.getDeclaredMethod("getPasswordAuthentication");
+        m.setAccessible(true);
+        PasswordAuthentication pa = (PasswordAuthentication) m.invoke(auth);
+        assertNotNull(pa);
+        assertEquals("sender@example.com", pa.getUserName());
+        assertEquals("s3cr3t", new String(pa.getPassword()));
     }
 }

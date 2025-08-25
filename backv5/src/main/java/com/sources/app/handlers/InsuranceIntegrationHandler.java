@@ -6,6 +6,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sources.app.dao.BillDAO;
@@ -27,10 +29,9 @@ public class InsuranceIntegrationHandler implements HttpHandler {
     private final BillDAO billDAO;
     private final ObjectMapper objectMapper;
     private static final String ENDPOINT = "/api2/insurance";
-    // URL configurable desde variable de entorno
-    private static final String INSURANCE_API_BASE_URL = System.getenv("ENS_BACKEND_API_URL") != null
-            ? System.getenv("ENS_BACKEND_API_URL") + "/pharmacy-insurance" : "http://localhost:8080/api/pharmacy-insurance"; // URL base del servicio externo de seguros
-    private static final ExternalServiceClient externalServiceClient = new ExternalServiceClient(); // Cliente para llamadas HTTP externas
+    private static final Logger LOGGER = Logger.getLogger(InsuranceIntegrationHandler.class.getName());
+    // Cliente para llamadas HTTP externas (inyectable para pruebas)
+    private final ExternalServiceClient externalServiceClient;
 
     /**
      * Constructor para InsuranceIntegrationHandler.
@@ -43,6 +44,17 @@ public class InsuranceIntegrationHandler implements HttpHandler {
         this.prescriptionDAO = prescriptionDAO;
         this.billDAO = billDAO;
         this.objectMapper = new ObjectMapper();
+        this.externalServiceClient = new ExternalServiceClient();
+    }
+
+    /**
+     * Constructor adicional que permite inyectar un ExternalServiceClient (para pruebas).
+     */
+    public InsuranceIntegrationHandler(PrescriptionDAO prescriptionDAO, BillDAO billDAO, ExternalServiceClient externalServiceClient) {
+        this.prescriptionDAO = prescriptionDAO;
+        this.billDAO = billDAO;
+        this.objectMapper = new ObjectMapper();
+        this.externalServiceClient = externalServiceClient;
     }
 
     /**
@@ -57,6 +69,17 @@ public class InsuranceIntegrationHandler implements HttpHandler {
      */
     @Override
     public void handle(HttpExchange exchange) throws IOException {
+        // Set CORS headers
+        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "POST, OPTIONS");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+        // Handle CORS preflight
+        if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+            exchange.sendResponseHeaders(204, -1);
+            return;
+        }
+
         String path = exchange.getRequestURI().getPath();
         String method = exchange.getRequestMethod();
 
@@ -171,7 +194,7 @@ public class InsuranceIntegrationHandler implements HttpHandler {
                 sendResponse(exchange, 400, jsonResponse);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error en validate-prescription", e);
             sendResponse(exchange, 500, objectMapper.writeValueAsString(Map.of(
                     "success", false,
                     "message", "Error al comunicarse con el seguro: " + e.getMessage()
@@ -210,7 +233,7 @@ public class InsuranceIntegrationHandler implements HttpHandler {
             // Enviar la respuesta del seguro
             sendResponse(exchange, 200, jsonResponse);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error en check-coverage", e);
             sendResponse(exchange, 500, objectMapper.writeValueAsString(Map.of(
                     "success", false,
                     "message", "Error al comunicarse con el seguro: " + e.getMessage()

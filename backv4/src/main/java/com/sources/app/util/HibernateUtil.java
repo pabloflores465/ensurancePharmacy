@@ -3,8 +3,6 @@ package com.sources.app.util;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
-import com.sources.app.entities.User;
-
 /**
  * Clase de utilidad para gestionar la SessionFactory de Hibernate. Sigue el
  * patrón Singleton para asegurar una única instancia de SessionFactory.
@@ -22,8 +20,19 @@ public class HibernateUtil {
     }
 
     private static SessionFactory buildSessionFactory() {
-        Configuration configuration = new Configuration()
-                .configure(); // Carga hibernate.cfg.xml
+        // Permite seleccionar un archivo de configuración alterno (por ejemplo, SQLite)
+        String cfgResource = System.getProperty("HIBERNATE_CFG");
+        if (cfgResource == null || cfgResource.isBlank()) {
+            cfgResource = System.getenv("HIBERNATE_CFG");
+        }
+
+        Configuration configuration = new Configuration();
+        if (cfgResource != null && !cfgResource.isBlank()) {
+            System.out.println("Usando configuración de Hibernate: " + cfgResource);
+            configuration = configuration.configure(cfgResource);
+        } else {
+            configuration = configuration.configure(); // Carga hibernate.cfg.xml
+        }
 
         // Configurar esquema desde variable de entorno
         String dbSchema = System.getenv("DB_SCHEMA_ENSURANCE");
@@ -34,9 +43,7 @@ public class HibernateUtil {
             System.out.println("⚠️ Variable DB_SCHEMA_ENSURANCE no definida, usando esquema por defecto");
         }
 
-        return configuration
-                .addAnnotatedClass(User.class) // Registra la entidad User
-                .buildSessionFactory();
+        return configuration.buildSessionFactory();
     }
 
     /**

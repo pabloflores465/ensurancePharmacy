@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Manejador HTTP para gestionar las operaciones CRUD de las Subcategorías (Subcategory).
@@ -19,6 +21,7 @@ public class SubcategoryHandler implements HttpHandler {
     private final SubcategoryDAO subcategoryDAO;
     private final ObjectMapper objectMapper;
     private static final String ENDPOINT = "/api2/subcategories";
+    private static final Logger LOGGER = Logger.getLogger(SubcategoryHandler.class.getName());
 
     /**
      * Constructor para SubcategoryHandler.
@@ -63,7 +66,7 @@ public class SubcategoryHandler implements HttpHandler {
                 exchange.sendResponseHeaders(405, -1); // Method Not Allowed
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error processing SubcategoryHandler request", e);
             exchange.sendResponseHeaders(500, -1); // Internal Server Error
         }
     }

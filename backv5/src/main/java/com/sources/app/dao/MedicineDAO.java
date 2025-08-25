@@ -7,6 +7,8 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Data Access Object (DAO) para gestionar entidades {@link Medicine}.
@@ -14,6 +16,8 @@ import java.util.List;
  * que representan los productos farmacéuticos disponibles. Utiliza Hibernate para interacciones con la base de datos.
  */
 public class MedicineDAO {
+
+    private static final Logger LOGGER = Logger.getLogger(MedicineDAO.class.getName());
 
     /**
      * Crea un nuevo registro de Medicamento en la base de datos.
@@ -56,7 +60,7 @@ public class MedicineDAO {
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error creating Medicine (name=" + name + ")", e);
         }
         return med;
     }
@@ -71,7 +75,7 @@ public class MedicineDAO {
             Query<Medicine> query = session.createQuery("FROM Medicine", Medicine.class);
             return query.list();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching all Medicine records", e);
             return null;
         }
     }
@@ -86,7 +90,7 @@ public class MedicineDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Medicine.class, id);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching Medicine by id=" + id, e);
             return null;
         }
     }
@@ -106,7 +110,7 @@ public class MedicineDAO {
             return medicine;
         } catch (Exception e) {
             if (tx != null) tx.rollback();
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error updating Medicine (entity null=" + (medicine == null) + ")", e);
             return null;
         }
     }

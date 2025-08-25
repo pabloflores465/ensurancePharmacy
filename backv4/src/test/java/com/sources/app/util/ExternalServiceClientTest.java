@@ -188,6 +188,41 @@ class ExternalServiceClientTest {
         verify(mockConnection).disconnect();
     }
 
+    @Test
+    void put_Hospital_Success() throws Exception {
+        mockedClientStatic = Mockito.mockStatic(ExternalServiceClient.class, Mockito.CALLS_REAL_METHODS);
+        mockedClientStatic.when(() -> ExternalServiceClient.open(anyString())).thenReturn(mockConnection);
+        setupMockResponse(HttpURLConnection.HTTP_OK, SUCCESS_RESPONSE);
+        when(mockConnection.getOutputStream()).thenReturn(mockOutputStream);
+
+        String result = externalServiceClient.put(TEST_ENDPOINT, TEST_BODY, true);
+        assertEquals(SUCCESS_RESPONSE, result);
+
+        verify(mockConnection).setRequestMethod("PUT");
+        verify(mockConnection).setDoOutput(true);
+        verify(mockConnection).setRequestProperty(eq("Content-Type"), eq("application/json"));
+        verify(mockOutputStream).write(outputStreamCaptor.capture(), eq(0), anyInt());
+        String body = new String(outputStreamCaptor.getValue(), StandardCharsets.UTF_8);
+        assertTrue(body.contains("\"key\":\"value\""));
+        verify(mockConnection).getResponseCode();
+        verify(mockConnection).getInputStream();
+        verify(mockConnection).disconnect();
+    }
+
+    @Test
+    void put_HttpError_ThrowsException() throws Exception {
+        mockedClientStatic = Mockito.mockStatic(ExternalServiceClient.class, Mockito.CALLS_REAL_METHODS);
+        mockedClientStatic.when(() -> ExternalServiceClient.open(anyString())).thenReturn(mockConnection);
+        setupMockResponse(HttpURLConnection.HTTP_BAD_REQUEST, ERROR_RESPONSE);
+        when(mockConnection.getOutputStream()).thenReturn(mockOutputStream);
+
+        Exception exception = assertThrows(Exception.class, () -> {
+            externalServiceClient.put(TEST_ENDPOINT, TEST_BODY, false);
+        });
+        assertTrue(exception.getMessage().contains("Error en la petición PUT: 400"));
+        verify(mockConnection).disconnect();
+    }
+
     // --- Async Tests (verify they delegate correctly) ---
     @Test
     void getAsync_DelegatesToGet() throws Exception {

@@ -26,6 +26,7 @@ public class SearchMedicineHandlerTest {
     private static class MockMedicineDAO extends MedicineDAO {
 
         private final List<Medicine> data;
+        boolean throwOnGetAll;
 
         MockMedicineDAO(List<Medicine> data) {
             this.data = data;
@@ -40,6 +41,7 @@ public class SearchMedicineHandlerTest {
 
         @Override
         public List<Medicine> getAll() {
+            if (throwOnGetAll) throw new RuntimeException("boom");
             return data;
         }
 
@@ -234,5 +236,35 @@ public class SearchMedicineHandlerTest {
         assertEquals(405, ex.getResponseCode());
         String body = new String(ex.getResponseBytes());
         assertTrue(body.contains("Método no permitido"));
+    }
+
+    @Test
+    public void testDaoExceptionOnGetAllWithParamsReturns500WithCors() throws Exception {
+        List<Medicine> data = new ArrayList<>();
+        MockMedicineDAO dao = new MockMedicineDAO(data);
+        dao.throwOnGetAll = true;
+        SearchMedicineHandler handler = new SearchMedicineHandler(dao);
+        MockHttpExchange ex = new MockHttpExchange("GET", "http://localhost/api2/medicines/search?name=ibu");
+        handler.handle(ex);
+        assertEquals(500, ex.getResponseCode());
+        assertEquals("*", ex.getResponseHeaders().getFirst("Access-Control-Allow-Origin"));
+        String body = new String(ex.getResponseBytes());
+        assertTrue(body.contains("Error interno al buscar medicamentos"));
+        assertEquals("application/json", ex.getResponseHeaders().getFirst("Content-Type"));
+    }
+
+    @Test
+    public void testDaoExceptionOnGetAllNoParamsReturns500WithCors() throws Exception {
+        List<Medicine> data = new ArrayList<>();
+        MockMedicineDAO dao = new MockMedicineDAO(data);
+        dao.throwOnGetAll = true;
+        SearchMedicineHandler handler = new SearchMedicineHandler(dao);
+        MockHttpExchange ex = new MockHttpExchange("GET", "http://localhost/api2/medicines/search");
+        handler.handle(ex);
+        assertEquals(500, ex.getResponseCode());
+        assertEquals("*", ex.getResponseHeaders().getFirst("Access-Control-Allow-Origin"));
+        String body = new String(ex.getResponseBytes());
+        assertTrue(body.contains("Error interno al buscar medicamentos"));
+        assertEquals("application/json", ex.getResponseHeaders().getFirst("Content-Type"));
     }
 }

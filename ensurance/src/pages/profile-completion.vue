@@ -220,7 +220,7 @@ onMounted(() => {
           <p class="text-gray-600">Serás redirigido al inicio en unos momentos...</p>
         </div>
         
-        <div v-else>
+        <div v-else-if="user">
           <div class="max-w-md mx-auto">
             <div class="text-center">
               <h1 class="text-2xl font-semibold text-gray-900">Completa tu perfil</h1>
@@ -346,6 +346,9 @@ onMounted(() => {
               </div>
             </div>
           </div>
+        </div>
+        <div v-else class="text-center">
+          <p>Redirigiendo...</p>
         </div>
       </div>
     </div>

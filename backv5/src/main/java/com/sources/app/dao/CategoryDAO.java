@@ -7,6 +7,8 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Data Access Object (DAO) para gestionar entidades {@link Category}.
@@ -14,6 +16,7 @@ import java.util.List;
  * en registros de Categorías, que representan categorías de productos. Utiliza Hibernate para interacciones con la base de datos.
  */
 public class CategoryDAO {
+    private static final Logger LOGGER = Logger.getLogger(CategoryDAO.class.getName());
 
     /**
      * Crea un nuevo registro de Categoría en la base de datos.
@@ -34,7 +37,7 @@ public class CategoryDAO {
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error creating Category with name: " + name, e);
         }
         return category;
     }
@@ -49,7 +52,7 @@ public class CategoryDAO {
             Query<Category> query = session.createQuery("FROM Category", Category.class);
             return query.list();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching all Category records", e);
             return null;
         }
     }
@@ -64,7 +67,7 @@ public class CategoryDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Category.class, id);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching Category by id: " + id, e);
             return null;
         }
     }
@@ -84,7 +87,7 @@ public class CategoryDAO {
             return category;
         } catch (Exception e) {
             if (tx != null) tx.rollback();
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error updating Category", e);
             return null;
         }
     }

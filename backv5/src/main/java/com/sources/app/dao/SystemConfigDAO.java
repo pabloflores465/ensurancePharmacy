@@ -7,6 +7,8 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Data Access Object (DAO) para gestionar configuraciones del sistema almacenadas como entidades {@link SystemConfig}.
@@ -14,6 +16,8 @@ import java.util.List;
  * y métodos auxiliares para recuperar valores de configuración con valores predeterminados. Utiliza Hibernate.
  */
 public class SystemConfigDAO {
+
+    private static final Logger LOGGER = Logger.getLogger(SystemConfigDAO.class.getName());
 
     /**
      * Guarda una nueva entrada de configuración o actualiza una existente basada en el configKey.
@@ -55,7 +59,7 @@ public class SystemConfigDAO {
             if (transaction != null) {
                 transaction.rollback();
             }
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error saving/updating SystemConfig (key=" + configKey + ", value=" + configValue + ", descNull=" + (description == null) + ")", e);
             return null;
         }
     }
@@ -73,7 +77,7 @@ public class SystemConfigDAO {
             query.setParameter("key", configKey);
             return query.uniqueResult();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching SystemConfig by key=" + configKey, e);
             return null;
         }
     }
@@ -89,7 +93,7 @@ public class SystemConfigDAO {
                 "FROM SystemConfig ORDER BY configKey", SystemConfig.class);
             return query.list();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching all SystemConfig records", e);
             return null;
         }
     }
@@ -116,7 +120,7 @@ public class SystemConfigDAO {
             if (transaction != null) {
                 transaction.rollback();
             }
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error deleting SystemConfig by id=" + idConfig, e);
             return false;
         }
     }

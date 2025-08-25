@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+        <!-- SQLite JDBC connection -->
+        <property name="hibernate.connection.driver_class">org.sqlite.JDBC</property>
+        <property name="hibernate.connection.url">jdbc:sqlite:${user.dir}/backv4/sqlite/USUARIODEV.sqlite</property>
+        <property name="hibernate.dialect">org.hibernate.community.dialect.SQLiteDialect</property>
+        <property name="show_sql">true</property>
+        <property name="format_sql">true</property>
+        <!-- Auto-create schema for local DBs -->
+        <property name="hibernate.hbm2ddl.auto">update</property>
+
+        <!-- Entity mappings -->
+        <mapping class="com.sources.app.entities.User"/>
+        <mapping class="com.sources.app.entities.Policy"/>
+        <mapping class="com.sources.app.entities.Appointment"/>
+        <mapping class="com.sources.app.entities.AppointmentMade"/>
+        <mapping class="com.sources.app.entities.Category"/>
+        <mapping class="com.sources.app.entities.ConfigurableAmount"/>
+        <mapping class="com.sources.app.entities.Hospital"/>
+        <mapping class="com.sources.app.entities.Medicine"/>
+        <mapping class="com.sources.app.entities.MedicinePres"/>
+        <mapping class="com.sources.app.entities.Pharmacy"/>
+        <mapping class="com.sources.app.entities.Prescription"/>
+        <mapping class="com.sources.app.entities.Service"/>
+        <mapping class="com.sources.app.entities.TotalHospital"/>
+        <mapping class="com.sources.app.entities.TotalPharmacy"/>
+        <mapping class="com.sources.app.entities.Transactions"/>
+        <mapping class="com.sources.app.entities.TransactionPolicy"/>
+        <mapping class="com.sources.app.entities.InsuranceService"/>
+        <mapping class="com.sources.app.entities.HospitalInsuranceService"/>
+        <mapping class="com.sources.app.entities.EnsuranceAppointment"/>
+        <mapping class="com.sources.app.entities.PrescriptionApproval"/>
+        <!-- ServiceApproval omitted in SQLite due to SEQUENCE usage -->
+        <mapping class="com.sources.app.entities.ServiceCategory"/>
+        <mapping class="com.sources.app.entities.ServiceCategoryId"/>
+        <mapping class="com.sources.app.entities.SystemConfig"/>
+        <mapping class="com.sources.app.entities.MedicinePresId"/>
+    </session-factory>
+</hibernate-configuration>

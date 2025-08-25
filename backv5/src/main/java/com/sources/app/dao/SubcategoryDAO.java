@@ -7,6 +7,8 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Data Access Object (DAO) para gestionar entidades {@link Subcategory}.
@@ -14,6 +16,8 @@ import java.util.List;
  * en registros de Subcategorías utilizando Hibernate.
  */
 public class SubcategoryDAO {
+
+    private static final Logger LOGGER = Logger.getLogger(SubcategoryDAO.class.getName());
 
     /**
      * Crea un nuevo registro de Subcategoría en la base de datos.
@@ -34,7 +38,7 @@ public class SubcategoryDAO {
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error creating Subcategory (name=" + name + ")", e);
         }
         return subcategory;
     }
@@ -49,7 +53,7 @@ public class SubcategoryDAO {
             Query<Subcategory> query = session.createQuery("FROM Subcategory", Subcategory.class);
             return query.list();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching all Subcategory records", e);
             return null;
         }
     }
@@ -64,7 +68,7 @@ public class SubcategoryDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Subcategory.class, id);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching Subcategory by id=" + id, e);
             return null;
         }
     }
@@ -84,7 +88,7 @@ public class SubcategoryDAO {
             return subcategory;
         } catch (Exception e) {
             if (tx != null) tx.rollback();
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error updating Subcategory (entity null=" + (subcategory == null) + ")", e);
             return null;
         }
     }

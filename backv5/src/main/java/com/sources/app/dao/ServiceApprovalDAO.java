@@ -11,6 +11,8 @@ import org.hibernate.query.Query;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Data Access Object (DAO) para gestionar entidades {@link ServiceApproval}.
@@ -19,6 +21,8 @@ import java.util.UUID;
  * Utiliza Hibernate para interacciones con la base de datos.
  */
 public class ServiceApprovalDAO {
+
+    private static final Logger LOGGER = Logger.getLogger(ServiceApprovalDAO.class.getName());
 
     /**
      * Crea un nuevo registro de ServiceApproval en la base de datos.
@@ -65,7 +69,7 @@ public class ServiceApprovalDAO {
             if (transaction != null) {
                 transaction.rollback();
             }
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error creating ServiceApproval (serviceId=" + serviceId + ", serviceName=" + serviceName + ")", e);
             return null;
         }
     }
@@ -96,7 +100,7 @@ public class ServiceApprovalDAO {
             if (transaction != null) {
                 transaction.rollback();
             }
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error updating prescription fields for ServiceApproval id=" + approvalId, e);
             return null;
         }
     }
@@ -136,7 +140,7 @@ public class ServiceApprovalDAO {
             if (transaction != null) {
                 transaction.rollback();
             }
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error updating status for ServiceApproval id=" + approvalId + ", newStatus=" + status, e);
             return null;
         }
     }
@@ -151,7 +155,7 @@ public class ServiceApprovalDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(ServiceApproval.class, id);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching ServiceApproval by id=" + id, e);
             return null;
         }
     }
@@ -169,7 +173,7 @@ public class ServiceApprovalDAO {
             query.setParameter("code", approvalCode);
             return query.uniqueResult();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching ServiceApproval by approvalCode=" + approvalCode, e);
             return null;
         }
     }
@@ -187,7 +191,7 @@ public class ServiceApprovalDAO {
             query.setParameter("userId", userId);
             return query.list();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching ServiceApproval by user id=" + userId, e);
             return null;
         }
     }
@@ -205,7 +209,7 @@ public class ServiceApprovalDAO {
             query.setParameter("hospitalId", hospitalId);
             return query.list();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching ServiceApproval by hospital id=" + hospitalId, e);
             return null;
         }
     }
@@ -221,7 +225,7 @@ public class ServiceApprovalDAO {
                 "FROM ServiceApproval ORDER BY createdAt DESC", ServiceApproval.class);
             return query.list();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error fetching all ServiceApproval records", e);
             return null;
         }
     }

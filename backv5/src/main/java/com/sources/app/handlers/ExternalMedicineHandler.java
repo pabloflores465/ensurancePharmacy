@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Manejador HTTP para obtener medicamentos desde una fuente externa.
@@ -20,6 +22,7 @@ public class ExternalMedicineHandler implements HttpHandler {
     private ExternalMedicineDAO externalMedicineDAO;
     private ObjectMapper objectMapper;
     private static final String ENDPOINT = "/api2/external_medicines";
+    private static final Logger LOGGER = Logger.getLogger(ExternalMedicineHandler.class.getName());
 
     /**
      * Constructor para ExternalMedicineHandler.
@@ -53,7 +56,7 @@ public class ExternalMedicineHandler implements HttpHandler {
                 exchange.sendResponseHeaders(405, -1);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Unhandled exception in ExternalMedicineHandler", e);
             exchange.sendResponseHeaders(500, -1);
         }
     }
