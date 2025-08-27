@@ -43,13 +43,24 @@ pipeline {
           withSonarQubeEnv("${SONARQUBE_SERVER}") {
             sh """
           set -e
+          echo "🔍 SonarQube Analysis for branch: ${BRANCH_NAME}"
           echo "Sonar host: $SONAR_HOST_URL"
           echo "Version: ${BUILD_NUMBER}"
 
+          # Generar coverage de frontend si existe
+          if [ -d "ensurance" ]; then
+            cd ensurance && npm run test:coverage || true && cd ..
+          fi
+          if [ -d "pharmacy" ]; then
+            cd pharmacy && npm run test:unit:coverage || true && cd ..
+          fi
+
           "${scannerHome}/bin/sonar-scanner" \
             -Dsonar.projectVersion=${BUILD_NUMBER} \
+            -Dsonar.branch.name=${BRANCH_NAME} \
             -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes \
-            -Dsonar.coverage.jacoco.xmlReportPaths="**/target/site/jacoco/jacoco.xml"
+            -Dsonar.coverage.jacoco.xmlReportPaths="**/target/site/jacoco/jacoco.xml" \
+            -Dsonar.javascript.lcov.reportPaths="ensurance/coverage/lcov.info,pharmacy/coverage/lcov.info"
         """
           }
         }
@@ -71,123 +82,89 @@ pipeline {
       }
     }
 
-    stage('Deploy DEV (branch dev)') {
-      when { branch 'dev' }
+    stage('Deploy DEV') {
+      when { anyOf { branch 'dev'; branch 'develop'; branch 'development' } }
       steps {
         sh '''
-          # Variables de entorno para DEV
-          export ENS_BACKEND_HOST_PORT=8081
-          export PHARM_BACKEND_HOST_PORT=8082
-          export ENS_FRONTEND_HOST_PORT=5175
-          export PHARM_FRONTEND_HOST_PORT=8089
-          export VITE_ENSURANCE_API_URL="http://localhost:${ENS_BACKEND_HOST_PORT}/api"
-          export VITE_PHARMACY_API_URL="http://localhost:${PHARM_BACKEND_HOST_PORT}/api2"
-          export VUE_APP_PHARMACY_API_URL="${VITE_PHARMACY_API_URL}"
-          export VUE_APP_ENSURANCE_API_URL="${VITE_ENSURANCE_API_URL}"
-          export NUXT_PUBLIC_ENSURANCE_API_URL="${VITE_ENSURANCE_API_URL}"
-
-          # Variables para APIs internas de backends
-          export ENS_BACKEND_API_URL="http://localhost:${ENS_BACKEND_HOST_PORT}/api"
-          export PHARM_BACKEND_API_URL="http://localhost:${PHARM_BACKEND_HOST_PORT}/api2"
-
-          # Variables de esquemas de base de datos para DEV
-          export DB_SCHEMA_ENSURANCE="USUARIODEV"
-          export DB_SCHEMA_PHARMACY="FARMACIADEV"
-
-          echo "Deploy DEV → backend1/frontend1"
-          echo "🧹 Limpiando servicios existentes..."
-          docker compose -f docker-compose.ensurance.yaml down -v --remove-orphans || true
-          docker compose -f docker-compose.pharmacy.yaml down -v --remove-orphans || true
-          docker compose -f docker-compose.ensurance.yaml run --rm cleanup || true
-          docker compose -f docker-compose.pharmacy.yaml run --rm cleanup || true
-          echo "🚀 Iniciando servicios limpios..."
-          docker compose -f docker-compose.ensurance.yaml up -d --build
-          docker compose -f docker-compose.pharmacy.yaml up -d --build
+          echo "🚀 Deploy DEV Environment (puertos 3000-3003)"
+          
+          # Usar el script unificado de despliegue
+          chmod +x deploy.sh
+          ./deploy.sh deploy dev --rebuild
+          
+          echo "✅ DEV desplegado en:"
+          echo "   - Ensurance Frontend: http://localhost:3000"
+          echo "   - Pharmacy Frontend: http://localhost:3001"
+          echo "   - Ensurance Backend: http://localhost:3002/api"
+          echo "   - Pharmacy Backend: http://localhost:3003/api2"
         '''
       }
     }
 
-    stage('Deploy UAT (branch test)') {
-      when { branch 'test' }
+    stage('Deploy QA') {
+      when { anyOf { branch 'qa'; branch 'test'; branch 'testing'; branch 'staging' } }
       steps {
         sh '''
-          # Variables de entorno para UAT
-          export ENS_BACKEND_HOST_PORT=9081
-          export PHARM_BACKEND_HOST_PORT=9082
-          export ENS_FRONTEND_HOST_PORT=6175
-          export PHARM_FRONTEND_HOST_PORT=9089
-          export VITE_ENSURANCE_API_URL="http://localhost:${ENS_BACKEND_HOST_PORT}/api"
-          export VITE_PHARMACY_API_URL="http://localhost:${PHARM_BACKEND_HOST_PORT}/api2"
-          export VUE_APP_PHARMACY_API_URL="${VITE_PHARMACY_API_URL}"
-          export VUE_APP_ENSURANCE_API_URL="${VITE_ENSURANCE_API_URL}"
-          export NUXT_PUBLIC_ENSURANCE_API_URL="${VITE_ENSURANCE_API_URL}"
-
-          # Variables para APIs internas de backends
-          export ENS_BACKEND_API_URL="http://localhost:${ENS_BACKEND_HOST_PORT}/api"
-          export PHARM_BACKEND_API_URL="http://localhost:${PHARM_BACKEND_HOST_PORT}/api2"
-
-          # Variables de esquemas de base de datos para UAT
-          export DB_SCHEMA_ENSURANCE="USUARIOUAT"
-          export DB_SCHEMA_PHARMACY="FARMACIAUAT"
-
-          echo "Deploy UAT → backend2/frontend2"
-          echo "🧹 Limpiando servicios existentes..."
-          docker compose -f docker-compose.ensurance.yaml down -v --remove-orphans || true
-          docker compose -f docker-compose.pharmacy.yaml down -v --remove-orphans || true
-          docker compose -f docker-compose.ensurance.yaml run --rm cleanup || true
-          docker compose -f docker-compose.pharmacy.yaml run --rm cleanup || true
-          echo "🚀 Iniciando servicios limpios..."
-          docker compose -f docker-compose.ensurance.yaml up -d --build
-          docker compose -f docker-compose.pharmacy.yaml up -d --build
+          echo "🧪 Deploy QA Environment (puertos 4000-4003)"
+          
+          # Usar el script unificado de despliegue
+          chmod +x deploy.sh
+          ./deploy.sh deploy qa --rebuild
+          
+          echo "✅ QA desplegado en:"
+          echo "   - Ensurance Frontend: http://localhost:4000"
+          echo "   - Pharmacy Frontend: http://localhost:4001"
+          echo "   - Ensurance Backend: http://localhost:4002/api"
+          echo "   - Pharmacy Backend: http://localhost:4003/api2"
         '''
       }
     }
 
-    stage('Deploy PROD (branch main)') {
-      when { branch 'main' }
+    stage('Deploy MAIN') {
+      when { anyOf { branch 'main'; branch 'master' } }
       steps {
         sh '''
-          # Variables de entorno para PROD
-          export ENS_BACKEND_HOST_PORT=80
-          export PHARM_BACKEND_HOST_PORT=81
-          export ENS_FRONTEND_HOST_PORT=7175
-          export PHARM_FRONTEND_HOST_PORT=7089
-          export VITE_ENSURANCE_API_URL="http://localhost:${ENS_BACKEND_HOST_PORT}/api"
-          export VITE_PHARMACY_API_URL="http://localhost:${PHARM_BACKEND_HOST_PORT}/api2"
-          export VUE_APP_PHARMACY_API_URL="${VITE_PHARMACY_API_URL}"
-          export VUE_APP_ENSURANCE_API_URL="${VITE_ENSURANCE_API_URL}"
-          export NUXT_PUBLIC_ENSURANCE_API_URL="${VITE_ENSURANCE_API_URL}"
-
-          # Variables para APIs internas de backends
-          export ENS_BACKEND_API_URL="http://localhost:${ENS_BACKEND_HOST_PORT}/api"
-          export PHARM_BACKEND_API_URL="http://localhost:${PHARM_BACKEND_HOST_PORT}/api2"
-
-          # Variables de esquemas de base de datos para PROD
-          export DB_SCHEMA_ENSURANCE="USUARIO"
-          export DB_SCHEMA_PHARMACY="FARMACIA"
-
-          echo "Deploy PROD → backend3/frontend3"
-          echo "🧹 Limpiando servicios existentes..."
-          docker compose -f docker-compose.ensurance.yaml down -v --remove-orphans || true
-          docker compose -f docker-compose.pharmacy.yaml down -v --remove-orphans || true
-          docker compose -f docker-compose.ensurance.yaml run --rm cleanup || true
-          docker compose -f docker-compose.pharmacy.yaml run --rm cleanup || true
-          echo "🚀 Iniciando servicios limpios..."
-          docker compose -f docker-compose.ensurance.yaml up -d --build
-          docker compose -f docker-compose.pharmacy.yaml up -d --build
+          echo "🚀 Deploy MAIN Environment (puertos 5175, 8089, 8081, 8082)"
+          
+          # Usar el script unificado de despliegue
+          chmod +x deploy.sh
+          ./deploy.sh deploy main --rebuild
+          
+          echo "✅ MAIN desplegado en:"
+          echo "   - Ensurance Frontend: http://localhost:5175"
+          echo "   - Pharmacy Frontend: http://localhost:8089"
+          echo "   - Ensurance Backend: http://localhost:8081/api"
+          echo "   - Pharmacy Backend: http://localhost:8082/api2"
         '''
       }
     }
   }
 
   post {
+    always {
+      script {
+        // Mostrar estado de contenedores después del despliegue
+        sh './deploy.sh status || true'
+      }
+    }
     success {
-      echo '✅ Pipeline OK'
+      echo '✅ Pipeline OK - Sistema desplegado correctamente'
+      emailext to: "${env.EMAIL_TO}",
+               subject: "✅ Deploy exitoso: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+               body: """Deploy completado exitosamente en rama ${env.BRANCH_NAME}.
+               
+Detalles: ${env.BUILD_URL}
+               
+Verificar servicios con: ./deploy.sh status"""
     }
     unsuccessful {
       emailext to: "${env.EMAIL_TO}",
                subject: "⚠️ Pipeline fallido: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-               body: "Detalle: ${env.BUILD_URL}"
+               body: """Pipeline falló en rama ${env.BRANCH_NAME}.
+               
+Detalle: ${env.BUILD_URL}
+               
+Revisar logs: ./deploy.sh logs <ambiente>"""
     }
   }
 }

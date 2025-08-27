@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  ensurance-pharmacy-system:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - ENVIRONMENT=dev
+    container_name: ensurance-pharmacy-dev
+    ports:
+      - "3000:5175"   # Ensurance Frontend DEV
+      - "3001:8089"   # Pharmacy Frontend DEV
+      - "3002:8081"   # Ensurance Backend DEV
+      - "3003:8082"   # Pharmacy Backend DEV
+    volumes:
+      - ./databases/dev:/app/databases
+      - ./logs/dev:/app/logs
+      - ./ensurance:/app/ensurance-dev:ro
+      - ./pharmacy:/app/pharmacy-dev:ro
+      - ./backv4:/app/backv4-dev:ro
+      - ./backv5:/app/backv5-dev:ro
+    environment:
+      - NODE_ENV=development
+      - JAVA_OPTS=-Xmx256m -Xms128m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - ENVIRONMENT=dev
+      - DEBUG=true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5175", "&&", "curl", "-f", "http://localhost:8089"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+
+networks:
+  default:
+    name: ensurance-pharmacy-dev-network
