@@ -528,17 +528,75 @@ El sistema usa SQLite para todos los ambientes, con bases de datos separadas por
 
 ### Scripts de Migración
 
+#### BackV4 (Ensurance Backend)
 ```bash
-# BackV4 (Ensurance)
-cd backv4/sqlite
-sqlite3 USUARIO.sqlite < 01_initial_schema.sql
-sqlite3 USUARIO.sqlite < 02_add_missing_tables.sql
+cd backv4/sqlite/
 
-# BackV5 (Pharmacy)
-cd backv5/sqlite
+# Aplicar esquema inicial
 sqlite3 USUARIO.sqlite < 01_initial_schema.sql
+
+# Aplicar migraciones adicionales
+sqlite3 USUARIO.sqlite < 02_add_missing_tables.sql
+```
+
+**Scripts disponibles:**
+- `01_initial_schema.sql` - Esquema completo inicial con todas las tablas
+- `02_add_missing_tables.sql` - Agrega tabla SUBCATEGORY y actualiza SYSTEM_CONFIG
+
+#### BackV5 (Pharmacy Backend)
+```bash
+cd backv5/sqlite/
+
+# Aplicar esquema inicial
+sqlite3 USUARIO.sqlite < 01_initial_schema.sql
+
+# Aplicar migraciones adicionales
 sqlite3 USUARIO.sqlite < 02_add_missing_columns.sql
 ```
+
+**Scripts disponibles:**
+- `01_initial_schema.sql` - Esquema completo inicial del sistema de farmacia
+- `02_add_missing_columns.sql` - Agrega columnas ID_CATEGORY, ID_SUBCATEGORY a MEDICINE
+
+### Estructura de Base de Datos
+
+#### BackV4 (Ensurance) - Tablas Principales
+- **USERS** - Gestión de usuarios y autenticación
+- **POLICY** - Pólizas de seguros médicos
+- **HOSPITALS** - Información de hospitales
+- **MEDICINE** - Catálogo de medicinas
+- **PRESCRIPTION** - Recetas médicas
+- **TRANSACTIONS** - Transacciones financieras
+- **APPOINTMENTS** - Citas médicas
+- **SYSTEM_CONFIG** - Parámetros de configuración del sistema
+- **SUBCATEGORY** - Subcategorías de medicinas
+
+#### BackV5 (Pharmacy) - Tablas Principales
+- **USERS** - Gestión de usuarios y autenticación
+- **MEDICINE** - Catálogo de medicinas con categorías jerárquicas
+- **PRESCRIPTION** - Recetas médicas con detalles de medicinas
+- **ORDERS** - Órdenes de clientes
+- **BILL** - Información de facturación con cobertura de seguros
+- **COMMENTS** - Comentarios de usuarios sobre medicinas
+- **SERVICE_APPROVALS** - Flujo de trabajo de aprobación de servicios
+- **SYSTEM_CONFIG** - Parámetros de configuración del sistema
+- **CATEGORY** - Categorías de medicinas
+- **SUBCATEGORY** - Subcategorías de medicinas
+
+### Características Clave
+
+**BackV4 (Ensurance):**
+- Sistema de seguros médicos completo
+- Gestión de pólizas y transacciones
+- Integración con hospitales
+- Sistema de citas médicas
+
+**BackV5 (Pharmacy):**
+- Categorización jerárquica de medicinas
+- Gestión detallada de recetas con dosificación, frecuencia, duración
+- Flujo completo de órdenes desde creación hasta facturación
+- Integración con seguros y cálculos de cobertura
+- Sistema de comentarios comunitarios
 
 ### Verificación de Datos
 
@@ -550,7 +608,20 @@ docker exec -it ensurance-pharmacy-main sqlite3 /app/databases/pharmacy/USUARIO.
 # Verificar localmente
 sqlite3 databases/dev/ensurance/USUARIO.sqlite "SELECT COUNT(*) FROM USERS;"
 sqlite3 databases/main/pharmacy/USUARIO.sqlite ".schema MEDICINE"
+
+# Verificar estructura de tablas
+sqlite3 backv4/sqlite/USUARIO.sqlite ".schema POLICY"
+sqlite3 backv5/sqlite/USUARIO.sqlite ".schema PRESCRIPTION"
 ```
+
+### Notas Técnicas
+
+- Todos los scripts usan `CREATE TABLE IF NOT EXISTS` para prevenir errores en re-ejecuciones
+- BackV5 tiene `PRAGMA foreign_keys = ON` habilitado
+- Indexación completa para rendimiento óptimo de consultas
+- Datos de muestra incluidos para testing y desarrollo
+- Configuraciones por defecto para operaciones específicas de farmacia
+- Inserción de datos usando `INSERT OR IGNORE` para prevenir duplicados
 
 ---
 
