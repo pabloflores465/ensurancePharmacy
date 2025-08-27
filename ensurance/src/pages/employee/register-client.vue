@@ -4,7 +4,7 @@ import type { Ref } from "vue";
 import { getInsuranceApiUrl } from "../../utils/api";
 import axios, { type AxiosResponse } from "axios";
 import router from "../../router";
-import eventBus from '../../eventBus';
+// import eventBus from '../../eventBus';
 
 interface PolicyData {
   idPolicy: number;

@@ -93,7 +93,7 @@ const testHospitalCors = async () => {
   results.value.hospital = null;
   
   try {
-    const result = await testCorsHospital();
+    const result = await testCorsHospital(1);
     results.value.hospital = result;
   } catch (err: any) {
     errors.value.hospital = err.message || 'Error al probar CORS con Hospital';

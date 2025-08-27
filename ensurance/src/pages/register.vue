@@ -3,7 +3,7 @@ import { ref, onMounted } from "vue";
 import type { Ref } from "vue";
 import axios, { type AxiosResponse } from "axios";
 import router from "../router";
-import eventBus from '../eventBus';
+// import eventBus from '../eventBus';
 import { getInsuranceApiUrl } from "../utils/api";
 interface PolicyData {
   idPolicy?: number;

@@ -7,7 +7,7 @@ import eventBus from "../eventBus";
 import { checkMissingRequiredFields } from "../utils/profile-utils";
 import { getInsuranceApiUrl } from "../utils/api";
 // La prop msg es opcional
-const props = defineProps<{ msg?: string }>();
+// const props = defineProps<{ msg?: string }>();
 
 interface LoginResponse {
   user: {
@@ -136,7 +136,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <h1 class="text-2xl font-bold mb-6">{{ msg || "Bienvenido a Ensurance" }}</h1>
+  <h1 class="text-2xl font-bold mb-6">Bienvenido a Ensurance</h1>
 
   <div
     v-if="!user"

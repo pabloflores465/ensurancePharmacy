@@ -204,6 +204,13 @@ const testHospitalConnection = async (hospital: Hospital) => {
   }
 };
 
+const clearDefaultHospital = () => {
+  defaultHospitalId.value = null;
+  if (typeof window !== 'undefined') {
+    window.localStorage.removeItem('defaultHospital');
+  }
+};
+
 // Cargar datos iniciales
 onMounted(() => {
   fetchHospitals();
@@ -323,7 +330,7 @@ onMounted(() => {
                 </button>
                 <button 
                   v-if="defaultHospitalId === hospital.idHospital"
-                  @click="defaultHospitalId = null; localStorage.removeItem('defaultHospital')"
+                  @click="clearDefaultHospital"
                   class="bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded text-sm w-24"
                 >
                   Deseleccionar

@@ -63,10 +63,10 @@ interface HospitalPrescription {
   estimatedCost?: number;
 }
 
-interface ConfigurableAmount {
-  idConfigurableAmount: number;
-  prescriptionAmount: number;
-}
+// interface ConfigurableAmount {
+//   idConfigurableAmount: number;
+//   prescriptionAmount: number;
+// }
 
 // Función para obtener el hospital predeterminado
 const getDefaultHospital = () => {

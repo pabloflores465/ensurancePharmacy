@@ -97,7 +97,7 @@ describe('admin/daily-appointments.vue', () => {
     // Verificar que se intentó crear en seguros
     const calls = hoisted.axios.mock.calls
     // Debe haber al menos una llamada POST a /ensurance-appointments
-    const hasPost = calls.some((c) => c[0]?.method === 'POST' && String(c[0]?.url || '').includes('/ensurance-appointments'))
+    const hasPost = calls.some((c: any) => c[0]?.method === 'POST' && String(c[0]?.url || '').includes('/ensurance-appointments'))
     expect(hasPost).toBe(true)
   })
 

@@ -54,13 +54,13 @@ interface Transaction {
   };
 }
 
-interface HospitalService {
-  _id: string;
-  name: string;
-  total: number;
-  description?: string;
-  date: string;
-}
+// interface HospitalService {
+//   _id: string;
+//   name: string;
+//   total: number;
+//   description?: string;
+//   date: string;
+// }
 
 interface Policy {
   idPolicy: number;
@@ -105,9 +105,9 @@ const showUserModal = ref(false);
 const activeTab = ref("profile");
 
 // Configuración de IPs
-const possibleIPs = [ip];
-const HOSPITAL_API_URL = `http://${ip}:${DEFAULT_PORT}`;
-const INSURANCE_API_BASE = getInsuranceApiUrl("/");
+// const possibleIPs = [ip];
+// const HOSPITAL_API_URL = `http://${ip}:${DEFAULT_PORT}`;
+// const INSURANCE_API_BASE = getInsuranceApiUrl("/");
 
 // Información sobre el hospital predeterminado
 const usingDefaultHospital = computed(() => {

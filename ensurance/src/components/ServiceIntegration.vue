@@ -279,7 +279,6 @@ import {
   getInsuranceCategories,
   getMedicationsList,
   syncHospitalServices,
-  requestServiceApproval,
   registerApprovedService,
   registerApprovedMedication
 } from '../utils/api-integration';
@@ -570,40 +569,6 @@ const viewHospitalServices = async (hospital: Hospital) => {
   }
 };
 
-const viewPharmacyMedications = (pharmacy: Pharmacy) => {
-  selectedPharmacy.value = pharmacy;
-  
-  // Mock pharmacy medications data for demonstration
-  pharmacyMedications.value = [
-    {
-      id: 1,
-      name: 'Paracetamol 500mg',
-      category: { id: 1, name: 'Analgésicos' },
-      activeIngredient: 'Paracetamol',
-      description: 'Analgésico y antipirético',
-      price: 25.00,
-      approved: true
-    },
-    {
-      id: 2,
-      name: 'Amoxicilina 500mg',
-      category: { id: 2, name: 'Antibióticos' },
-      activeIngredient: 'Amoxicilina',
-      description: 'Antibiótico de amplio espectro',
-      price: 35.00,
-      approved: true
-    },
-    {
-      id: 3,
-      name: 'Loratadina 10mg',
-      category: { id: 3, name: 'Antialérgicos' },
-      activeIngredient: 'Loratadina',
-      description: 'Antihistamínico',
-      price: 30.00,
-      approved: false
-    }
-  ];
-};
 
 const approveService = async (service: HospitalService) => {
   try {
@@ -750,8 +715,8 @@ const syncPharmacyData = async () => {
   }
 };
 
-const formatPrice = (price: number): string => {
-  return price.toFixed(2);
+const formatPrice = (price: number | undefined): string => {
+  return (price || 0).toFixed(2);
 };
 
 // Initialize

@@ -257,7 +257,7 @@ const testHospitalConnection = async () => {
 
   try {
     // Use the test function from the API integration
-    const result = await testCorsHospital();
+    const result = await testCorsHospital(1);
     testResults.value.hospital = true;
     testResults.value.hospitalDetails = result;
   } catch (error) {

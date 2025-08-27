@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, provide, onMounted, computed } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import eventBus from './eventBus';
 import PortSelector from './components/PortSelector.vue';
