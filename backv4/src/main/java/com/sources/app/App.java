@@ -59,6 +59,7 @@ import com.sources.app.handlers.UserHandler;
 import com.sources.app.util.HibernateUtil;
 import com.sun.net.httpserver.HttpServer;
 
+//para probar cada actualizacion
 /**
  * Clase principal de la aplicación para el backend de Ensurance Pharmacy.
  * Inicializa la conexión a la base de datos, los DAOs, el servidor HTTP y
