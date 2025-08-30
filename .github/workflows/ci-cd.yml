@@ -1,0 +1,246 @@
+name: CI/CD Pipeline with SonarQube Code Review
+
+on:
+  push:
+    branches: [ main, develop, qa ]
+  pull_request:
+    branches: [ main, develop, qa ]
+
+jobs:
+  test-backend-v4:
+    runs-on: ubuntu-latest
+    name: Test Backend V4
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Shallow clones should be disabled for better analysis
+    
+    - name: Set up JDK 11
+      uses: actions/setup-java@v4
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+    
+    - name: Cache Maven dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+    
+    - name: Run Backend V4 Tests with Coverage
+      run: mvn clean verify
+      working-directory: ./backv4
+    
+    - name: Upload Backend V4 Coverage
+      uses: actions/upload-artifact@v3
+      with:
+        name: backv4-coverage
+        path: backv4/target/site/jacoco/
+
+  test-backend-v5:
+    runs-on: ubuntu-latest
+    name: Test Backend V5
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Set up JDK 11
+      uses: actions/setup-java@v4
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+    
+    - name: Cache Maven dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+    
+    - name: Run Backend V5 Tests with Coverage
+      run: mvn clean verify
+      working-directory: ./backv5
+    
+    - name: Upload Backend V5 Coverage
+      uses: actions/upload-artifact@v3
+      with:
+        name: backv5-coverage
+        path: backv5/target/site/jacoco/
+
+  test-ensurance-frontend:
+    runs-on: ubuntu-latest
+    name: Test Ensurance Frontend
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: './ensurance/package-lock.json'
+    
+    - name: Install dependencies
+      run: npm ci
+      working-directory: ./ensurance
+    
+    - name: Run tests with coverage
+      run: npm run test:coverage
+      working-directory: ./ensurance
+    
+    - name: Upload Ensurance Coverage
+      uses: actions/upload-artifact@v3
+      with:
+        name: ensurance-coverage
+        path: ensurance/coverage/
+
+  test-pharmacy-frontend:
+    runs-on: ubuntu-latest
+    name: Test Pharmacy Frontend
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: './pharmacy/package-lock.json'
+    
+    - name: Install dependencies
+      run: npm ci
+      working-directory: ./pharmacy
+    
+    - name: Run tests with coverage
+      run: npm run test:unit -- --coverage
+      working-directory: ./pharmacy
+    
+    - name: Upload Pharmacy Coverage
+      uses: actions/upload-artifact@v3
+      with:
+        name: pharmacy-coverage
+        path: pharmacy/coverage/
+
+  sonarqube-analysis:
+    runs-on: ubuntu-latest
+    name: SonarQube Code Review
+    needs: [test-backend-v4, test-backend-v5, test-ensurance-frontend, test-pharmacy-frontend]
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Disable shallow clone for better analysis
+    
+    - name: Set up JDK 11
+      uses: actions/setup-java@v4
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: './ensurance/package-lock.json'
+    
+    - name: Cache Maven dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+    
+    - name: Download all coverage artifacts
+      uses: actions/download-artifact@v3
+    
+    - name: Install Frontend Dependencies
+      run: |
+        cd ensurance && npm ci
+        cd ../pharmacy && npm ci
+    
+    - name: Build and Test for Coverage
+      run: |
+        cd backv4 && mvn clean verify
+        cd ../backv5 && mvn clean verify
+        cd ../ensurance && npm run test:coverage
+        cd ../pharmacy && npm run test:unit -- --coverage
+    
+    - name: SonarQube Scan
+      uses: sonarqube-quality-gate-action@master
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      with:
+        scanMetadataReportFile: target/sonar/report-task.txt
+    
+    - name: Run SonarQube Analysis
+      run: |
+        mvn sonar:sonar \
+          -Dsonar.projectKey=ensurance-pharmacy \
+          -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+          -Dsonar.branch.name=${{ github.ref_name }} \
+          -Dsonar.projectVersion=${{ github.run_number }}
+      working-directory: ./
+
+  deploy-dev:
+    runs-on: ubuntu-latest
+    name: Deploy to Development
+    needs: [sonarqube-analysis]
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to Development Environment
+      run: |
+        echo "Deploying to Development..."
+        # Aquí puedes agregar los comandos específicos de deploy
+      env:
+        ENSURANCE_BACK_DEV: ${{ secrets.ENSURANCE_BACK_DEV }}
+        ENSURANCE_FRONT_DEV: ${{ secrets.ENSURANCE_FRONT_DEV }}
+
+  deploy-qa:
+    runs-on: ubuntu-latest
+    name: Deploy to QA
+    needs: [sonarqube-analysis]
+    if: github.ref == 'refs/heads/qa' && github.event_name == 'push'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to QA Environment
+      run: |
+        echo "Deploying to QA..."
+        # Aquí puedes agregar los comandos específicos de deploy
+      env:
+        ENSURANCE_BACK_QA: ${{ secrets.ENSURANCE_BACK_QA }}
+        ENSURANCE_FRONT_QA: ${{ secrets.ENSURANCE_FRONT_QA }}
+
+  deploy-main:
+    runs-on: ubuntu-latest
+    name: Deploy to Production
+    needs: [sonarqube-analysis]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to Production Environment
+      run: |
+        echo "Deploying to Production..."
+        # Aquí puedes agregar los comandos específicos de deploy
+      env:
+        ENSURANCE_BACK_MAIN: ${{ secrets.ENSURANCE_BACK_MAIN }}
+        ENSURANCE_FRONT_MAIN: ${{ secrets.ENSURANCE_FRONT_MAIN }}
