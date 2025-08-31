@@ -122,7 +122,7 @@ jobs:
         working-directory: ./pharmacy
 
       - name: Run tests with coverage
-        run: npm run test:unit -- --coverage
+        run: npm run test:unit:coverage
         working-directory: ./pharmacy
 
       - name: Upload Pharmacy Coverage
@@ -183,7 +183,7 @@ jobs:
           cd backv4 && mvn clean verify
           cd ../backv5 && mvn clean verify
           cd ../ensurance && npm run test:coverage
-          cd ../pharmacy && npm run test:unit -- --coverage
+          cd ../pharmacy && npm run test:unit:coverage
 
       - name: Run SonarQube Analysis
         run: |

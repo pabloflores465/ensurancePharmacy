@@ -48,7 +48,7 @@ jobs:
       - name: Run Frontend Tests with Coverage
         run: |
           cd ensurance && npm run test:coverage
-          cd ../pharmacy && npm run test:unit -- --coverage
+          cd ../pharmacy && npm run test:unit:coverage
 
       - name: Run SonarQube Scanner for PR
         run: |
