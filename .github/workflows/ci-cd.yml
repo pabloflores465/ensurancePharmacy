@@ -193,11 +193,15 @@ jobs:
           cd backv4 && mvn sonar:sonar \
             -Dsonar.projectKey=ensurance-backend-dev \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.qualitygate.wait=true \
+            -Dsonar.qualitygate.timeout=300
           cd ../backv5 && mvn sonar:sonar \
             -Dsonar.projectKey=ensurance-backend-dev \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.qualitygate.wait=true \
+            -Dsonar.qualitygate.timeout=300
 
       - name: Run SonarQube Analysis - Backend QA
         if: github.ref == 'refs/heads/qa'
@@ -205,11 +209,15 @@ jobs:
           cd backv4 && mvn sonar:sonar \
             -Dsonar.projectKey=ensurance-backend-qa \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.qualitygate.wait=true \
+            -Dsonar.qualitygate.timeout=300
           cd ../backv5 && mvn sonar:sonar \
             -Dsonar.projectKey=ensurance-backend-qa \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.qualitygate.wait=true \
+            -Dsonar.qualitygate.timeout=300
 
       - name: Run SonarQube Analysis - Backend MAIN
         if: github.ref == 'refs/heads/main'
@@ -217,19 +225,47 @@ jobs:
           cd backv4 && mvn sonar:sonar \
             -Dsonar.projectKey=ensurance-backend-main \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.qualitygate.wait=true \
+            -Dsonar.qualitygate.timeout=300
           cd ../backv5 && mvn sonar:sonar \
             -Dsonar.projectKey=ensurance-backend-main \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.qualitygate.wait=true \
+            -Dsonar.qualitygate.timeout=300
 
-      - name: SonarQube Quality Gate
-        uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
+      - name: Run SonarQube Analysis - Frontend Ensurance
+        uses: SonarSource/sonarqube-scan-action@master
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
-          scanMetadataReportFile: target/sonar/report-task.txt
+          projectBaseDir: ./ensurance
+          args: >
+            -Dsonar.projectKey=${{ github.ref == 'refs/heads/main' && 'ensurance-frontend-main' || github.ref == 'refs/heads/qa' && 'ensurance-frontend-qa' || 'ensurance-frontend-dev' }}
+            -Dsonar.sources=src
+            -Dsonar.tests=tests
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.timeout=300
+
+      - name: Run SonarQube Analysis - Frontend Pharmacy
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          projectBaseDir: ./pharmacy
+          args: >
+            -Dsonar.projectKey=${{ github.ref == 'refs/heads/main' && 'pharmacy-frontend-main' || github.ref == 'refs/heads/qa' && 'pharmacy-frontend-qa' || 'pharmacy-frontend-dev' }}
+            -Dsonar.sources=src
+            -Dsonar.tests=tests
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.timeout=300
 
   deploy-dev:
     runs-on: ubuntu-latest
