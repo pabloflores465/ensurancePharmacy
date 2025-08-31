@@ -17,17 +17,6 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <sonar.projectKey>ensurance-pharmacy</sonar.projectKey>
-        <sonar.projectName>Ensurance Pharmacy System</sonar.projectName>
-        <sonar.sources>backv4/src/main/java,backv5/src/main/java,ensurance/src,pharmacy/src</sonar.sources>
-        <sonar.tests>backv4/src/test/java,backv5/src/test/java,ensurance/tests,pharmacy/tests</sonar.tests>
-        <sonar.test.inclusions>**/__tests__/**,**/*.test.*,**/*.spec.*,**/tests/**</sonar.test.inclusions>
-        <sonar.exclusions>**/build/**,**/target/**,**/node_modules/**,**/dist/**,**/coverage/**,**/*.min.js,**/databases/**,**/logs/**</sonar.exclusions>
-        <sonar.java.binaries>backv4/target/classes,backv5/target/classes</sonar.java.binaries>
-        <sonar.coverage.jacoco.xmlReportPaths>backv4/target/site/jacoco/jacoco.xml,backv5/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-        <sonar.javascript.lcov.reportPaths>ensurance/coverage/lcov.info,pharmacy/coverage/lcov.info</sonar.javascript.lcov.reportPaths>
-        <sonar.qualitygate.wait>true</sonar.qualitygate.wait>
-        <sonar.qualitygate.timeout>300</sonar.qualitygate.timeout>
     </properties>
 
     <modules>

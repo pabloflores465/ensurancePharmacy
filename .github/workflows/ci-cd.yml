@@ -187,15 +187,41 @@ jobs:
           cd ../ensurance && npm run test:coverage
           cd ../pharmacy && npm run test:unit:coverage
 
-      - name: Run SonarQube Analysis
+      - name: Run SonarQube Analysis - Backend DEV
+        if: github.ref == 'refs/heads/develop'
         run: |
-          mvn sonar:sonar \
-            -Dsonar.projectKey=ensurance-pharmacy \
+          cd backv4 && mvn sonar:sonar \
+            -Dsonar.projectKey=ensurance-backend-dev \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-            -Dsonar.branch.name=${{ github.ref_name }} \
-            -Dsonar.projectVersion=${{ github.run_number }}
-        working-directory: ./
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+          cd ../backv5 && mvn sonar:sonar \
+            -Dsonar.projectKey=ensurance-backend-dev \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
+      - name: Run SonarQube Analysis - Backend QA
+        if: github.ref == 'refs/heads/qa'
+        run: |
+          cd backv4 && mvn sonar:sonar \
+            -Dsonar.projectKey=ensurance-backend-qa \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+          cd ../backv5 && mvn sonar:sonar \
+            -Dsonar.projectKey=ensurance-backend-qa \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
+      - name: Run SonarQube Analysis - Backend MAIN
+        if: github.ref == 'refs/heads/main'
+        run: |
+          cd backv4 && mvn sonar:sonar \
+            -Dsonar.projectKey=ensurance-backend-main \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+          cd ../backv5 && mvn sonar:sonar \
+            -Dsonar.projectKey=ensurance-backend-main \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
       - name: SonarQube Quality Gate
         uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
