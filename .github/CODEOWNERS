@@ -1,0 +1,20 @@
+# Global owners
+* @pabloflores465
+
+# Backend owners
+/backv4/ @pabloflores465
+/backv5/ @pabloflores465
+
+# Frontend owners
+/ensurance/ @pabloflores465
+/pharmacy/ @pabloflores465
+
+# Infrastructure and CI/CD
+/.github/ @pabloflores465
+/docker-compose*.yml @pabloflores465
+/Dockerfile @pabloflores465
+/pom.xml @pabloflores465
+
+# Documentation
+/documentation/ @pabloflores465
+*.md @pabloflores465

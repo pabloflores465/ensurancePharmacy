@@ -1,0 +1,24 @@
+name: Status Check Summary
+
+on:
+  pull_request:
+    branches: [main, develop, qa]
+
+jobs:
+  status-summary:
+    runs-on: ubuntu-latest
+    name: All Checks Status
+    needs: []
+    if: always()
+
+    steps:
+      - name: Check Status
+        run: |
+          echo "✅ All required checks must pass before merge"
+          echo "Required checks:"
+          echo "- Test Backend V4"
+          echo "- Test Backend V5"
+          echo "- Test Ensurance Frontend" 
+          echo "- Test Pharmacy Frontend"
+          echo "- SonarQube Pull Request Analysis"
+          echo "- SonarQube Frontend Analysis (environment-specific)"
