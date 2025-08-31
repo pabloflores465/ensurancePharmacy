@@ -34,7 +34,7 @@ jobs:
         working-directory: ./backv4
 
       - name: Upload Backend V4 Coverage
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: backv4-coverage
           path: backv4/target/site/jacoco/
@@ -66,7 +66,7 @@ jobs:
         working-directory: ./backv5
 
       - name: Upload Backend V5 Coverage
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: backv5-coverage
           path: backv5/target/site/jacoco/
@@ -96,7 +96,7 @@ jobs:
         working-directory: ./ensurance
 
       - name: Upload Ensurance Coverage
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ensurance-coverage
           path: ensurance/coverage/
@@ -126,7 +126,7 @@ jobs:
         working-directory: ./pharmacy
 
       - name: Upload Pharmacy Coverage
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: pharmacy-coverage
           path: pharmacy/coverage/
@@ -171,7 +171,7 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: Download all coverage artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: Install Frontend Dependencies
         run: |
