@@ -33,6 +33,8 @@ Haz clic en **Add rule** (Agregar regla) y configura:
 - `Test Pharmacy Frontend`
 - `SonarQube Pull Request Analysis`
 
+> **Nota**: Con SonarQube Community Edition, el análisis de PR no incluye decoración automática de comentarios en GitHub, pero sí valida el Quality Gate.
+
 #### Configuración adicional:
 
 - ✅ **Require conversation resolution before merging**
@@ -44,6 +46,11 @@ Haz clic en **Add rule** (Agregar regla) y configura:
 Repite el proceso para las ramas `develop` y `qa` con la misma configuración.
 
 ### 4. Configurar SonarQube Quality Gate
+
+**Limitaciones de SonarQube Community Edition:**
+- ❌ No soporta análisis de Pull Requests con decoración automática
+- ❌ No soporta análisis de múltiples ramas (multibranch)
+- ✅ Sí soporta Quality Gates y análisis de rama principal
 
 En tu proyecto de SonarQube, asegúrate de que el Quality Gate esté configurado para:
 
