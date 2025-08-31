@@ -37,8 +37,8 @@ jobs:
 
       - name: Install Frontend Dependencies
         run: |
-          cd ensurance && npm ci
-          cd ../pharmacy && npm ci
+          cd ensurance && npm ci --prefer-offline --no-audit --progress=false
+          cd ../pharmacy && npm ci --prefer-offline --no-audit --progress=false
 
       - name: Run Backend Tests with Coverage
         run: |

@@ -88,7 +88,8 @@ jobs:
           cache-dependency-path: "./ensurance/package-lock.json"
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci --prefer-offline --no-audit --progress=false
         working-directory: ./ensurance
 
       - name: Run tests with coverage
@@ -118,7 +119,8 @@ jobs:
           cache-dependency-path: "./pharmacy/package-lock.json"
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci --prefer-offline --no-audit --progress=false
         working-directory: ./pharmacy
 
       - name: Run tests with coverage
@@ -175,8 +177,8 @@ jobs:
 
       - name: Install Frontend Dependencies
         run: |
-          cd ensurance && npm ci
-          cd ../pharmacy && npm ci
+          cd ensurance && npm ci --prefer-offline --no-audit --progress=false
+          cd ../pharmacy && npm ci --prefer-offline --no-audit --progress=false
 
       - name: Build and Test for Coverage
         run: |
