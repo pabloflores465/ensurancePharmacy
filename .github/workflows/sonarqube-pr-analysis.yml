@@ -50,17 +50,41 @@ jobs:
           cd ensurance && npm run test:coverage
           cd ../pharmacy && npm run test:unit:coverage
 
-      - name: Run SonarQube Scanner for PR
+      - name: Run SonarQube Scanner for PR - Backend DEV
+        if: github.base_ref == 'develop'
         run: |
-          mvn sonar:sonar \
-            -Dsonar.projectKey=ensurance-pharmacy \
+          cd backv4 && mvn sonar:sonar \
+            -Dsonar.projectKey=ensurance-backend-dev \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-            -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
-            -Dsonar.pullrequest.branch=${{ github.head_ref }} \
-            -Dsonar.pullrequest.base=${{ github.base_ref }} \
-            -Dsonar.qualitygate.wait=true
-        working-directory: ./
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+          cd ../backv5 && mvn sonar:sonar \
+            -Dsonar.projectKey=ensurance-backend-dev \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
+      - name: Run SonarQube Scanner for PR - Backend QA
+        if: github.base_ref == 'qa'
+        run: |
+          cd backv4 && mvn sonar:sonar \
+            -Dsonar.projectKey=ensurance-backend-qa \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+          cd ../backv5 && mvn sonar:sonar \
+            -Dsonar.projectKey=ensurance-backend-qa \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
+      - name: Run SonarQube Scanner for PR - Backend MAIN
+        if: github.base_ref == 'main'
+        run: |
+          cd backv4 && mvn sonar:sonar \
+            -Dsonar.projectKey=ensurance-backend-main \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+          cd ../backv5 && mvn sonar:sonar \
+            -Dsonar.projectKey=ensurance-backend-main \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
       - name: SonarQube PR Analysis (Quality Gate)
         uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
