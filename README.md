@@ -298,6 +298,44 @@ mvn -f backv5 clean test jacoco:report
 
 El sistema incluye un Dockerfile unificado que ejecuta ambos sistemas (Ensurance y Pharmacy) con configuración multi-ambiente que detecta automáticamente la rama git.
 
+### ▶️ Docker Compose por archivo (ejecución separada)
+
+Puedes levantar cada archivo `docker-compose` por separado según el ambiente o herramientas CI/CD:
+
+```bash
+# DEV (puertos 3000-3003)
+docker compose -f docker-compose.dev.yml up -d --build
+docker compose -f docker-compose.dev.yml logs -f
+docker compose -f docker-compose.dev.yml down
+
+# QA (puertos 4000-4003)
+docker compose -f docker-compose.qa.yml up -d --build
+docker compose -f docker-compose.qa.yml logs -f
+docker compose -f docker-compose.qa.yml down
+
+# MAIN/Producción local (puertos 5175, 8089, 8081, 8082)
+docker compose -f docker-compose.main.yml up -d --build
+docker compose -f docker-compose.main.yml logs -f
+docker compose -f docker-compose.main.yml down
+
+# CI/CD stack (Jenkins, SonarQube, Drone, Docker-in-Docker)
+docker compose -f docker-compose.cicd.yml up -d
+docker compose -f docker-compose.cicd.yml logs -f
+docker compose -f docker-compose.cicd.yml down
+```
+
+Accesos rápidos del stack CI/CD levantado con `docker-compose.cicd.yml`:
+
+- Jenkins: `http://localhost:8080/jenkins`
+- SonarQube: `http://localhost:9000/sonnar` (contexto configurado en `SONAR_WEB_CONTEXT`)
+- Drone: `http://localhost:8000` (HTTP) / `https://localhost:8443` (HTTPS)
+
+Notas:
+
+- El servicio `docker` (dind) requiere Docker con privilegios; en Desktop suele funcionar por defecto.
+- Jenkins primera ejecución: obtener contraseña inicial con `docker exec -it jenkins cat /var/jenkins_home/secrets/initialAdminPassword`.
+- Los volúmenes declarados se crean automáticamente; para borrar datos agrega `-v` al comando `down`.
+
 ### 🏗️ Arquitectura del Contenedor
 
 El Dockerfile unificado incluye:
