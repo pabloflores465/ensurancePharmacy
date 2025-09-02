@@ -76,7 +76,7 @@ services:
       - DRONE_GITHUB_CLIENT_ID=Ov23liNIJRRkAhUbSDpo
       - DRONE_GITHUB_CLIENT_SECRET=a047db54abd738416570645c9356c9ebe4ae518b
       - DRONE_RPC_SECRET=22dab8c8b09eda98581f60c07344ec32
-      - DRONE_SERVER_HOST=https://macbook-air-de-gp.tail5d54f7.ts.net/drone
+      - DRONE_SERVER_HOST=https://macbook-air-de-gp.tail5d54f7.ts.net
       - DRONE_SERVER_PROTO=https
       - DRONE_TLS_AUTOCERT=true
       - DRONE_USER_CREATE=username:pabloflores465,admin:true
@@ -94,7 +94,7 @@ services:
     image: drone/drone-runner-docker:1
     container_name: drone-runner
     environment:
-      - DRONE_RPC_HOST=https://macbook-air-de-gp.tail5d54f7.ts.net/drone
+      - DRONE_RPC_HOST=https://macbook-air-de-gp.tail5d54f7.ts.net
       - DRONE_RPC_PROTO=https
       - DRONE_RPC_SECRET=22dab8c8b09eda98581f60c07344ec32
       - DRONE_RUNNER_NAME=macbook-runner-1
