@@ -705,7 +705,7 @@ sqlite3 backv5/sqlite/USUARIO.sqlite ".schema PRESCRIPTION"
 
 - Todos los scripts usan `CREATE TABLE IF NOT EXISTS` para prevenir errores en re-ejecuciones
 - BackV5 tiene `PRAGMA foreign_keys = ON` habilitado
--#### ⚠️ Consideraciones de Seguridad
+  -#### ⚠️ Consideraciones de Seguridad
 
 - Configurar autenticación robusta en todos los servicios antes de exponerlos
 - Usar tokens de acceso específicos para integraciones externas
@@ -722,11 +722,12 @@ Para configurar los secretos en Drone UI (http://localhost:8000):
 # Secretos requeridos para el pipeline Drone
 sonar_token          # Token de SonarQube para análisis de código
 email_username       # Usuario SMTP para notificaciones
-email_password       # Password SMTP para notificaciones  
+email_password       # Password SMTP para notificaciones
 environment_var      # Variable de ambiente (opcional)
 ```
 
 **Pasos para configurar:**
+
 1. Acceder a Drone UI: http://localhost:8000
 2. Ir a Repository Settings → Secrets
 3. Agregar cada secreto con su valor correspondiente
@@ -735,6 +736,7 @@ environment_var      # Variable de ambiente (opcional)
 #### 🐙 GitHub Actions Secrets
 
 **Secretos ya configurados:**
+
 ```bash
 # SonarQube
 SONAR_TOKEN                    # Token para análisis SonarQube
@@ -742,7 +744,7 @@ SONAR_HOST_URL                 # URL del servidor SonarQube
 
 # Deployment por ambiente
 ENSURANCE_BACKEND_DEV          # Credenciales backend DEV
-ENSURANCE_BACKEND_QA           # Credenciales backend QA  
+ENSURANCE_BACKEND_QA           # Credenciales backend QA
 ENSURANCE_BACKEND_MAIN         # Credenciales backend MAIN
 ENSURANCE_FRONTEND_DEV         # Credenciales frontend DEV
 ENSURANCE_FRONTEND_QA          # Credenciales frontend QA
@@ -750,6 +752,7 @@ ENSURANCE_FRONTEND_MAIN        # Credenciales frontend MAIN
 ```
 
 **Secretos faltantes por configurar:**
+
 ```bash
 # Pharmacy Backend (BackV5)
 PHARMACY_BACKEND_DEV           # Credenciales pharmacy backend DEV
@@ -776,6 +779,7 @@ DATABASE_MAIN_URL              # URL base de datos MAIN
 ```
 
 **Configuración en GitHub:**
+
 1. Ir a Repository → Settings → Secrets and variables → Actions
 2. Click "New repository secret"
 3. Agregar nombre y valor del secreto
@@ -784,12 +788,14 @@ DATABASE_MAIN_URL              # URL base de datos MAIN
 #### 📊 Valores de Ejemplo para Secretos
 
 **SonarQube:**
+
 ```bash
 SONAR_TOKEN=squ_1234567890abcdef...
 SONAR_HOST_URL=https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
 ```
 
 **Email SMTP:**
+
 ```bash
 SMTP_SERVER=smtp.gmail.com
 SMTP_PORT=587
@@ -800,6 +806,7 @@ NOTIFICATION_EMAIL=pablopolis2016@gmail.com,jflores@unis.edu.gt
 ```
 
 **Base de datos SQLite:**
+
 ```bash
 DATABASE_DEV_URL=sqlite:///app/databases/dev/USUARIO.sqlite
 DATABASE_QA_URL=sqlite:///app/databases/qa/USUARIO.sqlite
@@ -828,6 +835,7 @@ NOTIFICATION_EMAIL=team@company.com     # Destinatarios (separados por coma)
 #### 📨 Proveedores SMTP Comunes
 
 **Gmail:**
+
 ```bash
 SMTP_SERVER=smtp.gmail.com
 SMTP_PORT=587
@@ -835,18 +843,21 @@ SMTP_PORT=587
 ```
 
 **Outlook/Hotmail:**
+
 ```bash
 SMTP_SERVER=smtp-mail.outlook.com
 SMTP_PORT=587
 ```
 
 **Yahoo:**
+
 ```bash
 SMTP_SERVER=smtp.mail.yahoo.com
 SMTP_PORT=587
 ```
 
 **SendGrid:**
+
 ```bash
 SMTP_SERVER=smtp.sendgrid.net
 SMTP_PORT=587
@@ -857,12 +868,14 @@ SMTP_PASSWORD=your-sendgrid-api-key
 #### 📬 Tipos de Notificaciones
 
 **1. CI/CD Pipeline (ci-cd.yml):**
+
 - Se envía después de todos los tests y análisis SonarQube
 - Incluye estado de cada job (✅/❌)
 - Detecta automáticamente el ambiente (DEV/QA/MAIN)
 - Enlace directo al workflow run
 
 **2. Pull Request Analysis (sonarqube-pr-analysis.yml):**
+
 - Se envía después del análisis SonarQube en PRs
 - Incluye estado del Quality Gate
 - Enlaces al PR y al análisis
@@ -871,6 +884,7 @@ SMTP_PASSWORD=your-sendgrid-api-key
 #### 🎨 Formato de Emails
 
 Los emails incluyen:
+
 - **Estado visual** con colores (verde/rojo)
 - **Información del commit** (autor, rama, hash)
 - **Resultados detallados** de cada job
@@ -880,15 +894,18 @@ Los emails incluyen:
 #### 🔍 Troubleshooting SMTP
 
 **Error de autenticación:**
+
 - Verificar que SMTP_USERNAME y SMTP_PASSWORD sean correctos
 - Para Gmail, usar App Password en lugar de contraseña normal
 - Verificar que 2FA esté habilitado en Gmail
 
 **Error de conexión:**
+
 - Verificar SMTP_SERVER y SMTP_PORT
 - Algunos proveedores requieren TLS (puerto 587) vs SSL (puerto 465)
 
 **Emails no llegan:**
+
 - Verificar carpeta de spam/junk
 - Confirmar que NOTIFICATION_EMAIL esté bien formateado
 - Verificar límites de rate del proveedor SMTP
@@ -896,6 +913,29 @@ Los emails incluyen:
 ---
 
 ## 🔗 Integraciones
+
+### Exponer CI/CD con Tailscale Funnel
+
+Para exponer de forma segura los servicios de CI/CD (Jenkins, SonarQube y Drone) a través de tu tailnet, usa Tailscale Funnel. Requisitos: haber iniciado sesión con `tailscale up` y tener Funnel habilitado en tu tailnet.
+
+Comandos para levantar los túneles:
+
+```bash
+# Jenkins en /jenkins → http://127.0.0.1:8080/jenkins
+tailscale funnel --https=443 --set-path=/jenkins --bg http://127.0.0.1:8080/jenkins
+
+# SonarQube en /sonar → http://127.0.0.1:9000/sonar
+tailscale funnel --https=443 --set-path=/sonar --bg http://127.0.0.1:9000/sonar
+
+# Drone en / → http://127.0.0.1:8000 Nota: Drone no tiene path, porque no lo soporta
+tailscale funnel --https=443 --set-path=/ --bg http://127.0.0.1:8000
+```
+
+Notas:
+
+- Asegúrate de que los servicios estén corriendo localmente (ver `docker-compose.cicd.yml`).
+- La URL pública tendrá el formato `https://<tu-nodo>.ts.net/<path>`.
+- Para ver estado o detener: `tailscale funnel status` y `tailscale funnel stop`.
 
 ### APIs Externas
 
@@ -1052,31 +1092,34 @@ Para facilitar el testing y acceso a todos los sistemas, se ha creado un usuario
 
 ### 🔐 Credenciales de Login
 
-| Campo | Valor |
-|-------|-------|
-| **Email** | `admin@ensurancepharmacy.com` |
-| **Password** | `admin123` |
-| **Rol** | `ADMIN` |
-| **Nombre** | `Administrator` |
-| **CUI** | `1234567890123` |
-| **Estado** | `Activo (ENABLED = 1)` |
+| Campo        | Valor                         |
+| ------------ | ----------------------------- |
+| **Email**    | `admin@ensurancepharmacy.com` |
+| **Password** | `admin123`                    |
+| **Rol**      | `ADMIN`                       |
+| **Nombre**   | `Administrator`               |
+| **CUI**      | `1234567890123`               |
+| **Estado**   | `Activo (ENABLED = 1)`        |
 
 ### 🌐 Disponibilidad por Ambiente
 
 **✅ Usuario disponible en:**
+
 - **DEV**: Ensurance + Pharmacy (puertos 3000-3003)
-- **QA**: Ensurance + Pharmacy (puertos 4000-4003)  
+- **QA**: Ensurance + Pharmacy (puertos 4000-4003)
 - **MAIN**: Ensurance + Pharmacy (puertos 5175, 8089, 8081, 8082)
 
 ### 📊 Bases de Datos Configuradas
 
 **Ensurance (BackV4):**
+
 - `databases/dev/ensurance/USUARIO.sqlite`
 - `databases/qa/ensurance/USUARIO.sqlite`
 - `databases/main/ensurance/USUARIO.sqlite`
 - `backv4/sqlite/*.sqlite` (todas las variantes)
 
 **Pharmacy (BackV5):**
+
 - `databases/dev/pharmacy/USUARIO.sqlite`
 - `databases/qa/pharmacy/USUARIO.sqlite`
 - `databases/main/pharmacy/USUARIO.sqlite`
