@@ -58,6 +58,8 @@ import com.sources.app.handlers.UserByEmailHandler;
 import com.sources.app.handlers.UserHandler;
 import com.sources.app.util.HibernateUtil;
 import com.sun.net.httpserver.HttpServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Clase principal de la aplicación para el backend de Ensurance Pharmacy.
@@ -67,6 +69,7 @@ import com.sun.net.httpserver.HttpServer;
  */
 public class App {
 
+    private static final Logger logger = LoggerFactory.getLogger(App.class);
     private static final UserDAO userDAO = new UserDAO();
     private static final PolicyDAO policyDAO = new PolicyDAO();
     private static final AppointmentDAO appointmentDAO = new AppointmentDAO();
@@ -116,7 +119,7 @@ public class App {
                 }
             }
         } catch (SocketException e) {
-            e.printStackTrace();
+            logger.error("Error obteniendo IP externa local", e);
         }
         return "127.0.0.1";
     }
@@ -136,13 +139,12 @@ public class App {
         // Prueba de conexión a la base de datos
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             if (session.isConnected()) {
-                System.out.println("Conexión exitosa a la base de datos!");
+                logger.info("Conexión exitosa a la base de datos!");
             } else {
-                System.err.println("No se pudo establecer conexión a la base de datos.");
+                logger.error("No se pudo establecer conexión a la base de datos.");
             }
         } catch (Exception e) {
-            System.err.println("Error al conectar con la base de datos:");
-            e.printStackTrace();
+            logger.error("Error al conectar con la base de datos", e);
         }
 
         // Host/puerto desde variables de entorno con valores por defecto
@@ -162,22 +164,22 @@ public class App {
                 port = Integer.parseInt(portEnv);
             }
         } catch (NumberFormatException e) {
-            System.out.println("Formato de puerto inválido. Se usará el puerto predeterminado 8080.");
+            logger.warn("Formato de puerto inválido. Se usará el puerto predeterminado 8080.");
         }
 
         // Verificar servicios expirados al iniciar
-        System.out.println("Verificando servicios expirados...");
+        logger.info("Verificando servicios expirados...");
         int updatedUsers = userDAO.checkAllUsersServiceExpiration();
-        System.out.println("Se actualizaron " + updatedUsers + " usuarios con servicios expirados.");
+        logger.info("Se actualizaron {} usuarios con servicios expirados.", updatedUsers);
 
         // Programar tarea para verificar servicios expirados cada día
         java.util.Timer timer = new java.util.Timer(true);
         timer.scheduleAtFixedRate(new java.util.TimerTask() {
             @Override
             public void run() {
-                System.out.println("Ejecutando verificación programada de servicios expirados...");
+                logger.info("Ejecutando verificación programada de servicios expirados...");
                 int count = userDAO.checkAllUsersServiceExpiration();
-                System.out.println("Verificación programada: se actualizaron " + count + " usuarios con servicios expirados.");
+                logger.info("Verificación programada: se actualizaron {} usuarios con servicios expirados.", count);
             }
         },
                 // Ejecutar cada 24 horas (en milisegundos)
@@ -222,6 +224,6 @@ public class App {
 
         server.setExecutor(null); // Usa el executor por defecto
         server.start();
-        System.out.println("Servidor iniciado en http://" + host + ":" + port + "/api");
+        logger.info("Servidor iniciado en http://{}:{}/api", host, port);
     }
 }

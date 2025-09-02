@@ -1,0 +1,128 @@
+version: "3.8"
+
+services:
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube-custom
+    ports:
+      - "9000:9000"
+    environment:
+      SONAR_WEB_CONTEXT: "/sonnar"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_extensions:/opt/sonarqube/extensions
+    restart: unless-stopped
+    networks:
+      - jenkins
+
+  docker:
+    image: docker:dind
+    container_name: jenkins-docker
+    privileged: true
+    environment:
+      DOCKER_TLS_CERTDIR: "/certs"
+    volumes:
+      - jenkins-docker-certs:/certs/client
+      - jenkins-docker-certs-ca:/certs/ca
+      - docker_data:/var/lib/docker
+    ports:
+      - "2376:2376"
+      # DEV Environment Ports
+      - "3005:3000"   # Ensurance Frontend DEV
+      - "3006:3001"   # Pharmacy Frontend DEV
+      - "3007:3002"   # Ensurance Backend DEV
+      - "3008:3003"   # Pharmacy Backend DEV
+      # QA Environment Ports
+      - "4005:4000"   # Ensurance Frontend QA
+      - "4006:4001"   # Pharmacy Frontend QA
+      - "4007:4002"   # Ensurance Backend QA
+      - "4008:4003"   # Pharmacy Backend QA
+      # MAIN Environment Ports
+      - "5005:5000"   # Ensurance Frontend MAIN
+      - "5006:5001"   # Pharmacy Frontend MAIN
+      - "5007:5002"   # Ensurance Backend MAIN
+      - "5008:5003"   # Pharmacy Backend MAIN
+    command: ["--storage-driver=overlay2"]
+    restart: unless-stopped
+    networks:
+      - jenkins
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    user: root
+    environment:
+      - DOCKER_HOST=tcp://docker:2376
+      - DOCKER_CERT_PATH=/certs/client
+      - DOCKER_TLS_VERIFY=1
+      - JENKINS_OPTS=--prefix=/jenkins
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - jenkins-docker-certs:/certs/client:ro
+    depends_on:
+      - docker
+    restart: unless-stopped
+    networks:
+      - jenkins
+
+  drone:
+    image: drone/drone:2
+    container_name: drone
+    environment:
+      - DRONE_GITHUB_CLIENT_ID=Ov23liNIJRRkAhUbSDpo
+      - DRONE_GITHUB_CLIENT_SECRET=a047db54abd738416570645c9356c9ebe4ae518b
+      - DRONE_RPC_SECRET=22dab8c8b09eda98581f60c07344ec32
+      - DRONE_SERVER_HOST=https://macbook-air-de-gp.tail5d54f7.ts.net/drone
+      - DRONE_SERVER_PROTO=https
+      - DRONE_TLS_AUTOCERT=true
+      - DRONE_USER_CREATE=username:pabloflores465,admin:true
+      - DRONE_USER_FILTER=pabloflores465
+    ports:
+      - "8000:80"
+      - "8443:443"
+    volumes:
+      - drone_data:/data
+    restart: unless-stopped
+    networks:
+      - jenkins
+
+  drone-runner:
+    image: drone/drone-runner-docker:1
+    container_name: drone-runner
+    environment:
+      - DRONE_RPC_HOST=https://macbook-air-de-gp.tail5d54f7.ts.net/drone
+      - DRONE_RPC_PROTO=https
+      - DRONE_RPC_SECRET=22dab8c8b09eda98581f60c07344ec32
+      - DRONE_RUNNER_NAME=macbook-runner-1
+      - DRONE_RUNNER_CAPACITY=2
+      - DRONE_RUNNER_PLATFORM_OS=darwin
+      - DRONE_RUNNER_PLATFORM_ARCH=amd64
+    ports:
+      - "3010:3000"   # Dashboard del runner (opcional)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - drone_runner_data:/data
+    depends_on:
+      - drone
+    restart: unless-stopped
+    networks:
+      - jenkins
+
+volumes:
+  sonarqube_data:
+  sonarqube_logs:
+  sonarqube_extensions:
+  jenkins_home:
+  jenkins-docker-certs:
+  jenkins-docker-certs-ca:
+  docker_data:
+  drone_data:
+  drone_runner_data:
+
+networks:
+  jenkins:
+    driver: bridge

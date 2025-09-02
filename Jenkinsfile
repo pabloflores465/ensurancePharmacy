@@ -87,11 +87,11 @@ pipeline {
       steps {
         sh '''
           echo "🚀 Deploy DEV Environment (puertos 3000-3003)"
-          
+
           # Usar el script unificado de despliegue
           chmod +x deploy.sh
           ./deploy.sh deploy dev --rebuild
-          
+
           echo "✅ DEV desplegado en:"
           echo "   - Ensurance Frontend: http://localhost:3000"
           echo "   - Pharmacy Frontend: http://localhost:3001"
@@ -106,11 +106,11 @@ pipeline {
       steps {
         sh '''
           echo "🧪 Deploy QA Environment (puertos 4000-4003)"
-          
+
           # Usar el script unificado de despliegue
           chmod +x deploy.sh
           ./deploy.sh deploy qa --rebuild
-          
+
           echo "✅ QA desplegado en:"
           echo "   - Ensurance Frontend: http://localhost:4000"
           echo "   - Pharmacy Frontend: http://localhost:4001"
@@ -125,11 +125,11 @@ pipeline {
       steps {
         sh '''
           echo "🚀 Deploy MAIN Environment (puertos 5175, 8089, 8081, 8082)"
-          
+
           # Usar el script unificado de despliegue
           chmod +x deploy.sh
           ./deploy.sh deploy main --rebuild
-          
+
           echo "✅ MAIN desplegado en:"
           echo "   - Ensurance Frontend: http://localhost:5175"
           echo "   - Pharmacy Frontend: http://localhost:8089"
@@ -152,18 +152,18 @@ pipeline {
       emailext to: "${env.EMAIL_TO}",
                subject: "✅ Deploy exitoso: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                body: """Deploy completado exitosamente en rama ${env.BRANCH_NAME}.
-               
+
 Detalles: ${env.BUILD_URL}
-               
+
 Verificar servicios con: ./deploy.sh status"""
     }
     unsuccessful {
       emailext to: "${env.EMAIL_TO}",
                subject: "⚠️ Pipeline fallido: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                body: """Pipeline falló en rama ${env.BRANCH_NAME}.
-               
+
 Detalle: ${env.BUILD_URL}
-               
+
 Revisar logs: ./deploy.sh logs <ambiente>"""
     }
   }

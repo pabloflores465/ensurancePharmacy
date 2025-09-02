@@ -203,6 +203,23 @@ jobs:
             -Dsonar.qualitygate.wait=true \
             -Dsonar.qualitygate.timeout=300
 
+      - name: Run SonarQube Analysis - Pharmacy Backend DEV
+        if: github.ref == 'refs/heads/develop'
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          projectBaseDir: ./pharmacy
+          args: >
+            -Dsonar.projectKey=pharmacy-backend-dev
+            -Dsonar.sources=src
+            -Dsonar.tests=tests
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.timeout=300
+
       - name: Run SonarQube Analysis - Backend QA
         if: github.ref == 'refs/heads/qa'
         run: |
@@ -219,6 +236,23 @@ jobs:
             -Dsonar.qualitygate.wait=true \
             -Dsonar.qualitygate.timeout=300
 
+      - name: Run SonarQube Analysis - Pharmacy Backend QA
+        if: github.ref == 'refs/heads/qa'
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          projectBaseDir: ./pharmacy
+          args: >
+            -Dsonar.projectKey=pharmacy-backend-qa
+            -Dsonar.sources=src
+            -Dsonar.tests=tests
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.timeout=300
+
       - name: Run SonarQube Analysis - Backend MAIN
         if: github.ref == 'refs/heads/main'
         run: |
@@ -233,6 +267,23 @@ jobs:
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
             -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
             -Dsonar.qualitygate.wait=true \
+            -Dsonar.qualitygate.timeout=300
+
+      - name: Run SonarQube Analysis - Pharmacy Backend MAIN
+        if: github.ref == 'refs/heads/main'
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          projectBaseDir: ./pharmacy
+          args: >
+            -Dsonar.projectKey=pharmacy-backend-main
+            -Dsonar.sources=src
+            -Dsonar.tests=tests
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.qualitygate.wait=true
             -Dsonar.qualitygate.timeout=300
 
       - name: Run SonarQube Analysis - Frontend Ensurance
@@ -317,3 +368,77 @@ jobs:
         env:
           ENSURANCE_BACK_MAIN: ${{ secrets.ENSURANCE_BACK_MAIN }}
           ENSURANCE_FRONT_MAIN: ${{ secrets.ENSURANCE_FRONT_MAIN }}
+
+  notify-status:
+    runs-on: ubuntu-latest
+    name: Send Email Notification
+    needs: [test-backend-v4, test-backend-v5, test-ensurance-frontend, test-pharmacy-frontend, sonarqube-analysis]
+    if: always()
+
+    steps:
+      - name: Determine Status
+        id: status
+        run: |
+          if [[ "${{ needs.test-backend-v4.result }}" == "success" && \
+                "${{ needs.test-backend-v5.result }}" == "success" && \
+                "${{ needs.test-ensurance-frontend.result }}" == "success" && \
+                "${{ needs.test-pharmacy-frontend.result }}" == "success" && \
+                "${{ needs.sonarqube-analysis.result }}" == "success" ]]; then
+            echo "status=✅ SUCCESS" >> $GITHUB_OUTPUT
+            echo "color=green" >> $GITHUB_OUTPUT
+            echo "summary=All tests passed and SonarQube analysis completed successfully" >> $GITHUB_OUTPUT
+          else
+            echo "status=❌ FAILED" >> $GITHUB_OUTPUT
+            echo "color=red" >> $GITHUB_OUTPUT
+            echo "summary=One or more jobs failed. Check the workflow for details" >> $GITHUB_OUTPUT
+          fi
+          
+          # Environment detection
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "environment=PRODUCTION" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/qa" ]]; then
+            echo "environment=QA" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            echo "environment=DEVELOPMENT" >> $GITHUB_OUTPUT
+          else
+            echo "environment=FEATURE" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Email Notification
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "[${{ steps.status.outputs.status }}] EnsurancePharmacy CI/CD - ${{ steps.status.outputs.environment }}"
+          to: ${{ secrets.NOTIFICATION_EMAIL }}
+          from: ${{ secrets.SMTP_FROM_EMAIL }}
+          html_body: |
+            <html>
+            <body style="font-family: Arial, sans-serif; margin: 20px;">
+              <div style="border-left: 4px solid ${{ steps.status.outputs.color }}; padding-left: 20px;">
+                <h2 style="color: ${{ steps.status.outputs.color }};">🏥 EnsurancePharmacy CI/CD Pipeline</h2>
+                <p><strong>Status:</strong> ${{ steps.status.outputs.status }}</p>
+                <p><strong>Environment:</strong> ${{ steps.status.outputs.environment }}</p>
+                <p><strong>Branch:</strong> ${{ github.ref_name }}</p>
+                <p><strong>Commit:</strong> ${{ github.sha }}</p>
+                <p><strong>Author:</strong> ${{ github.actor }}</p>
+                <p><strong>Summary:</strong> ${{ steps.status.outputs.summary }}</p>
+              </div>
+              
+              <h3>📊 Job Results:</h3>
+              <ul>
+                <li>Backend V4 Tests: ${{ needs.test-backend-v4.result == 'success' && '✅' || '❌' }} ${{ needs.test-backend-v4.result }}</li>
+                <li>Backend V5 Tests: ${{ needs.test-backend-v5.result == 'success' && '✅' || '❌' }} ${{ needs.test-backend-v5.result }}</li>
+                <li>Ensurance Frontend Tests: ${{ needs.test-ensurance-frontend.result == 'success' && '✅' || '❌' }} ${{ needs.test-ensurance-frontend.result }}</li>
+                <li>Pharmacy Frontend Tests: ${{ needs.test-pharmacy-frontend.result == 'success' && '✅' || '❌' }} ${{ needs.test-pharmacy-frontend.result }}</li>
+                <li>SonarQube Analysis: ${{ needs.sonarqube-analysis.result == 'success' && '✅' || '❌' }} ${{ needs.sonarqube-analysis.result }}</li>
+              </ul>
+              
+              <p><a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" style="background-color: #0366d6; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">View Workflow Run</a></p>
+              
+              <hr style="margin: 20px 0;">
+              <p style="color: #666; font-size: 12px;">Generated by GitHub Actions at ${{ github.event.head_commit.timestamp }}</p>
+            </body>
+            </html>

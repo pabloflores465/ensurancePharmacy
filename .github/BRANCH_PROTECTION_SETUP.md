@@ -31,6 +31,7 @@ Haz clic en **Add rule** (Agregar regla) y configura:
 - `Test Backend V5`
 - `Test Ensurance Frontend`
 - `Test Pharmacy Frontend`
+- `SonarQube Code Review`
 - `SonarQube Pull Request Analysis`
 
 > **Nota**: Con SonarQube Community Edition, el análisis de PR no incluye decoración automática de comentarios en GitHub, pero sí valida el Quality Gate.

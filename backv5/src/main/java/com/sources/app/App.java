@@ -42,6 +42,8 @@ import com.sources.app.handlers.UserHandler;
 import com.sources.app.handlers.VerificationHandler;
 import com.sources.app.util.HibernateUtil;
 import com.sun.net.httpserver.HttpServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Clase principal de la aplicación que inicializa y configura el servidor HTTP
@@ -50,6 +52,7 @@ import com.sun.net.httpserver.HttpServer;
  */
 public class App {
 
+    private static final Logger logger = LoggerFactory.getLogger(App.class);
     /**
      * DAO para operaciones relacionadas con usuarios.
      */
@@ -138,7 +141,7 @@ public class App {
                 }
             }
         } catch (SocketException e) {
-            e.printStackTrace();
+            logger.error("Error obteniendo IP externa local", e);
         }
         return "127.0.0.1";
     }
@@ -157,13 +160,12 @@ public class App {
         // Prueba de conexión a la base de datos
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             if (session.isConnected()) {
-                System.out.println("Conexión exitosa a la base de datos!");
+                logger.info("Conexión exitosa a la base de datos!");
             } else {
-                System.err.println("No se pudo establecer conexión a la base de datos.");
+                logger.error("No se pudo establecer conexión a la base de datos.");
             }
         } catch (Throwable e) {
-            System.err.println("Error al conectar con la base de datos (continuando sin DB):");
-            e.printStackTrace();
+            logger.error("Error al conectar con la base de datos (continuando sin DB)", e);
         }
 
         // Host/puerto desde variables de entorno con valores por defecto
@@ -183,7 +185,7 @@ public class App {
                 port = Integer.parseInt(portEnv);
             }
         } catch (NumberFormatException e) {
-            System.out.println("Formato de puerto inválido. Se usará el puerto predeterminado 8081.");
+            logger.warn("Formato de puerto inválido. Se usará el puerto predeterminado 8081.");
         }
 
         HttpServer server = HttpServer.create(new InetSocketAddress(host, port), 0);
@@ -207,6 +209,6 @@ public class App {
         server.createContext("/api2/verification", new VerificationHandler());
         server.setExecutor(null); // Usa el executor por defecto
         server.start();
-        System.out.println("Servidor iniciado en http://" + host + ":" + port + "/api2");
+        logger.info("Servidor iniciado en http://{}:{}/api2", host, port);
     }
 }
