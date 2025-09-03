@@ -5,9 +5,9 @@ on:
     branches: [main, develop, qa]
 
 jobs:
-  sonarqube-pr-analysis:
+  sonarqube-ensurance-pr-analysis:
     runs-on: ubuntu-latest
-    name: SonarQube Pull Request Analysis
+    name: SonarQube Ensurance PR Analysis
     permissions:
       contents: read
       pull-requests: write
@@ -35,68 +35,130 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Install Frontend Dependencies
+      - name: Install Ensurance Frontend Dependencies
         run: |
           cd ensurance && npm ci --prefer-offline --no-audit --progress=false
-          cd ../pharmacy && npm ci --prefer-offline --no-audit --progress=false
 
       - name: Run Backend Tests with Coverage
         run: |
           cd backv4 && mvn clean verify
           cd ../backv5 && mvn clean verify
 
-      - name: Run Frontend Tests with Coverage
+      - name: Run Ensurance Frontend Tests with Coverage
         run: |
           cd ensurance && npm run test:coverage
-          cd ../pharmacy && npm run test:unit:coverage
 
-      - name: Run SonarQube Scanner for PR - Backend DEV
+      - name: Run SonarQube Scanner for PR - Ensurance Backend DEV
         if: github.base_ref == 'develop'
         run: |
           cd backv4 && mvn sonar:sonar \
             -Dsonar.projectKey=ensurance-backend-dev \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.login=${{ secrets.ENSURANCE_BACK_DEV }} \
             -Dsonar.qualitygate.wait=true \
             -Dsonar.qualitygate.timeout=300
           cd ../backv5 && mvn sonar:sonar \
             -Dsonar.projectKey=ensurance-backend-dev \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.login=${{ secrets.ENSURANCE_BACK_DEV }} \
             -Dsonar.qualitygate.wait=true \
             -Dsonar.qualitygate.timeout=300
 
-      - name: Run SonarQube Scanner for PR - Pharmacy Backend DEV
-        if: github.base_ref == 'develop'
+      - name: Run SonarQube Scanner for PR - Ensurance Backend QA
+        if: github.base_ref == 'qa'
+        run: |
+          cd backv4 && mvn sonar:sonar \
+            -Dsonar.projectKey=ensurance-backend-qa \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.login=${{ secrets.ENSURANCE_BACK_QA }} \
+            -Dsonar.qualitygate.wait=true \
+            -Dsonar.qualitygate.timeout=300
+          cd ../backv5 && mvn sonar:sonar \
+            -Dsonar.projectKey=ensurance-backend-qa \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.login=${{ secrets.ENSURANCE_BACK_QA }} \
+            -Dsonar.qualitygate.wait=true \
+            -Dsonar.qualitygate.timeout=300
+
+      - name: Run SonarQube Scanner for PR - Ensurance Backend MAIN
+        if: github.base_ref == 'main'
+        run: |
+          cd backv4 && mvn sonar:sonar \
+            -Dsonar.projectKey=ensurance-backend-main \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.login=${{ secrets.ENSURANCE_BACK_MAIN }} \
+            -Dsonar.qualitygate.wait=true \
+            -Dsonar.qualitygate.timeout=300
+          cd ../backv5 && mvn sonar:sonar \
+            -Dsonar.projectKey=ensurance-backend-main \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.login=${{ secrets.ENSURANCE_BACK_MAIN }} \
+            -Dsonar.qualitygate.wait=true \
+            -Dsonar.qualitygate.timeout=300
+
+      - name: Run SonarQube Analysis - Ensurance Frontend PR
         uses: SonarSource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
-          projectBaseDir: ./pharmacy
+          projectBaseDir: ./ensurance
           args: >
-            -Dsonar.projectKey=pharmacy-backend-dev
+            -Dsonar.projectKey=${{ github.base_ref == 'main' && 'ensurance-frontend-main' || github.base_ref == 'qa' && 'ensurance-frontend-qa' || 'ensurance-frontend-dev' }}
+            -Dsonar.login=${{ github.base_ref == 'main' && secrets.ENSURANCE_FRONT_MAIN || github.base_ref == 'qa' && secrets.ENSURANCE_FRONT_QA || secrets.ENSURANCE_FRONT_DEV }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.qualitygate.wait=true
             -Dsonar.qualitygate.timeout=300
 
-      - name: Run SonarQube Scanner for PR - Backend QA
-        if: github.base_ref == 'qa'
+  sonarqube-pharmacy-pr-analysis:
+    runs-on: ubuntu-latest
+    name: SonarQube Pharmacy PR Analysis
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Disable shallow clone for better analysis
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Install Pharmacy Frontend Dependencies
         run: |
-          cd backv4 && mvn sonar:sonar \
-            -Dsonar.projectKey=ensurance-backend-qa \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-            -Dsonar.qualitygate.wait=true \
-            -Dsonar.qualitygate.timeout=300
-          cd ../backv5 && mvn sonar:sonar \
-            -Dsonar.projectKey=ensurance-backend-qa \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-            -Dsonar.qualitygate.wait=true \
+          cd pharmacy && npm ci --prefer-offline --no-audit --progress=false
+
+      - name: Run Pharmacy Frontend Tests with Coverage
+        run: |
+          cd pharmacy && npm run test:unit:coverage
+
+      - name: Run SonarQube Scanner for PR - Pharmacy Backend DEV
+        if: github.base_ref == 'develop'
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          projectBaseDir: ./pharmacy
+          args: >
+            -Dsonar.projectKey=pharmacy-backend-dev
+            -Dsonar.login=${{ secrets.PHARMACY_BACK_DEV }}
+            -Dsonar.sources=src
+            -Dsonar.tests=tests
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.qualitygate.wait=true
             -Dsonar.qualitygate.timeout=300
 
       - name: Run SonarQube Scanner for PR - Pharmacy Backend QA
@@ -104,32 +166,16 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           projectBaseDir: ./pharmacy
           args: >
             -Dsonar.projectKey=pharmacy-backend-qa
+            -Dsonar.login=${{ secrets.PHARMACY_BACK_QA }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.qualitygate.wait=true
-            -Dsonar.qualitygate.timeout=300
-
-      - name: Run SonarQube Scanner for PR - Backend MAIN
-        if: github.base_ref == 'main'
-        run: |
-          cd backv4 && mvn sonar:sonar \
-            -Dsonar.projectKey=ensurance-backend-main \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-            -Dsonar.qualitygate.wait=true \
-            -Dsonar.qualitygate.timeout=300
-          cd ../backv5 && mvn sonar:sonar \
-            -Dsonar.projectKey=ensurance-backend-main \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-            -Dsonar.qualitygate.wait=true \
             -Dsonar.qualitygate.timeout=300
 
       - name: Run SonarQube Scanner for PR - Pharmacy Backend MAIN
@@ -137,44 +183,28 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           projectBaseDir: ./pharmacy
           args: >
             -Dsonar.projectKey=pharmacy-backend-main
+            -Dsonar.login=${{ secrets.PHARMACY_BACK_MAIN }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.qualitygate.wait=true
             -Dsonar.qualitygate.timeout=300
 
-      - name: Run SonarQube Analysis - Frontend Ensurance PR
+      - name: Run SonarQube Analysis - Pharmacy Frontend PR
         uses: SonarSource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        with:
-          projectBaseDir: ./ensurance
-          args: >
-            -Dsonar.projectKey=${{ github.base_ref == 'main' && 'ensurance-frontend-main' || github.base_ref == 'qa' && 'ensurance-frontend-qa' || 'ensurance-frontend-dev' }}
-            -Dsonar.sources=src
-            -Dsonar.tests=tests
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-            -Dsonar.qualitygate.wait=true
-            -Dsonar.qualitygate.timeout=300
-
-      - name: Run SonarQube Analysis - Frontend Pharmacy PR
-        uses: SonarSource/sonarqube-scan-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           projectBaseDir: ./pharmacy
           args: >
             -Dsonar.projectKey=${{ github.base_ref == 'main' && 'pharmacy-frontend-main' || github.base_ref == 'qa' && 'pharmacy-frontend-qa' || 'pharmacy-frontend-dev' }}
+            -Dsonar.login=${{ github.base_ref == 'main' && secrets.PHARMACY_FRONT_MAIN || github.base_ref == 'qa' && secrets.PHARMACY_FRONT_QA || secrets.PHARMACY_FRONT_DEV }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
@@ -184,14 +214,14 @@ jobs:
   notify-pr-status:
     runs-on: ubuntu-latest
     name: Send PR Email Notification
-    needs: [sonarqube-pr-analysis]
+    needs: [sonarqube-ensurance-pr-analysis, sonarqube-pharmacy-pr-analysis]
     if: always()
 
     steps:
       - name: Determine PR Status
         id: status
         run: |
-          if [[ "${{ needs.sonarqube-pr-analysis.result }}" == "success" ]]; then
+          if [[ "${{ needs.sonarqube-ensurance-pr-analysis.result }}" == "success" && "${{ needs.sonarqube-pharmacy-pr-analysis.result }}" == "success" ]]; then
             echo "status=✅ SUCCESS" >> $GITHUB_OUTPUT
             echo "color=green" >> $GITHUB_OUTPUT
             echo "summary=SonarQube analysis passed. PR is ready for review" >> $GITHUB_OUTPUT
@@ -238,8 +268,9 @@ jobs:
               
               <h3>📋 Analysis Details:</h3>
               <ul>
-                <li>SonarQube Analysis: ${{ needs.sonarqube-pr-analysis.result == 'success' && '✅ Passed' || '❌ Failed' }}</li>
-                <li>Quality Gate: ${{ needs.sonarqube-pr-analysis.result == 'success' && '✅ Passed' || '❌ Failed' }}</li>
+                <li>SonarQube Ensurance Analysis: ${{ needs.sonarqube-ensurance-pr-analysis.result == 'success' && '✅ Passed' || '❌ Failed' }}</li>
+                <li>SonarQube Pharmacy Analysis: ${{ needs.sonarqube-pharmacy-pr-analysis.result == 'success' && '✅ Passed' || '❌ Failed' }}</li>
+                <li>Quality Gate: ${{ (needs.sonarqube-ensurance-pr-analysis.result == 'success' && needs.sonarqube-pharmacy-pr-analysis.result == 'success') && '✅ Passed' || '❌ Failed' }}</li>
               </ul>
               
               <div style="margin: 20px 0;">

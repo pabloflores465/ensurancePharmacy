@@ -712,105 +712,222 @@ sqlite3 backv5/sqlite/USUARIO.sqlite ".schema PRESCRIPTION"
 - Revisar logs de acceso regularmente
 - Considerar usar Tailscale ACLs para restringir acceso por usuario/grupo
 
-### 🔐 Configuración de Secretos
+### 🔐 Configuración de Secretos y CI/CD
 
-#### 🚁 Drone CI/CD Secrets
+## 📋 Secretos Requeridos para CI/CD
 
-Para configurar los secretos en Drone UI (http://localhost:8000):
+### 🐙 GitHub Actions Secrets
 
+**⚠️ CONFIGURACIÓN OBLIGATORIA - Secretos que DEBES agregar en GitHub:**
+
+Ir a `Repository → Settings → Secrets and variables → Actions` y agregar:
+
+#### 🔧 SonarQube (OBLIGATORIO)
 ```bash
-# Secretos requeridos para el pipeline Drone
-sonar_token          # Token de SonarQube para análisis de código
-email_username       # Usuario SMTP para notificaciones
-email_password       # Password SMTP para notificaciones
-environment_var      # Variable de ambiente (opcional)
-```
-
-**Pasos para configurar:**
-
-1. Acceder a Drone UI: http://localhost:8000
-2. Ir a Repository Settings → Secrets
-3. Agregar cada secreto con su valor correspondiente
-4. Marcar como "Pull Request" si se necesita en PRs
-
-#### 🐙 GitHub Actions Secrets
-
-**Secretos ya configurados:**
-
-```bash
-# SonarQube
-SONAR_TOKEN                    # Token para análisis SonarQube
+SONAR_TOKEN                    # Token de SonarQube para análisis de código
 SONAR_HOST_URL                 # URL del servidor SonarQube
-
-# Deployment por ambiente
-ENSURANCE_BACKEND_DEV          # Credenciales backend DEV
-ENSURANCE_BACKEND_QA           # Credenciales backend QA
-ENSURANCE_BACKEND_MAIN         # Credenciales backend MAIN
-ENSURANCE_FRONTEND_DEV         # Credenciales frontend DEV
-ENSURANCE_FRONTEND_QA          # Credenciales frontend QA
-ENSURANCE_FRONTEND_MAIN        # Credenciales frontend MAIN
 ```
 
-**Secretos faltantes por configurar:**
-
+#### 🏥 Ensurance Project Tokens (YA CONFIGURADOS)
 ```bash
-# Pharmacy Backend (BackV5)
-PHARMACY_BACKEND_DEV           # Credenciales pharmacy backend DEV
-PHARMACY_BACKEND_QA            # Credenciales pharmacy backend QA
-PHARMACY_BACKEND_MAIN          # Credenciales pharmacy backend MAIN
+ENSURANCE_BACK_DEV             # Token SonarQube ensurance-backend-dev
+ENSURANCE_BACK_QA              # Token SonarQube ensurance-backend-qa  
+ENSURANCE_BACK_MAIN            # Token SonarQube ensurance-backend-main
+ENSURANCE_FRONT_DEV            # Token SonarQube ensurance-frontend-dev
+ENSURANCE_FRONT_QA             # Token SonarQube ensurance-frontend-qa
+ENSURANCE_FRONT_MAIN           # Token SonarQube ensurance-frontend-main
+```
 
-# Pharmacy Frontend
-PHARMACY_FRONTEND_DEV          # Credenciales pharmacy frontend DEV
-PHARMACY_FRONTEND_QA           # Credenciales pharmacy frontend QA
-PHARMACY_FRONTEND_MAIN         # Credenciales pharmacy frontend MAIN
+#### 💊 Pharmacy Project Tokens (⚠️ FALTANTES - AGREGAR URGENTE)
+```bash
+PHARMACY_BACK_DEV              # Token SonarQube pharmacy-backend-dev
+PHARMACY_BACK_QA               # Token SonarQube pharmacy-backend-qa
+PHARMACY_BACK_MAIN             # Token SonarQube pharmacy-backend-main
+PHARMACY_FRONT_DEV             # Token SonarQube pharmacy-frontend-dev
+PHARMACY_FRONT_QA              # Token SonarQube pharmacy-frontend-qa
+PHARMACY_FRONT_MAIN            # Token SonarQube pharmacy-frontend-main
+```
 
-# 📧 Notificaciones por Email (REQUERIDO)
+#### 📧 Notificaciones Email (OBLIGATORIO)
+```bash
 SMTP_SERVER                    # Servidor SMTP (ej: smtp.gmail.com)
 SMTP_PORT                      # Puerto SMTP (ej: 587 para TLS, 465 para SSL)
 SMTP_USERNAME                  # Usuario SMTP para autenticación
 SMTP_PASSWORD                  # Password/App Password SMTP
 SMTP_FROM_EMAIL                # Email remitente (ej: noreply@company.com)
 NOTIFICATION_EMAIL             # Email(s) destinatario(s) separados por coma
-
-# Base de datos
-DATABASE_DEV_URL               # URL base de datos DEV
-DATABASE_QA_URL                # URL base de datos QA
-DATABASE_MAIN_URL              # URL base de datos MAIN
 ```
 
-**Configuración en GitHub:**
+### 🚁 Drone CI Secrets
 
-1. Ir a Repository → Settings → Secrets and variables → Actions
-2. Click "New repository secret"
-3. Agregar nombre y valor del secreto
-4. Los workflows automáticamente usarán estos secretos
+Para configurar en Drone UI (http://localhost:8000):
 
-#### 📊 Valores de Ejemplo para Secretos
+#### Ir a Repository Settings → Secrets y agregar:
+```bash
+# SonarQube Analysis
+ensurance_back_dev             # Token para ensurance-backend-dev
+ensurance_back_qa              # Token para ensurance-backend-qa
+ensurance_back_main            # Token para ensurance-backend-main
+pharmacy_back_dev              # Token para pharmacy-backend-dev (⚠️ FALTANTE)
+pharmacy_back_qa               # Token para pharmacy-backend-qa (⚠️ FALTANTE)
+pharmacy_back_main             # Token para pharmacy-backend-main (⚠️ FALTANTE)
 
-**SonarQube:**
+# Email Notifications
+email_username                 # Usuario SMTP para notificaciones
+email_password                 # Password SMTP para notificaciones
 
+# SonarQube Server
+sonar_host_url                 # URL del servidor SonarQube
+```
+
+### 🔧 Jenkins Credentials
+
+Configurar en Jenkins UI (http://localhost:8080/jenkins):
+
+#### Ir a Manage Jenkins → Credentials → Global y agregar:
+```bash
+# SonarQube Server
+sonarqube-token               # Token global de SonarQube
+
+# Project Specific Tokens (si se requieren)
+ensurance-sonar-token         # Token específico para Ensurance
+pharmacy-sonar-token          # Token específico para Pharmacy (⚠️ FALTANTE)
+```
+
+## 🏗️ Proyectos SonarQube Requeridos
+
+### ⚠️ CREAR ESTOS PROYECTOS EN SONARQUBE:
+
+#### 🏥 Ensurance Projects (YA CREADOS)
+```bash
+ensurance-backend-dev          # Backend Ensurance ambiente DEV
+ensurance-backend-qa           # Backend Ensurance ambiente QA
+ensurance-backend-main         # Backend Ensurance ambiente MAIN
+ensurance-frontend-dev         # Frontend Ensurance ambiente DEV
+ensurance-frontend-qa          # Frontend Ensurance ambiente QA
+ensurance-frontend-main        # Frontend Ensurance ambiente MAIN
+```
+
+#### 💊 Pharmacy Projects (⚠️ CREAR URGENTE)
+```bash
+pharmacy-backend-dev           # Backend Pharmacy ambiente DEV
+pharmacy-backend-qa            # Backend Pharmacy ambiente QA
+pharmacy-backend-main          # Backend Pharmacy ambiente MAIN
+pharmacy-frontend-dev          # Frontend Pharmacy ambiente DEV
+pharmacy-frontend-qa           # Frontend Pharmacy ambiente QA
+pharmacy-frontend-main         # Frontend Pharmacy ambiente MAIN
+```
+
+## 📝 Pasos de Configuración
+
+### 1️⃣ Crear Proyectos SonarQube
+
+```bash
+# Acceder a SonarQube
+http://localhost:9000/sonar
+# o tu URL de Tailscale: https://tu-nodo.ts.net/sonar
+
+# Para cada proyecto:
+1. Administration → Projects → Create Project
+2. Usar el nombre exacto del proyecto (ej: pharmacy-backend-dev)
+3. Generar token para el proyecto
+4. Copiar el token generado
+```
+
+### 2️⃣ Configurar Secretos GitHub
+
+```bash
+# Ir a tu repositorio en GitHub
+1. Settings → Secrets and variables → Actions
+2. New repository secret
+3. Agregar cada secreto con su token correspondiente
+4. Verificar que el nombre coincida exactamente
+```
+
+### 3️⃣ Configurar Secretos Drone
+
+```bash
+# Acceder a Drone UI
+http://localhost:8000
+
+# Para cada repositorio:
+1. Repository Settings → Secrets
+2. Agregar cada secreto
+3. Marcar "Pull Request" si se necesita en PRs
+4. Verificar que el nombre esté en minúsculas
+```
+
+### 4️⃣ Verificar Configuración
+
+```bash
+# Hacer un commit y push para probar
+git add .
+git commit -m "test: verificar configuración CI/CD"
+git push origin tu-rama
+
+# Verificar que los workflows ejecuten correctamente:
+# - GitHub Actions: pestaña Actions en GitHub
+# - Drone CI: http://localhost:8000
+# - Jenkins: http://localhost:8080/jenkins
+```
+
+## 📊 Valores de Ejemplo
+
+### SonarQube
 ```bash
 SONAR_TOKEN=squ_1234567890abcdef...
 SONAR_HOST_URL=https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
 ```
 
-**Email SMTP:**
-
+### Email SMTP (Gmail)
 ```bash
 SMTP_SERVER=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USERNAME=your-email@gmail.com
-SMTP_PASSWORD=your-app-password
+SMTP_PASSWORD=your-app-password  # Usar App Password, no contraseña normal
 SMTP_FROM_EMAIL=noreply@ensurancepharmacy.com
 NOTIFICATION_EMAIL=pablopolis2016@gmail.com,jflores@unis.edu.gt
 ```
 
-**Base de datos SQLite:**
-
+### Otros Proveedores SMTP
 ```bash
-DATABASE_DEV_URL=sqlite:///app/databases/dev/USUARIO.sqlite
-DATABASE_QA_URL=sqlite:///app/databases/qa/USUARIO.sqlite
-DATABASE_MAIN_URL=sqlite:///app/databases/main/USUARIO.sqlite
+# Outlook/Hotmail
+SMTP_SERVER=smtp-mail.outlook.com
+SMTP_PORT=587
+
+# Yahoo
+SMTP_SERVER=smtp.mail.yahoo.com
+SMTP_PORT=587
+
+# SendGrid
+SMTP_SERVER=smtp.sendgrid.net
+SMTP_PORT=587
+SMTP_USERNAME=apikey
+SMTP_PASSWORD=your-sendgrid-api-key
+```
+
+## ⚠️ Notas Importantes
+
+### Seguridad
+- **NUNCA** hardcodear tokens en el código
+- Usar App Passwords para Gmail (no contraseña normal)
+- Rotar tokens periódicamente
+- Verificar permisos mínimos necesarios
+
+### Troubleshooting
+- Verificar nombres exactos de secretos (case-sensitive)
+- Confirmar que proyectos SonarQube existan
+- Verificar conectividad de red a SonarQube
+- Revisar logs de workflows para errores específicos
+
+### Flujo de Análisis
+```bash
+# Cada Push/PR ejecutará:
+1. Tests unitarios (Backend + Frontend)
+2. Generación de coverage (JaCoCo + LCOV)
+3. Análisis SonarQube separado por proyecto
+4. Quality Gate por proyecto independiente
+5. Notificación email con resultados
 ```
 
 ### 📧 Configuración SMTP para Notificaciones por Email
@@ -1196,6 +1313,61 @@ mvn -f backv4 -Psqlite-dev -Dtest=SQLiteConnectivityTest test
 ---
 
 ## 🔄 CI/CD Pipeline
+
+### 📋 Jobs para Branch Protection Rules
+
+**Nombres exactos de jobs que DEBES configurar en GitHub Branch Protection:**
+
+#### 🔧 Jobs Obligatorios para Branch Protection
+
+**CI/CD Pipeline (ci-cd.yml):**
+```bash
+test-backend-v4                    # Tests Backend V4 (Ensurance)
+test-backend-v5                    # Tests Backend V5 (Pharmacy)
+test-ensurance-frontend            # Tests Frontend Ensurance
+test-pharmacy-frontend             # Tests Frontend Pharmacy
+sonarqube-ensurance-analysis       # Análisis SonarQube Ensurance
+sonarqube-pharmacy-analysis        # Análisis SonarQube Pharmacy
+```
+
+**Pull Request Analysis (sonarqube-pr-analysis.yml):**
+```bash
+sonarqube-ensurance-pr-analysis    # Análisis SonarQube Ensurance PR
+sonarqube-pharmacy-pr-analysis     # Análisis SonarQube Pharmacy PR
+```
+
+**Status Check (status-check.yml):**
+```bash
+status-summary                     # Resumen de estado de todos los checks
+```
+
+#### ⚙️ Configuración en GitHub
+
+**Ir a: Repository → Settings → Branches → Add rule**
+
+Para ramas `main`, `develop`, y `qa`:
+```bash
+# Require status checks to pass before merging
+☑️ test-backend-v4
+☑️ test-backend-v5  
+☑️ test-ensurance-frontend
+☑️ test-pharmacy-frontend
+☑️ sonarqube-ensurance-analysis
+☑️ sonarqube-pharmacy-analysis
+☑️ sonarqube-ensurance-pr-analysis
+☑️ sonarqube-pharmacy-pr-analysis
+☑️ status-summary
+```
+
+#### 🚫 Jobs NO Obligatorios (Se ejecutan automáticamente)
+
+```bash
+deploy-dev          # Deploy automático a DEV (solo push a develop)
+deploy-qa           # Deploy automático a QA (solo push a qa)
+deploy-main         # Deploy automático a MAIN (solo push a main)
+notify-status       # Notificación email después del CI/CD
+notify-pr-status    # Notificación email después del PR analysis
+```
 
 ### Flujo Automático por Rama
 

@@ -73,26 +73,26 @@ steps:
       - name: node-cache
         path: /root/.npm
 
-  # SonarQube analysis for DEV
-  - name: sonarqube-analysis-dev
+  # SonarQube analysis for Ensurance DEV
+  - name: sonarqube-ensurance-analysis-dev
     image: sonarqube/sonar-scanner-cli:latest
     environment:
       SONAR_TOKEN:
-        from_secret: sonar_token
+        from_secret: ensurance_back_dev
       SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
     commands:
       - export PROJECT_SUFFIX=$(cat .project_suffix)
-      - echo "🔍 SonarQube analysis for environment: $PROJECT_SUFFIX"
+      - echo "🔍 SonarQube Ensurance analysis for environment: $PROJECT_SUFFIX"
       - |
         sonar-scanner \
           -Dsonar.projectKey=ensurance-backend-$PROJECT_SUFFIX \
           -Dsonar.projectName="Ensurance Backend ${PROJECT_SUFFIX^^}" \
           -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
-          -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src,pharmacy/src \
-          -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests,pharmacy/tests \
+          -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src \
+          -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests \
           -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes \
           -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml,backv5/target/site/jacoco/jacoco.xml \
-          -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info,pharmacy/coverage/lcov.info \
+          -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info \
           -Dsonar.qualitygate.wait=true \
           -Dsonar.qualitygate.timeout=300
     when:
@@ -101,52 +101,157 @@ steps:
         - dev
         - feature/*
 
-  # SonarQube analysis for QA
-  - name: sonarqube-analysis-qa
+  # SonarQube analysis for Pharmacy DEV
+  - name: sonarqube-pharmacy-analysis-dev
     image: sonarqube/sonar-scanner-cli:latest
     environment:
       SONAR_TOKEN:
-        from_secret: sonar_token
+        from_secret: pharmacy_back_dev
       SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
     commands:
       - export PROJECT_SUFFIX=$(cat .project_suffix)
-      - echo "🔍 SonarQube analysis for environment: $PROJECT_SUFFIX"
+      - echo "🔍 SonarQube Pharmacy analysis for environment: $PROJECT_SUFFIX"
+      - |
+        sonar-scanner \
+          -Dsonar.projectKey=pharmacy-backend-$PROJECT_SUFFIX \
+          -Dsonar.projectName="Pharmacy Backend ${PROJECT_SUFFIX^^}" \
+          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.sources=pharmacy/src \
+          -Dsonar.tests=pharmacy/tests \
+          -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info \
+          -Dsonar.qualitygate.wait=true \
+          -Dsonar.qualitygate.timeout=300
+      - |
+        sonar-scanner \
+          -Dsonar.projectKey=pharmacy-frontend-$PROJECT_SUFFIX \
+          -Dsonar.projectName="Pharmacy Frontend ${PROJECT_SUFFIX^^}" \
+          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.sources=pharmacy/src \
+          -Dsonar.tests=pharmacy/tests \
+          -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info \
+          -Dsonar.qualitygate.wait=true \
+          -Dsonar.qualitygate.timeout=300
+    when:
+      branch:
+        - develop
+        - dev
+        - feature/*
+
+  # SonarQube analysis for Ensurance QA
+  - name: sonarqube-ensurance-analysis-qa
+    image: sonarqube/sonar-scanner-cli:latest
+    environment:
+      SONAR_TOKEN:
+        from_secret: ensurance_back_qa
+      SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
+    commands:
+      - export PROJECT_SUFFIX=$(cat .project_suffix)
+      - echo "🔍 SonarQube Ensurance analysis for environment: $PROJECT_SUFFIX"
       - |
         sonar-scanner \
           -Dsonar.projectKey=ensurance-backend-$PROJECT_SUFFIX \
           -Dsonar.projectName="Ensurance Backend ${PROJECT_SUFFIX^^}" \
           -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
-          -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src,pharmacy/src \
-          -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests,pharmacy/tests \
+          -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src \
+          -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests \
           -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes \
           -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml,backv5/target/site/jacoco/jacoco.xml \
-          -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info,pharmacy/coverage/lcov.info \
+          -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info \
           -Dsonar.qualitygate.wait=true \
           -Dsonar.qualitygate.timeout=300
     when:
       branch:
         - qa
 
-  # SonarQube analysis for MAIN
-  - name: sonarqube-analysis-main
+  # SonarQube analysis for Pharmacy QA
+  - name: sonarqube-pharmacy-analysis-qa
     image: sonarqube/sonar-scanner-cli:latest
     environment:
       SONAR_TOKEN:
-        from_secret: sonar_token
+        from_secret: pharmacy_back_qa
       SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
     commands:
       - export PROJECT_SUFFIX=$(cat .project_suffix)
-      - echo "🔍 SonarQube analysis for environment: $PROJECT_SUFFIX"
+      - echo "🔍 SonarQube Pharmacy analysis for environment: $PROJECT_SUFFIX"
+      - |
+        sonar-scanner \
+          -Dsonar.projectKey=pharmacy-backend-$PROJECT_SUFFIX \
+          -Dsonar.projectName="Pharmacy Backend ${PROJECT_SUFFIX^^}" \
+          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.sources=pharmacy/src \
+          -Dsonar.tests=pharmacy/tests \
+          -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info \
+          -Dsonar.qualitygate.wait=true \
+          -Dsonar.qualitygate.timeout=300
+      - |
+        sonar-scanner \
+          -Dsonar.projectKey=pharmacy-frontend-$PROJECT_SUFFIX \
+          -Dsonar.projectName="Pharmacy Frontend ${PROJECT_SUFFIX^^}" \
+          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.sources=pharmacy/src \
+          -Dsonar.tests=pharmacy/tests \
+          -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info \
+          -Dsonar.qualitygate.wait=true \
+          -Dsonar.qualitygate.timeout=300
+    when:
+      branch:
+        - qa
+
+  # SonarQube analysis for Ensurance MAIN
+  - name: sonarqube-ensurance-analysis-main
+    image: sonarqube/sonar-scanner-cli:latest
+    environment:
+      SONAR_TOKEN:
+        from_secret: ensurance_back_main
+      SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
+    commands:
+      - export PROJECT_SUFFIX=$(cat .project_suffix)
+      - echo "🔍 SonarQube Ensurance analysis for environment: $PROJECT_SUFFIX"
       - |
         sonar-scanner \
           -Dsonar.projectKey=ensurance-backend-$PROJECT_SUFFIX \
           -Dsonar.projectName="Ensurance Backend ${PROJECT_SUFFIX^^}" \
           -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
-          -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src,pharmacy/src \
-          -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests,pharmacy/tests \
+          -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src \
+          -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests \
           -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes \
           -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml,backv5/target/site/jacoco/jacoco.xml \
-          -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info,pharmacy/coverage/lcov.info \
+          -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info \
+          -Dsonar.qualitygate.wait=true \
+          -Dsonar.qualitygate.timeout=300
+    when:
+      branch:
+        - main
+        - master
+
+  # SonarQube analysis for Pharmacy MAIN
+  - name: sonarqube-pharmacy-analysis-main
+    image: sonarqube/sonar-scanner-cli:latest
+    environment:
+      SONAR_TOKEN:
+        from_secret: pharmacy_back_main
+      SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
+    commands:
+      - export PROJECT_SUFFIX=$(cat .project_suffix)
+      - echo "🔍 SonarQube Pharmacy analysis for environment: $PROJECT_SUFFIX"
+      - |
+        sonar-scanner \
+          -Dsonar.projectKey=pharmacy-backend-$PROJECT_SUFFIX \
+          -Dsonar.projectName="Pharmacy Backend ${PROJECT_SUFFIX^^}" \
+          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.sources=pharmacy/src \
+          -Dsonar.tests=pharmacy/tests \
+          -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info \
+          -Dsonar.qualitygate.wait=true \
+          -Dsonar.qualitygate.timeout=300
+      - |
+        sonar-scanner \
+          -Dsonar.projectKey=pharmacy-frontend-$PROJECT_SUFFIX \
+          -Dsonar.projectName="Pharmacy Frontend ${PROJECT_SUFFIX^^}" \
+          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.sources=pharmacy/src \
+          -Dsonar.tests=pharmacy/tests \
+          -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info \
           -Dsonar.qualitygate.wait=true \
           -Dsonar.qualitygate.timeout=300
     when:

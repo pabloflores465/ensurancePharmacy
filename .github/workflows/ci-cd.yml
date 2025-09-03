@@ -133,9 +133,9 @@ jobs:
           name: pharmacy-coverage
           path: pharmacy/coverage/
 
-  sonarqube-analysis:
+  sonarqube-ensurance-analysis:
     runs-on: ubuntu-latest
-    name: SonarQube Code Review
+    name: SonarQube Ensurance Analysis
     permissions:
       contents: read
       pull-requests: write
@@ -144,7 +144,6 @@ jobs:
         test-backend-v4,
         test-backend-v5,
         test-ensurance-frontend,
-        test-pharmacy-frontend,
       ]
 
     steps:
@@ -172,68 +171,141 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Download all coverage artifacts
+      - name: Download Ensurance coverage artifacts
         uses: actions/download-artifact@v4
+        with:
+          pattern: "*ensurance*"
 
-      - name: Install Frontend Dependencies
+      - name: Download Backend coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "backv*"
+
+      - name: Install Ensurance Frontend Dependencies
         run: |
           cd ensurance && npm ci --prefer-offline --no-audit --progress=false
-          cd ../pharmacy && npm ci --prefer-offline --no-audit --progress=false
 
-      - name: Build and Test for Coverage
+      - name: Build and Test Ensurance for Coverage
         run: |
           cd backv4 && mvn clean verify
           cd ../backv5 && mvn clean verify
           cd ../ensurance && npm run test:coverage
-          cd ../pharmacy && npm run test:unit:coverage
 
-      - name: Run SonarQube Analysis - Backend DEV
+      - name: Run SonarQube Analysis - Ensurance Backend DEV
         if: github.ref == 'refs/heads/develop'
         run: |
           cd backv4 && mvn sonar:sonar \
             -Dsonar.projectKey=ensurance-backend-dev \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.login=${{ secrets.ENSURANCE_BACK_DEV }} \
             -Dsonar.qualitygate.wait=true \
             -Dsonar.qualitygate.timeout=300
           cd ../backv5 && mvn sonar:sonar \
             -Dsonar.projectKey=ensurance-backend-dev \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.login=${{ secrets.ENSURANCE_BACK_DEV }} \
             -Dsonar.qualitygate.wait=true \
             -Dsonar.qualitygate.timeout=300
 
-      - name: Run SonarQube Analysis - Pharmacy Backend DEV
-        if: github.ref == 'refs/heads/develop'
+      - name: Run SonarQube Analysis - Ensurance Backend QA
+        if: github.ref == 'refs/heads/qa'
+        run: |
+          cd backv4 && mvn sonar:sonar \
+            -Dsonar.projectKey=ensurance-backend-qa \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.login=${{ secrets.ENSURANCE_BACK_QA }} \
+            -Dsonar.qualitygate.wait=true \
+            -Dsonar.qualitygate.timeout=300
+          cd ../backv5 && mvn sonar:sonar \
+            -Dsonar.projectKey=ensurance-backend-qa \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.login=${{ secrets.ENSURANCE_BACK_QA }} \
+            -Dsonar.qualitygate.wait=true \
+            -Dsonar.qualitygate.timeout=300
+
+      - name: Run SonarQube Analysis - Ensurance Backend MAIN
+        if: github.ref == 'refs/heads/main'
+        run: |
+          cd backv4 && mvn sonar:sonar \
+            -Dsonar.projectKey=ensurance-backend-main \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.login=${{ secrets.ENSURANCE_BACK_MAIN }} \
+            -Dsonar.qualitygate.wait=true \
+            -Dsonar.qualitygate.timeout=300
+          cd ../backv5 && mvn sonar:sonar \
+            -Dsonar.projectKey=ensurance-backend-main \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.login=${{ secrets.ENSURANCE_BACK_MAIN }} \
+            -Dsonar.qualitygate.wait=true \
+            -Dsonar.qualitygate.timeout=300
+
+      - name: Run SonarQube Analysis - Ensurance Frontend
         uses: SonarSource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
-          projectBaseDir: ./pharmacy
+          projectBaseDir: ./ensurance
           args: >
-            -Dsonar.projectKey=pharmacy-backend-dev
+            -Dsonar.projectKey=${{ github.ref == 'refs/heads/main' && 'ensurance-frontend-main' || github.ref == 'refs/heads/qa' && 'ensurance-frontend-qa' || 'ensurance-frontend-dev' }}
+            -Dsonar.login=${{ github.ref == 'refs/heads/main' && secrets.ENSURANCE_FRONT_MAIN || github.ref == 'refs/heads/qa' && secrets.ENSURANCE_FRONT_QA || secrets.ENSURANCE_FRONT_DEV }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.qualitygate.wait=true
             -Dsonar.qualitygate.timeout=300
 
-      - name: Run SonarQube Analysis - Backend QA
-        if: github.ref == 'refs/heads/qa'
+  sonarqube-pharmacy-analysis:
+    runs-on: ubuntu-latest
+    name: SonarQube Pharmacy Analysis
+    permissions:
+      contents: read
+      pull-requests: write
+    needs:
+      [
+        test-pharmacy-frontend,
+      ]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Disable shallow clone for better analysis
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: "./pharmacy/package-lock.json"
+
+      - name: Download Pharmacy coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "*pharmacy*"
+
+      - name: Install Pharmacy Frontend Dependencies
         run: |
-          cd backv4 && mvn sonar:sonar \
-            -Dsonar.projectKey=ensurance-backend-qa \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-            -Dsonar.qualitygate.wait=true \
-            -Dsonar.qualitygate.timeout=300
-          cd ../backv5 && mvn sonar:sonar \
-            -Dsonar.projectKey=ensurance-backend-qa \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-            -Dsonar.qualitygate.wait=true \
+          cd pharmacy && npm ci --prefer-offline --no-audit --progress=false
+
+      - name: Build and Test Pharmacy for Coverage
+        run: |
+          cd pharmacy && npm run test:unit:coverage
+
+      - name: Run SonarQube Analysis - Pharmacy Backend DEV
+        if: github.ref == 'refs/heads/develop'
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          projectBaseDir: ./pharmacy
+          args: >
+            -Dsonar.projectKey=pharmacy-backend-dev
+            -Dsonar.login=${{ secrets.PHARMACY_BACK_DEV }}
+            -Dsonar.sources=src
+            -Dsonar.tests=tests
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.qualitygate.wait=true
             -Dsonar.qualitygate.timeout=300
 
       - name: Run SonarQube Analysis - Pharmacy Backend QA
@@ -241,32 +313,16 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           projectBaseDir: ./pharmacy
           args: >
             -Dsonar.projectKey=pharmacy-backend-qa
+            -Dsonar.login=${{ secrets.PHARMACY_BACK_QA }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.qualitygate.wait=true
-            -Dsonar.qualitygate.timeout=300
-
-      - name: Run SonarQube Analysis - Backend MAIN
-        if: github.ref == 'refs/heads/main'
-        run: |
-          cd backv4 && mvn sonar:sonar \
-            -Dsonar.projectKey=ensurance-backend-main \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-            -Dsonar.qualitygate.wait=true \
-            -Dsonar.qualitygate.timeout=300
-          cd ../backv5 && mvn sonar:sonar \
-            -Dsonar.projectKey=ensurance-backend-main \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-            -Dsonar.qualitygate.wait=true \
             -Dsonar.qualitygate.timeout=300
 
       - name: Run SonarQube Analysis - Pharmacy Backend MAIN
@@ -274,44 +330,28 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           projectBaseDir: ./pharmacy
           args: >
             -Dsonar.projectKey=pharmacy-backend-main
+            -Dsonar.login=${{ secrets.PHARMACY_BACK_MAIN }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.qualitygate.wait=true
             -Dsonar.qualitygate.timeout=300
 
-      - name: Run SonarQube Analysis - Frontend Ensurance
+      - name: Run SonarQube Analysis - Pharmacy Frontend
         uses: SonarSource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        with:
-          projectBaseDir: ./ensurance
-          args: >
-            -Dsonar.projectKey=${{ github.ref == 'refs/heads/main' && 'ensurance-frontend-main' || github.ref == 'refs/heads/qa' && 'ensurance-frontend-qa' || 'ensurance-frontend-dev' }}
-            -Dsonar.sources=src
-            -Dsonar.tests=tests
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-            -Dsonar.qualitygate.wait=true
-            -Dsonar.qualitygate.timeout=300
-
-      - name: Run SonarQube Analysis - Frontend Pharmacy
-        uses: SonarSource/sonarqube-scan-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           projectBaseDir: ./pharmacy
           args: >
             -Dsonar.projectKey=${{ github.ref == 'refs/heads/main' && 'pharmacy-frontend-main' || github.ref == 'refs/heads/qa' && 'pharmacy-frontend-qa' || 'pharmacy-frontend-dev' }}
+            -Dsonar.login=${{ github.ref == 'refs/heads/main' && secrets.PHARMACY_FRONT_MAIN || github.ref == 'refs/heads/qa' && secrets.PHARMACY_FRONT_QA || secrets.PHARMACY_FRONT_DEV }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
@@ -321,7 +361,7 @@ jobs:
   deploy-dev:
     runs-on: ubuntu-latest
     name: Deploy to Development
-    needs: [sonarqube-analysis]
+    needs: [sonarqube-ensurance-analysis, sonarqube-pharmacy-analysis]
     if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
 
     steps:
@@ -334,11 +374,13 @@ jobs:
         env:
           ENSURANCE_BACK_DEV: ${{ secrets.ENSURANCE_BACK_DEV }}
           ENSURANCE_FRONT_DEV: ${{ secrets.ENSURANCE_FRONT_DEV }}
+          PHARMACY_BACK_DEV: ${{ secrets.PHARMACY_BACK_DEV }}
+          PHARMACY_FRONT_DEV: ${{ secrets.PHARMACY_FRONT_DEV }}
 
   deploy-qa:
     runs-on: ubuntu-latest
     name: Deploy to QA
-    needs: [sonarqube-analysis]
+    needs: [sonarqube-ensurance-analysis, sonarqube-pharmacy-analysis]
     if: github.ref == 'refs/heads/qa' && github.event_name == 'push'
 
     steps:
@@ -351,11 +393,13 @@ jobs:
         env:
           ENSURANCE_BACK_QA: ${{ secrets.ENSURANCE_BACK_QA }}
           ENSURANCE_FRONT_QA: ${{ secrets.ENSURANCE_FRONT_QA }}
+          PHARMACY_BACK_QA: ${{ secrets.PHARMACY_BACK_QA }}
+          PHARMACY_FRONT_QA: ${{ secrets.PHARMACY_FRONT_QA }}
 
   deploy-main:
     runs-on: ubuntu-latest
     name: Deploy to Production
-    needs: [sonarqube-analysis]
+    needs: [sonarqube-ensurance-analysis, sonarqube-pharmacy-analysis]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
@@ -368,11 +412,13 @@ jobs:
         env:
           ENSURANCE_BACK_MAIN: ${{ secrets.ENSURANCE_BACK_MAIN }}
           ENSURANCE_FRONT_MAIN: ${{ secrets.ENSURANCE_FRONT_MAIN }}
+          PHARMACY_BACK_MAIN: ${{ secrets.PHARMACY_BACK_MAIN }}
+          PHARMACY_FRONT_MAIN: ${{ secrets.PHARMACY_FRONT_MAIN }}
 
   notify-status:
     runs-on: ubuntu-latest
     name: Send Email Notification
-    needs: [test-backend-v4, test-backend-v5, test-ensurance-frontend, test-pharmacy-frontend, sonarqube-analysis]
+    needs: [test-backend-v4, test-backend-v5, test-ensurance-frontend, test-pharmacy-frontend, sonarqube-ensurance-analysis, sonarqube-pharmacy-analysis]
     if: always()
 
     steps:
@@ -383,7 +429,8 @@ jobs:
                 "${{ needs.test-backend-v5.result }}" == "success" && \
                 "${{ needs.test-ensurance-frontend.result }}" == "success" && \
                 "${{ needs.test-pharmacy-frontend.result }}" == "success" && \
-                "${{ needs.sonarqube-analysis.result }}" == "success" ]]; then
+                "${{ needs.sonarqube-ensurance-analysis.result }}" == "success" && \
+                "${{ needs.sonarqube-pharmacy-analysis.result }}" == "success" ]]; then
             echo "status=✅ SUCCESS" >> $GITHUB_OUTPUT
             echo "color=green" >> $GITHUB_OUTPUT
             echo "summary=All tests passed and SonarQube analysis completed successfully" >> $GITHUB_OUTPUT
@@ -433,7 +480,8 @@ jobs:
                 <li>Backend V5 Tests: ${{ needs.test-backend-v5.result == 'success' && '✅' || '❌' }} ${{ needs.test-backend-v5.result }}</li>
                 <li>Ensurance Frontend Tests: ${{ needs.test-ensurance-frontend.result == 'success' && '✅' || '❌' }} ${{ needs.test-ensurance-frontend.result }}</li>
                 <li>Pharmacy Frontend Tests: ${{ needs.test-pharmacy-frontend.result == 'success' && '✅' || '❌' }} ${{ needs.test-pharmacy-frontend.result }}</li>
-                <li>SonarQube Analysis: ${{ needs.sonarqube-analysis.result == 'success' && '✅' || '❌' }} ${{ needs.sonarqube-analysis.result }}</li>
+                <li>SonarQube Ensurance Analysis: ${{ needs.sonarqube-ensurance-analysis.result == 'success' && '✅' || '❌' }} ${{ needs.sonarqube-ensurance-analysis.result }}</li>
+                <li>SonarQube Pharmacy Analysis: ${{ needs.sonarqube-pharmacy-analysis.result == 'success' && '✅' || '❌' }} ${{ needs.sonarqube-pharmacy-analysis.result }}</li>
               </ul>
               
               <p><a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" style="background-color: #0366d6; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">View Workflow Run</a></p>

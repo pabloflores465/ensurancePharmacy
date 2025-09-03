@@ -35,32 +35,109 @@ pipeline {
         }
       }
     }
-    stage('SonarQube Analysis') {
+    stage('SonarQube Ensurance Analysis') {
       steps {
         script {
-          // Debe coincidir con el nombre del SonarScanner configurado en Jenkins > Global Tool Configuration
           def scannerHome = tool 'Scanner'
+          def projectKey = ""
+          def projectName = ""
+          
+          if (BRANCH_NAME == 'main' || BRANCH_NAME == 'master') {
+            projectKey = 'ensurance-backend-main'
+            projectName = 'Ensurance Backend MAIN'
+          } else if (BRANCH_NAME == 'qa') {
+            projectKey = 'ensurance-backend-qa'
+            projectName = 'Ensurance Backend QA'
+          } else {
+            projectKey = 'ensurance-backend-dev'
+            projectName = 'Ensurance Backend DEV'
+          }
+          
           withSonarQubeEnv("${SONARQUBE_SERVER}") {
             sh """
           set -e
-          echo "🔍 SonarQube Analysis for branch: ${BRANCH_NAME}"
+          echo "🔍 SonarQube Ensurance Analysis for branch: ${BRANCH_NAME}"
+          echo "Project: ${projectKey}"
           echo "Sonar host: $SONAR_HOST_URL"
           echo "Version: ${BUILD_NUMBER}"
 
-          # Generar coverage de frontend si existe
+          # Generar coverage de ensurance frontend
           if [ -d "ensurance" ]; then
-            cd ensurance && npm run test:coverage || true && cd ..
-          fi
-          if [ -d "pharmacy" ]; then
-            cd pharmacy && npm run test:unit:coverage || true && cd ..
+            cd ensurance && npm ci && npm run test:coverage || true && cd ..
           fi
 
           "${scannerHome}/bin/sonar-scanner" \
+            -Dsonar.projectKey=${projectKey} \
+            -Dsonar.projectName="${projectName}" \
             -Dsonar.projectVersion=${BUILD_NUMBER} \
-            -Dsonar.branch.name=${BRANCH_NAME} \
+            -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src \
+            -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests \
             -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes \
-            -Dsonar.coverage.jacoco.xmlReportPaths="**/target/site/jacoco/jacoco.xml" \
-            -Dsonar.javascript.lcov.reportPaths="ensurance/coverage/lcov.info,pharmacy/coverage/lcov.info"
+            -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml,backv5/target/site/jacoco/jacoco.xml \
+            -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info
+        """
+          }
+        }
+      }
+    }
+
+    stage('SonarQube Pharmacy Analysis') {
+      steps {
+        script {
+          def scannerHome = tool 'Scanner'
+          def backendProjectKey = ""
+          def frontendProjectKey = ""
+          def backendProjectName = ""
+          def frontendProjectName = ""
+          
+          if (BRANCH_NAME == 'main' || BRANCH_NAME == 'master') {
+            backendProjectKey = 'pharmacy-backend-main'
+            frontendProjectKey = 'pharmacy-frontend-main'
+            backendProjectName = 'Pharmacy Backend MAIN'
+            frontendProjectName = 'Pharmacy Frontend MAIN'
+          } else if (BRANCH_NAME == 'qa') {
+            backendProjectKey = 'pharmacy-backend-qa'
+            frontendProjectKey = 'pharmacy-frontend-qa'
+            backendProjectName = 'Pharmacy Backend QA'
+            frontendProjectName = 'Pharmacy Frontend QA'
+          } else {
+            backendProjectKey = 'pharmacy-backend-dev'
+            frontendProjectKey = 'pharmacy-frontend-dev'
+            backendProjectName = 'Pharmacy Backend DEV'
+            frontendProjectName = 'Pharmacy Frontend DEV'
+          }
+          
+          withSonarQubeEnv("${SONARQUBE_SERVER}") {
+            sh """
+          set -e
+          echo "🔍 SonarQube Pharmacy Analysis for branch: ${BRANCH_NAME}"
+          echo "Backend Project: ${backendProjectKey}"
+          echo "Frontend Project: ${frontendProjectKey}"
+          echo "Sonar host: $SONAR_HOST_URL"
+          echo "Version: ${BUILD_NUMBER}"
+
+          # Generar coverage de pharmacy frontend
+          if [ -d "pharmacy" ]; then
+            cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
+          fi
+
+          # Análisis Backend Pharmacy
+          "${scannerHome}/bin/sonar-scanner" \
+            -Dsonar.projectKey=${backendProjectKey} \
+            -Dsonar.projectName="${backendProjectName}" \
+            -Dsonar.projectVersion=${BUILD_NUMBER} \
+            -Dsonar.sources=pharmacy/src \
+            -Dsonar.tests=pharmacy/tests \
+            -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info
+            
+          # Análisis Frontend Pharmacy
+          "${scannerHome}/bin/sonar-scanner" \
+            -Dsonar.projectKey=${frontendProjectKey} \
+            -Dsonar.projectName="${frontendProjectName}" \
+            -Dsonar.projectVersion=${BUILD_NUMBER} \
+            -Dsonar.sources=pharmacy/src \
+            -Dsonar.tests=pharmacy/tests \
+            -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info
         """
           }
         }
