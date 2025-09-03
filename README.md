@@ -1,5 +1,7 @@
 # 🏥 Ensurance Pharmacy - Sistema Integrado de Seguros y Farmacia
 
+-
+
 - Sistema completo que integra gestión de seguros médicos y farmacia, desarrollado con arquitectura de microservicios.
 
 ## 📋 Índice
@@ -723,15 +725,17 @@ sqlite3 backv5/sqlite/USUARIO.sqlite ".schema PRESCRIPTION"
 Ir a `Repository → Settings → Secrets and variables → Actions` y agregar:
 
 #### 🔧 SonarQube (OBLIGATORIO)
+
 ```bash
 SONAR_TOKEN                    # Token de SonarQube para análisis de código
 SONAR_HOST_URL                 # URL del servidor SonarQube
 ```
 
 #### 🏥 Ensurance Project Tokens (YA CONFIGURADOS)
+
 ```bash
 ENSURANCE_BACK_DEV             # Token SonarQube ensurance-backend-dev
-ENSURANCE_BACK_QA              # Token SonarQube ensurance-backend-qa  
+ENSURANCE_BACK_QA              # Token SonarQube ensurance-backend-qa
 ENSURANCE_BACK_MAIN            # Token SonarQube ensurance-backend-main
 ENSURANCE_FRONT_DEV            # Token SonarQube ensurance-frontend-dev
 ENSURANCE_FRONT_QA             # Token SonarQube ensurance-frontend-qa
@@ -739,6 +743,7 @@ ENSURANCE_FRONT_MAIN           # Token SonarQube ensurance-frontend-main
 ```
 
 #### 💊 Pharmacy Project Tokens (⚠️ FALTANTES - AGREGAR URGENTE)
+
 ```bash
 PHARMACY_BACK_DEV              # Token SonarQube pharmacy-backend-dev
 PHARMACY_BACK_QA               # Token SonarQube pharmacy-backend-qa
@@ -749,6 +754,7 @@ PHARMACY_FRONT_MAIN            # Token SonarQube pharmacy-frontend-main
 ```
 
 #### 📧 Notificaciones Email (OBLIGATORIO)
+
 ```bash
 SMTP_SERVER                    # Servidor SMTP (ej: smtp.gmail.com)
 SMTP_PORT                      # Puerto SMTP (ej: 587 para TLS, 465 para SSL)
@@ -763,6 +769,7 @@ NOTIFICATION_EMAIL             # Email(s) destinatario(s) separados por coma
 Para configurar en Drone UI (http://localhost:8000):
 
 #### Ir a Repository Settings → Secrets y agregar:
+
 ```bash
 # SonarQube Analysis
 ensurance_back_dev             # Token para ensurance-backend-dev
@@ -785,6 +792,7 @@ sonar_host_url                 # URL del servidor SonarQube
 Configurar en Jenkins UI (http://localhost:8080/jenkins):
 
 #### Ir a Manage Jenkins → Credentials → Global y agregar:
+
 ```bash
 # SonarQube Server
 sonarqube-token               # Token global de SonarQube
@@ -799,6 +807,7 @@ pharmacy-sonar-token          # Token específico para Pharmacy (⚠️ FALTANTE
 ### ⚠️ CREAR ESTOS PROYECTOS EN SONARQUBE:
 
 #### 🏥 Ensurance Projects (YA CREADOS)
+
 ```bash
 ensurance-backend-dev          # Backend Ensurance ambiente DEV
 ensurance-backend-qa           # Backend Ensurance ambiente QA
@@ -809,6 +818,7 @@ ensurance-frontend-main        # Frontend Ensurance ambiente MAIN
 ```
 
 #### 💊 Pharmacy Projects (⚠️ CREAR URGENTE)
+
 ```bash
 pharmacy-backend-dev           # Backend Pharmacy ambiente DEV
 pharmacy-backend-qa            # Backend Pharmacy ambiente QA
@@ -874,12 +884,14 @@ git push origin tu-rama
 ## 📊 Valores de Ejemplo
 
 ### SonarQube
+
 ```bash
 SONAR_TOKEN=squ_1234567890abcdef...
 SONAR_HOST_URL=https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
 ```
 
 ### Email SMTP (Gmail)
+
 ```bash
 SMTP_SERVER=smtp.gmail.com
 SMTP_PORT=587
@@ -890,6 +902,7 @@ NOTIFICATION_EMAIL=pablopolis2016@gmail.com,jflores@unis.edu.gt
 ```
 
 ### Otros Proveedores SMTP
+
 ```bash
 # Outlook/Hotmail
 SMTP_SERVER=smtp-mail.outlook.com
@@ -909,18 +922,21 @@ SMTP_PASSWORD=your-sendgrid-api-key
 ## ⚠️ Notas Importantes
 
 ### Seguridad
+
 - **NUNCA** hardcodear tokens en el código
 - Usar App Passwords para Gmail (no contraseña normal)
 - Rotar tokens periódicamente
 - Verificar permisos mínimos necesarios
 
 ### Troubleshooting
+
 - Verificar nombres exactos de secretos (case-sensitive)
 - Confirmar que proyectos SonarQube existan
 - Verificar conectividad de red a SonarQube
 - Revisar logs de workflows para errores específicos
 
 ### Flujo de Análisis
+
 ```bash
 # Cada Push/PR ejecutará:
 1. Tests unitarios (Backend + Frontend)
@@ -1321,6 +1337,7 @@ mvn -f backv4 -Psqlite-dev -Dtest=SQLiteConnectivityTest test
 #### 🔧 Jobs Obligatorios para Branch Protection
 
 **CI/CD Pipeline (ci-cd.yml):**
+
 ```bash
 test-backend-v4                    # Tests Backend V4 (Ensurance)
 test-backend-v5                    # Tests Backend V5 (Pharmacy)
@@ -1331,12 +1348,14 @@ sonarqube-pharmacy-analysis        # Análisis SonarQube Pharmacy
 ```
 
 **Pull Request Analysis (sonarqube-pr-analysis.yml):**
+
 ```bash
 sonarqube-ensurance-pr-analysis    # Análisis SonarQube Ensurance PR
 sonarqube-pharmacy-pr-analysis     # Análisis SonarQube Pharmacy PR
 ```
 
 **Status Check (status-check.yml):**
+
 ```bash
 status-summary                     # Resumen de estado de todos los checks
 ```
@@ -1346,10 +1365,11 @@ status-summary                     # Resumen de estado de todos los checks
 **Ir a: Repository → Settings → Branches → Add rule**
 
 Para ramas `main`, `develop`, y `qa`:
+
 ```bash
 # Require status checks to pass before merging
 ☑️ test-backend-v4
-☑️ test-backend-v5  
+☑️ test-backend-v5
 ☑️ test-ensurance-frontend
 ☑️ test-pharmacy-frontend
 ☑️ sonarqube-ensurance-analysis
