@@ -62,7 +62,7 @@ public class ServiceApprovalDAO {
             String approvalCode = generateApprovalCode();
             approval.setApprovalCode(approvalCode);
             
-            session.save(approval);
+            session.persist(approval);
             transaction.commit();
             return approval;
         } catch (Exception e) {
@@ -91,7 +91,7 @@ public class ServiceApprovalDAO {
             if (approval != null) {
                 approval.setPrescriptionId(prescriptionId);
                 approval.setPrescriptionTotal(prescriptionTotal);
-                session.update(approval);
+                session.merge(approval);
                 transaction.commit();
                 return approval;
             }
@@ -131,7 +131,7 @@ public class ServiceApprovalDAO {
                     approval.setCompletedDate(new Date());
                 }
                 
-                session.update(approval);
+                session.merge(approval);
                 transaction.commit();
                 return approval;
             }

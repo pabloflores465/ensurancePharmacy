@@ -42,7 +42,7 @@ public class CommentsDAO {
             comments.setCommentText(commentText);
             comments.setMedicine(medicine);
 
-            session.save(comments);
+            session.persist(comments);
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
@@ -93,7 +93,7 @@ public class CommentsDAO {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
-            session.update(comments);
+            session.merge(comments);
             tx.commit();
             return comments;
         } catch (Exception e) {

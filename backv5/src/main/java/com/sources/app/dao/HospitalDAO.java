@@ -42,7 +42,7 @@ public class HospitalDAO {
             hospital.setAddress(address);
             hospital.setEnabled(enabled);
 
-            session.save(hospital);
+            session.persist(hospital);
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
@@ -91,7 +91,7 @@ public class HospitalDAO {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
-            session.update(hospital);
+            session.merge(hospital);
             tx.commit();
             return hospital;
         } catch (Exception e) {

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.sources.app.dao.UserDAO;
 import com.sources.app.entities.User;
+import com.sources.app.dto.UserCreateRequest;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpExchange;
@@ -31,18 +32,18 @@ public class UserHandlerTest {
         boolean createReturnNull;
 
         @Override
-        public User create(String name, String cui, String phone, String email, java.util.Date birthDate, String address, String password) {
+        public User create(UserCreateRequest request) {
             if (throwOnCreate) throw new RuntimeException("boom");
             if (createReturnNull) return null;
             User u = new User();
             u.setIdUser((long) (users.size() + 1));
-            u.setName(name);
-            u.setCui(cui);
-            u.setPhone(phone);
-            u.setEmail(email);
-            u.setBirthDate(birthDate);
-            u.setAddress(address);
-            u.setPassword(password);
+            u.setName(request.getName());
+            u.setCui(request.getCui());
+            u.setPhone(request.getPhone());
+            u.setEmail(request.getEmail());
+            u.setBirthDate(request.getBirthDate());
+            u.setAddress(request.getAddress());
+            u.setPassword(request.getPassword());
             users.add(u);
             return u;
         }

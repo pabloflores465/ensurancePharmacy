@@ -3,6 +3,7 @@ package com.sources.app.handlers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sources.app.entities.User;
 import com.sources.app.dao.UserDAO;
+import com.sources.app.dto.UserCreateRequest;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
@@ -92,7 +93,7 @@ public class UserHandler implements HttpHandler {
              return;
         }
 
-        User user = userDAO.create(
+        UserCreateRequest request = new UserCreateRequest(
                 createUser.getName(),
                 createUser.getCui(),
                 createUser.getPhone(),
@@ -101,6 +102,7 @@ public class UserHandler implements HttpHandler {
                 createUser.getAddress(),
                 createUser.getPassword() // Ensure DAO handles hashing
         );
+        User user = userDAO.create(request);
         if (user != null) {
             // Omit password in the response
             user.setPassword(null); 

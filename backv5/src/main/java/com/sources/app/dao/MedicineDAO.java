@@ -105,7 +105,7 @@ public class MedicineDAO {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
-            session.update(medicine);
+            session.merge(medicine);
             tx.commit();
             return medicine;
         } catch (Exception e) {

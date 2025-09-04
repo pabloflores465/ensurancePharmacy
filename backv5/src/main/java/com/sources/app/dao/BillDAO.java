@@ -44,7 +44,7 @@ public class BillDAO {
             bill.setCopay(copay);
             bill.setTotal(total);
 
-            session.save(bill);
+            session.persist(bill);
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
@@ -114,7 +114,7 @@ public class BillDAO {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
-            session.update(bill);
+            session.merge(bill);
             tx.commit();
             return bill;
         } catch (Exception e) {

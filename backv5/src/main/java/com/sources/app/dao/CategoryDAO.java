@@ -33,7 +33,7 @@ public class CategoryDAO {
             category = new Category();
             category.setName(name);
 
-            session.save(category);
+            session.persist(category);
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
@@ -82,7 +82,7 @@ public class CategoryDAO {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
-            session.update(category);
+            session.merge(category);
             tx.commit();
             return category;
         } catch (Exception e) {

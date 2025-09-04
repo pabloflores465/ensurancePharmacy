@@ -32,7 +32,8 @@ public class AppMainTest {
         String out = baos.toString();
         System.setOut(originalOut);
         assertTrue(out.isEmpty() || out.contains("Servidor iniciado en http://")
-                || out.contains("Error al conectar con la base de datos"),
+                || out.contains("Error al conectar con la base de datos")
+                || out.contains("Conexión exitosa a la base de datos!"),
                 "Expected startup or DB error message, got: " + out);
     }
 }

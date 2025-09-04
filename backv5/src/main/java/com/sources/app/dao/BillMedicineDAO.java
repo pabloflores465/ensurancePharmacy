@@ -48,7 +48,7 @@ public class BillMedicineDAO {
             billMedicine.setTotal(total);
 
             // La clave compuesta se asigna automáticamente en setBill y setMedicine
-            session.save(billMedicine);
+            session.persist(billMedicine);
 
             tx.commit();
         } catch (Exception e) {
@@ -99,7 +99,7 @@ public class BillMedicineDAO {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
-            session.update(billMedicine);
+            session.merge(billMedicine);
             tx.commit();
             return billMedicine;
         } catch (Exception e) {

@@ -43,14 +43,14 @@ public class SystemConfigDAO {
                 config.setConfigKey(configKey);
                 config.setConfigValue(configValue);
                 config.setDescription(description);
-                session.save(config);
+                session.persist(config);
             } else {
                 // Actualizar configuración existente
                 config.setConfigValue(configValue);
                 if (description != null && !description.isEmpty()) {
                     config.setDescription(description);
                 }
-                session.update(config);
+                session.merge(config);
             }
             
             transaction.commit();
@@ -111,7 +111,7 @@ public class SystemConfigDAO {
             
             SystemConfig config = session.get(SystemConfig.class, idConfig);
             if (config != null) {
-                session.delete(config);
+                session.remove(config);
                 transaction.commit();
                 return true;
             }

@@ -15,11 +15,9 @@ import com.sources.app.dao.CategoryDAO;
 import com.sources.app.dao.CommentsDAO;
 import com.sources.app.dao.ExternalMedicineDAO;
 import com.sources.app.dao.HospitalDAO;
-import com.sources.app.dao.MedicineCatSubcatDAO;
 import com.sources.app.dao.MedicineDAO;
 import com.sources.app.dao.OrderMedicineDAO;
 import com.sources.app.dao.OrdersDAO;
-import com.sources.app.dao.PolicyDAO;
 import com.sources.app.dao.PrescriptionDAO;
 import com.sources.app.dao.PrescriptionMedicineDAO;
 import com.sources.app.dao.SubcategoryDAO;
@@ -82,10 +80,6 @@ public class App {
      */
     private static final MedicineDAO medicineDAO = new MedicineDAO();
     /**
-     * DAO para la relación entre medicamentos, categorías y subcategorías.
-     */
-    private static final MedicineCatSubcatDAO medicineCatSubcatDAO = new MedicineCatSubcatDAO();
-    /**
      * DAO para operaciones relacionadas con pedidos.
      */
     private static final OrdersDAO ordersDAO = new OrdersDAO();
@@ -93,10 +87,6 @@ public class App {
      * DAO para la relación entre pedidos y medicamentos.
      */
     private static final OrderMedicineDAO orderMedicineDAO = new OrderMedicineDAO();
-    /**
-     * DAO para operaciones relacionadas con pólizas.
-     */
-    private static final PolicyDAO policyDAO = new PolicyDAO();
     /**
      * DAO para operaciones relacionadas con prescripciones.
      */
@@ -164,7 +154,7 @@ public class App {
             } else {
                 logger.error("No se pudo establecer conexión a la base de datos.");
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             logger.error("Error al conectar con la base de datos (continuando sin DB)", e);
         }
 
