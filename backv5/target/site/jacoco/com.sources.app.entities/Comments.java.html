@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Comments.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backv5</a> &gt; <a href="index.source.html" class="el_package">com.sources.app.entities</a> &gt; <span class="el_source">Comments.java</span></div><h1>Comments.java</h1><pre class="source lang-java linenums">package com.sources.app.entities;
+
+import jakarta.persistence.*;
+import com.sources.app.entities.Medicine;
+
+/**
+ * Entidad que representa un comentario en el sistema.
+ * Mapea a la tabla &quot;COMMENTS&quot;. Asociado a un usuario, un medicamento y opcionalmente
+ * a un comentario previo para formar hilos.
+ */
+@Entity
+@Table(name = &quot;COMMENTS&quot;)
+public class Comments {
+
+    /** Identificador único del comentario. Generado automáticamente. */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = &quot;ID_COMMENTS&quot;)
+    private Long idComments;
+
+    /** Usuario que realizó el comentario. */
+    @ManyToOne
+    @JoinColumn(name = &quot;ID_USER&quot;, referencedColumnName = &quot;ID_USER&quot;)
+    private User user;
+
+    /** Comentario al que responde este comentario (para hilos). Puede ser nulo. */
+    @ManyToOne
+    @JoinColumn(name = &quot;ID_PREV_COMMENT&quot;, referencedColumnName = &quot;ID_COMMENTS&quot;)
+    private Comments prevComment;
+
+    /** Texto del comentario. */
+    @Column(name = &quot;COMMENT_TEXT&quot;)
+    private String commentText;
+
+    /** Medicamento sobre el cual se realiza el comentario. */
+    @ManyToOne
+    @JoinColumn(name = &quot;ID_MEDICINE&quot;, referencedColumnName = &quot;ID_MEDICINE&quot;)
+    private Medicine medicine;
+
+    /**
+     * Constructor por defecto requerido por JPA.
+     */
+<span class="fc" id="L43">    public Comments() {</span>
+<span class="fc" id="L44">    }</span>
+
+    /**
+     * Constructor para crear un nuevo comentario.
+     * Nota: Este constructor no inicializa el campo 'medicine'.
+     *
+     * @param user El usuario que realiza el comentario.
+     * @param prevComment El comentario previo (puede ser nulo).
+     * @param commentText El texto del comentario.
+     */
+<span class="nc" id="L54">    public Comments(User user, Comments prevComment, String commentText) {</span>
+<span class="nc" id="L55">        this.user = user;</span>
+<span class="nc" id="L56">        this.prevComment = prevComment;</span>
+<span class="nc" id="L57">        this.commentText = commentText;</span>
+<span class="nc" id="L58">    }</span>
+
+    // Getters y setters
+    public Long getIdComments() {
+<span class="fc" id="L62">        return idComments;</span>
+    }
+
+    public void setIdComments(Long idComments) {
+<span class="fc" id="L66">        this.idComments = idComments;</span>
+<span class="fc" id="L67">    }</span>
+
+    public User getUser() {
+<span class="fc" id="L70">        return user;</span>
+    }
+
+    public void setUser(User user) {
+<span class="fc" id="L74">        this.user = user;</span>
+<span class="fc" id="L75">    }</span>
+
+    public Comments getPrevComment() {
+<span class="fc" id="L78">        return prevComment;</span>
+    }
+
+    public void setPrevComment(Comments prevComment) {
+<span class="fc" id="L82">        this.prevComment = prevComment;</span>
+<span class="fc" id="L83">    }</span>
+
+    public String getCommentText() {
+<span class="fc" id="L86">        return commentText;</span>
+    }
+
+    public void setCommentText(String commentText) {
+<span class="fc" id="L90">        this.commentText = commentText;</span>
+<span class="fc" id="L91">    }</span>
+
+    public Medicine getMedicine() {
+<span class="fc" id="L94">        return medicine;</span>
+    }
+
+    public void setMedicine(Medicine medicine) {
+<span class="fc" id="L98">        this.medicine = medicine;</span>
+<span class="fc" id="L99">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

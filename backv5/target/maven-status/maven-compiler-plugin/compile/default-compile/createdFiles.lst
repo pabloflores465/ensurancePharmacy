@@ -24,6 +24,7 @@ com/sources/app/handlers/OrdersHandler.class
 com/sources/app/entities/OrderMedicine.class
 com/sources/app/dao/MedicineCatSubcatDAO.class
 com/sources/app/dao/PolicyDAO.class
+com/sources/app/dto/UserCreateRequest.class
 com/sources/app/entities/MedicineCatSubcat.class
 com/sources/app/entities/Subcategory.class
 com/sources/app/dao/BillDAO.class

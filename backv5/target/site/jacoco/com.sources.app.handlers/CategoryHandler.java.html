@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CategoryHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backv5</a> &gt; <a href="index.source.html" class="el_package">com.sources.app.handlers</a> &gt; <span class="el_source">CategoryHandler.java</span></div><h1>CategoryHandler.java</h1><pre class="source lang-java linenums">package com.sources.app.handlers;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sources.app.entities.Category;
+import com.sources.app.dao.CategoryDAO;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Manejador HTTP para gestionar las operaciones CRUD de las Categorías.
+ * Responde a solicitudes en el endpoint &quot;/api2/categories&quot;.
+ * Soporta los métodos GET, POST, PUT y OPTIONS.
+ */
+public class CategoryHandler implements HttpHandler {
+    private final CategoryDAO categoryDAO;
+    private final ObjectMapper objectMapper;
+    private static final String ENDPOINT = &quot;/api2/categories&quot;;
+<span class="fc" id="L24">    private static final Logger LOGGER = Logger.getLogger(CategoryHandler.class.getName());</span>
+
+    /**
+     * Constructor para CategoryHandler.
+     *
+     * @param categoryDAO El DAO para acceder a los datos de las categorías.
+     */
+<span class="fc" id="L31">    public CategoryHandler(CategoryDAO categoryDAO) {</span>
+<span class="fc" id="L32">        this.categoryDAO = categoryDAO;</span>
+<span class="fc" id="L33">        this.objectMapper = new ObjectMapper();</span>
+<span class="fc" id="L34">    }</span>
+
+    /**
+     * Maneja las solicitudes HTTP entrantes para el endpoint de categorías.
+     * Configura las cabeceras CORS y delega a los métodos de manejo apropiados
+     * según el método HTTP (handlePost, handleGet, handlePut).
+     *
+     * @param exchange El objeto HttpExchange que representa la solicitud y respuesta.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
+    @Override
+    public void handle(HttpExchange exchange) throws IOException {
+        // Set CORS headers
+<span class="fc" id="L47">        exchange.getResponseHeaders().add(&quot;Access-Control-Allow-Origin&quot;, &quot;*&quot;);</span>
+<span class="fc" id="L48">        exchange.getResponseHeaders().add(&quot;Access-Control-Allow-Methods&quot;, &quot;GET, POST, PUT, OPTIONS&quot;);</span>
+<span class="fc" id="L49">        exchange.getResponseHeaders().add(&quot;Access-Control-Allow-Headers&quot;, &quot;Content-Type, Authorization&quot;);</span>
+        
+        // Handle CORS preflight requests
+<span class="fc bfc" id="L52" title="All 2 branches covered.">        if(&quot;OPTIONS&quot;.equalsIgnoreCase(exchange.getRequestMethod())){</span>
+<span class="fc" id="L53">            exchange.sendResponseHeaders(204, -1);</span>
+<span class="fc" id="L54">            return;</span>
+        }
+        
+<span class="fc" id="L57">        String method = exchange.getRequestMethod();</span>
+        try {
+<span class="fc bfc" id="L59" title="All 2 branches covered.">            if(&quot;POST&quot;.equalsIgnoreCase(method)){</span>
+<span class="fc" id="L60">                handlePost(exchange);</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">            } else if(&quot;GET&quot;.equalsIgnoreCase(method)){</span>
+<span class="fc" id="L62">                handleGet(exchange);</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">            } else if(&quot;PUT&quot;.equalsIgnoreCase(method)){</span>
+<span class="fc" id="L64">                handlePut(exchange);</span>
+            } else {
+<span class="fc" id="L66">                exchange.sendResponseHeaders(405, -1); // Method Not Allowed</span>
+            }
+<span class="fc" id="L68">        } catch (Exception e) {</span>
+<span class="fc" id="L69">            LOGGER.log(Level.SEVERE, &quot;Error handling Category request&quot;, e);</span>
+<span class="fc" id="L70">            exchange.sendResponseHeaders(500, -1); // Internal Server Error</span>
+<span class="fc" id="L71">        }</span>
+<span class="fc" id="L72">    }</span>
+
+    /**
+     * Maneja las solicitudes POST para crear una nueva categoría.
+     * Espera un cuerpo de solicitud JSON con el nombre de la categoría.
+     *
+     * @param exchange El objeto HttpExchange.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
+    private void handlePost(HttpExchange exchange) throws IOException {
+<span class="fc" id="L82">        String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);</span>
+<span class="fc" id="L83">        Category createCat = objectMapper.readValue(requestBody, Category.class);</span>
+        
+<span class="fc bfc" id="L85" title="All 4 branches covered.">        if (createCat.getName() == null || createCat.getName().trim().isEmpty()) {</span>
+<span class="fc" id="L86">            sendResponse(exchange, 400, &quot;{\&quot;error\&quot;: \&quot;Category name is required\&quot;}&quot;);</span>
+<span class="fc" id="L87">            return;</span>
+        }
+        
+<span class="fc" id="L90">        Category category = categoryDAO.create(createCat.getName());</span>
+<span class="fc bfc" id="L91" title="All 2 branches covered.">        if(category != null){</span>
+<span class="fc" id="L92">            sendResponse(exchange, 201, objectMapper.writeValueAsString(category));</span>
+        } else {
+<span class="fc" id="L94">            sendResponse(exchange, 400, &quot;{\&quot;error\&quot;: \&quot;Failed to create category\&quot;}&quot;);</span>
+        }
+<span class="fc" id="L96">    }</span>
+
+    /**
+     * Maneja las solicitudes GET para obtener categorías.
+     * Si se proporciona un parámetro de consulta 'id', devuelve la categoría específica.
+     * De lo contrario, devuelve todas las categorías.
+     *
+     * @param exchange El objeto HttpExchange.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
+    private void handleGet(HttpExchange exchange) throws IOException {
+<span class="fc" id="L107">        String query = exchange.getRequestURI().getQuery();</span>
+<span class="pc bpc" id="L108" title="1 of 4 branches missed.">        if(query != null &amp;&amp; query.startsWith(&quot;id=&quot;)){</span>
+<span class="fc" id="L109">            handleGetById(exchange, query);</span>
+        } else {
+<span class="fc" id="L111">            handleGetAll(exchange);</span>
+        }
+<span class="fc" id="L113">    }</span>
+
+    /**
+     * Maneja la obtención de una categoría específica por su ID.
+     *
+     * @param exchange El objeto HttpExchange.
+     * @param query La cadena de consulta que contiene el ID (formato: id=categoryId).
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
+    private void handleGetById(HttpExchange exchange, String query) throws IOException {
+        try {
+<span class="fc" id="L124">            Long id = Long.parseLong(query.substring(3));</span>
+<span class="fc" id="L125">            Category category = categoryDAO.getById(id);</span>
+<span class="fc bfc" id="L126" title="All 2 branches covered.">            if(category != null){</span>
+<span class="fc" id="L127">                sendResponse(exchange, 200, objectMapper.writeValueAsString(category));</span>
+            } else {
+<span class="fc" id="L129">                exchange.sendResponseHeaders(404, -1); // Not Found</span>
+            }
+<span class="fc" id="L131">        } catch (NumberFormatException e) {</span>
+<span class="fc" id="L132">            sendResponse(exchange, 400, &quot;{\&quot;error\&quot;: \&quot;Invalid ID format\&quot;}&quot;);</span>
+<span class="fc" id="L133">        }</span>
+<span class="fc" id="L134">    }</span>
+
+    /**
+     * Maneja la obtención de todas las categorías.
+     *
+     * @param exchange El objeto HttpExchange.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
+    private void handleGetAll(HttpExchange exchange) throws IOException {
+<span class="fc" id="L143">        List&lt;Category&gt; list = categoryDAO.getAll();</span>
+<span class="fc" id="L144">        sendResponse(exchange, 200, objectMapper.writeValueAsString(list));</span>
+<span class="fc" id="L145">    }</span>
+
+    /**
+     * Maneja las solicitudes PUT para actualizar una categoría existente.
+     * Espera un cuerpo de solicitud JSON con los datos completos de la categoría, incluyendo su ID.
+     *
+     * @param exchange El objeto HttpExchange.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
+    private void handlePut(HttpExchange exchange) throws IOException {
+<span class="fc" id="L155">        String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);</span>
+<span class="fc" id="L156">        Category updateCat = objectMapper.readValue(requestBody, Category.class);</span>
+        
+<span class="fc bfc" id="L158" title="All 2 branches covered.">        if (updateCat.getIdCategory() == null) {</span>
+<span class="fc" id="L159">             sendResponse(exchange, 400, &quot;{\&quot;error\&quot;: \&quot;Category ID is required for update\&quot;}&quot;);</span>
+<span class="fc" id="L160">             return;</span>
+        }
+<span class="fc bfc" id="L162" title="All 4 branches covered.">        if (updateCat.getName() == null || updateCat.getName().trim().isEmpty()) {</span>
+<span class="fc" id="L163">            sendResponse(exchange, 400, &quot;{\&quot;error\&quot;: \&quot;Category name is required for update\&quot;}&quot;);</span>
+<span class="fc" id="L164">            return;</span>
+        }
+        
+<span class="fc" id="L167">        Category category = categoryDAO.update(updateCat);</span>
+<span class="fc bfc" id="L168" title="All 2 branches covered.">        if(category != null){</span>
+<span class="fc" id="L169">            sendResponse(exchange, 200, objectMapper.writeValueAsString(category));</span>
+        } else {
+<span class="fc" id="L171">             sendResponse(exchange, 400, &quot;{\&quot;error\&quot;: \&quot;Failed to update category or category not found\&quot;}&quot;);</span>
+        }
+<span class="fc" id="L173">    }</span>
+    
+    /**
+     * Envía una respuesta HTTP con un código de estado y cuerpo específicos.
+     *
+     * @param exchange El objeto HttpExchange.
+     * @param statusCode El código de estado HTTP.
+     * @param responseBody El cuerpo de la respuesta como String.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
+    private void sendResponse(HttpExchange exchange, int statusCode, String responseBody) throws IOException {
+<span class="fc" id="L184">        exchange.getResponseHeaders().set(&quot;Content-Type&quot;, &quot;application/json; charset=UTF-8&quot;);</span>
+<span class="fc" id="L185">        byte[] responseBytes = responseBody.getBytes(StandardCharsets.UTF_8);</span>
+<span class="fc" id="L186">        exchange.sendResponseHeaders(statusCode, responseBytes.length);</span>
+<span class="fc" id="L187">        try (OutputStream os = exchange.getResponseBody()) {</span>
+<span class="fc" id="L188">            os.write(responseBytes);</span>
+        }
+<span class="fc" id="L190">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

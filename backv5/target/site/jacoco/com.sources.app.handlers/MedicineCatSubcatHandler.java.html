@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MedicineCatSubcatHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backv5</a> &gt; <a href="index.source.html" class="el_package">com.sources.app.handlers</a> &gt; <span class="el_source">MedicineCatSubcatHandler.java</span></div><h1>MedicineCatSubcatHandler.java</h1><pre class="source lang-java linenums">package com.sources.app.handlers;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sources.app.dao.MedicineCatSubcatDAO;
+import com.sources.app.entities.MedicineCatSubcat;
+import com.sources.app.entities.MedicineCatSubcatId;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import com.sources.app.entities.Medicine;
+import com.sources.app.entities.Category;
+import com.sources.app.entities.Subcategory;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+
+/**
+ * HTTP handler for managing CRUD operations on the relationship between
+ * Medicines, Categories, and Subcategories ({@link MedicineCatSubcat}).
+ * Responds to requests at the &quot;/api2/medicine_catsubcats&quot; endpoint.
+ * Supports GET, POST, PUT, and OPTIONS methods.
+ * Uses a composite key ({@link MedicineCatSubcatId}) to identify entities.
+ */
+public class MedicineCatSubcatHandler implements HttpHandler {
+    private final MedicineCatSubcatDAO mcsDAO;
+    private final ObjectMapper objectMapper;
+    private static final String ENDPOINT = &quot;/api2/medicine_catsubcats&quot;;
+<span class="fc" id="L30">    private static final Logger LOGGER = Logger.getLogger(MedicineCatSubcatHandler.class.getName());</span>
+
+    /**
+     * Constructor for MedicineCatSubcatHandler.
+     *
+     * @param mcsDAO The DAO for accessing medicine-category-subcategory relationship data.
+     */
+<span class="fc" id="L37">    public MedicineCatSubcatHandler(MedicineCatSubcatDAO mcsDAO) {</span>
+<span class="fc" id="L38">        this.mcsDAO = mcsDAO;</span>
+<span class="fc" id="L39">        this.objectMapper = new ObjectMapper();</span>
+<span class="fc" id="L40">    }</span>
+
+    /**
+     * Handles incoming HTTP requests for the medicine-category-subcategory relationship endpoint.
+     * Sets CORS headers and delegates to appropriate handler methods based on the HTTP method
+     * (handlePost, handleGet, handlePut).
+     *
+     * @param exchange The {@link HttpExchange} object representing the request and response.
+     * @throws IOException If an I/O error occurs.
+     */
+    @Override
+    public void handle(HttpExchange exchange) throws IOException {
+        // Set CORS headers
+<span class="fc" id="L53">        exchange.getResponseHeaders().add(&quot;Access-Control-Allow-Origin&quot;, &quot;*&quot;);</span>
+<span class="fc" id="L54">        exchange.getResponseHeaders().add(&quot;Access-Control-Allow-Methods&quot;, &quot;GET, POST, PUT, OPTIONS&quot;);</span>
+<span class="fc" id="L55">        exchange.getResponseHeaders().add(&quot;Access-Control-Allow-Headers&quot;, &quot;Content-Type, Authorization&quot;);</span>
+
+        // Handle CORS preflight requests
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        if (&quot;OPTIONS&quot;.equalsIgnoreCase(exchange.getRequestMethod())) {</span>
+<span class="fc" id="L59">            exchange.sendResponseHeaders(204, -1);</span>
+<span class="fc" id="L60">            return;</span>
+        }
+
+<span class="fc" id="L63">        String method = exchange.getRequestMethod();</span>
+        try {
+<span class="fc bfc" id="L65" title="All 2 branches covered.">            if (&quot;POST&quot;.equalsIgnoreCase(method)) {</span>
+<span class="fc" id="L66">                handlePost(exchange);</span>
+<span class="fc bfc" id="L67" title="All 2 branches covered.">            } else if (&quot;GET&quot;.equalsIgnoreCase(method)) {</span>
+<span class="fc" id="L68">                handleGet(exchange);</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">            } else if (&quot;PUT&quot;.equalsIgnoreCase(method)) {</span>
+<span class="fc" id="L70">                handlePut(exchange);</span>
+            } else {
+<span class="fc" id="L72">                exchange.sendResponseHeaders(405, -1); // Method Not Allowed</span>
+            }
+<span class="fc" id="L74">        } catch (Exception e) {</span>
+<span class="fc" id="L75">            LOGGER.log(Level.SEVERE, &quot;Error handling MedicineCatSubcat request&quot;, e);</span>
+<span class="fc" id="L76">            exchange.sendResponseHeaders(500, -1); // Internal Server Error</span>
+<span class="fc" id="L77">        }</span>
+<span class="fc" id="L78">    }</span>
+
+    /**
+     * Handles POST requests to create a new medicine-category-subcategory association.
+     * Expects a JSON body containing the IDs of the related {@link Medicine}, {@link Category}, and {@link Subcategory}.
+     *
+     * @param exchange The {@link HttpExchange} object.
+     * @throws IOException If an I/O error occurs or JSON processing fails.
+     */
+    private void handlePost(HttpExchange exchange) throws IOException {
+<span class="fc" id="L88">        String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);</span>
+<span class="fc" id="L89">        MedicineCatSubcat createObj = objectMapper.readValue(requestBody, MedicineCatSubcat.class);</span>
+        
+        // Validar IDs
+<span class="fc" id="L92">        Medicine medicine = createObj.getMedicine();</span>
+<span class="fc" id="L93">        Category category = createObj.getCategory();</span>
+<span class="fc" id="L94">        Subcategory subcategory = createObj.getSubcategory();</span>
+<span class="pc bpc" id="L95" title="2 of 6 branches missed.">        if (medicine == null || medicine.getIdMedicine() == null ||</span>
+<span class="pc bpc" id="L96" title="2 of 4 branches missed.">            category == null || category.getIdCategory() == null ||</span>
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">            subcategory == null || subcategory.getIdSubcategory() == null) {</span>
+<span class="fc" id="L98">            sendResponse(exchange, 400, &quot;{\&quot;error\&quot;: \&quot;Medicine ID, Category ID, and Subcategory ID are required\&quot;}&quot;);</span>
+<span class="fc" id="L99">            return;</span>
+        }
+        
+<span class="fc" id="L102">        MedicineCatSubcat mcs = mcsDAO.create(medicine, category, subcategory);</span>
+<span class="fc bfc" id="L103" title="All 2 branches covered.">        if (mcs != null) {</span>
+<span class="fc" id="L104">            sendResponse(exchange, 201, objectMapper.writeValueAsString(mcs));</span>
+        } else {
+<span class="fc" id="L106">            sendResponse(exchange, 400, &quot;{\&quot;error\&quot;: \&quot;Failed to create association\&quot;}&quot;);</span>
+        }
+<span class="fc" id="L108">    }</span>
+
+    /**
+     * Handles GET requests to retrieve associations.
+     * If an 'id' query parameter is provided (format: &quot;id=medId,catId,subcatId&quot;),
+     * it retrieves the specific association by its composite ID.
+     * Otherwise, it retrieves all associations.
+     *
+     * @param exchange The {@link HttpExchange} object.
+     * @throws IOException If an I/O error occurs.
+     */
+    private void handleGet(HttpExchange exchange) throws IOException {
+<span class="fc" id="L120">        String query = exchange.getRequestURI().getQuery();</span>
+<span class="pc bpc" id="L121" title="1 of 4 branches missed.">        if(query != null &amp;&amp; query.startsWith(&quot;id=&quot;)) {</span>
+<span class="fc" id="L122">            handleGetById(exchange, query);</span>
+        } else {
+<span class="fc" id="L124">            handleGetAll(exchange);</span>
+        }
+<span class="fc" id="L126">    }</span>
+
+    /**
+     * Handles retrieving a specific association by its composite ID provided in the query string.
+     *
+     * @param exchange The {@link HttpExchange} object.
+     * @param query    The query string containing the composite ID (format: &quot;id=medId,catId,subcatId&quot;).
+     * @throws IOException If an I/O error occurs or JSON processing fails.
+     */
+    private void handleGetById(HttpExchange exchange, String query) throws IOException {
+<span class="fc" id="L136">        String[] parts = query.substring(3).split(&quot;,&quot;);</span>
+<span class="fc bfc" id="L137" title="All 2 branches covered.">        if(parts.length == 3) {</span>
+            try {
+<span class="fc" id="L139">                Long medId = Long.parseLong(parts[0]);</span>
+<span class="fc" id="L140">                Long catId = Long.parseLong(parts[1]);</span>
+<span class="fc" id="L141">                Long subcatId = Long.parseLong(parts[2]);</span>
+<span class="fc" id="L142">                MedicineCatSubcatId id = new MedicineCatSubcatId(medId, catId, subcatId);</span>
+<span class="fc" id="L143">                MedicineCatSubcat mcs = mcsDAO.getById(id);</span>
+<span class="fc bfc" id="L144" title="All 2 branches covered.">                if(mcs != null) {</span>
+<span class="fc" id="L145">                    sendResponse(exchange, 200, objectMapper.writeValueAsString(mcs));</span>
+                } else {
+<span class="fc" id="L147">                    exchange.sendResponseHeaders(404, -1); // Not Found</span>
+                }
+<span class="fc" id="L149">            } catch (NumberFormatException e) {</span>
+<span class="fc" id="L150">                sendResponse(exchange, 400, &quot;{\&quot;error\&quot;: \&quot;Invalid composite ID format (expected: medId,catId,subcatId)\&quot;}&quot;);</span>
+<span class="fc" id="L151">            }</span>
+        } else {
+<span class="fc" id="L153">            sendResponse(exchange, 400, &quot;{\&quot;error\&quot;: \&quot;Invalid ID parameter format (expected: id=medId,catId,subcatId)\&quot;}&quot;);</span>
+        }
+<span class="fc" id="L155">    }</span>
+
+    /**
+     * Handles retrieving all medicine-category-subcategory associations.
+     *
+     * @param exchange The {@link HttpExchange} object.
+     * @throws IOException If an I/O error occurs or JSON processing fails.
+     */
+    private void handleGetAll(HttpExchange exchange) throws IOException {
+<span class="fc" id="L164">        List&lt;MedicineCatSubcat&gt; list = mcsDAO.getAll();</span>
+<span class="fc" id="L165">        sendResponse(exchange, 200, objectMapper.writeValueAsString(list));</span>
+<span class="fc" id="L166">    }</span>
+
+    /**
+     * Handles PUT requests to update an existing association.
+     * Expects a JSON body with the complete data, including the composite key.
+     * Note: The practical use of updating a link entity might be limited, as the key defines the relationship.
+     *
+     * @param exchange The {@link HttpExchange} object.
+     * @throws IOException If an I/O error occurs or JSON processing fails.
+     */
+    private void handlePut(HttpExchange exchange) throws IOException {
+<span class="fc" id="L177">        String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);</span>
+<span class="fc" id="L178">        MedicineCatSubcat updateObj = objectMapper.readValue(requestBody, MedicineCatSubcat.class);</span>
+        
+        // Validar clave compuesta
+<span class="pc bpc" id="L181" title="2 of 4 branches missed.">        if (updateObj.getId() == null || updateObj.getId().getMedicineId() == null || </span>
+<span class="pc bpc" id="L182" title="1 of 4 branches missed.">            updateObj.getId().getCategoryId() == null || updateObj.getId().getSubcategoryId() == null) {</span>
+<span class="fc" id="L183">             sendResponse(exchange, 400, &quot;{\&quot;error\&quot;: \&quot;Composite ID (medId, catId, subcatId) is required for update\&quot;}&quot;);</span>
+<span class="fc" id="L184">             return;</span>
+        }
+        
+<span class="fc" id="L187">        MedicineCatSubcat mcs = mcsDAO.update(updateObj);</span>
+<span class="fc bfc" id="L188" title="All 2 branches covered.">        if(mcs != null) {</span>
+<span class="fc" id="L189">            sendResponse(exchange, 200, objectMapper.writeValueAsString(mcs));</span>
+        } else {
+<span class="fc" id="L191">             sendResponse(exchange, 400, &quot;{\&quot;error\&quot;: \&quot;Failed to update association or association not found\&quot;}&quot;);</span>
+        }
+<span class="fc" id="L193">    }</span>
+    
+    /**
+     * Sends an HTTP response with a specific status code and JSON body.
+     *
+     * @param exchange     The {@link HttpExchange} object.
+     * @param statusCode   The HTTP status code.
+     * @param responseBody The response body as a JSON String.
+     * @throws IOException If an I/O error occurs writing the response.
+     */
+    private void sendResponse(HttpExchange exchange, int statusCode, String responseBody) throws IOException {
+<span class="fc" id="L204">        exchange.getResponseHeaders().set(&quot;Content-Type&quot;, &quot;application/json; charset=UTF-8&quot;);</span>
+<span class="fc" id="L205">        byte[] responseBytes = responseBody.getBytes(StandardCharsets.UTF_8);</span>
+<span class="fc" id="L206">        exchange.sendResponseHeaders(statusCode, responseBytes.length);</span>
+<span class="fc" id="L207">        try (OutputStream os = exchange.getResponseBody()) {</span>
+<span class="fc" id="L208">            os.write(responseBytes);</span>
+        }
+<span class="fc" id="L210">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

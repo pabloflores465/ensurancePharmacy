@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LoginHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backv5</a> &gt; <a href="index.source.html" class="el_package">com.sources.app.handlers</a> &gt; <span class="el_source">LoginHandler.java</span></div><h1>LoginHandler.java</h1><pre class="source lang-java linenums">package com.sources.app.handlers;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sources.app.entities.User;
+import com.sources.app.dao.UserDAO;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+
+/**
+ * Manejador HTTP para gestionar las solicitudes de inicio de sesión de usuarios.
+ * Responde a solicitudes POST en el endpoint &quot;/api2/login&quot;.
+ * Espera un cuerpo JSON con &quot;email&quot; y &quot;password&quot;.
+ * Utiliza UserDAO para verificar las credenciales.
+ */
+public class LoginHandler implements HttpHandler {
+    private final UserDAO userDAO;
+    private final ObjectMapper objectMapper;
+    private static final String ENDPOINT = &quot;/api2/login&quot;;
+
+<span class="fc" id="L25">    private static final Logger LOGGER = Logger.getLogger(LoginHandler.class.getName());</span>
+
+    /**
+     * Constructor para LoginHandler.
+     *
+     * @param userDAO El DAO para acceder a los datos de los usuarios y verificar credenciales.
+     */
+<span class="fc" id="L32">    public LoginHandler(UserDAO userDAO) {</span>
+<span class="fc" id="L33">        this.userDAO = userDAO;</span>
+<span class="fc" id="L34">        this.objectMapper = new ObjectMapper();</span>
+<span class="fc" id="L35">    }</span>
+
+    /**
+     * Maneja las solicitudes HTTP entrantes para el endpoint de login.
+     * Configura las cabeceras CORS.
+     * Solo procesa solicitudes POST. Verifica la ruta y el método.
+     * Extrae email y contraseña del cuerpo JSON, llama a userDAO.login().
+     * Si la autenticación es exitosa, responde con 200 OK y los datos del usuario en JSON.
+     * Si la autenticación falla, responde con 401 Unauthorized.
+     * Responde con 404 Not Found si la ruta no es correcta.
+     * Responde con 405 Method Not Allowed para métodos diferentes de POST y OPTIONS.
+     * Responde con 500 Internal Server Error si ocurre una excepción.
+     *
+     * @param exchange El objeto HttpExchange que representa la solicitud y respuesta.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
+    @Override
+    public void handle(HttpExchange exchange) throws IOException {
+        // Encabezados CORS
+<span class="fc" id="L54">        exchange.getResponseHeaders().add(&quot;Access-Control-Allow-Origin&quot;, &quot;*&quot;);</span>
+<span class="fc" id="L55">        exchange.getResponseHeaders().add(&quot;Access-Control-Allow-Methods&quot;, &quot;GET, POST, OPTIONS&quot;);</span>
+<span class="fc" id="L56">        exchange.getResponseHeaders().add(&quot;Access-Control-Allow-Headers&quot;, &quot;Content-Type, Authorization&quot;);</span>
+
+        // Manejo de OPTIONS (preflight)
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        if (&quot;OPTIONS&quot;.equalsIgnoreCase(exchange.getRequestMethod())) {</span>
+<span class="fc" id="L60">            exchange.sendResponseHeaders(204, -1);</span>
+<span class="fc" id="L61">            return;</span>
+        }
+
+        // Verificar que la ruta sea la correcta
+<span class="fc" id="L65">        String path = exchange.getRequestURI().getPath();</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        if (!path.equalsIgnoreCase(ENDPOINT)) {</span>
+<span class="fc" id="L67">            exchange.sendResponseHeaders(404, -1);</span>
+<span class="fc" id="L68">            return;</span>
+        }
+
+        // Solo permitimos el método POST para login
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        if (&quot;POST&quot;.equalsIgnoreCase(exchange.getRequestMethod())) {</span>
+            try {
+<span class="fc" id="L74">                String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);</span>
+                // Se espera un JSON con email y password
+<span class="fc" id="L76">                User loginUser = objectMapper.readValue(requestBody, User.class);</span>
+
+                // Intentamos autenticar al usuario
+<span class="fc" id="L79">                User user = userDAO.login(loginUser.getEmail(), loginUser.getPassword());</span>
+
+<span class="fc bfc" id="L81" title="All 2 branches covered.">                if (user != null) {</span>
+                    // Login exitoso: devolvemos el usuario en JSON (o se podría retornar un token)
+<span class="fc" id="L83">                    String jsonResponse = objectMapper.writeValueAsString(user);</span>
+<span class="fc" id="L84">                    exchange.getResponseHeaders().set(&quot;Content-Type&quot;, &quot;application/json&quot;);</span>
+<span class="fc" id="L85">                    byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);</span>
+<span class="fc" id="L86">                    exchange.sendResponseHeaders(200, responseBytes.length);</span>
+<span class="fc" id="L87">                    try (OutputStream os = exchange.getResponseBody()) {</span>
+<span class="fc" id="L88">                        os.write(responseBytes);</span>
+                    }
+<span class="fc" id="L90">                } else {</span>
+                    // Login fallido: credenciales incorrectas
+<span class="fc" id="L92">                    exchange.sendResponseHeaders(401, -1);</span>
+                }
+<span class="fc" id="L94">            } catch (Exception e) {</span>
+<span class="fc" id="L95">                LOGGER.log(Level.SEVERE, &quot;Error handling login request&quot;, e);</span>
+<span class="fc" id="L96">                exchange.sendResponseHeaders(500, -1);</span>
+<span class="fc" id="L97">            }</span>
+        } else {
+            // Si se utiliza otro método, se rechaza con 405 (Method Not Allowed)
+<span class="fc" id="L100">            exchange.sendResponseHeaders(405, -1);</span>
+        }
+<span class="fc" id="L102">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.sources.app.util.HibernateUtilTest" time="2.601" tests="3" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.sources.app.util.HibernateUtilTest" time="4.851" tests="3" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="24"/>
     <property name="sun.jnu.encoding" value="UTF-8"/>
-    <property name="java.class.path" value="/Users/gp/ensurancePharmacy/backv5/target/test-classes:/Users/gp/ensurancePharmacy/backv5/target/classes:/Users/gp/.m2/repository/com/h2database/h2/2.1.214/h2-2.1.214.jar:/Users/gp/.m2/repository/junit/junit/3.8.1/junit-3.8.1.jar:/Users/gp/.m2/repository/com/oracle/database/jdbc/ojdbc8/19.3.0.0/ojdbc8-19.3.0.0.jar:/Users/gp/.m2/repository/com/oracle/database/jdbc/ucp/19.3.0.0/ucp-19.3.0.0.jar:/Users/gp/.m2/repository/com/oracle/database/security/oraclepki/19.3.0.0/oraclepki-19.3.0.0.jar:/Users/gp/.m2/repository/com/oracle/database/security/osdt_cert/19.3.0.0/osdt_cert-19.3.0.0.jar:/Users/gp/.m2/repository/com/oracle/database/security/osdt_core/19.3.0.0/osdt_core-19.3.0.0.jar:/Users/gp/.m2/repository/com/oracle/database/ha/simplefan/19.3.0.0/simplefan-19.3.0.0.jar:/Users/gp/.m2/repository/com/oracle/database/ha/ons/19.3.0.0/ons-19.3.0.0.jar:/Users/gp/.m2/repository/org/hibernate/orm/hibernate-core/6.6.6.Final/hibernate-core-6.6.6.Final.jar:/Users/gp/.m2/repository/org/jboss/logging/jboss-logging/3.5.0.Final/jboss-logging-3.5.0.Final.jar:/Users/gp/.m2/repository/org/hibernate/common/hibernate-commons-annotations/7.0.3.Final/hibernate-commons-annotations-7.0.3.Final.jar:/Users/gp/.m2/repository/io/smallrye/jandex/3.2.0/jandex-3.2.0.jar:/Users/gp/.m2/repository/com/fasterxml/classmate/1.5.1/classmate-1.5.1.jar:/Users/gp/.m2/repository/net/bytebuddy/byte-buddy/1.15.11/byte-buddy-1.15.11.jar:/Users/gp/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.0/jakarta.xml.bind-api-4.0.0.jar:/Users/gp/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.0/jakarta.activation-api-2.1.0.jar:/Users/gp/.m2/repository/org/glassfish/jaxb/jaxb-runtime/4.0.2/jaxb-runtime-4.0.2.jar:/Users/gp/.m2/repository/org/glassfish/jaxb/jaxb-core/4.0.2/jaxb-core-4.0.2.jar:/Users/gp/.m2/repository/org/eclipse/angus/angus-activation/2.0.0/angus-activation-2.0.0.jar:/Users/gp/.m2/repository/org/glassfish/jaxb/txw2/4.0.2/txw2-4.0.2.jar:/Users/gp/.m2/repository/com/sun/istack/istack-commons-runtime/4.1.1/istack-commons-runtime-4.1.1.jar:/Users/gp/.m2/repository/jakarta/inject/jakarta.inject-api/2.0.1/jakarta.inject-api-2.0.1.jar:/Users/gp/.m2/repository/org/antlr/antlr4-runtime/4.13.0/antlr4-runtime-4.13.0.jar:/Users/gp/.m2/repository/jakarta/transaction/jakarta.transaction-api/2.0.1/jakarta.transaction-api-2.0.1.jar:/Users/gp/.m2/repository/jakarta/persistence/jakarta.persistence-api/3.1.0/jakarta.persistence-api-3.1.0.jar:/Users/gp/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.15.2/jackson-databind-2.15.2.jar:/Users/gp/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.15.2/jackson-annotations-2.15.2.jar:/Users/gp/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.15.2/jackson-core-2.15.2.jar:/Users/gp/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.8.1/junit-jupiter-api-5.8.1.jar:/Users/gp/.m2/repository/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar:/Users/gp/.m2/repository/org/junit/platform/junit-platform-commons/1.8.1/junit-platform-commons-1.8.1.jar:/Users/gp/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/gp/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.8.1/junit-jupiter-engine-5.8.1.jar:/Users/gp/.m2/repository/org/junit/platform/junit-platform-engine/1.8.1/junit-platform-engine-1.8.1.jar:/Users/gp/.m2/repository/javax/ws/rs/javax.ws.rs-api/2.1.1/javax.ws.rs-api-2.1.1.jar:/Users/gp/.m2/repository/org/glassfish/jersey/core/jersey-server/2.35/jersey-server-2.35.jar:/Users/gp/.m2/repository/org/glassfish/jersey/core/jersey-common/2.35/jersey-common-2.35.jar:/Users/gp/.m2/repository/org/glassfish/hk2/osgi-resource-locator/1.0.3/osgi-resource-locator-1.0.3.jar:/Users/gp/.m2/repository/org/glassfish/jersey/core/jersey-client/2.35/jersey-client-2.35.jar:/Users/gp/.m2/repository/jakarta/ws/rs/jakarta.ws.rs-api/2.1.6/jakarta.ws.rs-api-2.1.6.jar:/Users/gp/.m2/repository/jakarta/annotation/jakarta.annotation-api/1.3.5/jakarta.annotation-api-1.3.5.jar:/Users/gp/.m2/repository/org/glassfish/hk2/external/jakarta.inject/2.6.1/jakarta.inject-2.6.1.jar:/Users/gp/.m2/repository/jakarta/validation/jakarta.validation-api/2.0.2/jakarta.validation-api-2.0.2.jar:/Users/gp/.m2/repository/org/glassfish/jersey/containers/jersey-container-servlet/2.35/jersey-container-servlet-2.35.jar:/Users/gp/.m2/repository/org/glassfish/jersey/containers/jersey-container-servlet-core/2.35/jersey-container-servlet-core-2.35.jar:/Users/gp/.m2/repository/org/glassfish/jersey/inject/jersey-hk2/2.35/jersey-hk2-2.35.jar:/Users/gp/.m2/repository/org/glassfish/hk2/hk2-locator/2.6.1/hk2-locator-2.6.1.jar:/Users/gp/.m2/repository/org/glassfish/hk2/external/aopalliance-repackaged/2.6.1/aopalliance-repackaged-2.6.1.jar:/Users/gp/.m2/repository/org/glassfish/hk2/hk2-api/2.6.1/hk2-api-2.6.1.jar:/Users/gp/.m2/repository/org/glassfish/hk2/hk2-utils/2.6.1/hk2-utils-2.6.1.jar:/Users/gp/.m2/repository/org/javassist/javassist/3.25.0-GA/javassist-3.25.0-GA.jar:/Users/gp/.m2/repository/com/googlecode/json-simple/json-simple/1.1.1/json-simple-1.1.1.jar:/Users/gp/.m2/repository/org/mockito/mockito-core/5.12.0/mockito-core-5.12.0.jar:/Users/gp/.m2/repository/net/bytebuddy/byte-buddy-agent/1.15.11/byte-buddy-agent-1.15.11.jar:/Users/gp/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:"/>
+    <property name="java.class.path" value="/Users/gp/Documents/ensurancePharmacy/backv5/target/test-classes:/Users/gp/Documents/ensurancePharmacy/backv5/target/classes:/Users/gp/.m2/repository/com/h2database/h2/2.1.214/h2-2.1.214.jar:/Users/gp/.m2/repository/junit/junit/3.8.1/junit-3.8.1.jar:/Users/gp/.m2/repository/org/xerial/sqlite-jdbc/3.44.1.0/sqlite-jdbc-3.44.1.0.jar:/Users/gp/.m2/repository/org/hibernate/orm/hibernate-community-dialects/6.6.6.Final/hibernate-community-dialects-6.6.6.Final.jar:/Users/gp/.m2/repository/org/jboss/logging/jboss-logging/3.5.0.Final/jboss-logging-3.5.0.Final.jar:/Users/gp/.m2/repository/org/hibernate/orm/hibernate-core/6.6.6.Final/hibernate-core-6.6.6.Final.jar:/Users/gp/.m2/repository/org/hibernate/common/hibernate-commons-annotations/7.0.3.Final/hibernate-commons-annotations-7.0.3.Final.jar:/Users/gp/.m2/repository/io/smallrye/jandex/3.2.0/jandex-3.2.0.jar:/Users/gp/.m2/repository/com/fasterxml/classmate/1.5.1/classmate-1.5.1.jar:/Users/gp/.m2/repository/net/bytebuddy/byte-buddy/1.15.11/byte-buddy-1.15.11.jar:/Users/gp/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.0/jakarta.xml.bind-api-4.0.0.jar:/Users/gp/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.0/jakarta.activation-api-2.1.0.jar:/Users/gp/.m2/repository/org/glassfish/jaxb/jaxb-runtime/4.0.2/jaxb-runtime-4.0.2.jar:/Users/gp/.m2/repository/org/glassfish/jaxb/jaxb-core/4.0.2/jaxb-core-4.0.2.jar:/Users/gp/.m2/repository/org/eclipse/angus/angus-activation/2.0.0/angus-activation-2.0.0.jar:/Users/gp/.m2/repository/org/glassfish/jaxb/txw2/4.0.2/txw2-4.0.2.jar:/Users/gp/.m2/repository/com/sun/istack/istack-commons-runtime/4.1.1/istack-commons-runtime-4.1.1.jar:/Users/gp/.m2/repository/jakarta/inject/jakarta.inject-api/2.0.1/jakarta.inject-api-2.0.1.jar:/Users/gp/.m2/repository/org/antlr/antlr4-runtime/4.13.0/antlr4-runtime-4.13.0.jar:/Users/gp/.m2/repository/jakarta/transaction/jakarta.transaction-api/2.0.1/jakarta.transaction-api-2.0.1.jar:/Users/gp/.m2/repository/jakarta/persistence/jakarta.persistence-api/3.1.0/jakarta.persistence-api-3.1.0.jar:/Users/gp/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.15.2/jackson-databind-2.15.2.jar:/Users/gp/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.15.2/jackson-annotations-2.15.2.jar:/Users/gp/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.15.2/jackson-core-2.15.2.jar:/Users/gp/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.8.1/junit-jupiter-api-5.8.1.jar:/Users/gp/.m2/repository/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar:/Users/gp/.m2/repository/org/junit/platform/junit-platform-commons/1.8.1/junit-platform-commons-1.8.1.jar:/Users/gp/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/gp/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.8.1/junit-jupiter-engine-5.8.1.jar:/Users/gp/.m2/repository/org/junit/platform/junit-platform-engine/1.8.1/junit-platform-engine-1.8.1.jar:/Users/gp/.m2/repository/javax/ws/rs/javax.ws.rs-api/2.1.1/javax.ws.rs-api-2.1.1.jar:/Users/gp/.m2/repository/org/glassfish/jersey/core/jersey-server/2.35/jersey-server-2.35.jar:/Users/gp/.m2/repository/org/glassfish/jersey/core/jersey-common/2.35/jersey-common-2.35.jar:/Users/gp/.m2/repository/org/glassfish/hk2/osgi-resource-locator/1.0.3/osgi-resource-locator-1.0.3.jar:/Users/gp/.m2/repository/org/glassfish/jersey/core/jersey-client/2.35/jersey-client-2.35.jar:/Users/gp/.m2/repository/jakarta/ws/rs/jakarta.ws.rs-api/2.1.6/jakarta.ws.rs-api-2.1.6.jar:/Users/gp/.m2/repository/jakarta/annotation/jakarta.annotation-api/1.3.5/jakarta.annotation-api-1.3.5.jar:/Users/gp/.m2/repository/org/glassfish/hk2/external/jakarta.inject/2.6.1/jakarta.inject-2.6.1.jar:/Users/gp/.m2/repository/jakarta/validation/jakarta.validation-api/2.0.2/jakarta.validation-api-2.0.2.jar:/Users/gp/.m2/repository/org/glassfish/jersey/containers/jersey-container-servlet/2.35/jersey-container-servlet-2.35.jar:/Users/gp/.m2/repository/org/glassfish/jersey/containers/jersey-container-servlet-core/2.35/jersey-container-servlet-core-2.35.jar:/Users/gp/.m2/repository/org/glassfish/jersey/inject/jersey-hk2/2.35/jersey-hk2-2.35.jar:/Users/gp/.m2/repository/org/glassfish/hk2/hk2-locator/2.6.1/hk2-locator-2.6.1.jar:/Users/gp/.m2/repository/org/glassfish/hk2/external/aopalliance-repackaged/2.6.1/aopalliance-repackaged-2.6.1.jar:/Users/gp/.m2/repository/org/glassfish/hk2/hk2-api/2.6.1/hk2-api-2.6.1.jar:/Users/gp/.m2/repository/org/glassfish/hk2/hk2-utils/2.6.1/hk2-utils-2.6.1.jar:/Users/gp/.m2/repository/org/javassist/javassist/3.25.0-GA/javassist-3.25.0-GA.jar:/Users/gp/.m2/repository/com/googlecode/json-simple/json-simple/1.1.1/json-simple-1.1.1.jar:/Users/gp/.m2/repository/org/mockito/mockito-core/5.12.0/mockito-core-5.12.0.jar:/Users/gp/.m2/repository/net/bytebuddy/byte-buddy-agent/1.15.11/byte-buddy-agent-1.15.11.jar:/Users/gp/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/Users/gp/.m2/repository/org/slf4j/slf4j-api/2.0.9/slf4j-api-2.0.9.jar:/Users/gp/.m2/repository/ch/qos/logback/logback-classic/1.4.14/logback-classic-1.4.14.jar:/Users/gp/.m2/repository/ch/qos/logback/logback-core/1.4.14/logback-core-1.4.14.jar:"/>
     <property name="java.vm.vendor" value="Homebrew"/>
     <property name="sun.arch.data.model" value="64"/>
     <property name="java.vendor.url" value="https://github.com/Homebrew/homebrew-core/issues"/>
@@ -13,10 +13,10 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="GT"/>
     <property name="sun.boot.library.path" value="/opt/homebrew/Cellar/openjdk/24.0.1/libexec/openjdk.jdk/Contents/Home/lib"/>
-    <property name="sun.java.command" value="/Users/gp/ensurancePharmacy/backv5/target/surefire/surefirebooter12660901597717703863.jar /Users/gp/ensurancePharmacy/backv5/target/surefire 2025-08-24T22-50-36_218-jvmRun1 surefire14464133786048497440tmp surefire_05590650507473233439tmp"/>
+    <property name="sun.java.command" value="/Users/gp/Documents/ensurancePharmacy/backv5/target/surefire/surefirebooter13663480536549603424.jar /Users/gp/Documents/ensurancePharmacy/backv5/target/surefire 2025-09-03T22-57-41_727-jvmRun1 surefire18292284637056456128tmp surefire_011349716922504394796tmp"/>
     <property name="http.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="jdk.debug" value="release"/>
-    <property name="surefire.test.class.path" value="/Users/gp/ensurancePharmacy/backv5/target/test-classes:/Users/gp/ensurancePharmacy/backv5/target/classes:/Users/gp/.m2/repository/com/h2database/h2/2.1.214/h2-2.1.214.jar:/Users/gp/.m2/repository/junit/junit/3.8.1/junit-3.8.1.jar:/Users/gp/.m2/repository/com/oracle/database/jdbc/ojdbc8/19.3.0.0/ojdbc8-19.3.0.0.jar:/Users/gp/.m2/repository/com/oracle/database/jdbc/ucp/19.3.0.0/ucp-19.3.0.0.jar:/Users/gp/.m2/repository/com/oracle/database/security/oraclepki/19.3.0.0/oraclepki-19.3.0.0.jar:/Users/gp/.m2/repository/com/oracle/database/security/osdt_cert/19.3.0.0/osdt_cert-19.3.0.0.jar:/Users/gp/.m2/repository/com/oracle/database/security/osdt_core/19.3.0.0/osdt_core-19.3.0.0.jar:/Users/gp/.m2/repository/com/oracle/database/ha/simplefan/19.3.0.0/simplefan-19.3.0.0.jar:/Users/gp/.m2/repository/com/oracle/database/ha/ons/19.3.0.0/ons-19.3.0.0.jar:/Users/gp/.m2/repository/org/hibernate/orm/hibernate-core/6.6.6.Final/hibernate-core-6.6.6.Final.jar:/Users/gp/.m2/repository/org/jboss/logging/jboss-logging/3.5.0.Final/jboss-logging-3.5.0.Final.jar:/Users/gp/.m2/repository/org/hibernate/common/hibernate-commons-annotations/7.0.3.Final/hibernate-commons-annotations-7.0.3.Final.jar:/Users/gp/.m2/repository/io/smallrye/jandex/3.2.0/jandex-3.2.0.jar:/Users/gp/.m2/repository/com/fasterxml/classmate/1.5.1/classmate-1.5.1.jar:/Users/gp/.m2/repository/net/bytebuddy/byte-buddy/1.15.11/byte-buddy-1.15.11.jar:/Users/gp/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.0/jakarta.xml.bind-api-4.0.0.jar:/Users/gp/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.0/jakarta.activation-api-2.1.0.jar:/Users/gp/.m2/repository/org/glassfish/jaxb/jaxb-runtime/4.0.2/jaxb-runtime-4.0.2.jar:/Users/gp/.m2/repository/org/glassfish/jaxb/jaxb-core/4.0.2/jaxb-core-4.0.2.jar:/Users/gp/.m2/repository/org/eclipse/angus/angus-activation/2.0.0/angus-activation-2.0.0.jar:/Users/gp/.m2/repository/org/glassfish/jaxb/txw2/4.0.2/txw2-4.0.2.jar:/Users/gp/.m2/repository/com/sun/istack/istack-commons-runtime/4.1.1/istack-commons-runtime-4.1.1.jar:/Users/gp/.m2/repository/jakarta/inject/jakarta.inject-api/2.0.1/jakarta.inject-api-2.0.1.jar:/Users/gp/.m2/repository/org/antlr/antlr4-runtime/4.13.0/antlr4-runtime-4.13.0.jar:/Users/gp/.m2/repository/jakarta/transaction/jakarta.transaction-api/2.0.1/jakarta.transaction-api-2.0.1.jar:/Users/gp/.m2/repository/jakarta/persistence/jakarta.persistence-api/3.1.0/jakarta.persistence-api-3.1.0.jar:/Users/gp/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.15.2/jackson-databind-2.15.2.jar:/Users/gp/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.15.2/jackson-annotations-2.15.2.jar:/Users/gp/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.15.2/jackson-core-2.15.2.jar:/Users/gp/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.8.1/junit-jupiter-api-5.8.1.jar:/Users/gp/.m2/repository/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar:/Users/gp/.m2/repository/org/junit/platform/junit-platform-commons/1.8.1/junit-platform-commons-1.8.1.jar:/Users/gp/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/gp/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.8.1/junit-jupiter-engine-5.8.1.jar:/Users/gp/.m2/repository/org/junit/platform/junit-platform-engine/1.8.1/junit-platform-engine-1.8.1.jar:/Users/gp/.m2/repository/javax/ws/rs/javax.ws.rs-api/2.1.1/javax.ws.rs-api-2.1.1.jar:/Users/gp/.m2/repository/org/glassfish/jersey/core/jersey-server/2.35/jersey-server-2.35.jar:/Users/gp/.m2/repository/org/glassfish/jersey/core/jersey-common/2.35/jersey-common-2.35.jar:/Users/gp/.m2/repository/org/glassfish/hk2/osgi-resource-locator/1.0.3/osgi-resource-locator-1.0.3.jar:/Users/gp/.m2/repository/org/glassfish/jersey/core/jersey-client/2.35/jersey-client-2.35.jar:/Users/gp/.m2/repository/jakarta/ws/rs/jakarta.ws.rs-api/2.1.6/jakarta.ws.rs-api-2.1.6.jar:/Users/gp/.m2/repository/jakarta/annotation/jakarta.annotation-api/1.3.5/jakarta.annotation-api-1.3.5.jar:/Users/gp/.m2/repository/org/glassfish/hk2/external/jakarta.inject/2.6.1/jakarta.inject-2.6.1.jar:/Users/gp/.m2/repository/jakarta/validation/jakarta.validation-api/2.0.2/jakarta.validation-api-2.0.2.jar:/Users/gp/.m2/repository/org/glassfish/jersey/containers/jersey-container-servlet/2.35/jersey-container-servlet-2.35.jar:/Users/gp/.m2/repository/org/glassfish/jersey/containers/jersey-container-servlet-core/2.35/jersey-container-servlet-core-2.35.jar:/Users/gp/.m2/repository/org/glassfish/jersey/inject/jersey-hk2/2.35/jersey-hk2-2.35.jar:/Users/gp/.m2/repository/org/glassfish/hk2/hk2-locator/2.6.1/hk2-locator-2.6.1.jar:/Users/gp/.m2/repository/org/glassfish/hk2/external/aopalliance-repackaged/2.6.1/aopalliance-repackaged-2.6.1.jar:/Users/gp/.m2/repository/org/glassfish/hk2/hk2-api/2.6.1/hk2-api-2.6.1.jar:/Users/gp/.m2/repository/org/glassfish/hk2/hk2-utils/2.6.1/hk2-utils-2.6.1.jar:/Users/gp/.m2/repository/org/javassist/javassist/3.25.0-GA/javassist-3.25.0-GA.jar:/Users/gp/.m2/repository/com/googlecode/json-simple/json-simple/1.1.1/json-simple-1.1.1.jar:/Users/gp/.m2/repository/org/mockito/mockito-core/5.12.0/mockito-core-5.12.0.jar:/Users/gp/.m2/repository/net/bytebuddy/byte-buddy-agent/1.15.11/byte-buddy-agent-1.15.11.jar:/Users/gp/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:"/>
+    <property name="surefire.test.class.path" value="/Users/gp/Documents/ensurancePharmacy/backv5/target/test-classes:/Users/gp/Documents/ensurancePharmacy/backv5/target/classes:/Users/gp/.m2/repository/com/h2database/h2/2.1.214/h2-2.1.214.jar:/Users/gp/.m2/repository/junit/junit/3.8.1/junit-3.8.1.jar:/Users/gp/.m2/repository/org/xerial/sqlite-jdbc/3.44.1.0/sqlite-jdbc-3.44.1.0.jar:/Users/gp/.m2/repository/org/hibernate/orm/hibernate-community-dialects/6.6.6.Final/hibernate-community-dialects-6.6.6.Final.jar:/Users/gp/.m2/repository/org/jboss/logging/jboss-logging/3.5.0.Final/jboss-logging-3.5.0.Final.jar:/Users/gp/.m2/repository/org/hibernate/orm/hibernate-core/6.6.6.Final/hibernate-core-6.6.6.Final.jar:/Users/gp/.m2/repository/org/hibernate/common/hibernate-commons-annotations/7.0.3.Final/hibernate-commons-annotations-7.0.3.Final.jar:/Users/gp/.m2/repository/io/smallrye/jandex/3.2.0/jandex-3.2.0.jar:/Users/gp/.m2/repository/com/fasterxml/classmate/1.5.1/classmate-1.5.1.jar:/Users/gp/.m2/repository/net/bytebuddy/byte-buddy/1.15.11/byte-buddy-1.15.11.jar:/Users/gp/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.0/jakarta.xml.bind-api-4.0.0.jar:/Users/gp/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.0/jakarta.activation-api-2.1.0.jar:/Users/gp/.m2/repository/org/glassfish/jaxb/jaxb-runtime/4.0.2/jaxb-runtime-4.0.2.jar:/Users/gp/.m2/repository/org/glassfish/jaxb/jaxb-core/4.0.2/jaxb-core-4.0.2.jar:/Users/gp/.m2/repository/org/eclipse/angus/angus-activation/2.0.0/angus-activation-2.0.0.jar:/Users/gp/.m2/repository/org/glassfish/jaxb/txw2/4.0.2/txw2-4.0.2.jar:/Users/gp/.m2/repository/com/sun/istack/istack-commons-runtime/4.1.1/istack-commons-runtime-4.1.1.jar:/Users/gp/.m2/repository/jakarta/inject/jakarta.inject-api/2.0.1/jakarta.inject-api-2.0.1.jar:/Users/gp/.m2/repository/org/antlr/antlr4-runtime/4.13.0/antlr4-runtime-4.13.0.jar:/Users/gp/.m2/repository/jakarta/transaction/jakarta.transaction-api/2.0.1/jakarta.transaction-api-2.0.1.jar:/Users/gp/.m2/repository/jakarta/persistence/jakarta.persistence-api/3.1.0/jakarta.persistence-api-3.1.0.jar:/Users/gp/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.15.2/jackson-databind-2.15.2.jar:/Users/gp/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.15.2/jackson-annotations-2.15.2.jar:/Users/gp/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.15.2/jackson-core-2.15.2.jar:/Users/gp/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.8.1/junit-jupiter-api-5.8.1.jar:/Users/gp/.m2/repository/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar:/Users/gp/.m2/repository/org/junit/platform/junit-platform-commons/1.8.1/junit-platform-commons-1.8.1.jar:/Users/gp/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/gp/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.8.1/junit-jupiter-engine-5.8.1.jar:/Users/gp/.m2/repository/org/junit/platform/junit-platform-engine/1.8.1/junit-platform-engine-1.8.1.jar:/Users/gp/.m2/repository/javax/ws/rs/javax.ws.rs-api/2.1.1/javax.ws.rs-api-2.1.1.jar:/Users/gp/.m2/repository/org/glassfish/jersey/core/jersey-server/2.35/jersey-server-2.35.jar:/Users/gp/.m2/repository/org/glassfish/jersey/core/jersey-common/2.35/jersey-common-2.35.jar:/Users/gp/.m2/repository/org/glassfish/hk2/osgi-resource-locator/1.0.3/osgi-resource-locator-1.0.3.jar:/Users/gp/.m2/repository/org/glassfish/jersey/core/jersey-client/2.35/jersey-client-2.35.jar:/Users/gp/.m2/repository/jakarta/ws/rs/jakarta.ws.rs-api/2.1.6/jakarta.ws.rs-api-2.1.6.jar:/Users/gp/.m2/repository/jakarta/annotation/jakarta.annotation-api/1.3.5/jakarta.annotation-api-1.3.5.jar:/Users/gp/.m2/repository/org/glassfish/hk2/external/jakarta.inject/2.6.1/jakarta.inject-2.6.1.jar:/Users/gp/.m2/repository/jakarta/validation/jakarta.validation-api/2.0.2/jakarta.validation-api-2.0.2.jar:/Users/gp/.m2/repository/org/glassfish/jersey/containers/jersey-container-servlet/2.35/jersey-container-servlet-2.35.jar:/Users/gp/.m2/repository/org/glassfish/jersey/containers/jersey-container-servlet-core/2.35/jersey-container-servlet-core-2.35.jar:/Users/gp/.m2/repository/org/glassfish/jersey/inject/jersey-hk2/2.35/jersey-hk2-2.35.jar:/Users/gp/.m2/repository/org/glassfish/hk2/hk2-locator/2.6.1/hk2-locator-2.6.1.jar:/Users/gp/.m2/repository/org/glassfish/hk2/external/aopalliance-repackaged/2.6.1/aopalliance-repackaged-2.6.1.jar:/Users/gp/.m2/repository/org/glassfish/hk2/hk2-api/2.6.1/hk2-api-2.6.1.jar:/Users/gp/.m2/repository/org/glassfish/hk2/hk2-utils/2.6.1/hk2-utils-2.6.1.jar:/Users/gp/.m2/repository/org/javassist/javassist/3.25.0-GA/javassist-3.25.0-GA.jar:/Users/gp/.m2/repository/com/googlecode/json-simple/json-simple/1.1.1/json-simple-1.1.1.jar:/Users/gp/.m2/repository/org/mockito/mockito-core/5.12.0/mockito-core-5.12.0.jar:/Users/gp/.m2/repository/net/bytebuddy/byte-buddy-agent/1.15.11/byte-buddy-agent-1.15.11.jar:/Users/gp/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/Users/gp/.m2/repository/org/slf4j/slf4j-api/2.0.9/slf4j-api-2.0.9.jar:/Users/gp/.m2/repository/ch/qos/logback/logback-classic/1.4.14/logback-classic-1.4.14.jar:/Users/gp/.m2/repository/ch/qos/logback/logback-core/1.4.14/logback-core-1.4.14.jar:"/>
     <property name="sun.cpu.endian" value="little"/>
     <property name="user.home" value="/Users/gp"/>
     <property name="user.language" value="en"/>
@@ -24,20 +24,20 @@
     <property name="java.version.date" value="2025-04-15"/>
     <property name="java.home" value="/opt/homebrew/Cellar/openjdk/24.0.1/libexec/openjdk.jdk/Contents/Home"/>
     <property name="file.separator" value="/"/>
-    <property name="basedir" value="/Users/gp/ensurancePharmacy/backv5"/>
+    <property name="basedir" value="/Users/gp/Documents/ensurancePharmacy/backv5"/>
     <property name="java.vm.compressedOopsMode" value="Zero based"/>
     <property name="line.separator" value="&#10;"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
     <property name="apple.awt.application.name" value="ForkedBooter"/>
-    <property name="surefire.real.class.path" value="/Users/gp/ensurancePharmacy/backv5/target/surefire/surefirebooter12660901597717703863.jar"/>
+    <property name="surefire.real.class.path" value="/Users/gp/Documents/ensurancePharmacy/backv5/target/surefire/surefirebooter13663480536549603424.jar"/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="java.runtime.version" value="24.0.1"/>
     <property name="user.name" value="gp"/>
     <property name="stdout.encoding" value="UTF-8"/>
     <property name="path.separator" value=":"/>
-    <property name="os.version" value="15.6"/>
+    <property name="os.version" value="15.6.1"/>
     <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
     <property name="file.encoding" value="UTF-8"/>
     <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
@@ -46,7 +46,7 @@
     <property name="java.vendor.url.bug" value="https://github.com/Homebrew/homebrew-core/issues"/>
     <property name="java.io.tmpdir" value="/var/folders/gc/wvdkjn_d7277w5wbxhbz905m0000gn/T/"/>
     <property name="java.version" value="24.0.1"/>
-    <property name="user.dir" value="/Users/gp/ensurancePharmacy/backv5"/>
+    <property name="user.dir" value="/Users/gp/Documents/ensurancePharmacy/backv5"/>
     <property name="os.arch" value="aarch64"/>
     <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
     <property name="native.encoding" value="UTF-8"/>
@@ -59,108 +59,114 @@
     <property name="socksNonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="java.class.version" value="68.0"/>
   </properties>
-  <testcase name="testOpenCloseSession" classname="com.sources.app.util.HibernateUtilTest" time="2.155">
-    <system-out><![CDATA[⚠️ Variable DB_SCHEMA_PHARMACY no definida, usando esquema por defecto
-Hibernate: drop table if exists "USERS" cascade 
-Hibernate: drop table if exists BILL cascade 
-Hibernate: drop table if exists BILL_MEDICINE cascade 
-Hibernate: drop table if exists CATEGORY cascade 
-Hibernate: drop table if exists COMMENTS cascade 
-Hibernate: drop table if exists HOSPITAL cascade 
-Hibernate: drop table if exists MEDICINE cascade 
-Hibernate: drop table if exists MEDICINE_CATSUBCAT cascade 
-Hibernate: drop table if exists ORDERS cascade 
-Hibernate: drop table if exists ORDERS_MEDICINE cascade 
-Hibernate: drop table if exists POLICY cascade 
-Hibernate: drop table if exists PRESCRIPTION cascade 
-Hibernate: drop table if exists PRESCRIPTION_MEDICINE cascade 
-Hibernate: drop table if exists SERVICE_APPROVALS cascade 
-Hibernate: drop table if exists SUBCATEGORY cascade 
-Hibernate: drop table if exists SYSTEM_CONFIG cascade 
-Hibernate: create table "USERS" (BIRTHDATE date, ENABLED char(1), ID_POLICY bigint, ID_USER bigint generated by default as identity, ADDRESS varchar(255), CUI varchar(255), EMAIL varchar(255), NAME varchar(255), PASSWORD varchar(255), PHONE varchar(255), ROL varchar(255), STATUS varchar(255), primary key (ID_USER))
-Hibernate: create table BILL (COPAY float(53), COVERED_AMOUNT float(53), PATIENT_AMOUNT float(53), SUBTOTAL float(53), TAXES float(53), TOTAL_AMOUNT float(53), CREATED_AT timestamp(6), ID_BILL bigint generated by default as identity, ID_PRESCRIPTION bigint, INSURANCE_APPROVAL_CODE varchar(255), STATUS varchar(255), TOTAL varchar(255), primary key (ID_BILL))
-Hibernate: create table BILL_MEDICINE (COPAY float(53), COST float(53), QUANTITY integer, ID_BILL bigint not null, ID_MEDICINE bigint not null, TOTAL varchar(255), primary key (ID_BILL, ID_MEDICINE))
-Hibernate: create table CATEGORY (ID_CATEGORY bigint generated by default as identity, NAME varchar(255), primary key (ID_CATEGORY))
-Hibernate: create table COMMENTS (ID_COMMENTS bigint generated by default as identity, ID_MEDICINE bigint, ID_PREV_COMMENT bigint, ID_USER bigint, COMMENT_TEXT varchar(255), primary key (ID_COMMENTS))
-Hibernate: create table HOSPITAL (ENABLED char(1), ID_HOSPITAL bigint generated by default as identity, ADDRESS varchar(255), EMAIL varchar(255), NAME varchar(255), PHONE varchar(255), primary key (ID_HOSPITAL))
-Hibernate: create table MEDICINE (PRESCRIPTION boolean, PRESENTACION float(53), PRICE float(53), SOLD_UNITS integer, STOCK integer, ID_MEDICINE bigint generated by default as identity, ACTIVE_MEDICAMENT varchar(255), BRAND varchar(255), CONCENTRATION varchar(255), DESCRIPTION varchar(255), IMAGE varchar(255), NAME varchar(255), primary key (ID_MEDICINE))
+  <testcase name="testOpenCloseSession" classname="com.sources.app.util.HibernateUtilTest" time="4.132">
+    <system-out><![CDATA[22:57:53,042 |-INFO in ch.qos.logback.classic.LoggerContext[default] - This is logback-classic version 1.4.14
+22:57:53,043 |-INFO in ch.qos.logback.classic.util.ContextInitializer@7f9dbe11 - No custom configurators were discovered as a service.
+22:57:53,043 |-INFO in ch.qos.logback.classic.util.ContextInitializer@7f9dbe11 - Trying to configure with ch.qos.logback.classic.joran.SerializedModelConfigurator
+22:57:53,048 |-INFO in ch.qos.logback.classic.util.ContextInitializer@7f9dbe11 - Constructed configurator of type class ch.qos.logback.classic.joran.SerializedModelConfigurator
+22:57:53,049 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback-test.scmo]
+22:57:53,049 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback.scmo]
+22:57:53,050 |-INFO in ch.qos.logback.classic.util.ContextInitializer@7f9dbe11 - ch.qos.logback.classic.joran.SerializedModelConfigurator.configure() call lasted 1 milliseconds. ExecutionStatus=INVOKE_NEXT_IF_ANY
+22:57:53,050 |-INFO in ch.qos.logback.classic.util.ContextInitializer@7f9dbe11 - Trying to configure with ch.qos.logback.classic.util.DefaultJoranConfigurator
+22:57:53,051 |-INFO in ch.qos.logback.classic.util.ContextInitializer@7f9dbe11 - Constructed configurator of type class ch.qos.logback.classic.util.DefaultJoranConfigurator
+22:57:53,051 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback-test.xml]
+22:57:53,052 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Found resource [logback.xml] at [file:/Users/gp/Documents/ensurancePharmacy/backv5/target/classes/logback.xml]
+22:57:53,286 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [CONSOLE]
+22:57:53,286 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [ch.qos.logback.core.ConsoleAppender]
+22:57:53,292 |-INFO in ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+22:57:53,334 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [FILE]
+22:57:53,334 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [ch.qos.logback.core.rolling.RollingFileAppender]
+22:57:53,352 |-INFO in c.q.l.core.rolling.TimeBasedRollingPolicy@401132274 - No compression will be used
+22:57:53,353 |-INFO in c.q.l.core.rolling.TimeBasedRollingPolicy@401132274 - Will use the pattern logs/ensurance-backv5.%d{yyyy-MM-dd}.%i.log for the active file
+22:57:53,364 |-INFO in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@104cf647 - The date pattern is 'yyyy-MM-dd' from file name pattern 'logs/ensurance-backv5.%d{yyyy-MM-dd}.%i.log'.
+22:57:53,364 |-INFO in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@104cf647 - Roll-over at midnight.
+22:57:53,365 |-INFO in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@104cf647 - Setting initial period to 2025-09-04T04:35:23.791Z
+22:57:53,365 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@104cf647 - SizeAndTimeBasedFNATP is deprecated. Use SizeAndTimeBasedRollingPolicy instead
+22:57:53,365 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@104cf647 - For more information see http://logback.qos.ch/manual/appenders.html#SizeAndTimeBasedRollingPolicy
+22:57:53,367 |-INFO in ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+22:57:53,369 |-INFO in ch.qos.logback.core.rolling.RollingFileAppender[FILE] - Active log file name: logs/ensurance-backv5.log
+22:57:53,369 |-INFO in ch.qos.logback.core.rolling.RollingFileAppender[FILE] - File property is set to [logs/ensurance-backv5.log]
+22:57:53,371 |-INFO in ch.qos.logback.classic.model.processor.RootLoggerModelHandler - Setting level of ROOT logger to INFO
+22:57:53,371 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [CONSOLE] to Logger[ROOT]
+22:57:53,371 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [FILE] to Logger[ROOT]
+22:57:53,372 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [com.sources.app] to INFO
+22:57:53,373 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [com.sources.app] to false
+22:57:53,373 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [CONSOLE] to Logger[com.sources.app]
+22:57:53,373 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [FILE] to Logger[com.sources.app]
+22:57:53,373 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [org.hibernate] to WARN
+22:57:53,373 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [org.hibernate.SQL] to DEBUG
+22:57:53,373 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@7488c183 - End of configuration.
+22:57:53,374 |-INFO in ch.qos.logback.classic.joran.JoranConfigurator@66779435 - Registering current configuration as safe fallback point
+22:57:53,374 |-INFO in ch.qos.logback.classic.util.ContextInitializer@7f9dbe11 - ch.qos.logback.classic.util.DefaultJoranConfigurator.configure() call lasted 323 milliseconds. ExecutionStatus=DO_NOT_INVOKE_NEXT_IF_ANY
+
+⚠️ Variable DB_SCHEMA_PHARMACY no definida, usando esquema por defecto
+2025-09-03 22:57:54 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - drop table if exists "USERS"
+Hibernate: drop table if exists "USERS"
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - drop table if exists BILL
+Hibernate: drop table if exists BILL
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - drop table if exists BILL_MEDICINE
+Hibernate: drop table if exists BILL_MEDICINE
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - drop table if exists CATEGORY
+Hibernate: drop table if exists CATEGORY
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - drop table if exists COMMENTS
+Hibernate: drop table if exists COMMENTS
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - drop table if exists HOSPITAL
+Hibernate: drop table if exists HOSPITAL
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - drop table if exists MEDICINE
+Hibernate: drop table if exists MEDICINE
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - drop table if exists MEDICINE_CATSUBCAT
+Hibernate: drop table if exists MEDICINE_CATSUBCAT
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - drop table if exists ORDERS
+Hibernate: drop table if exists ORDERS
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - drop table if exists ORDERS_MEDICINE
+Hibernate: drop table if exists ORDERS_MEDICINE
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - drop table if exists POLICY
+Hibernate: drop table if exists POLICY
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - drop table if exists PRESCRIPTION
+Hibernate: drop table if exists PRESCRIPTION
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - drop table if exists PRESCRIPTION_MEDICINE
+Hibernate: drop table if exists PRESCRIPTION_MEDICINE
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - drop table if exists SERVICE_APPROVALS
+Hibernate: drop table if exists SERVICE_APPROVALS
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - drop table if exists SUBCATEGORY
+Hibernate: drop table if exists SUBCATEGORY
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - drop table if exists SYSTEM_CONFIG
+Hibernate: drop table if exists SYSTEM_CONFIG
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - create table "USERS" (BIRTHDATE date, ENABLED char(1), ID_POLICY bigint, ID_USER integer, ADDRESS varchar(255), CUI varchar(255), EMAIL varchar(255), NAME varchar(255), PASSWORD varchar(255), PHONE varchar(255), ROL varchar(255), STATUS varchar(255), primary key (ID_USER))
+Hibernate: create table "USERS" (BIRTHDATE date, ENABLED char(1), ID_POLICY bigint, ID_USER integer, ADDRESS varchar(255), CUI varchar(255), EMAIL varchar(255), NAME varchar(255), PASSWORD varchar(255), PHONE varchar(255), ROL varchar(255), STATUS varchar(255), primary key (ID_USER))
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - create table BILL (COPAY float, COVERED_AMOUNT float, PATIENT_AMOUNT float, SUBTOTAL float, TAXES float, TOTAL_AMOUNT float, CREATED_AT timestamp, ID_BILL integer, ID_PRESCRIPTION bigint, INSURANCE_APPROVAL_CODE varchar(255), STATUS varchar(255), TOTAL varchar(255), primary key (ID_BILL))
+Hibernate: create table BILL (COPAY float, COVERED_AMOUNT float, PATIENT_AMOUNT float, SUBTOTAL float, TAXES float, TOTAL_AMOUNT float, CREATED_AT timestamp, ID_BILL integer, ID_PRESCRIPTION bigint, INSURANCE_APPROVAL_CODE varchar(255), STATUS varchar(255), TOTAL varchar(255), primary key (ID_BILL))
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - create table BILL_MEDICINE (COPAY float, COST float, QUANTITY integer, ID_BILL bigint not null, ID_MEDICINE bigint not null, TOTAL varchar(255), primary key (ID_BILL, ID_MEDICINE))
+Hibernate: create table BILL_MEDICINE (COPAY float, COST float, QUANTITY integer, ID_BILL bigint not null, ID_MEDICINE bigint not null, TOTAL varchar(255), primary key (ID_BILL, ID_MEDICINE))
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - create table CATEGORY (ID_CATEGORY integer, NAME varchar(255), primary key (ID_CATEGORY))
+Hibernate: create table CATEGORY (ID_CATEGORY integer, NAME varchar(255), primary key (ID_CATEGORY))
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - create table COMMENTS (ID_COMMENTS integer, ID_MEDICINE bigint, ID_PREV_COMMENT bigint, ID_USER bigint, COMMENT_TEXT varchar(255), primary key (ID_COMMENTS))
+Hibernate: create table COMMENTS (ID_COMMENTS integer, ID_MEDICINE bigint, ID_PREV_COMMENT bigint, ID_USER bigint, COMMENT_TEXT varchar(255), primary key (ID_COMMENTS))
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - create table HOSPITAL (ENABLED char(1), ID_HOSPITAL integer, ADDRESS varchar(255), EMAIL varchar(255), NAME varchar(255), PHONE varchar(255), primary key (ID_HOSPITAL))
+Hibernate: create table HOSPITAL (ENABLED char(1), ID_HOSPITAL integer, ADDRESS varchar(255), EMAIL varchar(255), NAME varchar(255), PHONE varchar(255), primary key (ID_HOSPITAL))
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - create table MEDICINE (PRESCRIPTION boolean, PRESENTACION float, PRICE float, SOLD_UNITS integer, STOCK integer, ID_MEDICINE integer, ACTIVE_MEDICAMENT varchar(255), BRAND varchar(255), CONCENTRATION varchar(255), DESCRIPTION varchar(255), IMAGE varchar(255), NAME varchar(255), primary key (ID_MEDICINE))
+Hibernate: create table MEDICINE (PRESCRIPTION boolean, PRESENTACION float, PRICE float, SOLD_UNITS integer, STOCK integer, ID_MEDICINE integer, ACTIVE_MEDICAMENT varchar(255), BRAND varchar(255), CONCENTRATION varchar(255), DESCRIPTION varchar(255), IMAGE varchar(255), NAME varchar(255), primary key (ID_MEDICINE))
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - create table MEDICINE_CATSUBCAT (ID_CATEGORY bigint not null, ID_MEDICINE bigint not null, ID_SUBCATEGORY bigint not null, primary key (ID_CATEGORY, ID_MEDICINE, ID_SUBCATEGORY))
 Hibernate: create table MEDICINE_CATSUBCAT (ID_CATEGORY bigint not null, ID_MEDICINE bigint not null, ID_SUBCATEGORY bigint not null, primary key (ID_CATEGORY, ID_MEDICINE, ID_SUBCATEGORY))
-Hibernate: create table ORDERS (ID_ORDER bigint generated by default as identity, ID_USER bigint not null, STATUS varchar(255), primary key (ID_ORDER))
-Hibernate: create table ORDERS_MEDICINE (COST float(53), QUANTITY integer, ID_MEDICINE bigint not null, ID_ORDER bigint not null, TOTAL varchar(255), primary key (ID_MEDICINE, ID_ORDER))
-Hibernate: create table POLICY (ENABLED char(1), EXPIRATION_DATE date, PERCENTAGE float(53), ID_POLICY bigint generated by default as identity, primary key (ID_POLICY))
-Hibernate: create table PRESCRIPTION (APPROVED char(1), ID_HOSPITAL bigint, ID_PRESCRIPTION bigint generated by default as identity, ID_USER bigint, primary key (ID_PRESCRIPTION))
-Hibernate: create table PRESCRIPTION_MEDICINE (DOSIS float(53), DURACION float(53), FRECUENCIA float(53), ID_MEDICINE bigint not null, ID_PRESCRIPTION bigint not null, primary key (ID_MEDICINE, ID_PRESCRIPTION))
-Hibernate: create table SERVICE_APPROVALS (COVERED_AMOUNT float(53) not null, PATIENT_AMOUNT float(53) not null, PRESCRIPTION_TOTAL float(53), SERVICE_COST float(53) not null, APPROVAL_DATE timestamp(6) not null, COMPLETED_DATE timestamp(6), CREATED_AT timestamp(6) not null, ID_APPROVAL bigint generated by default as identity, ID_HOSPITAL bigint not null, ID_USER bigint not null, APPROVAL_CODE varchar(20) not null unique, STATUS varchar(20) not null, PRESCRIPTION_ID varchar(255), REJECTION_REASON varchar(255), SERVICE_DESCRIPTION varchar(255), SERVICE_ID varchar(255) not null, SERVICE_NAME varchar(255) not null, primary key (ID_APPROVAL))
-Hibernate: create table SUBCATEGORY (ID_SUBCATEGORY bigint generated by default as identity, NAME varchar(255), primary key (ID_SUBCATEGORY))
-Hibernate: create table SYSTEM_CONFIG (ID_CONFIG bigint generated by default as identity, LAST_UPDATED timestamp(6) not null, CONFIG_DESCRIPTION varchar(255), CONFIG_KEY varchar(255) not null unique, CONFIG_VALUE varchar(255) not null, primary key (ID_CONFIG))
-Hibernate: alter table if exists "USERS" add constraint FKosmwma0e0mxc7ujj1btrstshs foreign key (ID_POLICY) references POLICY
-Hibernate: alter table if exists BILL add constraint FK2buheyvgtofkrjy3c3u8vv8o2 foreign key (ID_PRESCRIPTION) references PRESCRIPTION
-Hibernate: alter table if exists BILL_MEDICINE add constraint FK6642e29y1bby03txli0rc7xih foreign key (ID_BILL) references BILL
-Hibernate: alter table if exists BILL_MEDICINE add constraint FKc2hcq4u2fyuewollxubnrneu1 foreign key (ID_MEDICINE) references MEDICINE
-Hibernate: alter table if exists COMMENTS add constraint FK12oanlx5vj8c4d691anbdei4v foreign key (ID_MEDICINE) references MEDICINE
-Hibernate: alter table if exists COMMENTS add constraint FKa6f7jtjmxha1tm4dsfi002sam foreign key (ID_PREV_COMMENT) references COMMENTS
-Hibernate: alter table if exists COMMENTS add constraint FKol78p6u56ypgcqlgp80kdb7fe foreign key (ID_USER) references "USERS"
-Hibernate: alter table if exists MEDICINE_CATSUBCAT add constraint FK2lent1go6v2h1p41bjgibug2x foreign key (ID_CATEGORY) references CATEGORY
-Hibernate: alter table if exists MEDICINE_CATSUBCAT add constraint FKko0rjixyqvjch558ap78jmogh foreign key (ID_MEDICINE) references MEDICINE
-Hibernate: alter table if exists MEDICINE_CATSUBCAT add constraint FKmbg3gr5r8pe970ox37y4643tq foreign key (ID_SUBCATEGORY) references SUBCATEGORY
-Hibernate: alter table if exists ORDERS add constraint FKl7ehj9iqbhdn0q3mdjvhnodeb foreign key (ID_USER) references "USERS"
-Hibernate: alter table if exists ORDERS_MEDICINE add constraint FKqr1msgfohjihtb392e3hyc15j foreign key (ID_MEDICINE) references MEDICINE
-Hibernate: alter table if exists ORDERS_MEDICINE add constraint FKcu8anb3o6nsemuxg6hw9o1ob8 foreign key (ID_ORDER) references ORDERS
-Hibernate: alter table if exists PRESCRIPTION add constraint FKi35cr7b96cqca4p8i7pgmp7vm foreign key (ID_HOSPITAL) references HOSPITAL
-Hibernate: alter table if exists PRESCRIPTION add constraint FKf76y0jraakssjr6nepo6x0luw foreign key (ID_USER) references "USERS"
-Hibernate: alter table if exists PRESCRIPTION_MEDICINE add constraint FKs6giexg7drtvds881hdd2y1w7 foreign key (ID_MEDICINE) references MEDICINE
-Hibernate: alter table if exists PRESCRIPTION_MEDICINE add constraint FKhmaydlkv5iw1dmurq9f8v61av foreign key (ID_PRESCRIPTION) references PRESCRIPTION
-Hibernate: alter table if exists SERVICE_APPROVALS add constraint FKm5pcw32tnakn2fp74066euebl foreign key (ID_HOSPITAL) references HOSPITAL
-Hibernate: alter table if exists SERVICE_APPROVALS add constraint FKmbvmcs9xwr44g18o45ajie6cc foreign key (ID_USER) references "USERS"
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - create table ORDERS (ID_ORDER integer, ID_USER bigint not null, STATUS varchar(255), primary key (ID_ORDER))
+Hibernate: create table ORDERS (ID_ORDER integer, ID_USER bigint not null, STATUS varchar(255), primary key (ID_ORDER))
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - create table ORDERS_MEDICINE (COST float, QUANTITY integer, ID_MEDICINE bigint not null, ID_ORDER bigint not null, TOTAL varchar(255), primary key (ID_MEDICINE, ID_ORDER))
+Hibernate: create table ORDERS_MEDICINE (COST float, QUANTITY integer, ID_MEDICINE bigint not null, ID_ORDER bigint not null, TOTAL varchar(255), primary key (ID_MEDICINE, ID_ORDER))
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - create table POLICY (ENABLED char(1), EXPIRATION_DATE date, PERCENTAGE float, ID_POLICY integer, primary key (ID_POLICY))
+Hibernate: create table POLICY (ENABLED char(1), EXPIRATION_DATE date, PERCENTAGE float, ID_POLICY integer, primary key (ID_POLICY))
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - create table PRESCRIPTION (APPROVED char(1), ID_HOSPITAL bigint, ID_PRESCRIPTION integer, ID_USER bigint, primary key (ID_PRESCRIPTION))
+Hibernate: create table PRESCRIPTION (APPROVED char(1), ID_HOSPITAL bigint, ID_PRESCRIPTION integer, ID_USER bigint, primary key (ID_PRESCRIPTION))
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - create table PRESCRIPTION_MEDICINE (DOSIS float, DURACION float, FRECUENCIA float, ID_MEDICINE bigint not null, ID_PRESCRIPTION bigint not null, primary key (ID_MEDICINE, ID_PRESCRIPTION))
+Hibernate: create table PRESCRIPTION_MEDICINE (DOSIS float, DURACION float, FRECUENCIA float, ID_MEDICINE bigint not null, ID_PRESCRIPTION bigint not null, primary key (ID_MEDICINE, ID_PRESCRIPTION))
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - create table SERVICE_APPROVALS (COVERED_AMOUNT float not null, PATIENT_AMOUNT float not null, PRESCRIPTION_TOTAL float, SERVICE_COST float not null, APPROVAL_DATE timestamp not null, COMPLETED_DATE timestamp, CREATED_AT timestamp not null, ID_APPROVAL integer, ID_HOSPITAL bigint not null, ID_USER bigint not null, APPROVAL_CODE varchar(20) not null unique, STATUS varchar(20) not null, PRESCRIPTION_ID varchar(255), REJECTION_REASON varchar(255), SERVICE_DESCRIPTION varchar(255), SERVICE_ID varchar(255) not null, SERVICE_NAME varchar(255) not null, primary key (ID_APPROVAL))
+Hibernate: create table SERVICE_APPROVALS (COVERED_AMOUNT float not null, PATIENT_AMOUNT float not null, PRESCRIPTION_TOTAL float, SERVICE_COST float not null, APPROVAL_DATE timestamp not null, COMPLETED_DATE timestamp, CREATED_AT timestamp not null, ID_APPROVAL integer, ID_HOSPITAL bigint not null, ID_USER bigint not null, APPROVAL_CODE varchar(20) not null unique, STATUS varchar(20) not null, PRESCRIPTION_ID varchar(255), REJECTION_REASON varchar(255), SERVICE_DESCRIPTION varchar(255), SERVICE_ID varchar(255) not null, SERVICE_NAME varchar(255) not null, primary key (ID_APPROVAL))
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - create table SUBCATEGORY (ID_SUBCATEGORY integer, NAME varchar(255), primary key (ID_SUBCATEGORY))
+Hibernate: create table SUBCATEGORY (ID_SUBCATEGORY integer, NAME varchar(255), primary key (ID_SUBCATEGORY))
+2025-09-03 22:57:56 [main] DEBUG org.hibernate.SQL - create table SYSTEM_CONFIG (ID_CONFIG integer, LAST_UPDATED timestamp not null, CONFIG_DESCRIPTION varchar(255), CONFIG_KEY varchar(255) not null unique, CONFIG_VALUE varchar(255) not null, primary key (ID_CONFIG))
+Hibernate: create table SYSTEM_CONFIG (ID_CONFIG integer, LAST_UPDATED timestamp not null, CONFIG_DESCRIPTION varchar(255), CONFIG_KEY varchar(255) not null unique, CONFIG_VALUE varchar(255) not null, primary key (ID_CONFIG))
 ]]></system-out>
-    <system-err><![CDATA[Aug 24, 2025 10:50:43 PM org.hibernate.Version logVersion
-INFO: HHH000412: Hibernate ORM core version 6.6.6.Final
-Aug 24, 2025 10:50:44 PM org.hibernate.cache.internal.RegionFactoryInitiator initiateService
-INFO: HHH000026: Second-level cache disabled
-Aug 24, 2025 10:50:44 PM org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl configure
-WARN: HHH10001002: Using built-in connection pool (not intended for production use)
-Aug 24, 2025 10:50:44 PM org.hibernate.engine.jdbc.dialect.internal.DialectFactoryImpl constructDialect
-WARN: HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-Aug 24, 2025 10:50:44 PM org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator initiateService
-INFO: HHH10001005: Database info:
-	Database JDBC URL [jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1]
-	Database driver: org.h2.Driver
-	Database version: 2.1.214
-	Autocommit mode: false
-	Isolation level: undefined/unknown
-	Minimum pool size: 1
-	Maximum pool size: 20
-Aug 24, 2025 10:50:45 PM org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator initiateService
-INFO: HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-Aug 24, 2025 10:50:45 PM org.hibernate.resource.transaction.backend.jdbc.internal.DdlTransactionIsolatorNonJtaImpl getIsolatedConnection
-INFO: HHH10001501: Connection obtained from JdbcConnectionAccess [org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess@6f42c61f] for (non-JTA) DDL execution was not in auto-commit mode; the Connection 'local transaction' will be committed and the Connection will be set into auto-commit mode.
-Aug 24, 2025 10:50:45 PM org.hibernate.resource.transaction.backend.jdbc.internal.DdlTransactionIsolatorNonJtaImpl getIsolatedConnection
-INFO: HHH10001501: Connection obtained from JdbcConnectionAccess [org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess@37826951] for (non-JTA) DDL execution was not in auto-commit mode; the Connection 'local transaction' will be committed and the Connection will be set into auto-commit mode.
-]]></system-err>
   </testcase>
-  <testcase name="testBuildSessionFactory_PrintsSchemaMessage" classname="com.sources.app.util.HibernateUtilTest" time="0.436">
-    <system-err><![CDATA[Aug 24, 2025 10:50:45 PM org.hibernate.cache.internal.RegionFactoryInitiator initiateService
-INFO: HHH000026: Second-level cache disabled
-Aug 24, 2025 10:50:45 PM org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl configure
-WARN: HHH10001002: Using built-in connection pool (not intended for production use)
-Aug 24, 2025 10:50:45 PM org.hibernate.engine.jdbc.dialect.internal.DialectFactoryImpl constructDialect
-WARN: HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-Aug 24, 2025 10:50:45 PM org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator initiateService
-INFO: HHH10001005: Database info:
-	Database JDBC URL [jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1]
-	Database driver: org.h2.Driver
-	Database version: 2.1.214
-	Autocommit mode: false
-	Isolation level: undefined/unknown
-	Minimum pool size: 1
-	Maximum pool size: 20
-Aug 24, 2025 10:50:46 PM org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator initiateService
-INFO: HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-Aug 24, 2025 10:50:46 PM org.hibernate.resource.transaction.backend.jdbc.internal.DdlTransactionIsolatorNonJtaImpl getIsolatedConnection
-INFO: HHH10001501: Connection obtained from JdbcConnectionAccess [org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess@2eace5bc] for (non-JTA) DDL execution was not in auto-commit mode; the Connection 'local transaction' will be committed and the Connection will be set into auto-commit mode.
-Aug 24, 2025 10:50:46 PM org.hibernate.resource.transaction.backend.jdbc.internal.DdlTransactionIsolatorNonJtaImpl getIsolatedConnection
-INFO: HHH10001501: Connection obtained from JdbcConnectionAccess [org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess@70441076] for (non-JTA) DDL execution was not in auto-commit mode; the Connection 'local transaction' will be committed and the Connection will be set into auto-commit mode.
-]]></system-err>
-  </testcase>
+  <testcase name="testBuildSessionFactory_PrintsSchemaMessage" classname="com.sources.app.util.HibernateUtilTest" time="0.713"/>
   <testcase name="testGetSessionFactoryNotNull" classname="com.sources.app.util.HibernateUtilTest" time="0.001"/>
 </testsuite>

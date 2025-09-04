@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BillDAO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backv5</a> &gt; <a href="index.source.html" class="el_package">com.sources.app.dao</a> &gt; <span class="el_source">BillDAO.java</span></div><h1>BillDAO.java</h1><pre class="source lang-java linenums">package com.sources.app.dao;
+
+import com.sources.app.entities.Bill;
+import com.sources.app.entities.Prescription;
+import com.sources.app.util.HibernateUtil;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.hibernate.query.Query;
+
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Data Access Object (DAO) para gestionar entidades {@link Bill}.
+ * Esta clase proporciona métodos para realizar operaciones CRUD en Facturas (Bills),
+ * que representan facturas asociadas con {@link Prescription}s. Utiliza Hibernate para interacciones con la base de datos.
+ */
+<span class="fc" id="L19">public class BillDAO {</span>
+
+<span class="fc" id="L21">    private static final Logger LOGGER = Logger.getLogger(BillDAO.class.getName());</span>
+
+    /**
+     * Crea un nuevo registro de Factura (Bill) en la base de datos, vinculándolo a una Receta (Prescription).
+     * Inicializa la factura con detalles financieros básicos.
+     *
+     * @param prescription La {@link Prescription} asociada con esta factura.
+     * @param taxes        El monto de impuestos aplicado a la factura.
+     * @param subtotal     El monto del subtotal antes de impuestos.
+     * @param copay        El monto del copago requerido.
+     * @param total        El monto total de la factura (almacenado como String).
+     * @return La entidad {@link Bill} recién creada, o null si ocurrió un error.
+     */
+    public Bill create(Prescription prescription, Double taxes, Double subtotal, Double copay, String total) {
+<span class="fc" id="L35">        Transaction tx = null;</span>
+<span class="fc" id="L36">        Bill bill = null;</span>
+<span class="fc" id="L37">        try (Session session = HibernateUtil.getSessionFactory().openSession()) {</span>
+<span class="fc" id="L38">            tx = session.beginTransaction();</span>
+
+<span class="fc" id="L40">            bill = new Bill();</span>
+<span class="fc" id="L41">            bill.setPrescription(prescription);</span>
+<span class="fc" id="L42">            bill.setTaxes(taxes);</span>
+<span class="fc" id="L43">            bill.setSubtotal(subtotal);</span>
+<span class="fc" id="L44">            bill.setCopay(copay);</span>
+<span class="fc" id="L45">            bill.setTotal(total);</span>
+
+<span class="fc" id="L47">            session.persist(bill);</span>
+<span class="fc" id="L48">            tx.commit();</span>
+<span class="nc" id="L49">        } catch (Exception e) {</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">            if (tx != null) tx.rollback();</span>
+<span class="nc" id="L51">            LOGGER.log(Level.SEVERE, &quot;Failed to create Bill&quot;, e);</span>
+<span class="fc" id="L52">        }</span>
+<span class="fc" id="L53">        return bill;</span>
+    }
+
+    /**
+     * Recupera todos los registros de Factura (Bill) de la base de datos.
+     *
+     * @return Una lista de todas las entidades {@link Bill}, o null si ocurrió un error.
+     */
+    public List&lt;Bill&gt; getAll() {
+<span class="fc" id="L62">        try (Session session = HibernateUtil.getSessionFactory().openSession()) {</span>
+<span class="fc" id="L63">            Query&lt;Bill&gt; query = session.createQuery(&quot;FROM Bill&quot;, Bill.class);</span>
+<span class="fc" id="L64">            return query.list();</span>
+<span class="nc" id="L65">        } catch (Exception e) {</span>
+<span class="nc" id="L66">            LOGGER.log(Level.SEVERE, &quot;Failed to fetch all Bills&quot;, e);</span>
+<span class="nc" id="L67">            return null;</span>
+        }
+    }
+
+    /**
+     * Recupera un registro de Factura (Bill) específico por su identificador único.
+     *
+     * @param id El ID de la Factura (Bill) a recuperar.
+     * @return La entidad {@link Bill} correspondiente al ID dado, o null si no se encuentra o ocurrió un error.
+     */
+    public Bill getById(Long id) {
+<span class="fc" id="L78">        try (Session session = HibernateUtil.getSessionFactory().openSession()) {</span>
+<span class="fc" id="L79">            return session.get(Bill.class, id);</span>
+<span class="nc" id="L80">        } catch (Exception e) {</span>
+<span class="nc" id="L81">            LOGGER.log(Level.SEVERE, &quot;Failed to fetch Bill by id: &quot; + id, e);</span>
+<span class="nc" id="L82">            return null;</span>
+        }
+    }
+
+    /**
+     * Recupera la Factura (Bill) asociada con un ID de Receta (Prescription) específico.
+     * Útil para encontrar la factura generada para una receta en particular.
+     *
+     * @param prescriptionId El ID de la {@link Prescription}.
+     * @return La entidad {@link Bill} asociada con el ID de receta dado, o null si no se encuentra o ocurrió un error.
+     */
+    public Bill getByPrescriptionId(Long prescriptionId) {
+<span class="fc" id="L94">        try (Session session = HibernateUtil.getSessionFactory().openSession()) {</span>
+<span class="fc" id="L95">            Query&lt;Bill&gt; query = session.createQuery(</span>
+                &quot;FROM Bill b WHERE b.prescription.id = :prescriptionId&quot;, 
+                Bill.class
+            );
+<span class="fc" id="L99">            query.setParameter(&quot;prescriptionId&quot;, prescriptionId);</span>
+<span class="fc" id="L100">            return query.uniqueResult();</span>
+<span class="nc" id="L101">        } catch (Exception e) {</span>
+<span class="nc" id="L102">            LOGGER.log(Level.SEVERE, &quot;Failed to fetch Bill by prescriptionId: &quot; + prescriptionId, e);</span>
+<span class="nc" id="L103">            return null;</span>
+        }
+    }
+
+    /**
+     * Actualiza un registro de Factura (Bill) existente en la base de datos.
+     *
+     * @param bill La entidad {@link Bill} con información actualizada. El ID debe coincidir con un registro existente.
+     * @return La entidad {@link Bill} actualizada, o null si la actualización falló o ocurrió un error.
+     */
+    public Bill update(Bill bill) {
+<span class="fc" id="L114">        Transaction tx = null;</span>
+<span class="fc" id="L115">        try (Session session = HibernateUtil.getSessionFactory().openSession()) {</span>
+<span class="fc" id="L116">            tx = session.beginTransaction();</span>
+<span class="fc" id="L117">            session.merge(bill);</span>
+<span class="fc" id="L118">            tx.commit();</span>
+<span class="fc" id="L119">            return bill;</span>
+<span class="nc" id="L120">        } catch (Exception e) {</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">            if (tx != null) tx.rollback();</span>
+<span class="nc" id="L122">            LOGGER.log(Level.SEVERE, &quot;Failed to update Bill&quot;, e);</span>
+<span class="nc" id="L123">            return null;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>App.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backv5</a> &gt; <a href="index.source.html" class="el_package">com.sources.app</a> &gt; <span class="el_source">App.java</span></div><h1>App.java</h1><pre class="source lang-java linenums">package com.sources.app;
+
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
+
+import org.hibernate.Session;
+
+import com.sources.app.dao.BillDAO;
+import com.sources.app.dao.BillMedicineDAO;
+import com.sources.app.dao.CategoryDAO;
+import com.sources.app.dao.CommentsDAO;
+import com.sources.app.dao.ExternalMedicineDAO;
+import com.sources.app.dao.HospitalDAO;
+import com.sources.app.dao.MedicineDAO;
+import com.sources.app.dao.OrderMedicineDAO;
+import com.sources.app.dao.OrdersDAO;
+import com.sources.app.dao.PrescriptionDAO;
+import com.sources.app.dao.PrescriptionMedicineDAO;
+import com.sources.app.dao.SubcategoryDAO;
+import com.sources.app.dao.UserDAO;
+import com.sources.app.handlers.BillHandler;
+import com.sources.app.handlers.BillMedicineHandler;
+import com.sources.app.handlers.CategoryHandler;
+import com.sources.app.handlers.CommentsHandler;
+import com.sources.app.handlers.ExternalMedicineHandler;
+import com.sources.app.handlers.HospitalHandler;
+import com.sources.app.handlers.LoginHandler;
+import com.sources.app.handlers.MedicineHandler;
+import com.sources.app.handlers.OrderMedicineHandler;
+import com.sources.app.handlers.OrdersHandler;
+import com.sources.app.handlers.PrescriptionHandler;
+import com.sources.app.handlers.PrescriptionMedicineHandler;
+import com.sources.app.handlers.SearchMedicineHandler;
+import com.sources.app.handlers.SubcategoryHandler;
+import com.sources.app.handlers.UserHandler;
+import com.sources.app.handlers.VerificationHandler;
+import com.sources.app.util.HibernateUtil;
+import com.sun.net.httpserver.HttpServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Clase principal de la aplicación que inicializa y configura el servidor HTTP
+ * para manejar las solicitudes de la API REST. Establece las rutas, inicializa
+ * los Data Access Objects (DAO) y prueba la conexión con la base de datos.
+ */
+<span class="nc" id="L51">public class App {</span>
+
+<span class="fc" id="L53">    private static final Logger logger = LoggerFactory.getLogger(App.class);</span>
+    /**
+     * DAO para operaciones relacionadas con usuarios.
+     */
+<span class="fc" id="L57">    private static final UserDAO userDAO = new UserDAO();</span>
+    /**
+     * DAO para operaciones relacionadas con facturas.
+     */
+<span class="fc" id="L61">    private static final BillDAO billDAO = new BillDAO();</span>
+    /**
+     * DAO para la relación entre facturas y medicamentos.
+     */
+<span class="fc" id="L65">    private static final BillMedicineDAO billMedicineDAO = new BillMedicineDAO();</span>
+    /**
+     * DAO para operaciones relacionadas con categorías.
+     */
+<span class="fc" id="L69">    private static final CategoryDAO categoryDAO = new CategoryDAO();</span>
+    /**
+     * DAO para operaciones relacionadas con comentarios.
+     */
+<span class="fc" id="L73">    private static final CommentsDAO commentsDAO = new CommentsDAO();</span>
+    /**
+     * DAO para operaciones relacionadas con hospitales.
+     */
+<span class="fc" id="L77">    private static final HospitalDAO hospitalDAO = new HospitalDAO();</span>
+    /**
+     * DAO para operaciones relacionadas con medicamentos.
+     */
+<span class="fc" id="L81">    private static final MedicineDAO medicineDAO = new MedicineDAO();</span>
+    /**
+     * DAO para operaciones relacionadas con pedidos.
+     */
+<span class="fc" id="L85">    private static final OrdersDAO ordersDAO = new OrdersDAO();</span>
+    /**
+     * DAO para la relación entre pedidos y medicamentos.
+     */
+<span class="fc" id="L89">    private static final OrderMedicineDAO orderMedicineDAO = new OrderMedicineDAO();</span>
+    /**
+     * DAO para operaciones relacionadas con prescripciones.
+     */
+<span class="fc" id="L93">    private static final PrescriptionDAO prescriptionDAO = new PrescriptionDAO();</span>
+    /**
+     * DAO para la relación entre prescripciones y medicamentos.
+     */
+<span class="fc" id="L97">    private static final PrescriptionMedicineDAO prescriptionMedicineDAO = new PrescriptionMedicineDAO();</span>
+    /**
+     * DAO para operaciones relacionadas con subcategorías.
+     */
+<span class="fc" id="L101">    private static final SubcategoryDAO subcategoryDAO = new SubcategoryDAO();</span>
+    /**
+     * DAO para operaciones relacionadas con medicamentos externos.
+     */
+<span class="fc" id="L105">    private static final ExternalMedicineDAO externalMedicineDAO = new ExternalMedicineDAO();</span>
+
+    /**
+     * Obtiene la dirección IP externa (no loopback, no link-local) de la
+     * máquina local. Itera sobre las interfaces de red y sus direcciones para
+     * encontrar una IPv4 adecuada.
+     *
+     * @return La dirección IP externa local como String, o &quot;127.0.0.1&quot; si no se
+     * encuentra ninguna o ocurre un error.
+     */
+    private static String getLocalExternalIp() {
+        try {
+<span class="fc" id="L117">            Enumeration&lt;NetworkInterface&gt; interfaces = NetworkInterface.getNetworkInterfaces();</span>
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">            while (interfaces.hasMoreElements()) {</span>
+<span class="fc" id="L119">                NetworkInterface iface = interfaces.nextElement();</span>
+                // Ignora interfaces inactivas o de loopback
+<span class="pc bpc" id="L121" title="2 of 4 branches missed.">                if (!iface.isUp() || iface.isLoopback()) {</span>
+<span class="nc" id="L122">                    continue;</span>
+                }
+<span class="fc" id="L124">                Enumeration&lt;InetAddress&gt; addresses = iface.getInetAddresses();</span>
+<span class="fc bfc" id="L125" title="All 2 branches covered.">                while (addresses.hasMoreElements()) {</span>
+<span class="fc" id="L126">                    InetAddress addr = addresses.nextElement();</span>
+                    // Solo direcciones IPv4 que no sean loopback o de enlace local
+<span class="pc bpc" id="L128" title="2 of 6 branches missed.">                    if (addr instanceof Inet4Address &amp;&amp; !addr.isLoopbackAddress() &amp;&amp; !addr.isLinkLocalAddress()) {</span>
+<span class="fc" id="L129">                        return addr.getHostAddress();</span>
+                    }
+<span class="fc" id="L131">                }</span>
+<span class="fc" id="L132">            }</span>
+<span class="nc" id="L133">        } catch (SocketException e) {</span>
+<span class="nc" id="L134">            logger.error(&quot;Error obteniendo IP externa local&quot;, e);</span>
+<span class="nc" id="L135">        }</span>
+<span class="nc" id="L136">        return &quot;127.0.0.1&quot;;</span>
+    }
+
+    /**
+     * Punto de entrada principal de la aplicación. Realiza una prueba de
+     * conexión a la base de datos, configura un servidor HTTP en el puerto
+     * 8081, mapea las rutas de la API a sus respectivos Handlers (inyectando
+     * las dependencias DAO necesarias) y arranca el servidor.
+     *
+     * @param args Argumentos de línea de comandos (no utilizados).
+     * @throws Exception Si ocurre un error durante la inicialización del
+     * servidor.
+     */
+    public static void main(String[] args) throws Exception {
+        // Prueba de conexión a la base de datos
+<span class="fc" id="L151">        try (Session session = HibernateUtil.getSessionFactory().openSession()) {</span>
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">            if (session.isConnected()) {</span>
+<span class="fc" id="L153">                logger.info(&quot;Conexión exitosa a la base de datos!&quot;);</span>
+            } else {
+<span class="nc" id="L155">                logger.error(&quot;No se pudo establecer conexión a la base de datos.&quot;);</span>
+            }
+<span class="nc" id="L157">        } catch (Exception e) {</span>
+<span class="nc" id="L158">            logger.error(&quot;Error al conectar con la base de datos (continuando sin DB)&quot;, e);</span>
+<span class="fc" id="L159">        }</span>
+
+        // Host/puerto desde variables de entorno con valores por defecto
+<span class="fc" id="L162">        String host = System.getenv(&quot;SERVER_HOST&quot;);</span>
+<span class="pc bpc" id="L163" title="3 of 4 branches missed.">        if (host == null || host.isEmpty()) {</span>
+<span class="fc" id="L164">            host = &quot;0.0.0.0&quot;;</span>
+        }
+
+<span class="fc" id="L167">        String portEnv = System.getenv(&quot;SERVER_PORT&quot;);</span>
+<span class="pc bpc" id="L168" title="3 of 4 branches missed.">        if (portEnv == null || portEnv.isEmpty()) {</span>
+<span class="fc" id="L169">            portEnv = System.getenv(&quot;PORT&quot;);</span>
+        }
+
+<span class="fc" id="L172">        int port = 8081; // Puerto predeterminado</span>
+        try {
+<span class="pc bpc" id="L174" title="3 of 4 branches missed.">            if (portEnv != null &amp;&amp; !portEnv.isEmpty()) {</span>
+<span class="nc" id="L175">                port = Integer.parseInt(portEnv);</span>
+            }
+<span class="nc" id="L177">        } catch (NumberFormatException e) {</span>
+<span class="nc" id="L178">            logger.warn(&quot;Formato de puerto inválido. Se usará el puerto predeterminado 8081.&quot;);</span>
+<span class="fc" id="L179">        }</span>
+
+<span class="fc" id="L181">        HttpServer server = HttpServer.create(new InetSocketAddress(host, port), 0);</span>
+
+        // Asignamos cada contexto con su respectivo Handler usando el prefijo &quot;/api2&quot;
+<span class="fc" id="L184">        server.createContext(&quot;/api2/login&quot;, new LoginHandler(userDAO));</span>
+<span class="fc" id="L185">        server.createContext(&quot;/api2/users&quot;, new UserHandler(userDAO));</span>
+<span class="fc" id="L186">        server.createContext(&quot;/api2/bills&quot;, new BillHandler(billDAO));</span>
+<span class="fc" id="L187">        server.createContext(&quot;/api2/bill_medicines&quot;, new BillMedicineHandler(billMedicineDAO));</span>
+<span class="fc" id="L188">        server.createContext(&quot;/api2/categories&quot;, new CategoryHandler(categoryDAO));</span>
+<span class="fc" id="L189">        server.createContext(&quot;/api2/comments&quot;, new CommentsHandler(commentsDAO));</span>
+<span class="fc" id="L190">        server.createContext(&quot;/api2/hospitals&quot;, new HospitalHandler(hospitalDAO));</span>
+<span class="fc" id="L191">        server.createContext(&quot;/api2/medicines&quot;, new MedicineHandler(medicineDAO));</span>
+<span class="fc" id="L192">        server.createContext(&quot;/api2/medicines/search&quot;, new SearchMedicineHandler(medicineDAO));</span>
+<span class="fc" id="L193">        server.createContext(&quot;/api2/order_medicines&quot;, new OrderMedicineHandler(orderMedicineDAO));</span>
+<span class="fc" id="L194">        server.createContext(&quot;/api2/orders&quot;, new OrdersHandler(ordersDAO));</span>
+<span class="fc" id="L195">        server.createContext(&quot;/api2/prescription_medicines&quot;, new PrescriptionMedicineHandler(prescriptionMedicineDAO));</span>
+<span class="fc" id="L196">        server.createContext(&quot;/api2/prescriptions&quot;, new PrescriptionHandler(prescriptionDAO));</span>
+<span class="fc" id="L197">        server.createContext(&quot;/api2/subcategories&quot;, new SubcategoryHandler(subcategoryDAO));</span>
+<span class="fc" id="L198">        server.createContext(&quot;/api2/external_medicines&quot;, new ExternalMedicineHandler(externalMedicineDAO));</span>
+<span class="fc" id="L199">        server.createContext(&quot;/api2/verification&quot;, new VerificationHandler());</span>
+<span class="fc" id="L200">        server.setExecutor(null); // Usa el executor por defecto</span>
+<span class="fc" id="L201">        server.start();</span>
+<span class="fc" id="L202">        logger.info(&quot;Servidor iniciado en http://{}:{}/api2&quot;, host, port);</span>
+<span class="fc" id="L203">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

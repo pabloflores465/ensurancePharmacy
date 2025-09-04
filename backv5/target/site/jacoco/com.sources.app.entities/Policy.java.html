@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Policy.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backv5</a> &gt; <a href="index.source.html" class="el_package">com.sources.app.entities</a> &gt; <span class="el_source">Policy.java</span></div><h1>Policy.java</h1><pre class="source lang-java linenums">package com.sources.app.entities;
+
+import jakarta.persistence.*;
+import java.util.Date;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+/**
+ * Entidad que representa una póliza de seguro o una política de cobertura.
+ * Mapea a la tabla &quot;POLICY&quot;.
+ */
+@Entity
+@Table(name = &quot;POLICY&quot;)
+public class Policy {
+
+    /** Identificador único de la póliza. Generado automáticamente. */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = &quot;ID_POLICY&quot;)
+    private Long idPolicy;
+
+    /** Porcentaje de cobertura ofrecido por la póliza (e.g., 0.8 para 80%). */
+    @Column(name = &quot;PERCENTAGE&quot;)
+    private Double percentage;
+
+    /** Indica si la póliza está activa/habilitada ('1' para habilitada, '0' para deshabilitada). */
+    @Column(name = &quot;ENABLED&quot;)
+    private Character enabled;
+
+    /** Fecha de expiración de la póliza (opcional). */
+    @Temporal(TemporalType.DATE)
+    @Column(name = &quot;EXPIRATION_DATE&quot;)
+    private Date expirationDate;
+
+    /**
+     * Constructor por defecto requerido por JPA.
+     */
+<span class="fc" id="L37">    public Policy() {</span>
+<span class="fc" id="L38">    }</span>
+
+    /**
+     * Constructor para crear una póliza con porcentaje y estado de habilitación.
+     *
+     * @param percentage El porcentaje de cobertura.
+     * @param enabled El estado de habilitación ('1' o '0').
+     */
+<span class="nc" id="L46">    public Policy(Double percentage, Character enabled) {</span>
+<span class="nc" id="L47">        this.percentage = percentage;</span>
+<span class="nc" id="L48">        this.enabled = enabled;</span>
+<span class="nc" id="L49">    }</span>
+
+    // Getters y setters
+    public Long getIdPolicy() {
+<span class="fc" id="L53">        return idPolicy;</span>
+    }
+
+    public void setIdPolicy(Long idPolicy) {
+<span class="fc" id="L57">        this.idPolicy = idPolicy;</span>
+<span class="fc" id="L58">    }</span>
+
+    public Double getPercentage() {
+<span class="fc" id="L61">        return percentage;</span>
+    }
+
+    public void setPercentage(Double percentage) {
+<span class="fc" id="L65">        this.percentage = percentage;</span>
+<span class="fc" id="L66">    }</span>
+
+    public Character getEnabled() {
+<span class="fc" id="L69">        return enabled;</span>
+    }
+
+    public void setEnabled(Character enabled) {
+<span class="fc" id="L73">        this.enabled = enabled;</span>
+<span class="fc" id="L74">    }</span>
+
+    public Date getExpirationDate() {
+<span class="fc" id="L77">        return expirationDate;</span>
+    }
+
+    public void setExpirationDate(Date expirationDate) {
+<span class="fc" id="L81">        this.expirationDate = expirationDate;</span>
+<span class="fc" id="L82">    }</span>
+
+    @JsonIgnore
+    public Double getCoveragePercentage() {
+<span class="fc" id="L86">        return percentage;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

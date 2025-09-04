@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CommentsDAO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backv5</a> &gt; <a href="index.source.html" class="el_package">com.sources.app.dao</a> &gt; <span class="el_source">CommentsDAO.java</span></div><h1>CommentsDAO.java</h1><pre class="source lang-java linenums">package com.sources.app.dao;
+
+import com.sources.app.entities.Comments;
+import com.sources.app.entities.User;
+import com.sources.app.entities.Medicine;
+import com.sources.app.util.HibernateUtil;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.hibernate.query.Query;
+
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Data Access Object (DAO) para gestionar entidades {@link Comments}.
+ * Esta clase proporciona métodos para realizar operaciones CRUD (Crear, Leer, Actualizar)
+ * en registros de Comentarios, que representan comentarios de usuarios, potencialmente vinculados a otros comentarios
+ * y asociados con un {@link Medicine}. Utiliza Hibernate para interacciones con la base de datos.
+ */
+<span class="fc" id="L21">public class CommentsDAO {</span>
+<span class="fc" id="L22">    private static final Logger LOGGER = Logger.getLogger(CommentsDAO.class.getName());</span>
+
+    /**
+     * Crea un nuevo registro de Comentario en la base de datos.
+     *
+     * @param user        El {@link User} que publicó el comentario.
+     * @param prevComment El {@link Comments} precedente al que este comentario responde (puede ser null).
+     * @param commentText El contenido textual del comentario.
+     * @param medicine    El {@link Medicine} con el que está asociado el comentario.
+     * @return La entidad {@link Comments} recién creada, o null si ocurrió un error.
+     */
+    public Comments create(User user, Comments prevComment, String commentText, Medicine medicine) {
+<span class="fc" id="L34">        Transaction tx = null;</span>
+<span class="fc" id="L35">        Comments comments = null;</span>
+<span class="fc" id="L36">        try (Session session = HibernateUtil.getSessionFactory().openSession()) {</span>
+<span class="fc" id="L37">            tx = session.beginTransaction();</span>
+
+<span class="fc" id="L39">            comments = new Comments();</span>
+<span class="fc" id="L40">            comments.setUser(user);</span>
+<span class="fc" id="L41">            comments.setPrevComment(prevComment);</span>
+<span class="fc" id="L42">            comments.setCommentText(commentText);</span>
+<span class="fc" id="L43">            comments.setMedicine(medicine);</span>
+
+<span class="fc" id="L45">            session.persist(comments);</span>
+<span class="fc" id="L46">            tx.commit();</span>
+<span class="nc" id="L47">        } catch (Exception e) {</span>
+<span class="nc bnc" id="L48" title="All 2 branches missed.">            if (tx != null) tx.rollback();</span>
+<span class="nc bnc" id="L49" title="All 4 branches missed.">            LOGGER.log(Level.SEVERE, &quot;Error creating Comments (user present: &quot; + (user != null) + </span>
+                    &quot;, medicine present: &quot; + (medicine != null) + &quot;)&quot;, e);
+<span class="fc" id="L51">        }</span>
+<span class="fc" id="L52">        return comments;</span>
+    }
+
+    /**
+     * Recupera todos los registros de Comentario de la base de datos.
+     *
+     * @return Una lista de todas las entidades {@link Comments}, o null si ocurrió un error.
+     */
+    public List&lt;Comments&gt; getAll() {
+<span class="fc" id="L61">        try (Session session = HibernateUtil.getSessionFactory().openSession()) {</span>
+<span class="fc" id="L62">            Query&lt;Comments&gt; query = session.createQuery(&quot;FROM Comments&quot;, Comments.class);</span>
+<span class="fc" id="L63">            return query.list();</span>
+<span class="nc" id="L64">        } catch (Exception e) {</span>
+<span class="nc" id="L65">            LOGGER.log(Level.SEVERE, &quot;Error fetching all Comments records&quot;, e);</span>
+<span class="nc" id="L66">            return null;</span>
+        }
+    }
+
+    /**
+     * Recupera un registro de Comentario específico por su identificador único.
+     *
+     * @param id El ID del Comentario a recuperar.
+     * @return La entidad {@link Comments} correspondiente al ID dado, o null si no se encuentra o ocurrió un error.
+     */
+    public Comments getById(Long id) {
+<span class="fc" id="L77">        try (Session session = HibernateUtil.getSessionFactory().openSession()) {</span>
+<span class="fc" id="L78">            return session.get(Comments.class, id);</span>
+<span class="nc" id="L79">        } catch (Exception e) {</span>
+<span class="nc" id="L80">            LOGGER.log(Level.SEVERE, &quot;Error fetching Comments by id: &quot; + id, e);</span>
+<span class="nc" id="L81">            return null;</span>
+        }
+    }
+
+    /**
+     * Actualiza un registro de Comentario existente en la base de datos.
+     * Esto típicamente implica cambiar el texto del comentario.
+     *
+     * @param comments La entidad {@link Comments} con información actualizada. El ID debe coincidir con un registro existente.
+     * @return La entidad {@link Comments} actualizada, o null si la actualización falló o ocurrió un error.
+     */
+    public Comments update(Comments comments) {
+<span class="fc" id="L93">        Transaction tx = null;</span>
+<span class="fc" id="L94">        try (Session session = HibernateUtil.getSessionFactory().openSession()) {</span>
+<span class="fc" id="L95">            tx = session.beginTransaction();</span>
+<span class="fc" id="L96">            session.merge(comments);</span>
+<span class="fc" id="L97">            tx.commit();</span>
+<span class="fc" id="L98">            return comments;</span>
+<span class="nc" id="L99">        } catch (Exception e) {</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">            if (tx != null) tx.rollback();</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">            LOGGER.log(Level.SEVERE, &quot;Error updating Comments (entity present: &quot; + (comments != null) + &quot;)&quot;, e);</span>
+<span class="nc" id="L102">            return null;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

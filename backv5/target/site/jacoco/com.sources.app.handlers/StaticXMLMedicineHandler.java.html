@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StaticXMLMedicineHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backv5</a> &gt; <a href="index.source.html" class="el_package">com.sources.app.handlers</a> &gt; <span class="el_source">StaticXMLMedicineHandler.java</span></div><h1>StaticXMLMedicineHandler.java</h1><pre class="source lang-java linenums">package com.sources.app.handlers;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sources.app.entities.Medicine;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Manejador HTTP para servir una lista estática de medicamentos en formato XML.
+ * Los datos de los medicamentos están codificados directamente en la clase como una cadena JSON.
+ * Responde a solicitudes GET en el endpoint &quot;/api2/static-medicines-xml&quot;.
+ */
+public class StaticXMLMedicineHandler implements HttpHandler {
+    private static final String ENDPOINT = &quot;/api2/static-medicines-xml&quot;;
+    private final List&lt;Medicine&gt; medicines;
+    private final ObjectMapper objectMapper;
+<span class="fc" id="L24">    private static final Logger LOGGER = Logger.getLogger(StaticXMLMedicineHandler.class.getName());</span>
+
+    /**
+     * Constructor para StaticXMLMedicineHandler.
+     * Inicializa el ObjectMapper y parsea la cadena JSON estática para crear la lista de medicamentos.
+     * Lanza una RuntimeException si ocurre un error durante el parseo del JSON.
+     */
+<span class="fc" id="L31">    public StaticXMLMedicineHandler() {</span>
+<span class="fc" id="L32">        this.objectMapper = new ObjectMapper();</span>
+        
+        // Parse the static JSON data provided by the user
+<span class="fc" id="L35">        String jsonData = &quot;[{\&quot;idMedicine\&quot;:1,\&quot;name\&quot;:\&quot;Paracetamol\&quot;,\&quot;activeMedicament\&quot;:\&quot;Paracetamol\&quot;,\&quot;description\&quot;:\&quot;Para dolor de cabeza\&quot;,\&quot;image\&quot;:\&quot;https://i.guim.co.uk/img/media/20491572b80293361199ca2fc95e49dfd85e1f42/0_236_5157_3094/master/5157.jpg?width=700&amp;quality=85&amp;auto=format&amp;fit=max&amp;s=75467b37e566112a23646eeb8cbc9a26\&quot;,\&quot;concentration\&quot;:\&quot;500 MG\&quot;,\&quot;presentacion\&quot;:30.0,\&quot;stock\&quot;:85,\&quot;brand\&quot;:\&quot;MK\&quot;,\&quot;prescription\&quot;:false,\&quot;price\&quot;:60.0,\&quot;soldUnits\&quot;:0},{\&quot;idMedicine\&quot;:7,\&quot;name\&quot;:\&quot;Paracetamol\&quot;,\&quot;activeMedicament\&quot;:\&quot;Acetaminophen\&quot;,\&quot;description\&quot;:\&quot;Pain reliever\&quot;,\&quot;image\&quot;:\&quot;http://image-url.com/med.png\&quot;,\&quot;concentration\&quot;:\&quot;500mg\&quot;,\&quot;presentacion\&quot;:30.0,\&quot;stock\&quot;:97,\&quot;brand\&quot;:\&quot;MarcaX\&quot;,\&quot;prescription\&quot;:false,\&quot;price\&quot;:3.5,\&quot;soldUnits\&quot;:0},{\&quot;idMedicine\&quot;:8,\&quot;name\&quot;:\&quot;Prueba\&quot;,\&quot;activeMedicament\&quot;:\&quot;Acetaminophen\&quot;,\&quot;description\&quot;:\&quot;Pain reliever\&quot;,\&quot;image\&quot;:\&quot;http://image-url.com/med.png\&quot;,\&quot;concentration\&quot;:\&quot;500mg\&quot;,\&quot;presentacion\&quot;:30.0,\&quot;stock\&quot;:96,\&quot;brand\&quot;:\&quot;MarcaX\&quot;,\&quot;prescription\&quot;:false,\&quot;price\&quot;:3.5,\&quot;soldUnits\&quot;:0},{\&quot;idMedicine\&quot;:9,\&quot;name\&quot;:\&quot;Prueba\&quot;,\&quot;activeMedicament\&quot;:\&quot;qej\&quot;,\&quot;description\&quot;:\&quot;osdvos\&quot;,\&quot;image\&quot;:\&quot;.\&quot;,\&quot;concentration\&quot;:\&quot;50\&quot;,\&quot;presentacion\&quot;:30.0,\&quot;stock\&quot;:200,\&quot;brand\&quot;:\&quot;condos\&quot;,\&quot;prescription\&quot;:true,\&quot;price\&quot;:900.0,\&quot;soldUnits\&quot;:500},{\&quot;idMedicine\&quot;:10,\&quot;name\&quot;:\&quot;Prueba\&quot;,\&quot;activeMedicament\&quot;:\&quot;qej\&quot;,\&quot;description\&quot;:\&quot;osdvos\&quot;,\&quot;image\&quot;:\&quot;.\&quot;,\&quot;concentration\&quot;:\&quot;50\&quot;,\&quot;presentacion\&quot;:30.0,\&quot;stock\&quot;:200,\&quot;brand\&quot;:\&quot;condos\&quot;,\&quot;prescription\&quot;:true,\&quot;price\&quot;:900.0,\&quot;soldUnits\&quot;:500},{\&quot;idMedicine\&quot;:11,\&quot;name\&quot;:\&quot;Prueba\&quot;,\&quot;activeMedicament\&quot;:\&quot;qej\&quot;,\&quot;description\&quot;:\&quot;osdvos\&quot;,\&quot;image\&quot;:\&quot;.\&quot;,\&quot;concentration\&quot;:\&quot;50\&quot;,\&quot;presentacion\&quot;:30.0,\&quot;stock\&quot;:200,\&quot;brand\&quot;:\&quot;condos\&quot;,\&quot;prescription\&quot;:true,\&quot;price\&quot;:900.0,\&quot;soldUnits\&quot;:500},{\&quot;idMedicine\&quot;:12,\&quot;name\&quot;:\&quot;Prueba\&quot;,\&quot;activeMedicament\&quot;:\&quot;qej\&quot;,\&quot;description\&quot;:\&quot;osdvos\&quot;,\&quot;image\&quot;:\&quot;.\&quot;,\&quot;concentration\&quot;:\&quot;50\&quot;,\&quot;presentacion\&quot;:30.0,\&quot;stock\&quot;:200,\&quot;brand\&quot;:\&quot;condos\&quot;,\&quot;prescription\&quot;:true,\&quot;price\&quot;:900.0,\&quot;soldUnits\&quot;:500},{\&quot;idMedicine\&quot;:13,\&quot;name\&quot;:\&quot;Prueba\&quot;,\&quot;activeMedicament\&quot;:\&quot;qej\&quot;,\&quot;description\&quot;:\&quot;osdvos\&quot;,\&quot;image\&quot;:\&quot;.\&quot;,\&quot;concentration\&quot;:\&quot;50\&quot;,\&quot;presentacion\&quot;:30.0,\&quot;stock\&quot;:200,\&quot;brand\&quot;:\&quot;condos\&quot;,\&quot;prescription\&quot;:true,\&quot;price\&quot;:900.0,\&quot;soldUnits\&quot;:500},{\&quot;idMedicine\&quot;:14,\&quot;name\&quot;:\&quot;Prueba\&quot;,\&quot;activeMedicament\&quot;:\&quot;qej\&quot;,\&quot;description\&quot;:\&quot;osdvos\&quot;,\&quot;image\&quot;:\&quot;.\&quot;,\&quot;concentration\&quot;:\&quot;50\&quot;,\&quot;presentacion\&quot;:30.0,\&quot;stock\&quot;:200,\&quot;brand\&quot;:\&quot;condos\&quot;,\&quot;prescription\&quot;:true,\&quot;price\&quot;:900.0,\&quot;soldUnits\&quot;:500},{\&quot;idMedicine\&quot;:15,\&quot;name\&quot;:\&quot;Prueba\&quot;,\&quot;activeMedicament\&quot;:\&quot;qej\&quot;,\&quot;description\&quot;:\&quot;osdvos\&quot;,\&quot;image\&quot;:\&quot;.\&quot;,\&quot;concentration\&quot;:\&quot;50\&quot;,\&quot;presentacion\&quot;:30.0,\&quot;stock\&quot;:200,\&quot;brand\&quot;:\&quot;condos\&quot;,\&quot;prescription\&quot;:true,\&quot;price\&quot;:900.0,\&quot;soldUnits\&quot;:500},{\&quot;idMedicine\&quot;:16,\&quot;name\&quot;:\&quot;Prueba\&quot;,\&quot;activeMedicament\&quot;:\&quot;qej\&quot;,\&quot;description\&quot;:\&quot;osdvos\&quot;,\&quot;image\&quot;:\&quot;.\&quot;,\&quot;concentration\&quot;:\&quot;50\&quot;,\&quot;presentacion\&quot;:30.0,\&quot;stock\&quot;:200,\&quot;brand\&quot;:\&quot;condos\&quot;,\&quot;prescription\&quot;:true,\&quot;price\&quot;:900.0,\&quot;soldUnits\&quot;:500},{\&quot;idMedicine\&quot;:17,\&quot;name\&quot;:\&quot;Prueba\&quot;,\&quot;activeMedicament\&quot;:\&quot;qej\&quot;,\&quot;description\&quot;:\&quot;osdvos\&quot;,\&quot;image\&quot;:\&quot;.\&quot;,\&quot;concentration\&quot;:\&quot;50\&quot;,\&quot;presentacion\&quot;:30.0,\&quot;stock\&quot;:200,\&quot;brand\&quot;:\&quot;condos\&quot;,\&quot;prescription\&quot;:true,\&quot;price\&quot;:900.0,\&quot;soldUnits\&quot;:500},{\&quot;idMedicine\&quot;:18,\&quot;name\&quot;:\&quot;Prueba\&quot;,\&quot;activeMedicament\&quot;:\&quot;qej\&quot;,\&quot;description\&quot;:\&quot;osdvos\&quot;,\&quot;image\&quot;:\&quot;.\&quot;,\&quot;concentration\&quot;:\&quot;50\&quot;,\&quot;presentacion\&quot;:30.0,\&quot;stock\&quot;:200,\&quot;brand\&quot;:\&quot;condos\&quot;,\&quot;prescription\&quot;:true,\&quot;price\&quot;:900.0,\&quot;soldUnits\&quot;:500},{\&quot;idMedicine\&quot;:19,\&quot;name\&quot;:\&quot;Prueba\&quot;,\&quot;activeMedicament\&quot;:\&quot;qej\&quot;,\&quot;description\&quot;:\&quot;osdvos\&quot;,\&quot;image\&quot;:\&quot;.\&quot;,\&quot;concentration\&quot;:\&quot;50\&quot;,\&quot;presentacion\&quot;:30.0,\&quot;stock\&quot;:200,\&quot;brand\&quot;:\&quot;condos\&quot;,\&quot;prescription\&quot;:true,\&quot;price\&quot;:900.0,\&quot;soldUnits\&quot;:500},{\&quot;idMedicine\&quot;:20,\&quot;name\&quot;:\&quot;Prueba\&quot;,\&quot;activeMedicament\&quot;:\&quot;qej\&quot;,\&quot;description\&quot;:\&quot;osdvos\&quot;,\&quot;image\&quot;:\&quot;.\&quot;,\&quot;concentration\&quot;:\&quot;50\&quot;,\&quot;presentacion\&quot;:30.0,\&quot;stock\&quot;:200,\&quot;brand\&quot;:\&quot;condos\&quot;,\&quot;prescription\&quot;:true,\&quot;price\&quot;:900.0,\&quot;soldUnits\&quot;:500},{\&quot;idMedicine\&quot;:21,\&quot;name\&quot;:\&quot;Prueba\&quot;,\&quot;activeMedicament\&quot;:\&quot;PRUEBA\&quot;,\&quot;description\&quot;:\&quot;PRUEBA\&quot;,\&quot;image\&quot;:\&quot;.\&quot;,\&quot;concentration\&quot;:\&quot;50\&quot;,\&quot;presentacion\&quot;:30.0,\&quot;stock\&quot;:900,\&quot;brand\&quot;:\&quot;PRUEBA\&quot;,\&quot;prescription\&quot;:false,\&quot;price\&quot;:199.0,\&quot;soldUnits\&quot;:1},{\&quot;idMedicine\&quot;:22,\&quot;name\&quot;:\&quot;Magic\&quot;,\&quot;activeMedicament\&quot;:\&quot;Aspirina\&quot;,\&quot;description\&quot;:\&quot;Magic magic cura todo\&quot;,\&quot;image\&quot;:\&quot;.\&quot;,\&quot;concentration\&quot;:\&quot;99\&quot;,\&quot;presentacion\&quot;:30.0,\&quot;stock\&quot;:9950,\&quot;brand\&quot;:\&quot;Ravenclaw\&quot;,\&quot;prescription\&quot;:false,\&quot;price\&quot;:10000.0,\&quot;soldUnits\&quot;:2},{\&quot;idMedicine\&quot;:92,\&quot;name\&quot;:null,\&quot;activeMedicament\&quot;:null,\&quot;description\&quot;:null,\&quot;image\&quot;:null,\&quot;concentration\&quot;:null,\&quot;presentacion\&quot;:null,\&quot;stock\&quot;:null,\&quot;brand\&quot;:null,\&quot;prescription\&quot;:null,\&quot;price\&quot;:null,\&quot;soldUnits\&quot;:null},{\&quot;idMedicine\&quot;:93,\&quot;name\&quot;:\&quot;Test Medicine\&quot;,\&quot;activeMedicament\&quot;:null,\&quot;description\&quot;:null,\&quot;image\&quot;:null,\&quot;concentration\&quot;:null,\&quot;presentacion\&quot;:null,\&quot;stock\&quot;:null,\&quot;brand\&quot;:null,\&quot;prescription\&quot;:null,\&quot;price\&quot;:null,\&quot;soldUnits\&quot;:null},{\&quot;idMedicine\&quot;:94,\&quot;name\&quot;:null,\&quot;activeMedicament\&quot;:null,\&quot;description\&quot;:null,\&quot;image\&quot;:null,\&quot;concentration\&quot;:null,\&quot;presentacion\&quot;:null,\&quot;stock\&quot;:null,\&quot;brand\&quot;:null,\&quot;prescription\&quot;:null,\&quot;price\&quot;:null,\&quot;soldUnits\&quot;:null},{\&quot;idMedicine\&quot;:95,\&quot;name\&quot;:\&quot;Test Medicine\&quot;,\&quot;activeMedicament\&quot;:\&quot;Active Ingredient\&quot;,\&quot;description\&quot;:\&quot;Test description\&quot;,\&quot;image\&quot;:\&quot;image.png\&quot;,\&quot;concentration\&quot;:\&quot;500mg\&quot;,\&quot;presentacion\&quot;:10.0,\&quot;stock\&quot;:100,\&quot;brand\&quot;:\&quot;Test Brand\&quot;,\&quot;prescription\&quot;:false,\&quot;price\&quot;:9.99,\&quot;soldUnits\&quot;:0},{\&quot;idMedicine\&quot;:96,\&quot;name\&quot;:\&quot;Test Medicine\&quot;,\&quot;activeMedicament\&quot;:\&quot;ActiveMed\&quot;,\&quot;description\&quot;:\&quot;Test Desc\&quot;,\&quot;image\&quot;:\&quot;image.png\&quot;,\&quot;concentration\&quot;:\&quot;500mg\&quot;,\&quot;presentacion\&quot;:10.0,\&quot;stock\&quot;:97,\&quot;brand\&quot;:\&quot;TestBrand\&quot;,\&quot;prescription\&quot;:false,\&quot;price\&quot;:9.99,\&quot;soldUnits\&quot;:0},{\&quot;idMedicine\&quot;:97,\&quot;name\&quot;:\&quot;Test Medicine\&quot;,\&quot;activeMedicament\&quot;:\&quot;Active Ingredient\&quot;,\&quot;description\&quot;:\&quot;Test description\&quot;,\&quot;image\&quot;:\&quot;image.png\&quot;,\&quot;concentration\&quot;:\&quot;500mg\&quot;,\&quot;presentacion\&quot;:10.0,\&quot;stock\&quot;:100,\&quot;brand\&quot;:\&quot;Test Brand\&quot;,\&quot;prescription\&quot;:false,\&quot;price\&quot;:9.99,\&quot;soldUnits\&quot;:0},{\&quot;idMedicine\&quot;:41,\&quot;name\&quot;:\&quot;Randyflux\&quot;,\&quot;activeMedicament\&quot;:\&quot;Fres\&quot;,\&quot;description\&quot;:\&quot;123\&quot;,\&quot;image\&quot;:\&quot;.\&quot;,\&quot;concentration\&quot;:\&quot;99\&quot;,\&quot;presentacion\&quot;:30.0,\&quot;stock\&quot;:10000,\&quot;brand\&quot;:\&quot;GSI\&quot;,\&quot;prescription\&quot;:true,\&quot;price\&quot;:9898.0,\&quot;soldUnits\&quot;:500},{\&quot;idMedicine\&quot;:87,\&quot;name\&quot;:null,\&quot;activeMedicament\&quot;:null,\&quot;description\&quot;:null,\&quot;image\&quot;:null,\&quot;concentration\&quot;:null,\&quot;presentacion\&quot;:null,\&quot;stock\&quot;:null,\&quot;brand\&quot;:null,\&quot;prescription\&quot;:null,\&quot;price\&quot;:null,\&quot;soldUnits\&quot;:null},{\&quot;idMedicine\&quot;:88,\&quot;name\&quot;:\&quot;Test Medicine\&quot;,\&quot;activeMedicament\&quot;:null,\&quot;description\&quot;:null,\&quot;image\&quot;:null,\&quot;concentration\&quot;:null,\&quot;presentacion\&quot;:null,\&quot;stock\&quot;:null,\&quot;brand\&quot;:null,\&quot;prescription\&quot;:null,\&quot;price\&quot;:null,\&quot;soldUnits\&quot;:null},{\&quot;idMedicine\&quot;:89,\&quot;name\&quot;:null,\&quot;activeMedicament\&quot;:null,\&quot;description\&quot;:null,\&quot;image\&quot;:null,\&quot;concentration\&quot;:null,\&quot;presentacion\&quot;:null,\&quot;stock\&quot;:null,\&quot;brand\&quot;:null,\&quot;prescription\&quot;:null,\&quot;price\&quot;:null,\&quot;soldUnits\&quot;:null},{\&quot;idMedicine\&quot;:90,\&quot;name\&quot;:\&quot;Test Medicine\&quot;,\&quot;activeMedicament\&quot;:\&quot;Active Ingredient\&quot;,\&quot;description\&quot;:\&quot;Test description\&quot;,\&quot;image\&quot;:\&quot;image.png\&quot;,\&quot;concentration\&quot;:\&quot;500mg\&quot;,\&quot;presentacion\&quot;:10.0,\&quot;stock\&quot;:100,\&quot;brand\&quot;:\&quot;Test Brand\&quot;,\&quot;prescription\&quot;:false,\&quot;price\&quot;:9.99,\&quot;soldUnits\&quot;:0},{\&quot;idMedicine\&quot;:91,\&quot;name\&quot;:null,\&quot;activeMedicament\&quot;:null,\&quot;description\&quot;:null,\&quot;image\&quot;:null,\&quot;concentration\&quot;:null,\&quot;presentacion\&quot;:null,\&quot;stock\&quot;:null,\&quot;brand\&quot;:null,\&quot;prescription\&quot;:null,\&quot;price\&quot;:null,\&quot;soldUnits\&quot;:null},{\&quot;idMedicine\&quot;:61,\&quot;name\&quot;:\&quot;Randy\&quot;,\&quot;activeMedicament\&quot;:\&quot;Prueba2\&quot;,\&quot;description\&quot;:\&quot;Dolor de pestaña\&quot;,\&quot;image\&quot;:null,\&quot;concentration\&quot;:\&quot;100mg\&quot;,\&quot;presentacion\&quot;:1.0,\&quot;stock\&quot;:9000,\&quot;brand\&quot;:\&quot;MarcaY\&quot;,\&quot;prescription\&quot;:false,\&quot;price\&quot;:99999.0,\&quot;soldUnits\&quot;:192033},{\&quot;idMedicine\&quot;:81,\&quot;name\&quot;:null,\&quot;activeMedicament\&quot;:null,\&quot;description\&quot;:null,\&quot;image\&quot;:null,\&quot;concentration\&quot;:null,\&quot;presentacion\&quot;:null,\&quot;stock\&quot;:null,\&quot;brand\&quot;:null,\&quot;prescription\&quot;:null,\&quot;price\&quot;:null,\&quot;soldUnits\&quot;:null},{\&quot;idMedicine\&quot;:82,\&quot;name\&quot;:null,\&quot;activeMedicament\&quot;:null,\&quot;description\&quot;:null,\&quot;image\&quot;:null,\&quot;concentration\&quot;:null,\&quot;presentacion\&quot;:null,\&quot;stock\&quot;:null,\&quot;brand\&quot;:null,\&quot;prescription\&quot;:null,\&quot;price\&quot;:null,\&quot;soldUnits\&quot;:null},{\&quot;idMedicine\&quot;:83,\&quot;name\&quot;:\&quot;Test Medicine\&quot;,\&quot;activeMedicament\&quot;:null,\&quot;description\&quot;:null,\&quot;image\&quot;:null,\&quot;concentration\&quot;:null,\&quot;presentacion\&quot;:null,\&quot;stock\&quot;:null,\&quot;brand\&quot;:null,\&quot;prescription\&quot;:null,\&quot;price\&quot;:null,\&quot;soldUnits\&quot;:null},{\&quot;idMedicine\&quot;:84,\&quot;name\&quot;:null,\&quot;activeMedicament\&quot;:null,\&quot;description\&quot;:null,\&quot;image\&quot;:null,\&quot;concentration\&quot;:null,\&quot;presentacion\&quot;:null,\&quot;stock\&quot;:null,\&quot;brand\&quot;:null,\&quot;prescription\&quot;:null,\&quot;price\&quot;:null,\&quot;soldUnits\&quot;:null},{\&quot;idMedicine\&quot;:85,\&quot;name\&quot;:\&quot;Test Medicine\&quot;,\&quot;activeMedicament\&quot;:\&quot;Active Ingredient\&quot;,\&quot;description\&quot;:\&quot;Test description\&quot;,\&quot;image\&quot;:\&quot;image.png\&quot;,\&quot;concentration\&quot;:\&quot;500mg\&quot;,\&quot;presentacion\&quot;:10.0,\&quot;stock\&quot;:100,\&quot;brand\&quot;:\&quot;Test Brand\&quot;,\&quot;prescription\&quot;:false,\&quot;price\&quot;:9.99,\&quot;soldUnits\&quot;:0},{\&quot;idMedicine\&quot;:86,\&quot;name\&quot;:null,\&quot;activeMedicament\&quot;:null,\&quot;description\&quot;:null,\&quot;image\&quot;:null,\&quot;concentration\&quot;:null,\&quot;presentacion\&quot;:null,\&quot;stock\&quot;:null,\&quot;brand\&quot;:null,\&quot;prescription\&quot;:null,\&quot;price\&quot;:null,\&quot;soldUnits\&quot;:null}]&quot;;</span>
+        
+        try {
+<span class="fc" id="L38">            this.medicines = Arrays.asList(objectMapper.readValue(jsonData, Medicine[].class));</span>
+<span class="nc" id="L39">        } catch (Exception e) {</span>
+<span class="nc" id="L40">            throw new RuntimeException(&quot;Error parsing static medicine data&quot;, e);</span>
+<span class="fc" id="L41">        }</span>
+<span class="fc" id="L42">    }</span>
+
+    /**
+     * Maneja las solicitudes HTTP entrantes.
+     * Configura las cabeceras CORS y delega el manejo a handleGet si el método es GET.
+     *
+     * @param exchange El objeto HttpExchange que representa la solicitud y respuesta.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
+    @Override
+    public void handle(HttpExchange exchange) throws IOException {
+<span class="fc" id="L53">        exchange.getResponseHeaders().add(&quot;Access-Control-Allow-Origin&quot;, &quot;*&quot;);</span>
+<span class="fc" id="L54">        exchange.getResponseHeaders().add(&quot;Access-Control-Allow-Methods&quot;, &quot;GET, OPTIONS&quot;);</span>
+<span class="fc" id="L55">        exchange.getResponseHeaders().add(&quot;Access-Control-Allow-Headers&quot;, &quot;Content-Type, Authorization&quot;);</span>
+
+<span class="fc bfc" id="L57" title="All 2 branches covered.">        if (&quot;OPTIONS&quot;.equalsIgnoreCase(exchange.getRequestMethod())) {</span>
+<span class="fc" id="L58">            exchange.sendResponseHeaders(204, -1);</span>
+<span class="fc" id="L59">            return;</span>
+        }
+
+<span class="fc" id="L62">        String path = exchange.getRequestURI().getPath();</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">        if (!path.startsWith(ENDPOINT)) {</span>
+<span class="fc" id="L64">            exchange.sendResponseHeaders(404, -1);</span>
+<span class="fc" id="L65">            return;</span>
+        }
+
+<span class="fc" id="L68">        String method = exchange.getRequestMethod();</span>
+        try {
+<span class="fc bfc" id="L70" title="All 2 branches covered.">            if (&quot;GET&quot;.equalsIgnoreCase(method)) {</span>
+<span class="fc" id="L71">                handleGet(exchange);</span>
+            } else {
+<span class="fc" id="L73">                exchange.sendResponseHeaders(405, -1);</span>
+            }
+<span class="nc" id="L75">        } catch (Exception e) {</span>
+<span class="nc" id="L76">            LOGGER.log(Level.SEVERE, &quot;Error processing StaticXMLMedicineHandler request&quot;, e);</span>
+<span class="nc" id="L77">            exchange.sendResponseHeaders(500, -1);</span>
+<span class="fc" id="L78">        }</span>
+<span class="fc" id="L79">    }</span>
+
+    /**
+     * Maneja las solicitudes GET.
+     * Convierte la lista estática de medicamentos a formato XML y la envía como respuesta.
+     *
+     * @param exchange El objeto HttpExchange.
+     * @throws IOException Si ocurre un error de entrada/salida al enviar la respuesta.
+     */
+    private void handleGet(HttpExchange exchange) throws IOException {
+        // Convert the static list of medicines to XML format
+<span class="fc" id="L90">        String xmlResponse = convertToXml(medicines);</span>
+        
+        // Set response headers
+<span class="fc" id="L93">        exchange.getResponseHeaders().set(&quot;Content-Type&quot;, &quot;application/xml&quot;);</span>
+<span class="fc" id="L94">        byte[] responseBytes = xmlResponse.getBytes(StandardCharsets.UTF_8);</span>
+<span class="fc" id="L95">        exchange.sendResponseHeaders(200, responseBytes.length);</span>
+        
+        // Write the response
+<span class="fc" id="L98">        try (OutputStream os = exchange.getResponseBody()) {</span>
+<span class="fc" id="L99">            os.write(responseBytes);</span>
+        }
+<span class="fc" id="L101">    }</span>
+
+    /**
+     * Convierte una lista de objetos Medicine a una cadena de texto en formato XML.
+     *
+     * @param medicines La lista de medicamentos a convertir.
+     * @return Una cadena String que representa la lista de medicamentos en formato XML.
+     */
+    private String convertToXml(List&lt;Medicine&gt; medicines) {
+<span class="fc" id="L110">        StringBuilder xml = new StringBuilder();</span>
+<span class="fc" id="L111">        xml.append(&quot;&lt;?xml version=\&quot;1.0\&quot; encoding=\&quot;UTF-8\&quot;?&gt;\n&quot;);</span>
+<span class="fc" id="L112">        xml.append(&quot;&lt;medicines&gt;\n&quot;);</span>
+        
+<span class="fc bfc" id="L114" title="All 2 branches covered.">        for (Medicine medicine : medicines) {</span>
+<span class="fc" id="L115">            xml.append(&quot;  &lt;medicine&gt;\n&quot;);</span>
+<span class="fc" id="L116">            xml.append(&quot;    &lt;idMedicine&gt;&quot;).append(medicine.getIdMedicine()).append(&quot;&lt;/idMedicine&gt;\n&quot;);</span>
+<span class="fc" id="L117">            xml.append(&quot;    &lt;name&gt;&quot;).append(escapeXml(medicine.getName())).append(&quot;&lt;/name&gt;\n&quot;);</span>
+<span class="fc" id="L118">            xml.append(&quot;    &lt;activeMedicament&gt;&quot;).append(escapeXml(medicine.getActiveMedicament())).append(&quot;&lt;/activeMedicament&gt;\n&quot;);</span>
+<span class="fc" id="L119">            xml.append(&quot;    &lt;description&gt;&quot;).append(escapeXml(medicine.getDescription())).append(&quot;&lt;/description&gt;\n&quot;);</span>
+<span class="fc" id="L120">            xml.append(&quot;    &lt;image&gt;&quot;).append(escapeXml(medicine.getImage())).append(&quot;&lt;/image&gt;\n&quot;);</span>
+<span class="fc" id="L121">            xml.append(&quot;    &lt;concentration&gt;&quot;).append(escapeXml(medicine.getConcentration())).append(&quot;&lt;/concentration&gt;\n&quot;);</span>
+<span class="fc" id="L122">            xml.append(&quot;    &lt;presentacion&gt;&quot;).append(medicine.getPresentacion()).append(&quot;&lt;/presentacion&gt;\n&quot;);</span>
+<span class="fc" id="L123">            xml.append(&quot;    &lt;stock&gt;&quot;).append(medicine.getStock()).append(&quot;&lt;/stock&gt;\n&quot;);</span>
+<span class="fc" id="L124">            xml.append(&quot;    &lt;brand&gt;&quot;).append(escapeXml(medicine.getBrand())).append(&quot;&lt;/brand&gt;\n&quot;);</span>
+<span class="fc" id="L125">            xml.append(&quot;    &lt;prescription&gt;&quot;).append(medicine.getPrescription()).append(&quot;&lt;/prescription&gt;\n&quot;);</span>
+<span class="fc" id="L126">            xml.append(&quot;    &lt;price&gt;&quot;).append(medicine.getPrice()).append(&quot;&lt;/price&gt;\n&quot;);</span>
+<span class="fc" id="L127">            xml.append(&quot;    &lt;soldUnits&gt;&quot;).append(medicine.getSoldUnits()).append(&quot;&lt;/soldUnits&gt;\n&quot;);</span>
+<span class="fc" id="L128">            xml.append(&quot;  &lt;/medicine&gt;\n&quot;);</span>
+<span class="fc" id="L129">        }</span>
+        
+<span class="fc" id="L131">        xml.append(&quot;&lt;/medicines&gt;&quot;);</span>
+<span class="fc" id="L132">        return xml.toString();</span>
+    }
+    
+    /**
+     * Escapa caracteres especiales XML en una cadena de texto.
+     * Reemplaza &amp;, &lt;, &gt;, &quot;, ' con sus entidades XML correspondientes.
+     *
+     * @param input La cadena de texto a escapar.
+     * @return La cadena de texto con los caracteres especiales escapados, o una cadena vacía si la entrada es nula.
+     */
+    private String escapeXml(String input) {
+<span class="fc bfc" id="L143" title="All 2 branches covered.">        if (input == null) {</span>
+<span class="fc" id="L144">            return &quot;&quot;;</span>
+        }
+<span class="fc" id="L146">        return input.replace(&quot;&amp;&quot;, &quot;&amp;amp;&quot;)</span>
+<span class="fc" id="L147">                   .replace(&quot;&lt;&quot;, &quot;&amp;lt;&quot;)</span>
+<span class="fc" id="L148">                   .replace(&quot;&gt;&quot;, &quot;&amp;gt;&quot;)</span>
+<span class="fc" id="L149">                   .replace(&quot;\&quot;&quot;, &quot;&amp;quot;&quot;)</span>
+<span class="fc" id="L150">                   .replace(&quot;'&quot;, &quot;&amp;apos;&quot;);</span>
+    }
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

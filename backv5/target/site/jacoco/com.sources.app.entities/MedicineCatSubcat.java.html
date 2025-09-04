@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MedicineCatSubcat.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backv5</a> &gt; <a href="index.source.html" class="el_package">com.sources.app.entities</a> &gt; <span class="el_source">MedicineCatSubcat.java</span></div><h1>MedicineCatSubcat.java</h1><pre class="source lang-java linenums">package com.sources.app.entities;
+
+import jakarta.persistence.*;
+
+/**
+ * Entidad de enlace que representa la asociación entre un Medicamento,
+ * una Categoría y una Subcategoría.
+ * Mapea a la tabla &quot;MEDICINE_CATSUBCAT&quot; y utiliza una clave compuesta {@link MedicineCatSubcatId}.
+ */
+@Entity
+@Table(name = &quot;MEDICINE_CATSUBCAT&quot;)
+public class MedicineCatSubcat {
+
+    /** Clave primaria compuesta embebida (ID de medicamento, ID de categoría, ID de subcategoría). */
+    @EmbeddedId
+    private MedicineCatSubcatId id;
+
+    /** Medicamento asociado. Parte de la clave compuesta. */
+    @ManyToOne
+    @MapsId(&quot;medicineId&quot;) // Mapea el atributo 'medicineId' de MedicineCatSubcatId
+    @JoinColumn(name = &quot;ID_MEDICINE&quot;, referencedColumnName = &quot;ID_MEDICINE&quot;)
+    private Medicine medicine;
+
+    /** Categoría asociada. Parte de la clave compuesta. */
+    @ManyToOne
+    @MapsId(&quot;categoryId&quot;) // Mapea el atributo 'categoryId' de MedicineCatSubcatId
+    @JoinColumn(name = &quot;ID_CATEGORY&quot;, referencedColumnName = &quot;ID_CATEGORY&quot;)
+    private Category category;
+
+    /** Subcategoría asociada. Parte de la clave compuesta. */
+    @ManyToOne
+    @MapsId(&quot;subcategoryId&quot;) // Mapea el atributo 'subcategoryId' de MedicineCatSubcatId
+    @JoinColumn(name = &quot;ID_SUBCATEGORY&quot;, referencedColumnName = &quot;ID_SUBCATEGORY&quot;)
+    private Subcategory subcategory;
+
+    /**
+     * Constructor por defecto requerido por JPA.
+     */
+<span class="fc" id="L39">    public MedicineCatSubcat() {</span>
+<span class="fc" id="L40">    }</span>
+
+    /**
+     * Constructor para crear una nueva asociación medicamento-categoría-subcategoría.
+     * Inicializa la clave compuesta a partir de las entidades proporcionadas.
+     *
+     * @param medicine El medicamento asociado.
+     * @param category La categoría asociada.
+     * @param subcategory La subcategoría asociada.
+     */
+<span class="fc" id="L50">    public MedicineCatSubcat(Medicine medicine, Category category, Subcategory subcategory) {</span>
+<span class="fc" id="L51">        this.medicine = medicine;</span>
+<span class="fc" id="L52">        this.category = category;</span>
+<span class="fc" id="L53">        this.subcategory = subcategory;</span>
+<span class="fc" id="L54">        this.id = new MedicineCatSubcatId(</span>
+<span class="fc" id="L55">                medicine.getIdMedicine(),</span>
+<span class="fc" id="L56">                category.getIdCategory(),</span>
+<span class="fc" id="L57">                subcategory.getIdSubcategory()</span>
+        );
+<span class="fc" id="L59">    }</span>
+
+    public MedicineCatSubcatId getId() {
+<span class="fc" id="L62">        return id;</span>
+    }
+
+    public void setId(MedicineCatSubcatId id) {
+<span class="fc" id="L66">        this.id = id;</span>
+<span class="fc" id="L67">    }</span>
+
+    public Medicine getMedicine() {
+<span class="fc" id="L70">        return medicine;</span>
+    }
+
+    public void setMedicine(Medicine medicine) {
+<span class="fc" id="L74">        this.medicine = medicine;</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">        if (id == null) {</span>
+<span class="fc" id="L76">            id = new MedicineCatSubcatId();</span>
+        }
+<span class="fc" id="L78">        id.setMedicineId(medicine.getIdMedicine());</span>
+<span class="fc" id="L79">    }</span>
+
+    public Category getCategory() {
+<span class="fc" id="L82">        return category;</span>
+    }
+
+    public void setCategory(Category category) {
+<span class="fc" id="L86">        this.category = category;</span>
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L88">            id = new MedicineCatSubcatId();</span>
+        }
+<span class="fc" id="L90">        id.setCategoryId(category.getIdCategory());</span>
+<span class="fc" id="L91">    }</span>
+
+    public Subcategory getSubcategory() {
+<span class="fc" id="L94">        return subcategory;</span>
+    }
+
+    public void setSubcategory(Subcategory subcategory) {
+<span class="fc" id="L98">        this.subcategory = subcategory;</span>
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L100">            id = new MedicineCatSubcatId();</span>
+        }
+<span class="fc" id="L102">        id.setSubcategoryId(subcategory.getIdSubcategory());</span>
+<span class="fc" id="L103">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

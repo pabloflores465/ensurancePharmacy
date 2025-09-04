@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ServiceApprovalController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backv5</a> &gt; <a href="index.source.html" class="el_package">com.sources.app.controllers</a> &gt; <span class="el_source">ServiceApprovalController.java</span></div><h1>ServiceApprovalController.java</h1><pre class="source lang-java linenums">package com.sources.app.controllers;
+
+import com.sources.app.dao.HospitalDAO;
+import com.sources.app.dao.ServiceApprovalDAO;
+import com.sources.app.dao.SystemConfigDAO;
+import com.sources.app.dao.UserDAO;
+import com.sources.app.entities.Hospital;
+import com.sources.app.entities.Policy;
+import com.sources.app.entities.ServiceApproval;
+import com.sources.app.entities.User;
+import com.sources.app.util.ExternalServiceClient;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+@Path(&quot;/service-approvals&quot;)
+<span class="fc" id="L24">public class ServiceApprovalController {</span>
+
+<span class="fc" id="L26">    private ServiceApprovalDAO serviceApprovalDAO = new ServiceApprovalDAO();</span>
+<span class="fc" id="L27">    private UserDAO userDAO = new UserDAO();</span>
+<span class="fc" id="L28">    private HospitalDAO hospitalDAO = new HospitalDAO();</span>
+<span class="fc" id="L29">    private SystemConfigDAO systemConfigDAO = new SystemConfigDAO();</span>
+<span class="fc" id="L30">    private ExternalServiceClient externalServiceClient = new ExternalServiceClient();</span>
+
+    /**
+     * Endpoint para solicitar aprobación de servicio médico
+     */
+    @POST
+    @Path(&quot;/request&quot;)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response requestServiceApproval(String jsonRequest) {
+        try {
+<span class="fc" id="L41">            JSONParser parser = new JSONParser();</span>
+<span class="fc" id="L42">            JSONObject requestData = (JSONObject) parser.parse(jsonRequest);</span>
+            
+            // Extraer datos de la solicitud
+<span class="fc" id="L45">            Long userId = Long.parseLong(requestData.get(&quot;userId&quot;).toString());</span>
+<span class="fc" id="L46">            Long hospitalId = Long.parseLong(requestData.get(&quot;hospitalId&quot;).toString());</span>
+<span class="fc" id="L47">            String serviceId = (String) requestData.get(&quot;serviceId&quot;);</span>
+<span class="fc" id="L48">            String serviceName = (String) requestData.get(&quot;serviceName&quot;);</span>
+<span class="fc" id="L49">            String serviceDescription = (String) requestData.get(&quot;serviceDescription&quot;);</span>
+<span class="fc" id="L50">            Double serviceCost = Double.parseDouble(requestData.get(&quot;serviceCost&quot;).toString());</span>
+            
+            // Obtener usuario y hospital
+<span class="fc" id="L53">            User user = userDAO.getById(userId);</span>
+<span class="fc" id="L54">            Hospital hospital = hospitalDAO.getById(hospitalId);</span>
+            
+<span class="fc bfc" id="L56" title="All 2 branches covered.">            if (user == null) {</span>
+<span class="fc" id="L57">                return Response.status(Response.Status.BAD_REQUEST)</span>
+<span class="fc" id="L58">                        .entity(createErrorResponse(&quot;Usuario no encontrado&quot;))</span>
+<span class="fc" id="L59">                        .build();</span>
+            }
+            
+<span class="fc bfc" id="L62" title="All 2 branches covered.">            if (hospital == null) {</span>
+<span class="fc" id="L63">                return Response.status(Response.Status.BAD_REQUEST)</span>
+<span class="fc" id="L64">                        .entity(createErrorResponse(&quot;Hospital no encontrado&quot;))</span>
+<span class="fc" id="L65">                        .build();</span>
+            }
+            
+            // Verificar que el usuario tenga una póliza activa
+<span class="fc" id="L69">            Policy policy = user.getPolicy();</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">            if (policy == null) {</span>
+<span class="fc" id="L71">                return Response.status(Response.Status.BAD_REQUEST)</span>
+<span class="fc" id="L72">                        .entity(createErrorResponse(&quot;El usuario no tiene una póliza asignada&quot;))</span>
+<span class="fc" id="L73">                        .build();</span>
+            }
+            
+            // Verificar que la póliza no haya expirado
+<span class="fc bfc" id="L77" title="All 2 branches covered.">            if (policy.getExpirationDate().before(new Date())) {</span>
+<span class="fc" id="L78">                return Response.status(Response.Status.BAD_REQUEST)</span>
+<span class="fc" id="L79">                        .entity(createErrorResponse(&quot;La póliza del usuario ha expirado&quot;))</span>
+<span class="fc" id="L80">                        .build();</span>
+            }
+            
+            // Verificar pagos pendientes (esto sería un ejemplo, el criterio real dependería del negocio)
+<span class="fc bfc" id="L84" title="All 2 branches covered.">            if (user.getStatus().equals(&quot;PENDING_PAYMENT&quot;)) {</span>
+<span class="fc" id="L85">                return Response.status(Response.Status.BAD_REQUEST)</span>
+<span class="fc" id="L86">                        .entity(createErrorResponse(&quot;El usuario tiene pagos pendientes&quot;))</span>
+<span class="fc" id="L87">                        .build();</span>
+            }
+            
+            // Calcular el monto cubierto según el porcentaje de la póliza
+<span class="fc" id="L91">            double coveragePercentage = policy.getCoveragePercentage() / 100.0;</span>
+<span class="fc" id="L92">            double coveredAmount = serviceCost * coveragePercentage;</span>
+<span class="fc" id="L93">            double patientAmount = serviceCost - coveredAmount;</span>
+            
+            // Crear la aprobación del servicio en estado &quot;APPROVED&quot;
+<span class="fc" id="L96">            ServiceApproval approval = serviceApprovalDAO.create(</span>
+                user, hospital, serviceId, serviceName, serviceDescription, 
+<span class="fc" id="L98">                serviceCost, coveredAmount, patientAmount, &quot;APPROVED&quot;</span>
+            );
+            
+<span class="fc bfc" id="L101" title="All 2 branches covered.">            if (approval == null) {</span>
+<span class="fc" id="L102">                return Response.status(Response.Status.INTERNAL_SERVER_ERROR)</span>
+<span class="fc" id="L103">                        .entity(createErrorResponse(&quot;Error al crear la aprobación del servicio&quot;))</span>
+<span class="fc" id="L104">                        .build();</span>
+            }
+            
+            // Preparar la respuesta
+<span class="fc" id="L108">            Map&lt;String, Object&gt; responseData = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L109">            responseData.put(&quot;success&quot;, true);</span>
+<span class="fc" id="L110">            responseData.put(&quot;approvalId&quot;, approval.getIdApproval());</span>
+<span class="fc" id="L111">            responseData.put(&quot;approvalCode&quot;, approval.getApprovalCode());</span>
+<span class="fc" id="L112">            responseData.put(&quot;serviceCost&quot;, serviceCost);</span>
+<span class="fc" id="L113">            responseData.put(&quot;coveredAmount&quot;, coveredAmount);</span>
+<span class="fc" id="L114">            responseData.put(&quot;patientAmount&quot;, patientAmount);</span>
+<span class="fc" id="L115">            responseData.put(&quot;approvalDate&quot;, approval.getApprovalDate());</span>
+            
+<span class="fc" id="L117">            return Response.status(Response.Status.OK)</span>
+<span class="fc" id="L118">                    .entity(responseData)</span>
+<span class="fc" id="L119">                    .build();</span>
+            
+<span class="fc" id="L121">        } catch (Exception e) {</span>
+<span class="fc" id="L122">            e.printStackTrace();</span>
+<span class="fc" id="L123">            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)</span>
+<span class="fc" id="L124">                    .entity(createErrorResponse(&quot;Error interno al procesar la solicitud: &quot; + e.getMessage()))</span>
+<span class="fc" id="L125">                    .build();</span>
+        }
+    }
+    
+    /**
+     * Endpoint para solicitar aprobación de receta médica asociada a un servicio
+     */
+    @POST
+    @Path(&quot;/prescription&quot;)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response requestPrescriptionApproval(String jsonRequest) {
+        try {
+<span class="fc" id="L138">            JSONParser parser = new JSONParser();</span>
+<span class="fc" id="L139">            JSONObject requestData = (JSONObject) parser.parse(jsonRequest);</span>
+            
+            // Extraer datos de la solicitud
+<span class="fc" id="L142">            String approvalCode = (String) requestData.get(&quot;approvalCode&quot;);</span>
+<span class="fc" id="L143">            String prescriptionId = (String) requestData.get(&quot;prescriptionId&quot;);</span>
+<span class="fc" id="L144">            Double prescriptionTotal = Double.parseDouble(requestData.get(&quot;prescriptionTotal&quot;).toString());</span>
+            
+            // Obtener la aprobación del servicio
+<span class="fc" id="L147">            ServiceApproval approval = serviceApprovalDAO.getByApprovalCode(approvalCode);</span>
+            
+<span class="fc bfc" id="L149" title="All 2 branches covered.">            if (approval == null) {</span>
+<span class="fc" id="L150">                return Response.status(Response.Status.BAD_REQUEST)</span>
+<span class="fc" id="L151">                        .entity(createErrorResponse(&quot;Código de aprobación no válido&quot;))</span>
+<span class="fc" id="L152">                        .build();</span>
+            }
+            
+            // Verificar que la aprobación esté en estado APPROVED
+<span class="fc bfc" id="L156" title="All 2 branches covered.">            if (!&quot;APPROVED&quot;.equals(approval.getStatus())) {</span>
+<span class="fc" id="L157">                return Response.status(Response.Status.BAD_REQUEST)</span>
+<span class="fc" id="L158">                        .entity(createErrorResponse(&quot;La aprobación de servicio no está en estado válido para agregar receta&quot;))</span>
+<span class="fc" id="L159">                        .build();</span>
+            }
+            
+            // Obtener el monto mínimo configurado para aprobación de recetas
+<span class="fc" id="L163">            Double minPrescriptionAmount = systemConfigDAO.getConfigValueAsDouble(&quot;MIN_PRESCRIPTION_AMOUNT&quot;, 250.00);</span>
+            
+            // Verificar si el monto de la receta es menor al mínimo
+<span class="fc bfc" id="L166" title="All 2 branches covered.">            if (prescriptionTotal &lt; minPrescriptionAmount) {</span>
+                // Rechazar la receta y actualizar el estado de la aprobación
+<span class="fc" id="L168">                approval = serviceApprovalDAO.updateStatus(approval.getIdApproval(), &quot;REJECTED&quot;, </span>
+                    &quot;El monto de la receta es menor al mínimo requerido de Q&quot; + minPrescriptionAmount);
+                
+<span class="fc" id="L171">                Map&lt;String, Object&gt; responseData = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L172">                responseData.put(&quot;success&quot;, false);</span>
+<span class="fc" id="L173">                responseData.put(&quot;approvalId&quot;, approval.getIdApproval());</span>
+<span class="fc" id="L174">                responseData.put(&quot;approvalCode&quot;, approval.getApprovalCode());</span>
+<span class="fc" id="L175">                responseData.put(&quot;status&quot;, &quot;REJECTED&quot;);</span>
+<span class="fc" id="L176">                responseData.put(&quot;rejectionReason&quot;, approval.getRejectionReason());</span>
+                
+<span class="fc" id="L178">                return Response.status(Response.Status.OK)</span>
+<span class="fc" id="L179">                        .entity(responseData)</span>
+<span class="fc" id="L180">                        .build();</span>
+            }
+            
+            // Actualizar la información de la receta en la aprobación
+<span class="fc" id="L184">            approval = serviceApprovalDAO.updatePrescription(</span>
+<span class="fc" id="L185">                approval.getIdApproval(), prescriptionId, prescriptionTotal);</span>
+            
+<span class="fc bfc" id="L187" title="All 2 branches covered.">            if (approval == null) {</span>
+<span class="fc" id="L188">                return Response.status(Response.Status.INTERNAL_SERVER_ERROR)</span>
+<span class="fc" id="L189">                        .entity(createErrorResponse(&quot;Error al actualizar la información de la receta&quot;))</span>
+<span class="fc" id="L190">                        .build();</span>
+            }
+            
+            // Preparar la respuesta
+<span class="fc" id="L194">            Map&lt;String, Object&gt; responseData = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L195">            responseData.put(&quot;success&quot;, true);</span>
+<span class="fc" id="L196">            responseData.put(&quot;approvalId&quot;, approval.getIdApproval());</span>
+<span class="fc" id="L197">            responseData.put(&quot;approvalCode&quot;, approval.getApprovalCode());</span>
+<span class="fc" id="L198">            responseData.put(&quot;prescriptionId&quot;, approval.getPrescriptionId());</span>
+<span class="fc" id="L199">            responseData.put(&quot;prescriptionTotal&quot;, approval.getPrescriptionTotal());</span>
+<span class="fc" id="L200">            responseData.put(&quot;status&quot;, approval.getStatus());</span>
+            
+<span class="fc" id="L202">            return Response.status(Response.Status.OK)</span>
+<span class="fc" id="L203">                    .entity(responseData)</span>
+<span class="fc" id="L204">                    .build();</span>
+            
+<span class="fc" id="L206">        } catch (Exception e) {</span>
+<span class="fc" id="L207">            e.printStackTrace();</span>
+<span class="fc" id="L208">            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)</span>
+<span class="fc" id="L209">                    .entity(createErrorResponse(&quot;Error interno al procesar la solicitud: &quot; + e.getMessage()))</span>
+<span class="fc" id="L210">                    .build();</span>
+        }
+    }
+    
+    /**
+     * Endpoint para verificar el estado de una aprobación
+     */
+    @GET
+    @Path(&quot;/check/{approvalCode}&quot;)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response checkApprovalStatus(@PathParam(&quot;approvalCode&quot;) String approvalCode) {
+        try {
+<span class="fc" id="L222">            ServiceApproval approval = serviceApprovalDAO.getByApprovalCode(approvalCode);</span>
+            
+<span class="fc bfc" id="L224" title="All 2 branches covered.">            if (approval == null) {</span>
+<span class="fc" id="L225">                return Response.status(Response.Status.NOT_FOUND)</span>
+<span class="fc" id="L226">                        .entity(createErrorResponse(&quot;Aprobación no encontrada&quot;))</span>
+<span class="fc" id="L227">                        .build();</span>
+            }
+            
+            // Preparar la respuesta
+<span class="fc" id="L231">            Map&lt;String, Object&gt; responseData = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L232">            responseData.put(&quot;success&quot;, true);</span>
+<span class="fc" id="L233">            responseData.put(&quot;approvalId&quot;, approval.getIdApproval());</span>
+<span class="fc" id="L234">            responseData.put(&quot;approvalCode&quot;, approval.getApprovalCode());</span>
+<span class="fc" id="L235">            responseData.put(&quot;serviceName&quot;, approval.getServiceName());</span>
+<span class="fc" id="L236">            responseData.put(&quot;serviceDescription&quot;, approval.getServiceDescription());</span>
+<span class="fc" id="L237">            responseData.put(&quot;serviceCost&quot;, approval.getServiceCost());</span>
+<span class="fc" id="L238">            responseData.put(&quot;coveredAmount&quot;, approval.getCoveredAmount());</span>
+<span class="fc" id="L239">            responseData.put(&quot;patientAmount&quot;, approval.getPatientAmount());</span>
+<span class="fc" id="L240">            responseData.put(&quot;status&quot;, approval.getStatus());</span>
+            
+<span class="fc bfc" id="L242" title="All 2 branches covered.">            if (approval.getPrescriptionId() != null) {</span>
+<span class="fc" id="L243">                responseData.put(&quot;prescriptionId&quot;, approval.getPrescriptionId());</span>
+<span class="fc" id="L244">                responseData.put(&quot;prescriptionTotal&quot;, approval.getPrescriptionTotal());</span>
+            }
+            
+<span class="fc bfc" id="L247" title="All 2 branches covered.">            if (&quot;REJECTED&quot;.equals(approval.getStatus())) {</span>
+<span class="fc" id="L248">                responseData.put(&quot;rejectionReason&quot;, approval.getRejectionReason());</span>
+            }
+            
+<span class="fc" id="L251">            return Response.status(Response.Status.OK)</span>
+<span class="fc" id="L252">                    .entity(responseData)</span>
+<span class="fc" id="L253">                    .build();</span>
+            
+<span class="nc" id="L255">        } catch (Exception e) {</span>
+<span class="nc" id="L256">            e.printStackTrace();</span>
+<span class="nc" id="L257">            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)</span>
+<span class="nc" id="L258">                    .entity(createErrorResponse(&quot;Error interno al procesar la solicitud: &quot; + e.getMessage()))</span>
+<span class="nc" id="L259">                    .build();</span>
+        }
+    }
+    
+    /**
+     * Endpoint para marcar una aprobación como completada
+     */
+    @PUT
+    @Path(&quot;/complete/{approvalCode}&quot;)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response completeApproval(@PathParam(&quot;approvalCode&quot;) String approvalCode) {
+        try {
+<span class="fc" id="L271">            ServiceApproval approval = serviceApprovalDAO.getByApprovalCode(approvalCode);</span>
+            
+<span class="fc bfc" id="L273" title="All 2 branches covered.">            if (approval == null) {</span>
+<span class="fc" id="L274">                return Response.status(Response.Status.NOT_FOUND)</span>
+<span class="fc" id="L275">                        .entity(createErrorResponse(&quot;Aprobación no encontrada&quot;))</span>
+<span class="fc" id="L276">                        .build();</span>
+            }
+            
+            // Verificar que la aprobación esté en estado APPROVED
+<span class="fc bfc" id="L280" title="All 2 branches covered.">            if (!&quot;APPROVED&quot;.equals(approval.getStatus())) {</span>
+<span class="fc" id="L281">                return Response.status(Response.Status.BAD_REQUEST)</span>
+<span class="fc" id="L282">                        .entity(createErrorResponse(&quot;La aprobación no está en estado válido para completarla&quot;))</span>
+<span class="fc" id="L283">                        .build();</span>
+            }
+            
+            // Actualizar el estado a COMPLETED
+<span class="fc" id="L287">            approval = serviceApprovalDAO.updateStatus(</span>
+<span class="fc" id="L288">                approval.getIdApproval(), &quot;COMPLETED&quot;, null);</span>
+            
+            // Preparar la respuesta
+<span class="fc" id="L291">            Map&lt;String, Object&gt; responseData = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L292">            responseData.put(&quot;success&quot;, true);</span>
+<span class="fc" id="L293">            responseData.put(&quot;approvalId&quot;, approval.getIdApproval());</span>
+<span class="fc" id="L294">            responseData.put(&quot;approvalCode&quot;, approval.getApprovalCode());</span>
+<span class="fc" id="L295">            responseData.put(&quot;status&quot;, approval.getStatus());</span>
+<span class="fc" id="L296">            responseData.put(&quot;completedDate&quot;, approval.getCompletedDate());</span>
+            
+<span class="fc" id="L298">            return Response.status(Response.Status.OK)</span>
+<span class="fc" id="L299">                    .entity(responseData)</span>
+<span class="fc" id="L300">                    .build();</span>
+            
+<span class="nc" id="L302">        } catch (Exception e) {</span>
+<span class="nc" id="L303">            e.printStackTrace();</span>
+<span class="nc" id="L304">            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)</span>
+<span class="nc" id="L305">                    .entity(createErrorResponse(&quot;Error interno al procesar la solicitud: &quot; + e.getMessage()))</span>
+<span class="nc" id="L306">                    .build();</span>
+        }
+    }
+    
+    /**
+     * Método auxiliar para crear una respuesta de error
+     */
+    private Map&lt;String, Object&gt; createErrorResponse(String message) {
+<span class="fc" id="L314">        Map&lt;String, Object&gt; errorResponse = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L315">        errorResponse.put(&quot;success&quot;, false);</span>
+<span class="fc" id="L316">        errorResponse.put(&quot;message&quot;, message);</span>
+<span class="fc" id="L317">        return errorResponse;</span>
+    }
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

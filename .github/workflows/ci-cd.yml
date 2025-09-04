@@ -174,12 +174,12 @@ jobs:
       - name: Download Ensurance coverage artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: "*ensurance*"
+          name: "ensurance-coverage"
 
       - name: Download Backend coverage artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: "backv*"
+          name: "backv5-coverage"
 
       - name: Install Ensurance Frontend Dependencies
         run: |
@@ -281,7 +281,7 @@ jobs:
       - name: Download Pharmacy coverage artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: "*pharmacy*"
+          name: "pharmacy-coverage"
 
       - name: Install Pharmacy Frontend Dependencies
         run: |

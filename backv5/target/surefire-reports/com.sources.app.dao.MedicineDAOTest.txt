@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.sources.app.dao.MedicineDAOTest
 -------------------------------------------------------------------------------
-Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s - in com.sources.app.dao.MedicineDAOTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.069 s - in com.sources.app.dao.MedicineDAOTest

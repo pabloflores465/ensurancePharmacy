@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExternalMedicineHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backv5</a> &gt; <a href="index.source.html" class="el_package">com.sources.app.handlers</a> &gt; <span class="el_source">ExternalMedicineHandler.java</span></div><h1>ExternalMedicineHandler.java</h1><pre class="source lang-java linenums">package com.sources.app.handlers;
+
+import com.sources.app.dao.ExternalMedicineDAO;
+import com.sources.app.entities.Medicine;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Manejador HTTP para obtener medicamentos desde una fuente externa.
+ * Responde a solicitudes GET en el endpoint &quot;/api2/external_medicines&quot;,
+ * utilizando ExternalMedicineDAO para recuperar los datos y devolviéndolos como JSON.
+ */
+public class ExternalMedicineHandler implements HttpHandler {
+    private ExternalMedicineDAO externalMedicineDAO;
+    private ObjectMapper objectMapper;
+    private static final String ENDPOINT = &quot;/api2/external_medicines&quot;;
+<span class="fc" id="L25">    private static final Logger LOGGER = Logger.getLogger(ExternalMedicineHandler.class.getName());</span>
+
+    /**
+     * Constructor para ExternalMedicineHandler.
+     *
+     * @param externalMedicineDAO El DAO para acceder a los datos de medicamentos externos.
+     */
+<span class="fc" id="L32">    public ExternalMedicineHandler(ExternalMedicineDAO externalMedicineDAO) {</span>
+<span class="fc" id="L33">        this.externalMedicineDAO = externalMedicineDAO;</span>
+<span class="fc" id="L34">        this.objectMapper = new ObjectMapper();</span>
+<span class="fc" id="L35">    }</span>
+
+    /**
+     * Maneja las solicitudes HTTP entrantes.
+     * Configura las cabeceras CORS.
+     * Delega las solicitudes GET a handleGet. Responde con 405 Method Not Allowed
+     * para otros métodos.
+     *
+     * @param exchange El objeto HttpExchange que representa la solicitud y respuesta.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
+    @Override
+    public void handle(HttpExchange exchange) throws IOException {
+<span class="fc" id="L48">        exchange.getResponseHeaders().add(&quot;Access-Control-Allow-Origin&quot;, &quot;*&quot;);</span>
+<span class="fc" id="L49">        exchange.getResponseHeaders().add(&quot;Access-Control-Allow-Methods&quot;, &quot;GET, POST, PUT, OPTIONS&quot;);</span>
+<span class="fc" id="L50">        exchange.getResponseHeaders().add(&quot;Access-Control-Allow-Headers&quot;, &quot;Content-Type, Authorization&quot;);</span>
+
+        try {
+<span class="fc bfc" id="L53" title="All 2 branches covered.">            if (exchange.getRequestMethod().equals(&quot;GET&quot;)) {</span>
+<span class="fc" id="L54">                handleGet(exchange);</span>
+            } else {
+<span class="fc" id="L56">                exchange.sendResponseHeaders(405, -1);</span>
+            }
+<span class="fc" id="L58">        } catch (Exception e) {</span>
+<span class="fc" id="L59">            LOGGER.log(Level.SEVERE, &quot;Unhandled exception in ExternalMedicineHandler&quot;, e);</span>
+<span class="fc" id="L60">            exchange.sendResponseHeaders(500, -1);</span>
+<span class="fc" id="L61">        }</span>
+<span class="fc" id="L62">    }</span>
+    
+    /**
+     * Maneja las solicitudes GET.
+     * Obtiene la lista de todos los medicamentos externos usando ExternalMedicineDAO,
+     * los convierte a formato JSON y los envía como respuesta.
+     *
+     * @param exchange El objeto HttpExchange.
+     * @throws IOException Si ocurre un error de entrada/salida al enviar la respuesta.
+     */
+    private void handleGet(HttpExchange exchange) throws IOException {
+<span class="fc" id="L73">        List&lt;Medicine&gt; medicines = externalMedicineDAO.getAll();</span>
+<span class="fc" id="L74">        String jsonResponse = objectMapper.writeValueAsString(medicines);</span>
+<span class="fc" id="L75">        exchange.getResponseHeaders().set(&quot;Content-Type&quot;, &quot;application/json&quot;);</span>
+<span class="fc" id="L76">        byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);</span>
+<span class="fc" id="L77">        exchange.sendResponseHeaders(200, responseBytes.length);</span>
+<span class="fc" id="L78">        try (OutputStream os = exchange.getResponseBody()) {</span>
+<span class="fc" id="L79">            os.write(responseBytes);</span>
+        }
+<span class="fc" id="L81">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

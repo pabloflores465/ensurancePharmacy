@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PrescriptionMedicineHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backv5</a> &gt; <a href="index.source.html" class="el_package">com.sources.app.handlers</a> &gt; <span class="el_source">PrescriptionMedicineHandler.java</span></div><h1>PrescriptionMedicineHandler.java</h1><pre class="source lang-java linenums">package com.sources.app.handlers;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sources.app.dao.PrescriptionMedicineDAO;
+import com.sources.app.entities.PrescriptionMedicine;
+import com.sources.app.entities.PrescriptionMedicineId;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Handler for managing HTTP requests related to prescription medicines.
+ * This class implements HttpHandler and provides functionality for CRUD operations
+ * on prescription medicine entities through RESTful endpoints.
+ * 
+ * The handler supports the following HTTP methods:
+ * - POST: Creates a new prescription medicine
+ * - GET: Retrieves either a specific prescription medicine by ID or all prescription medicines
+ * - PUT: Updates an existing prescription medicine
+ * - OPTIONS: Handles CORS preflight requests
+ *
+ * @author Pablo Flores Mollinedo
+ * @version 1.0
+ * @since 2025-04-11
+ */
+public class PrescriptionMedicineHandler implements HttpHandler {
+    /** Data Access Object for prescription medicine operations */
+    private final PrescriptionMedicineDAO prescriptionMedicineDAO;
+    
+    /** JSON serializer/deserializer for converting between Java objects and JSON */
+    private final ObjectMapper objectMapper;
+    
+    /** The API endpoint path for prescription medicines */
+    private static final String ENDPOINT = &quot;/api2/prescription_medicines&quot;;
+<span class="fc" id="L40">    private static final Logger LOGGER = Logger.getLogger(PrescriptionMedicineHandler.class.getName());</span>
+
+    /**
+     * Constructs a new PrescriptionMedicineHandler with the specified DAO.
+     * 
+     * @param prescriptionMedicineDAO the data access object for prescription medicine operations
+     */
+<span class="fc" id="L47">    public PrescriptionMedicineHandler(PrescriptionMedicineDAO prescriptionMedicineDAO) {</span>
+<span class="fc" id="L48">        this.prescriptionMedicineDAO = prescriptionMedicineDAO;</span>
+<span class="fc" id="L49">        this.objectMapper = new ObjectMapper();</span>
+<span class="fc" id="L50">    }</span>
+
+    /**
+     * Handles HTTP requests for the prescription medicines endpoint.
+     * This method processes different HTTP methods and delegates to appropriate
+     * helper methods based on the request type.
+     * 
+     * &lt;p&gt;Supported operations:&lt;/p&gt;
+     * &lt;ul&gt;
+     *   &lt;li&gt;OPTIONS: Handles CORS preflight requests&lt;/li&gt;
+     *   &lt;li&gt;POST: Creates a new prescription medicine association&lt;/li&gt;
+     *   &lt;li&gt;GET: Retrieves prescription medicine(s)&lt;/li&gt;
+     *   &lt;li&gt;PUT: Updates an existing prescription medicine&lt;/li&gt;
+     * &lt;/ul&gt;
+     *
+     * &lt;p&gt;For POST requests: Expects a JSON with prescription (with ID), medicine (with ID), 
+     * dosis, frecuencia, and duracion. Creates a new PrescriptionMedicine object and returns it in JSON format.&lt;/p&gt;
+     *
+     * &lt;p&gt;For GET requests: If a query parameter &quot;id=&quot; is specified with format &quot;prescriptionId,medicineId&quot;, 
+     * it retrieves a specific prescription medicine. Otherwise, it returns all prescription medicines.&lt;/p&gt;
+     *
+     * &lt;p&gt;For PUT requests: Expects a complete JSON representation of PrescriptionMedicine 
+     * (including the composite key) to update the prescription medicine information.&lt;/p&gt;
+     *
+     * @param exchange the HttpExchange object that contains the request and response data
+     * @throws IOException if an I/O error occurs during the handling of the request
+     */
+    @Override
+    public void handle(HttpExchange exchange) throws IOException {
+        // Set CORS headers to allow cross-origin requests
+<span class="fc" id="L80">        exchange.getResponseHeaders().add(&quot;Access-Control-Allow-Origin&quot;, &quot;*&quot;);</span>
+<span class="fc" id="L81">        exchange.getResponseHeaders().add(&quot;Access-Control-Allow-Methods&quot;, &quot;GET, POST, PUT, OPTIONS&quot;);</span>
+<span class="fc" id="L82">        exchange.getResponseHeaders().add(&quot;Access-Control-Allow-Headers&quot;, &quot;Content-Type, Authorization&quot;);</span>
+
+        // Handle CORS preflight requests
+<span class="fc bfc" id="L85" title="All 2 branches covered.">        if(&quot;OPTIONS&quot;.equalsIgnoreCase(exchange.getRequestMethod())){</span>
+<span class="fc" id="L86">            exchange.sendResponseHeaders(204, -1);</span>
+<span class="fc" id="L87">            return;</span>
+        }
+
+<span class="fc" id="L90">        String method = exchange.getRequestMethod();</span>
+<span class="fc bfc" id="L91" title="All 2 branches covered.">        if(&quot;POST&quot;.equalsIgnoreCase(method)){</span>
+<span class="fc" id="L92">            handlePostRequest(exchange);</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">        } else if(&quot;GET&quot;.equalsIgnoreCase(method)){</span>
+<span class="fc" id="L94">            handleGetRequest(exchange);</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">        } else if(&quot;PUT&quot;.equalsIgnoreCase(method)){</span>
+<span class="fc" id="L96">            handlePutRequest(exchange);</span>
+        } else {
+            // Method not allowed
+<span class="fc" id="L99">            exchange.sendResponseHeaders(405, -1);</span>
+        }
+<span class="fc" id="L101">    }</span>
+    
+    /**
+     * Handles POST requests to create a new prescription medicine.
+     * 
+     * @param exchange the HttpExchange object containing the request and response data
+     * @throws IOException if an I/O error occurs during request processing
+     */
+    private void handlePostRequest(HttpExchange exchange) throws IOException {
+        try {
+            // Parse request body into PrescriptionMedicine object
+<span class="fc" id="L112">            String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);</span>
+<span class="fc" id="L113">            PrescriptionMedicine createPM = objectMapper.readValue(requestBody, PrescriptionMedicine.class);</span>
+            
+            // Create new prescription medicine in the database
+<span class="fc" id="L116">            PrescriptionMedicine pm = prescriptionMedicineDAO.create(</span>
+<span class="fc" id="L117">                    createPM.getPrescription(),</span>
+<span class="fc" id="L118">                    createPM.getMedicine(),</span>
+<span class="fc" id="L119">                    createPM.getDosis(),</span>
+<span class="fc" id="L120">                    createPM.getFrecuencia(),</span>
+<span class="fc" id="L121">                    createPM.getDuracion()</span>
+            );
+            
+            // Send success response with created object
+<span class="fc bfc" id="L125" title="All 2 branches covered.">            if(pm != null){</span>
+<span class="fc" id="L126">                String jsonResponse = objectMapper.writeValueAsString(pm);</span>
+<span class="fc" id="L127">                exchange.getResponseHeaders().set(&quot;Content-Type&quot;, &quot;application/json&quot;);</span>
+<span class="fc" id="L128">                byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);</span>
+<span class="fc" id="L129">                exchange.sendResponseHeaders(201, responseBytes.length);</span>
+<span class="fc" id="L130">                try(OutputStream os = exchange.getResponseBody()){</span>
+<span class="fc" id="L131">                    os.write(responseBytes);</span>
+                }
+<span class="fc" id="L133">            } else {</span>
+                // Bad request if creation failed
+<span class="fc" id="L135">                exchange.sendResponseHeaders(400, -1);</span>
+            }
+<span class="fc" id="L137">        } catch(Exception e){</span>
+            // Log exception and send server error response
+<span class="fc" id="L139">            LOGGER.log(Level.SEVERE, &quot;Error creating PrescriptionMedicine&quot;, e);</span>
+<span class="fc" id="L140">            exchange.sendResponseHeaders(500, -1);</span>
+<span class="fc" id="L141">        }</span>
+<span class="fc" id="L142">    }</span>
+    
+    /**
+     * Handles GET requests to retrieve prescription medicine(s).
+     * If query includes an ID parameter, returns a specific prescription medicine;
+     * otherwise returns all prescription medicines.
+     * 
+     * @param exchange the HttpExchange object containing the request and response data
+     * @throws IOException if an I/O error occurs during request processing
+     */
+    private void handleGetRequest(HttpExchange exchange) throws IOException {
+        try {
+<span class="fc" id="L154">            String query = exchange.getRequestURI().getQuery();</span>
+<span class="pc bpc" id="L155" title="1 of 4 branches missed.">            if(query != null &amp;&amp; query.startsWith(&quot;id=&quot;)){</span>
+                // Get specific prescription medicine by composite ID
+<span class="fc" id="L157">                handleGetById(exchange, query);</span>
+            } else {
+                // Get all prescription medicines
+<span class="fc" id="L160">                handleGetAll(exchange);</span>
+            }
+<span class="fc" id="L162">        } catch(Exception e){</span>
+            // Log exception and send server error response
+<span class="fc" id="L164">            LOGGER.log(Level.SEVERE, &quot;Error retrieving PrescriptionMedicine(s)&quot;, e);</span>
+<span class="fc" id="L165">            exchange.sendResponseHeaders(500, -1);</span>
+<span class="fc" id="L166">        }</span>
+<span class="fc" id="L167">    }</span>
+    
+    /**
+     * Handles retrieval of a specific prescription medicine by its composite ID.
+     * 
+     * @param exchange the HttpExchange object containing the request and response data
+     * @param query the query string containing the ID parameter
+     * @throws IOException if an I/O error occurs during request processing
+     */
+    private void handleGetById(HttpExchange exchange, String query) throws IOException {
+<span class="fc" id="L177">        String[] parts = query.substring(3).split(&quot;,&quot;);</span>
+<span class="fc bfc" id="L178" title="All 2 branches covered.">        if(parts.length == 2){</span>
+            try {
+                // Parse composite ID parts
+<span class="fc" id="L181">                Long presId = Long.parseLong(parts[0]);</span>
+<span class="fc" id="L182">                Long medId = Long.parseLong(parts[1]);</span>
+<span class="fc" id="L183">                PrescriptionMedicineId id = new PrescriptionMedicineId(presId, medId);</span>
+                
+                // Retrieve prescription medicine
+<span class="fc" id="L186">                PrescriptionMedicine pm = prescriptionMedicineDAO.getById(id);</span>
+                
+<span class="fc bfc" id="L188" title="All 2 branches covered.">                if(pm != null){</span>
+                    // Send success response with found object
+<span class="fc" id="L190">                    String jsonResponse = objectMapper.writeValueAsString(pm);</span>
+<span class="fc" id="L191">                    exchange.getResponseHeaders().set(&quot;Content-Type&quot;, &quot;application/json&quot;);</span>
+<span class="fc" id="L192">                    byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);</span>
+<span class="fc" id="L193">                    exchange.sendResponseHeaders(200, responseBytes.length);</span>
+<span class="fc" id="L194">                    try(OutputStream os = exchange.getResponseBody()){</span>
+<span class="fc" id="L195">                        os.write(responseBytes);</span>
+                    }
+<span class="fc" id="L197">                } else {</span>
+                    // Not found response
+<span class="fc" id="L199">                    exchange.sendResponseHeaders(404, -1);</span>
+                }
+<span class="fc" id="L201">            } catch (NumberFormatException e) {</span>
+                // Invalid ID format
+<span class="fc" id="L203">                exchange.sendResponseHeaders(400, -1);</span>
+<span class="fc" id="L204">            }</span>
+        } else {
+            // Invalid ID parameter format
+<span class="fc" id="L207">            exchange.sendResponseHeaders(400, -1);</span>
+        }
+<span class="fc" id="L209">    }</span>
+    
+    /**
+     * Handles retrieval of all prescription medicines.
+     * 
+     * @param exchange the HttpExchange object containing the request and response data
+     * @throws IOException if an I/O error occurs during request processing
+     */
+    private void handleGetAll(HttpExchange exchange) throws IOException {
+<span class="fc" id="L218">        List&lt;PrescriptionMedicine&gt; list = prescriptionMedicineDAO.getAll();</span>
+<span class="fc" id="L219">        String jsonResponse = objectMapper.writeValueAsString(list);</span>
+<span class="fc" id="L220">        exchange.getResponseHeaders().set(&quot;Content-Type&quot;, &quot;application/json&quot;);</span>
+<span class="fc" id="L221">        byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);</span>
+<span class="fc" id="L222">        exchange.sendResponseHeaders(200, responseBytes.length);</span>
+<span class="fc" id="L223">        try(OutputStream os = exchange.getResponseBody()){</span>
+<span class="fc" id="L224">            os.write(responseBytes);</span>
+        }
+<span class="fc" id="L226">    }</span>
+    
+    /**
+     * Handles PUT requests to update an existing prescription medicine.
+     * 
+     * @param exchange the HttpExchange object containing the request and response data
+     * @throws IOException if an I/O error occurs during request processing
+     */
+    private void handlePutRequest(HttpExchange exchange) throws IOException {
+        try {
+            // Parse request body into PrescriptionMedicine object
+<span class="fc" id="L237">            String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);</span>
+<span class="fc" id="L238">            PrescriptionMedicine updatePM = objectMapper.readValue(requestBody, PrescriptionMedicine.class);</span>
+            
+            // Update prescription medicine in the database
+<span class="fc" id="L241">            PrescriptionMedicine pm = prescriptionMedicineDAO.update(updatePM);</span>
+            
+<span class="fc bfc" id="L243" title="All 2 branches covered.">            if(pm != null){</span>
+                // Send success response with updated object
+<span class="fc" id="L245">                String jsonResponse = objectMapper.writeValueAsString(pm);</span>
+<span class="fc" id="L246">                exchange.getResponseHeaders().set(&quot;Content-Type&quot;, &quot;application/json&quot;);</span>
+<span class="fc" id="L247">                byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);</span>
+<span class="fc" id="L248">                exchange.sendResponseHeaders(200, responseBytes.length);</span>
+<span class="fc" id="L249">                try(OutputStream os = exchange.getResponseBody()){</span>
+<span class="fc" id="L250">                    os.write(responseBytes);</span>
+                }
+<span class="fc" id="L252">            } else {</span>
+                // Bad request if update failed
+<span class="fc" id="L254">                exchange.sendResponseHeaders(400, -1);</span>
+            }
+<span class="fc" id="L256">        } catch(Exception e){</span>
+            // Log exception and send server error response
+<span class="fc" id="L258">            LOGGER.log(Level.SEVERE, &quot;Error updating PrescriptionMedicine&quot;, e);</span>
+<span class="fc" id="L259">            exchange.sendResponseHeaders(500, -1);</span>
+<span class="fc" id="L260">        }</span>
+<span class="fc" id="L261">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.sources.app.handlers.PolicyHandlerTest
 -------------------------------------------------------------------------------
-Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.029 s - in com.sources.app.handlers.PolicyHandlerTest
+Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.036 s - in com.sources.app.handlers.PolicyHandlerTest

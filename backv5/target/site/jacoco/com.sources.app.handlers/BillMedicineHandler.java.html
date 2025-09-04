@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BillMedicineHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backv5</a> &gt; <a href="index.source.html" class="el_package">com.sources.app.handlers</a> &gt; <span class="el_source">BillMedicineHandler.java</span></div><h1>BillMedicineHandler.java</h1><pre class="source lang-java linenums">package com.sources.app.handlers;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sources.app.dao.BillMedicineDAO;
+import com.sources.app.entities.BillMedicine;
+import com.sources.app.entities.Bill;
+import com.sources.app.entities.Medicine;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import com.sources.app.entities.BillMedicineId;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Manejador HTTP para gestionar las operaciones CRUD de la relación entre facturas y medicamentos (BillMedicine).
+ * Responde a solicitudes en el endpoint &quot;/api2/bill_medicines&quot;.
+ * Soporta los métodos GET, POST, PUT y OPTIONS.
+ * Utiliza una clave compuesta (BillMedicineId) para identificar las entidades.
+ */
+public class BillMedicineHandler implements HttpHandler {
+    private final BillMedicineDAO billMedicineDAO;
+    private final ObjectMapper objectMapper;
+    private static final String ENDPOINT = &quot;/api2/bill_medicines&quot;;
+<span class="fc" id="L28">    private static final Logger LOGGER = Logger.getLogger(BillMedicineHandler.class.getName());</span>
+
+    /**
+     * Constructor para BillMedicineHandler.
+     *
+     * @param billMedicineDAO El DAO para acceder a los datos de la relación factura-medicamento.
+     */
+<span class="fc" id="L35">    public BillMedicineHandler(BillMedicineDAO billMedicineDAO) {</span>
+<span class="fc" id="L36">        this.billMedicineDAO = billMedicineDAO;</span>
+<span class="fc" id="L37">        this.objectMapper = new ObjectMapper();</span>
+<span class="fc" id="L38">    }</span>
+
+    /**
+     * Maneja las solicitudes HTTP entrantes para el endpoint de la relación factura-medicamento.
+     * Configura las cabeceras CORS y delega a los métodos de manejo apropiados
+     * según el método HTTP (handlePost, handleGet, handlePut).
+     *
+     * @param exchange El objeto HttpExchange que representa la solicitud y respuesta.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
+    @Override
+    public void handle(HttpExchange exchange) throws IOException {
+        // Set CORS headers
+<span class="fc" id="L51">        exchange.getResponseHeaders().add(&quot;Access-Control-Allow-Origin&quot;, &quot;*&quot;);</span>
+<span class="fc" id="L52">        exchange.getResponseHeaders().add(&quot;Access-Control-Allow-Methods&quot;, &quot;GET, POST, PUT, OPTIONS&quot;);</span>
+<span class="fc" id="L53">        exchange.getResponseHeaders().add(&quot;Access-Control-Allow-Headers&quot;, &quot;Content-Type, Authorization&quot;);</span>
+        
+        // Handle CORS preflight requests
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        if(&quot;OPTIONS&quot;.equalsIgnoreCase(exchange.getRequestMethod())){</span>
+<span class="fc" id="L57">            exchange.sendResponseHeaders(204, -1);</span>
+<span class="fc" id="L58">            return;</span>
+        }
+        
+<span class="fc" id="L61">        String method = exchange.getRequestMethod();</span>
+        try {
+<span class="fc bfc" id="L63" title="All 2 branches covered.">            if(&quot;POST&quot;.equalsIgnoreCase(method)){</span>
+<span class="fc" id="L64">                handlePost(exchange);</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">            } else if(&quot;GET&quot;.equalsIgnoreCase(method)){</span>
+<span class="fc" id="L66">                handleGet(exchange);</span>
+<span class="fc bfc" id="L67" title="All 2 branches covered.">            } else if(&quot;PUT&quot;.equalsIgnoreCase(method)){</span>
+<span class="fc" id="L68">                handlePut(exchange);</span>
+            } else {
+<span class="fc" id="L70">                exchange.sendResponseHeaders(405, -1); // Method Not Allowed</span>
+            }
+<span class="fc" id="L72">        } catch (Exception e) {</span>
+<span class="fc" id="L73">            LOGGER.log(Level.SEVERE, &quot;Unhandled error in BillMedicineHandler&quot;, e);</span>
+<span class="fc" id="L74">            exchange.sendResponseHeaders(500, -1); // Internal Server Error</span>
+<span class="fc" id="L75">        }</span>
+<span class="fc" id="L76">    }</span>
+
+    /**
+     * Maneja las solicitudes POST para crear una nueva asociación factura-medicamento.
+     * Espera un cuerpo de solicitud JSON con los datos (incluyendo IDs de factura y medicamento).
+     *
+     * @param exchange El objeto HttpExchange.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
+    private void handlePost(HttpExchange exchange) throws IOException {
+<span class="fc" id="L86">        String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);</span>
+<span class="fc" id="L87">        BillMedicine createBM = objectMapper.readValue(requestBody, BillMedicine.class);</span>
+<span class="fc" id="L88">        Bill bill = createBM.getBill(); // Asegurar que el JSON incluye al menos bill.id</span>
+<span class="fc" id="L89">        Medicine medicine = createBM.getMedicine(); // Asegurar que el JSON incluye al menos medicine.id</span>
+        
+        // Validar IDs
+<span class="pc bpc" id="L92" title="3 of 8 branches missed.">        if (bill == null || bill.getIdBill() == null || medicine == null || medicine.getIdMedicine() == null) {</span>
+<span class="fc" id="L93">            sendResponse(exchange, 400, &quot;{\&quot;error\&quot;: \&quot;Bill ID and Medicine ID are required\&quot;}&quot;);</span>
+<span class="fc" id="L94">            return;</span>
+        }
+        
+<span class="fc" id="L97">        BillMedicine bm = billMedicineDAO.create(</span>
+                bill,
+                medicine,
+<span class="fc" id="L100">                createBM.getQuantity(),</span>
+<span class="fc" id="L101">                createBM.getCost(),</span>
+<span class="fc" id="L102">                createBM.getCopay(),</span>
+<span class="fc" id="L103">                createBM.getTotal()</span>
+        );
+<span class="fc bfc" id="L105" title="All 2 branches covered.">        if(bm != null){</span>
+<span class="fc" id="L106">            sendResponse(exchange, 201, objectMapper.writeValueAsString(bm));</span>
+        } else {
+<span class="fc" id="L108">            sendResponse(exchange, 400, &quot;{\&quot;error\&quot;: \&quot;Failed to create bill-medicine association\&quot;}&quot;);</span>
+        }
+<span class="fc" id="L110">    }</span>
+
+    /**
+     * Maneja las solicitudes GET para obtener asociaciones factura-medicamento.
+     * Si se proporciona un parámetro de consulta 'id' en formato 'billId,medicineId',
+     * devuelve la asociación específica. De lo contrario, devuelve todas.
+     *
+     * @param exchange El objeto HttpExchange.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
+    private void handleGet(HttpExchange exchange) throws IOException {
+<span class="fc" id="L121">        String query = exchange.getRequestURI().getQuery();</span>
+<span class="pc bpc" id="L122" title="1 of 4 branches missed.">        if(query != null &amp;&amp; query.startsWith(&quot;id=&quot;)){</span>
+<span class="fc" id="L123">            handleGetById(exchange, query);</span>
+        } else {
+<span class="fc" id="L125">            handleGetAll(exchange);</span>
+        }
+<span class="fc" id="L127">    }</span>
+
+    /**
+     * Maneja la obtención de una asociación factura-medicamento específica por su ID compuesto.
+     *
+     * @param exchange El objeto HttpExchange.
+     * @param query La cadena de consulta que contiene el ID compuesto (formato: id=billId,medicineId).
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
+    private void handleGetById(HttpExchange exchange, String query) throws IOException {
+<span class="fc" id="L137">        String[] parts = query.substring(3).split(&quot;,&quot;);</span>
+<span class="fc bfc" id="L138" title="All 2 branches covered.">        if(parts.length == 2){</span>
+            try {
+<span class="fc" id="L140">                Long billId = Long.parseLong(parts[0]);</span>
+<span class="fc" id="L141">                Long medicineId = Long.parseLong(parts[1]);</span>
+<span class="fc" id="L142">                BillMedicineId id = new BillMedicineId(billId, medicineId);</span>
+<span class="fc" id="L143">                BillMedicine bm = billMedicineDAO.getById(id);</span>
+<span class="fc bfc" id="L144" title="All 2 branches covered.">                if(bm != null){</span>
+<span class="fc" id="L145">                    sendResponse(exchange, 200, objectMapper.writeValueAsString(bm));</span>
+                } else {
+<span class="fc" id="L147">                    exchange.sendResponseHeaders(404, -1); // Not Found</span>
+                }
+<span class="fc" id="L149">            } catch (NumberFormatException e) {</span>
+<span class="fc" id="L150">                sendResponse(exchange, 400, &quot;{\&quot;error\&quot;: \&quot;Invalid composite ID format (expected: billId,medicineId)\&quot;}&quot;);</span>
+<span class="fc" id="L151">            }</span>
+        } else {
+<span class="fc" id="L153">            sendResponse(exchange, 400, &quot;{\&quot;error\&quot;: \&quot;Invalid ID parameter format (expected: id=billId,medicineId)\&quot;}&quot;);</span>
+        }
+<span class="fc" id="L155">    }</span>
+
+    /**
+     * Maneja la obtención de todas las asociaciones factura-medicamento.
+     *
+     * @param exchange El objeto HttpExchange.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
+    private void handleGetAll(HttpExchange exchange) throws IOException {
+<span class="fc" id="L164">        List&lt;BillMedicine&gt; list = billMedicineDAO.getAll();</span>
+<span class="fc" id="L165">        sendResponse(exchange, 200, objectMapper.writeValueAsString(list));</span>
+<span class="fc" id="L166">    }</span>
+
+    /**
+     * Maneja las solicitudes PUT para actualizar una asociación factura-medicamento existente.
+     * Espera un cuerpo de solicitud JSON con los datos completos, incluyendo la clave compuesta.
+     *
+     * @param exchange El objeto HttpExchange.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
+    private void handlePut(HttpExchange exchange) throws IOException {
+<span class="fc" id="L176">        String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);</span>
+<span class="fc" id="L177">        BillMedicine updateBM = objectMapper.readValue(requestBody, BillMedicine.class);</span>
+        
+        // Validar clave compuesta
+<span class="pc bpc" id="L180" title="2 of 6 branches missed.">        if (updateBM.getId() == null || updateBM.getId().getBillId() == null || updateBM.getId().getMedicineId() == null) {</span>
+<span class="fc" id="L181">            sendResponse(exchange, 400, &quot;{\&quot;error\&quot;: \&quot;Composite ID (billId, medicineId) is required for update\&quot;}&quot;);</span>
+<span class="fc" id="L182">            return;</span>
+        }
+        
+<span class="fc" id="L185">        BillMedicine bm = billMedicineDAO.update(updateBM);</span>
+<span class="fc bfc" id="L186" title="All 2 branches covered.">        if(bm != null){</span>
+<span class="fc" id="L187">            sendResponse(exchange, 200, objectMapper.writeValueAsString(bm));</span>
+        } else {
+            // Podría ser 404 si el ID no existe, o 400 si la actualización falló
+<span class="fc" id="L190">            sendResponse(exchange, 400, &quot;{\&quot;error\&quot;: \&quot;Failed to update bill-medicine association or association not found\&quot;}&quot;);</span>
+        }
+<span class="fc" id="L192">    }</span>
+    
+    /**
+     * Envía una respuesta HTTP con un código de estado y cuerpo específicos.
+     *
+     * @param exchange El objeto HttpExchange.
+     * @param statusCode El código de estado HTTP.
+     * @param responseBody El cuerpo de la respuesta como String.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
+    private void sendResponse(HttpExchange exchange, int statusCode, String responseBody) throws IOException {
+<span class="fc" id="L203">        exchange.getResponseHeaders().set(&quot;Content-Type&quot;, &quot;application/json; charset=UTF-8&quot;);</span>
+<span class="fc" id="L204">        byte[] responseBytes = responseBody.getBytes(StandardCharsets.UTF_8);</span>
+<span class="fc" id="L205">        exchange.sendResponseHeaders(statusCode, responseBytes.length);</span>
+<span class="fc" id="L206">        try (OutputStream os = exchange.getResponseBody()) {</span>
+<span class="fc" id="L207">            os.write(responseBytes);</span>
+        }
+<span class="fc" id="L209">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PrescriptionMedicineDAO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backv5</a> &gt; <a href="index.source.html" class="el_package">com.sources.app.dao</a> &gt; <span class="el_source">PrescriptionMedicineDAO.java</span></div><h1>PrescriptionMedicineDAO.java</h1><pre class="source lang-java linenums">package com.sources.app.dao;
+
+import com.sources.app.entities.PrescriptionMedicine;
+import com.sources.app.entities.PrescriptionMedicineId;
+import com.sources.app.entities.Prescription;
+import com.sources.app.entities.Medicine;
+import com.sources.app.util.HibernateUtil;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.hibernate.query.Query;
+
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Data Access Object (DAO) para gestionar entidades {@link PrescriptionMedicine}.
+ * Esta clase proporciona métodos para realizar operaciones CRUD en registros PrescriptionMedicine,
+ * que representan la relación entre una {@link Prescription} y un {@link Medicine},
+ * incluyendo detalles como dosis y frecuencia. Utiliza Hibernate para interacciones con la base de datos.
+ */
+<span class="fc" id="L22">public class PrescriptionMedicineDAO {</span>
+
+<span class="fc" id="L24">    private static final Logger LOGGER = Logger.getLogger(PrescriptionMedicineDAO.class.getName());</span>
+
+    /**
+     * Crea un nuevo registro PrescriptionMedicine en la base de datos.
+     * Este método vincula un medicamento específico a una receta con detalles de dosificación.
+     *
+     * @param prescription La entidad {@link Prescription} a enlazar.
+     * @param medicine La entidad {@link Medicine} a enlazar.
+     * @param dosis La dosis del medicamento prescrito.
+     * @param frecuencia La frecuencia con la que debe tomarse el medicamento.
+     * @param duracion La duración durante la cual debe tomarse el medicamento.
+     * @return La entidad {@link PrescriptionMedicine} recién creada, o null si ocurrió un error.
+     */
+    public PrescriptionMedicine create(Prescription prescription, Medicine medicine,
+                                       Double dosis, Double frecuencia, Double duracion) {
+<span class="fc" id="L39">        Transaction tx = null;</span>
+<span class="fc" id="L40">        PrescriptionMedicine pm = null;</span>
+<span class="fc" id="L41">        try (Session session = HibernateUtil.getSessionFactory().openSession()) {</span>
+<span class="fc" id="L42">            tx = session.beginTransaction();</span>
+
+<span class="fc" id="L44">            pm = new PrescriptionMedicine();</span>
+<span class="fc" id="L45">            pm.setPrescription(prescription);</span>
+<span class="fc" id="L46">            pm.setMedicine(medicine);</span>
+<span class="fc" id="L47">            pm.setDosis(dosis);</span>
+<span class="fc" id="L48">            pm.setFrecuencia(frecuencia);</span>
+<span class="fc" id="L49">            pm.setDuracion(duracion);</span>
+
+<span class="fc" id="L51">            session.save(pm);</span>
+<span class="fc" id="L52">            tx.commit();</span>
+<span class="nc" id="L53">        } catch (Exception e) {</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">            if (tx != null) tx.rollback();</span>
+<span class="nc bnc" id="L55" title="All 4 branches missed.">            LOGGER.log(Level.SEVERE, &quot;Error creating PrescriptionMedicine (prescriptionNull=&quot; + (prescription == null) + &quot;, medicineNull=&quot; + (medicine == null) + &quot;, dosis=&quot; + dosis + &quot;, frecuencia=&quot; + frecuencia + &quot;, duracion=&quot; + duracion + &quot;)&quot;, e);</span>
+<span class="fc" id="L56">        }</span>
+<span class="fc" id="L57">        return pm;</span>
+    }
+
+    /**
+     * Recupera todos los registros PrescriptionMedicine de la base de datos.
+     *
+     * @return Una lista de todas las entidades {@link PrescriptionMedicine}, o null si ocurrió un error.
+     */
+    public List&lt;PrescriptionMedicine&gt; getAll() {
+<span class="fc" id="L66">        try (Session session = HibernateUtil.getSessionFactory().openSession()) {</span>
+<span class="fc" id="L67">            Query&lt;PrescriptionMedicine&gt; query = session.createQuery(&quot;FROM PrescriptionMedicine&quot;, PrescriptionMedicine.class);</span>
+<span class="fc" id="L68">            return query.list();</span>
+<span class="nc" id="L69">        } catch (Exception e) {</span>
+<span class="nc" id="L70">            LOGGER.log(Level.SEVERE, &quot;Error fetching all PrescriptionMedicine records&quot;, e);</span>
+<span class="nc" id="L71">            return null;</span>
+        }
+    }
+
+    // READ BY ID (clave compuesta)
+    public PrescriptionMedicine getById(PrescriptionMedicineId id) {
+<span class="nc" id="L77">        try (Session session = HibernateUtil.getSessionFactory().openSession()) {</span>
+<span class="nc" id="L78">            return session.get(PrescriptionMedicine.class, id);</span>
+<span class="nc" id="L79">        } catch (Exception e) {</span>
+<span class="nc" id="L80">            LOGGER.log(Level.SEVERE, &quot;Error fetching PrescriptionMedicine by composite id=&quot; + id, e);</span>
+<span class="nc" id="L81">            return null;</span>
+        }
+    }
+
+    // UPDATE
+    public PrescriptionMedicine update(PrescriptionMedicine pm) {
+<span class="fc" id="L87">        Transaction tx = null;</span>
+<span class="fc" id="L88">        try (Session session = HibernateUtil.getSessionFactory().openSession()) {</span>
+<span class="fc" id="L89">            tx = session.beginTransaction();</span>
+<span class="fc" id="L90">            session.update(pm);</span>
+<span class="fc" id="L91">            tx.commit();</span>
+<span class="fc" id="L92">            return pm;</span>
+<span class="nc" id="L93">        } catch (Exception e) {</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">            if (tx != null) tx.rollback();</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">            LOGGER.log(Level.SEVERE, &quot;Error updating PrescriptionMedicine (entity null=&quot; + (pm == null) + &quot;)&quot;, e);</span>
+<span class="nc" id="L96">            return null;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
