@@ -1,7 +1,5 @@
 # 🏥 Ensurance Pharmacy - Sistema Integrado de Seguros y Farmacia
 
--
-
 - Sistema completo que integra gestión de seguros médicos y farmacia, desarrollado con arquitectura de microservicios.
 
 ## 📋 Índice
