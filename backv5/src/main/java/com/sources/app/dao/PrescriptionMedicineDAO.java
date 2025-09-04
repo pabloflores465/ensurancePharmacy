@@ -48,7 +48,7 @@ public class PrescriptionMedicineDAO {
             pm.setFrecuencia(frecuencia);
             pm.setDuracion(duracion);
 
-            session.save(pm);
+            session.persist(pm);
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
@@ -87,7 +87,7 @@ public class PrescriptionMedicineDAO {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
-            session.update(pm);
+            session.merge(pm);
             tx.commit();
             return pm;
         } catch (Exception e) {

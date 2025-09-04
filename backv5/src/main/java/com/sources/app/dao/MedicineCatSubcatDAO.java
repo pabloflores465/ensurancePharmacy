@@ -43,7 +43,7 @@ public class MedicineCatSubcatDAO {
             mcs.setCategory(category);
             mcs.setSubcategory(subcategory);
 
-            session.save(mcs);
+            session.persist(mcs);
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
@@ -95,7 +95,7 @@ public class MedicineCatSubcatDAO {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
-            session.update(mcs);
+            session.merge(mcs);
             tx.commit();
             return mcs;
         } catch (Exception e) {

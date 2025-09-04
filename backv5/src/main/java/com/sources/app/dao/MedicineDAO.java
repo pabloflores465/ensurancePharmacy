@@ -1,5 +1,6 @@
 package com.sources.app.dao;
 
+import com.sources.app.dto.MedicineCreateRequest;
 import com.sources.app.entities.Medicine;
 import com.sources.app.util.HibernateUtil;
 import org.hibernate.Session;
@@ -35,34 +36,44 @@ public class MedicineDAO {
      * @param soldUnits        El número inicial de unidades vendidas (típicamente 0).
      * @return La entidad {@link Medicine} recién creada, o null si ocurrió un error.
      */
-    public Medicine create(String name, String activeMedicament, String description, String image,
-                           String concentration, Double presentacion, Integer stock, String brand,
-                           Boolean prescription, Double price, Integer soldUnits) {
+    public Medicine create(MedicineCreateRequest request) {
         Transaction tx = null;
         Medicine med = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
 
             med = new Medicine();
-            med.setName(name);
-            med.setActiveMedicament(activeMedicament);
-            med.setDescription(description);
-            med.setImage(image);
-            med.setConcentration(concentration);
-            med.setPresentacion(presentacion);
-            med.setStock(stock);
-            med.setBrand(brand);
-            med.setPrescription(prescription);
-            med.setPrice(price);
-            med.setSoldUnits(soldUnits);
+            med.setName(request.getName());
+            med.setActiveMedicament(request.getActiveMedicament());
+            med.setDescription(request.getDescription());
+            med.setImage(request.getImage());
+            med.setConcentration(request.getConcentration());
+            med.setPresentacion(request.getPresentacion());
+            med.setStock(request.getStock());
+            med.setBrand(request.getBrand());
+            med.setPrescription(request.getPrescription());
+            med.setPrice(request.getPrice());
+            med.setSoldUnits(request.getSoldUnits());
 
-            session.save(med);
+            session.persist(med);
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
-            LOGGER.log(Level.SEVERE, "Error creating Medicine (name=" + name + ")", e);
+            LOGGER.log(Level.SEVERE, () -> "Error creating Medicine (name=" + request.getName() + ")");
         }
         return med;
+    }
+
+    /**
+     * @deprecated Use {@link #create(MedicineCreateRequest)} instead.
+     */
+    @Deprecated
+    public Medicine create(String name, String activeMedicament, String description, String image,
+                           String concentration, Double presentacion, Integer stock, String brand,
+                           Boolean prescription, Double price, Integer soldUnits) {
+        MedicineCreateRequest request = new MedicineCreateRequest(name, activeMedicament, description, image,
+                concentration, presentacion, stock, brand, prescription, price, soldUnits);
+        return create(request);
     }
 
     /**
@@ -90,7 +101,7 @@ public class MedicineDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Medicine.class, id);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error fetching Medicine by id=" + id, e);
+            LOGGER.log(Level.SEVERE, () -> "Error fetching Medicine by id=" + id);
             return null;
         }
     }
@@ -110,7 +121,7 @@ public class MedicineDAO {
             return medicine;
         } catch (Exception e) {
             if (tx != null) tx.rollback();
-            LOGGER.log(Level.SEVERE, "Error updating Medicine (entity null=" + (medicine == null) + ")", e);
+            LOGGER.log(Level.SEVERE, () -> "Error updating Medicine (id=" + medicine.getIdMedicine() + ")");
             return null;
         }
     }

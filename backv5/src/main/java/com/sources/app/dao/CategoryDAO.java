@@ -37,7 +37,7 @@ public class CategoryDAO {
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
-            LOGGER.log(Level.SEVERE, "Error creating Category with name: " + name, e);
+            LOGGER.log(Level.SEVERE, () -> "Error creating Category with name: " + name);
         }
         return category;
     }
@@ -67,7 +67,7 @@ public class CategoryDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Category.class, id);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error fetching Category by id: " + id, e);
+            LOGGER.log(Level.SEVERE, () -> "Error fetching Category by id: " + id);
             return null;
         }
     }

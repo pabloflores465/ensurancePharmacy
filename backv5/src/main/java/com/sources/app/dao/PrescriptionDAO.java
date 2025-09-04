@@ -43,7 +43,7 @@ public class PrescriptionDAO {
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
-            LOGGER.log(Level.SEVERE, "Error creating Prescription (hospitalNull=" + (hospital == null) + ", userNull=" + (user == null) + ", approved=" + approved + ")", e);
+            LOGGER.log(Level.SEVERE, () -> "Error creating Prescription (hospitalNull=" + (hospital == null) + ", userNull=" + (user == null) + ", approved=" + approved + ")");
         }
         return prescription;
     }
@@ -73,7 +73,7 @@ public class PrescriptionDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Prescription.class, id);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error fetching Prescription by id=" + id, e);
+            LOGGER.log(Level.SEVERE, () -> "Error fetching Prescription by id=" + id);
             return null;
         }
     }
@@ -93,7 +93,7 @@ public class PrescriptionDAO {
             return prescription;
         } catch (Exception e) {
             if (tx != null) tx.rollback();
-            LOGGER.log(Level.SEVERE, "Error updating Prescription (entity null=" + (prescription == null) + ")", e);
+            LOGGER.log(Level.SEVERE, () -> "Error updating Prescription (id=" + prescription.getIdPrescription() + ")");
             return null;
         }
     }

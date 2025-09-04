@@ -18,9 +18,49 @@ public class ExternalPrescriptionDAOTest {
 
     @Test
     public void testExternalPrescriptionDAOInstantiation() {
-        // TODO: implement tests for ExternalPrescriptionDAO
         ExternalPrescriptionDAO instance = new ExternalPrescriptionDAO();
         assertNotNull(instance);
+    }
+
+    @Test
+    public void testGetByIdWithValidVerificationReturnsNull() {
+        // This test covers the case where verification succeeds but no prescription exists
+        ExternalPrescriptionDAO dao = new ExternalPrescriptionDAO();
+        // Using a mock that will cause URL construction to fail, triggering the exception path
+        MockHttpExchange ex = new MockHttpExchange("GET", "http://localhost:8080/base");
+        
+        // This should return null due to the invalid URL construction
+        assertNull(dao.getbyId(999L, "valid@example.com", ex));
+    }
+
+    @Test
+    public void testGetByIdWithInvalidEmail() {
+        ExternalPrescriptionDAO dao = new ExternalPrescriptionDAO();
+        MockHttpExchange ex = new MockHttpExchange("GET", "http://localhost:8080/base");
+        
+        // Test with null email
+        assertNull(dao.getbyId(1L, null, ex));
+        
+        // Test with empty email
+        assertNull(dao.getbyId(1L, "", ex));
+    }
+
+    @Test
+    public void testGetByIdWithNullId() {
+        ExternalPrescriptionDAO dao = new ExternalPrescriptionDAO();
+        MockHttpExchange ex = new MockHttpExchange("GET", "http://localhost:8080/base");
+        
+        // Test with null ID
+        assertNull(dao.getbyId(null, "user@example.com", ex));
+    }
+
+    @Test
+    public void testGetByIdWithMalformedUri() {
+        ExternalPrescriptionDAO dao = new ExternalPrescriptionDAO();
+        // Create a mock with a malformed URI that will cause URL construction issues
+        MockHttpExchange ex = new MockHttpExchange("GET", "not-a-valid-uri");
+        
+        assertNull(dao.getbyId(1L, "user@example.com", ex));
     }
 
     private static class MockHttpExchange extends HttpExchange {

@@ -1,5 +1,6 @@
 package com.sources.app.dao;
 
+import com.sources.app.dto.ServiceApprovalCreateRequest;
 import com.sources.app.entities.Hospital;
 import com.sources.app.entities.ServiceApproval;
 import com.sources.app.entities.User;
@@ -33,34 +34,25 @@ public class ServiceApprovalDAO {
      * @param serviceId          El identificador del servicio que se está aprobando.
      * @param serviceName        El nombre del servicio.
      * @param serviceDescription Una descripción del servicio (puede ser null).
-     * @param serviceCost        El costo total del servicio.
-     * @param coveredAmount      El monto cubierto por el seguro o la póliza.
-     * @param patientAmount      El monto a pagar por el paciente.
-     * @param status             El estado inicial de la aprobación (p. ej., "PENDIENTE", "APROBADO").
      * @return La entidad {@link ServiceApproval} recién creada con su código generado, o null si ocurrió un error.
      */
-    public ServiceApproval create(User user, Hospital hospital, String serviceId, String serviceName,
-                                String serviceDescription, Double serviceCost, Double coveredAmount,
-                                Double patientAmount, String status) {
+    public ServiceApproval create(ServiceApprovalCreateRequest request) {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
             
             ServiceApproval approval = new ServiceApproval();
-            approval.setUser(user);
-            approval.setHospital(hospital);
-            approval.setServiceId(serviceId);
-            approval.setServiceName(serviceName);
-            approval.setServiceDescription(serviceDescription);
-            approval.setServiceCost(serviceCost);
-            approval.setCoveredAmount(coveredAmount);
-            approval.setPatientAmount(patientAmount);
-            approval.setStatus(status);
-            approval.setApprovalDate(new Date());
-            
-            // Generar código de aprobación único
-            String approvalCode = generateApprovalCode();
-            approval.setApprovalCode(approvalCode);
+            approval.setUser(request.getUser());
+            approval.setHospital(request.getHospital());
+            approval.setServiceId(request.getServiceId());
+            approval.setServiceName(request.getServiceName());
+            approval.setServiceDescription(request.getServiceDescription());
+            approval.setServiceCost(request.getServiceCost());
+            approval.setCoveredAmount(request.getCoveredAmount());
+            approval.setPatientAmount(request.getPatientAmount());
+            approval.setStatus(request.getStatus());
+            approval.setApprovalCode(generateApprovalCode());
+            approval.setCreatedAt(new Date());
             
             session.persist(approval);
             transaction.commit();
@@ -69,9 +61,21 @@ public class ServiceApprovalDAO {
             if (transaction != null) {
                 transaction.rollback();
             }
-            LOGGER.log(Level.SEVERE, "Error creating ServiceApproval (serviceId=" + serviceId + ", serviceName=" + serviceName + ")", e);
+            LOGGER.log(Level.SEVERE, () -> "Error creating ServiceApproval (serviceId=" + request.getServiceId() + ", serviceName=" + request.getServiceName() + ")");
             return null;
         }
+    }
+
+    /**
+     * @deprecated Use {@link #create(ServiceApprovalCreateRequest)} instead.
+     */
+    @Deprecated
+    public ServiceApproval create(User user, Hospital hospital, String serviceId, String serviceName,
+                                String serviceDescription, Double serviceCost, Double coveredAmount,
+                                Double patientAmount, String status) {
+        ServiceApprovalCreateRequest request = new ServiceApprovalCreateRequest(user, hospital, serviceId, serviceName,
+                serviceDescription, serviceCost, coveredAmount, patientAmount, status);
+        return create(request);
     }
     
     /**
@@ -100,17 +104,17 @@ public class ServiceApprovalDAO {
             if (transaction != null) {
                 transaction.rollback();
             }
-            LOGGER.log(Level.SEVERE, "Error updating prescription fields for ServiceApproval id=" + approvalId, e);
+            LOGGER.log(Level.SEVERE, () -> "Error updating ServiceApproval prescription (id=" + approvalId + ")");
             return null;
         }
     }
     
     /**
-     * Actualiza el estado de un ServiceApproval existente.
+     * Actualiza el estado de un ServiceApproval existente por ID.
      * Si el nuevo estado es "RECHAZADO", se puede proporcionar una razón de rechazo.
      * Si el nuevo estado es "COMPLETADO", la fecha de finalización se establece automáticamente.
      *
-     * @param approvalId      El ID del registro de ServiceApproval a actualizar.
+     * @param approvalId      El ID del ServiceApproval a actualizar.
      * @param status          El nuevo estado (p. ej., "APROBADO", "RECHAZADO", "COMPLETADO").
      * @param rejectionReason La razón del rechazo (relevante solo si el estado es "RECHAZADO", puede ser null).
      * @return La entidad {@link ServiceApproval} actualizada, o null si no se encontró la aprobación o ocurrió un error.
@@ -120,29 +124,42 @@ public class ServiceApprovalDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
             
-            ServiceApproval approval = session.get(ServiceApproval.class, approvalId);
-            if (approval != null) {
-                approval.setStatus(status);
-                if (rejectionReason != null) {
-                    approval.setRejectionReason(rejectionReason);
-                }
-                
-                if ("COMPLETED".equals(status)) {
-                    approval.setCompletedDate(new Date());
-                }
-                
-                session.merge(approval);
-                transaction.commit();
-                return approval;
+            ServiceApproval serviceApproval = session.get(ServiceApproval.class, approvalId);
+            if (serviceApproval == null) {
+                return null;
             }
-            return null;
+            
+            serviceApproval.setStatus(status);
+            if ("RECHAZADO".equals(status) || "REJECTED".equals(status)) {
+                serviceApproval.setRejectionReason(rejectionReason);
+            } else if ("COMPLETADO".equals(status) || "COMPLETED".equals(status)) {
+                serviceApproval.setCompletedDate(new Date());
+            }
+            
+            session.merge(serviceApproval);
+            transaction.commit();
+            return serviceApproval;
         } catch (Exception e) {
             if (transaction != null) {
                 transaction.rollback();
             }
-            LOGGER.log(Level.SEVERE, "Error updating status for ServiceApproval id=" + approvalId + ", newStatus=" + status, e);
+            LOGGER.log(Level.SEVERE, () -> "Error updating ServiceApproval status (id=" + approvalId + ")");
             return null;
         }
+    }
+
+    /**
+     * Actualiza el estado de un ServiceApproval existente.
+     * Si el nuevo estado es "RECHAZADO", se puede proporcionar una razón de rechazo.
+     * Si el nuevo estado es "COMPLETADO", la fecha de finalización se establece automáticamente.
+     *
+     * @param serviceApproval  La entidad {@link ServiceApproval} a actualizar.
+     * @param status          El nuevo estado (p. ej., "APROBADO", "RECHAZADO", "COMPLETADO").
+     * @param rejectionReason La razón del rechazo (relevante solo si el estado es "RECHAZADO", puede ser null).
+     * @return La entidad {@link ServiceApproval} actualizada, o null si no se encontró la aprobación o ocurrió un error.
+     */
+    public ServiceApproval updateStatus(ServiceApproval serviceApproval, String status, String rejectionReason) {
+        return updateStatus(serviceApproval.getIdApproval(), status, rejectionReason);
     }
     
     /**
@@ -155,7 +172,7 @@ public class ServiceApprovalDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(ServiceApproval.class, id);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error fetching ServiceApproval by id=" + id, e);
+            LOGGER.log(Level.SEVERE, () -> "Error fetching ServiceApproval by id=" + id);
             return null;
         }
     }
@@ -173,7 +190,7 @@ public class ServiceApprovalDAO {
             query.setParameter("code", approvalCode);
             return query.uniqueResult();
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error fetching ServiceApproval by approvalCode=" + approvalCode, e);
+            LOGGER.log(Level.SEVERE, () -> "Error fetching ServiceApproval by approvalCode=" + approvalCode);
             return null;
         }
     }
@@ -191,7 +208,7 @@ public class ServiceApprovalDAO {
             query.setParameter("userId", userId);
             return query.list();
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error fetching ServiceApproval by user id=" + userId, e);
+            LOGGER.log(Level.SEVERE, () -> "Error fetching ServiceApproval by userId=" + userId);
             return null;
         }
     }

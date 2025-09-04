@@ -38,7 +38,7 @@ public class OrdersDAO {
             User user = session.get(User.class, idUser);
             order.setUser(user);
 
-            session.save(order);
+            session.persist(order);
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
@@ -87,7 +87,7 @@ public class OrdersDAO {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
-            session.update(order);
+            session.merge(order);
             tx.commit();
             return order;
         } catch (Exception e) {

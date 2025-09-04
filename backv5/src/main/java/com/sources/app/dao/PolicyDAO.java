@@ -40,7 +40,7 @@ public class PolicyDAO {
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
-            LOGGER.log(Level.SEVERE, "Error creating Policy (percentage=" + percentage + ", enabled=" + enabled + ")", e);
+            LOGGER.log(Level.SEVERE, () -> "Error creating Policy (percentage=" + percentage + ", enabled=" + enabled + ")");
         }
         return policy;
     }
@@ -70,7 +70,7 @@ public class PolicyDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Policy.class, id);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error fetching Policy by id=" + id, e);
+            LOGGER.log(Level.SEVERE, () -> "Error fetching Policy by id=" + id);
             return null;
         }
     }
@@ -90,7 +90,7 @@ public class PolicyDAO {
             return policy;
         } catch (Exception e) {
             if (tx != null) tx.rollback();
-            LOGGER.log(Level.SEVERE, "Error updating Policy (entity null=" + (policy == null) + ")", e);
+            LOGGER.log(Level.SEVERE, () -> "Error updating Policy (id=" + policy.getIdPolicy() + ")");
             return null;
         }
     }

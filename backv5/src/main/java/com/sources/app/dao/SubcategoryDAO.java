@@ -34,7 +34,7 @@ public class SubcategoryDAO {
             subcategory = new Subcategory();
             subcategory.setName(name);
 
-            session.save(subcategory);
+            session.persist(subcategory);
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
@@ -83,7 +83,7 @@ public class SubcategoryDAO {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
-            session.update(subcategory);
+            session.merge(subcategory);
             tx.commit();
             return subcategory;
         } catch (Exception e) {

@@ -50,7 +50,7 @@ public class OrderMedicineDAO {
             om.setCost(cost);
             om.setTotal(total);
 
-            session.save(om);
+            session.persist(om);
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
@@ -89,7 +89,7 @@ public class OrderMedicineDAO {
             Transaction tx = session.beginTransaction();
             OrderMedicine om = session.get(OrderMedicine.class, id);
             if (om != null) {
-                session.delete(om);
+                session.remove(om);
                 tx.commit();
                 return true;
             } else {
@@ -127,7 +127,7 @@ public class OrderMedicineDAO {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
-            session.update(om);
+            session.merge(om);
             tx.commit();
             return om;
         } catch (Exception e) {
