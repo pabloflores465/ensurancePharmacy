@@ -82,12 +82,12 @@ steps:
       SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
     commands:
       - export PROJECT_SUFFIX=$(cat .project_suffix)
-      - echo "🔍 SonarQube Ensurance analysis for environment: $PROJECT_SUFFIX"
+      - 'echo "🔍 SonarQube Ensurance analysis for environment: $PROJECT_SUFFIX"'
       - |
         sonar-scanner \
           -Dsonar.projectKey=ensurance-backend-$PROJECT_SUFFIX \
-          -Dsonar.projectName="Ensurance Backend ${PROJECT_SUFFIX^^}" \
-          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.projectName="Ensurance Backend $(echo $PROJECT_SUFFIX | tr '[:lower:]' '[:upper:]')" \
+          -Dsonar.projectVersion=$DRONE_BUILD_NUMBER \
           -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src \
           -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests \
           -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes \
@@ -110,12 +110,12 @@ steps:
       SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
     commands:
       - export PROJECT_SUFFIX=$(cat .project_suffix)
-      - echo "🔍 SonarQube Pharmacy analysis for environment: $PROJECT_SUFFIX"
+      - 'echo "🔍 SonarQube Pharmacy analysis for environment: $PROJECT_SUFFIX"'
       - |
         sonar-scanner \
           -Dsonar.projectKey=pharmacy-backend-$PROJECT_SUFFIX \
-          -Dsonar.projectName="Pharmacy Backend ${PROJECT_SUFFIX^^}" \
-          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.projectName="Pharmacy Backend $(echo $PROJECT_SUFFIX | tr '[:lower:]' '[:upper:]')" \
+          -Dsonar.projectVersion=$DRONE_BUILD_NUMBER \
           -Dsonar.sources=pharmacy/src \
           -Dsonar.tests=pharmacy/tests \
           -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info \
@@ -124,8 +124,8 @@ steps:
       - |
         sonar-scanner \
           -Dsonar.projectKey=pharmacy-frontend-$PROJECT_SUFFIX \
-          -Dsonar.projectName="Pharmacy Frontend ${PROJECT_SUFFIX^^}" \
-          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.projectName="Pharmacy Frontend $(echo $PROJECT_SUFFIX | tr '[:lower:]' '[:upper:]')" \
+          -Dsonar.projectVersion=$DRONE_BUILD_NUMBER \
           -Dsonar.sources=pharmacy/src \
           -Dsonar.tests=pharmacy/tests \
           -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info \
@@ -146,12 +146,12 @@ steps:
       SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
     commands:
       - export PROJECT_SUFFIX=$(cat .project_suffix)
-      - echo "🔍 SonarQube Ensurance analysis for environment: $PROJECT_SUFFIX"
+      - 'echo "🔍 SonarQube Ensurance analysis for environment: $PROJECT_SUFFIX"'
       - |
         sonar-scanner \
           -Dsonar.projectKey=ensurance-backend-$PROJECT_SUFFIX \
-          -Dsonar.projectName="Ensurance Backend ${PROJECT_SUFFIX^^}" \
-          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.projectName="Ensurance Backend $(echo $PROJECT_SUFFIX | tr '[:lower:]' '[:upper:]')" \
+          -Dsonar.projectVersion=$DRONE_BUILD_NUMBER \
           -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src \
           -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests \
           -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes \
@@ -172,12 +172,12 @@ steps:
       SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
     commands:
       - export PROJECT_SUFFIX=$(cat .project_suffix)
-      - echo "🔍 SonarQube Pharmacy analysis for environment: $PROJECT_SUFFIX"
+      - 'echo "🔍 SonarQube Pharmacy analysis for environment: $PROJECT_SUFFIX"'
       - |
         sonar-scanner \
           -Dsonar.projectKey=pharmacy-backend-$PROJECT_SUFFIX \
-          -Dsonar.projectName="Pharmacy Backend ${PROJECT_SUFFIX^^}" \
-          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.projectName="Pharmacy Backend $(echo $PROJECT_SUFFIX | tr '[:lower:]' '[:upper:]')" \
+          -Dsonar.projectVersion=$DRONE_BUILD_NUMBER \
           -Dsonar.sources=pharmacy/src \
           -Dsonar.tests=pharmacy/tests \
           -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info \
@@ -186,8 +186,8 @@ steps:
       - |
         sonar-scanner \
           -Dsonar.projectKey=pharmacy-frontend-$PROJECT_SUFFIX \
-          -Dsonar.projectName="Pharmacy Frontend ${PROJECT_SUFFIX^^}" \
-          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.projectName="Pharmacy Frontend $(echo $PROJECT_SUFFIX | tr '[:lower:]' '[:upper:]')" \
+          -Dsonar.projectVersion=$DRONE_BUILD_NUMBER \
           -Dsonar.sources=pharmacy/src \
           -Dsonar.tests=pharmacy/tests \
           -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info \
@@ -206,12 +206,12 @@ steps:
       SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
     commands:
       - export PROJECT_SUFFIX=$(cat .project_suffix)
-      - echo "🔍 SonarQube Ensurance analysis for environment: $PROJECT_SUFFIX"
+      - 'echo "🔍 SonarQube Ensurance analysis for environment: $PROJECT_SUFFIX"'
       - |
         sonar-scanner \
           -Dsonar.projectKey=ensurance-backend-$PROJECT_SUFFIX \
-          -Dsonar.projectName="Ensurance Backend ${PROJECT_SUFFIX^^}" \
-          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.projectName="Ensurance Backend $(echo $PROJECT_SUFFIX | tr '[:lower:]' '[:upper:]')" \
+          -Dsonar.projectVersion=$DRONE_BUILD_NUMBER \
           -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src \
           -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests \
           -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes \
@@ -233,12 +233,12 @@ steps:
       SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
     commands:
       - export PROJECT_SUFFIX=$(cat .project_suffix)
-      - echo "🔍 SonarQube Pharmacy analysis for environment: $PROJECT_SUFFIX"
+      - 'echo "🔍 SonarQube Pharmacy analysis for environment: $PROJECT_SUFFIX"'
       - |
         sonar-scanner \
           -Dsonar.projectKey=pharmacy-backend-$PROJECT_SUFFIX \
-          -Dsonar.projectName="Pharmacy Backend ${PROJECT_SUFFIX^^}" \
-          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.projectName="Pharmacy Backend $(echo $PROJECT_SUFFIX | tr '[:lower:]' '[:upper:]')" \
+          -Dsonar.projectVersion=$DRONE_BUILD_NUMBER \
           -Dsonar.sources=pharmacy/src \
           -Dsonar.tests=pharmacy/tests \
           -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info \
@@ -247,8 +247,8 @@ steps:
       - |
         sonar-scanner \
           -Dsonar.projectKey=pharmacy-frontend-$PROJECT_SUFFIX \
-          -Dsonar.projectName="Pharmacy Frontend ${PROJECT_SUFFIX^^}" \
-          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.projectName="Pharmacy Frontend $(echo $PROJECT_SUFFIX | tr '[:lower:]' '[:upper:]')" \
+          -Dsonar.projectVersion=$DRONE_BUILD_NUMBER \
           -Dsonar.sources=pharmacy/src \
           -Dsonar.tests=pharmacy/tests \
           -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info \
@@ -265,16 +265,16 @@ steps:
     environment:
       ENVIRONMENT: dev
     commands:
-      - echo "🚀 Deploy DEV Environment (puertos 3000-3003)"
+      - 'echo "🚀 Deploy DEV Environment (puertos 3000-3003)"'
       - docker-compose -f docker-compose.dev.yml down || true
       - ENVIRONMENT=dev docker-compose -f docker-compose.dev.yml up -d --build
       - sleep 30
       - docker-compose -f docker-compose.dev.yml ps
-      - echo "✅ DEV desplegado en:"
-      - echo "   - Ensurance Frontend: http://localhost:3000"
-      - echo "   - Pharmacy Frontend: http://localhost:3001"
-      - echo "   - Ensurance Backend: http://localhost:3002/api"
-      - echo "   - Pharmacy Backend: http://localhost:3003/api2"
+      - 'echo "✅ DEV desplegado en:"'
+      - 'echo "   - Ensurance Frontend: http://localhost:3000"'
+      - 'echo "   - Pharmacy Frontend: http://localhost:3001"'
+      - 'echo "   - Ensurance Backend: http://localhost:3002/api"'
+      - 'echo "   - Pharmacy Backend: http://localhost:3003/api2"'
     volumes:
       - name: docker-sock
         path: /var/run/docker.sock
@@ -290,16 +290,16 @@ steps:
     environment:
       ENVIRONMENT: qa
     commands:
-      - echo "🧪 Deploy QA Environment (puertos 4000-4003)"
+      - 'echo "🧪 Deploy QA Environment (puertos 4000-4003)"'
       - docker-compose -f docker-compose.qa.yml down || true
       - ENVIRONMENT=qa docker-compose -f docker-compose.qa.yml up -d --build
       - sleep 30
       - docker-compose -f docker-compose.qa.yml ps
-      - echo "✅ QA desplegado en:"
-      - echo "   - Ensurance Frontend: http://localhost:4000"
-      - echo "   - Pharmacy Frontend: http://localhost:4001"
-      - echo "   - Ensurance Backend: http://localhost:4002/api"
-      - echo "   - Pharmacy Backend: http://localhost:4003/api2"
+      - 'echo "✅ QA desplegado en:"'
+      - 'echo "   - Ensurance Frontend: http://localhost:4000"'
+      - 'echo "   - Pharmacy Frontend: http://localhost:4001"'
+      - 'echo "   - Ensurance Backend: http://localhost:4002/api"'
+      - 'echo "   - Pharmacy Backend: http://localhost:4003/api2"'
     volumes:
       - name: docker-sock
         path: /var/run/docker.sock
@@ -313,16 +313,16 @@ steps:
     environment:
       ENVIRONMENT: main
     commands:
-      - echo "🚀 Deploy MAIN Environment (puertos 5000-5003)"
+      - 'echo "🚀 Deploy MAIN Environment (puertos 5000-5003)"'
       - docker-compose -f docker-compose.main.yml down || true
       - ENVIRONMENT=main docker-compose -f docker-compose.main.yml up -d --build
       - sleep 30
       - docker-compose -f docker-compose.main.yml ps
-      - echo "✅ MAIN desplegado en:"
-      - echo "   - Ensurance Frontend: http://localhost:5000"
-      - echo "   - Pharmacy Frontend: http://localhost:5001"
-      - echo "   - Ensurance Backend: http://localhost:5002/api"
-      - echo "   - Pharmacy Backend: http://localhost:5003/api2"
+      - 'echo "✅ MAIN desplegado en:"'
+      - 'echo "   - Ensurance Frontend: http://localhost:5000"'
+      - 'echo "   - Pharmacy Frontend: http://localhost:5001"'
+      - 'echo "   - Ensurance Backend: http://localhost:5002/api"'
+      - 'echo "   - Pharmacy Backend: http://localhost:5003/api2"'
     volumes:
       - name: docker-sock
         path: /var/run/docker.sock
@@ -358,11 +358,11 @@ steps:
     image: alpine
     commands:
       - export ENVIRONMENT=$(cat .environment)
-      - echo "✅ Pipeline completado exitosamente para ambiente: $ENVIRONMENT"
-      - echo "🎯 Quality Gate: APROBADO"
-      - echo "🧪 Tests: PASADOS"
-      - echo "🚀 Deploy: EXITOSO"
-      - echo "📧 Notificación enviada a: ${EMAIL_TO}"
+      - 'echo "✅ Pipeline completado exitosamente para ambiente: $ENVIRONMENT"'
+      - 'echo "🎯 Quality Gate: APROBADO"'
+      - 'echo "🧪 Tests: PASADOS"'
+      - 'echo "🚀 Deploy: EXITOSO"'
+      - 'echo "📧 Notificación enviada a: $EMAIL_TO"'
     when:
       status:
         - success
@@ -372,9 +372,9 @@ steps:
     image: alpine
     commands:
       - export ENVIRONMENT=$(cat .environment)
-      - echo "❌ Pipeline falló para ambiente: $ENVIRONMENT"
-      - echo "🔍 Revisar logs en: ${DRONE_BUILD_LINK}"
-      - echo "📧 Notificación de fallo enviada a: ${EMAIL_TO}"
+      - 'echo "❌ Pipeline falló para ambiente: $ENVIRONMENT"'
+      - 'echo "🔍 Revisar logs en: $DRONE_BUILD_LINK"'
+      - 'echo "📧 Notificación de fallo enviada a: $EMAIL_TO"'
     when:
       status:
         - failure
