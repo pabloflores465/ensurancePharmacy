@@ -25,7 +25,7 @@ public class LoginHandlerTest {
     }
 
     @Test
-    public void testLoginHandlerInstantiation() {
+    void testLoginHandlerInstantiation() {
         // TODO: Instantiate LoginHandler with required dependencies.
         //       If the constructor requires arguments (like DAOs), create mocks for them.
         
@@ -112,7 +112,7 @@ public class LoginHandlerTest {
     }
 
     @Test
-    public void testOptionsCors() throws Exception {
+    void testOptionsCors() throws Exception {
         LoginHandler handler = new LoginHandler(new MockUserDAO());
         MockHttpExchange ex = new MockHttpExchange("OPTIONS", "http://localhost/api2/login");
         handler.handle(ex);
@@ -122,7 +122,7 @@ public class LoginHandlerTest {
     }
 
     @Test
-    public void testPathNotFound() throws Exception {
+    void testPathNotFound() throws Exception {
         LoginHandler handler = new LoginHandler(new MockUserDAO());
         MockHttpExchange ex = new MockHttpExchange("POST", "http://localhost/api2/not-login");
         handler.handle(ex);
@@ -130,7 +130,7 @@ public class LoginHandlerTest {
     }
 
     @Test
-    public void testMethodNotAllowed() throws Exception {
+    void testMethodNotAllowed() throws Exception {
         LoginHandler handler = new LoginHandler(new MockUserDAO());
         MockHttpExchange ex = new MockHttpExchange("GET", "http://localhost/api2/login");
         handler.handle(ex);
@@ -138,7 +138,7 @@ public class LoginHandlerTest {
     }
 
     @Test
-    public void testPostMalformedJsonReturns500() throws Exception {
+    void testPostMalformedJsonReturns500() throws Exception {
         LoginHandler handler = new LoginHandler(new MockUserDAO());
         byte[] body = "{not-json".getBytes(java.nio.charset.StandardCharsets.UTF_8);
         MockHttpExchange ex = new MockHttpExchange("POST", "http://localhost/api2/login", body);
@@ -147,7 +147,7 @@ public class LoginHandlerTest {
     }
 
     @Test
-    public void testPostMissingFieldsReturns401() throws Exception {
+    void testPostMissingFieldsReturns401() throws Exception {
         MockUserDAO dao = new MockUserDAO();
         dao.returnUser = null; // login fails
         LoginHandler handler = new LoginHandler(dao);
@@ -162,7 +162,7 @@ public class LoginHandlerTest {
     }
 
     @Test
-    public void testPostLoginSuccessReturns200WithUserJson() throws Exception {
+    void testPostLoginSuccessReturns200WithUserJson() throws Exception {
         MockUserDAO dao = new MockUserDAO();
         com.sources.app.entities.User returned = new com.sources.app.entities.User();
         returned.setIdUser(7L);
