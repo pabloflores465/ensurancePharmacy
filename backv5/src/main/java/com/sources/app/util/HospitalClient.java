@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
@@ -34,7 +35,8 @@ public class HospitalClient {
      * @throws IOException Si ocurre un error en la comunicación
      */
     public static String get(String endpoint) throws IOException {
-        URL url = new URL(HOSPITAL_API_BASE_URL + endpoint);
+        URI uri = URI.create(HOSPITAL_API_BASE_URL + endpoint);
+        URL url = uri.toURL();
         
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
@@ -54,7 +56,8 @@ public class HospitalClient {
      * @throws IOException Si ocurre un error en la comunicación
      */
     public static String post(String endpoint, Object data) throws IOException {
-        URL url = new URL(HOSPITAL_API_BASE_URL + endpoint);
+        URI uri = URI.create(HOSPITAL_API_BASE_URL + endpoint);
+        URL url = uri.toURL();
         
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
@@ -82,7 +85,8 @@ public class HospitalClient {
      * @throws IOException Si ocurre un error en la comunicación
      */
     public static String put(String endpoint, Object data) throws IOException {
-        URL url = new URL(HOSPITAL_API_BASE_URL + endpoint);
+        URI uri = URI.create(HOSPITAL_API_BASE_URL + endpoint);
+        URL url = uri.toURL();
         
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("PUT");

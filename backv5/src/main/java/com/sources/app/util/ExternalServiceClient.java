@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -52,7 +53,8 @@ public class ExternalServiceClient {
      */
     public String get(String serviceType, String endpoint) throws IOException {
         String baseUrl = getBaseUrl(serviceType);
-        URL url = new URL(baseUrl + endpoint);
+        URI uri = URI.create(baseUrl + endpoint);
+        URL url = uri.toURL();
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
@@ -67,7 +69,8 @@ public class ExternalServiceClient {
      */
     public String post(String serviceType, String endpoint, Object data) throws IOException {
         String baseUrl = getBaseUrl(serviceType);
-        URL url = new URL(baseUrl + endpoint);
+        URI uri = URI.create(baseUrl + endpoint);
+        URL url = uri.toURL();
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
@@ -79,7 +82,7 @@ public class ExternalServiceClient {
         String jsonData = mapper.writeValueAsString(data);
 
         try (OutputStream os = connection.getOutputStream()) {
-            byte[] input = jsonData.getBytes("utf-8");
+            byte[] input = jsonData.getBytes(java.nio.charset.StandardCharsets.UTF_8);
             os.write(input, 0, input.length);
         }
 
@@ -91,7 +94,8 @@ public class ExternalServiceClient {
      */
     public String put(String serviceType, String endpoint, Object requestBody) throws IOException {
         String baseUrl = getBaseUrl(serviceType);
-        URL url = new URL(baseUrl + endpoint);
+        URI uri = URI.create(baseUrl + endpoint);
+        URL url = uri.toURL();
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("PUT");
@@ -105,7 +109,7 @@ public class ExternalServiceClient {
             String jsonBody = mapper.writeValueAsString(requestBody);
 
             try (OutputStream os = connection.getOutputStream()) {
-                byte[] input = jsonBody.getBytes("utf-8");
+                byte[] input = jsonBody.getBytes(java.nio.charset.StandardCharsets.UTF_8);
                 os.write(input, 0, input.length);
             }
         }

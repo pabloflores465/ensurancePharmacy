@@ -38,7 +38,7 @@ public class PolicyDAO {
 
             session.save(policy);
             tx.commit();
-        } catch (Exception e) {
+        } catch (Exception _) {
             if (tx != null) tx.rollback();
             LOGGER.log(Level.SEVERE, () -> "Error creating Policy (percentage=" + percentage + ", enabled=" + enabled + ")");
         }
@@ -69,7 +69,7 @@ public class PolicyDAO {
     public Policy getById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Policy.class, id);
-        } catch (Exception e) {
+        } catch (Exception _) {
             LOGGER.log(Level.SEVERE, () -> "Error fetching Policy by id=" + id);
             return null;
         }
@@ -88,7 +88,7 @@ public class PolicyDAO {
             session.update(policy);
             tx.commit();
             return policy;
-        } catch (Exception e) {
+        } catch (Exception _) {
             if (tx != null) tx.rollback();
             LOGGER.log(Level.SEVERE, () -> "Error updating Policy (id=" + policy.getIdPolicy() + ")");
             return null;

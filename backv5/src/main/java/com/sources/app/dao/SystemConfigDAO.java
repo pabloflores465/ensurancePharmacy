@@ -59,9 +59,9 @@ public class SystemConfigDAO {
             return config;
         } catch (Exception e) {
             if (transaction != null) {
-                try { transaction.rollback(); } catch (Exception ignore) { /* no-op */ }
+                try { transaction.rollback(); } catch (Exception _) { /* no-op */ }
             }
-            LOGGER.log(Level.SEVERE, "Error saving/updating SystemConfig (key=" + configKey + ", value=" + configValue + ", descNull=" + (description == null) + ")", e);
+            LOGGER.log(Level.SEVERE, () -> "Error saving/updating SystemConfig (key=" + configKey + ", value=" + configValue + ", descNull=" + (description == null) + ")");
             return null;
         }
     }
@@ -79,7 +79,7 @@ public class SystemConfigDAO {
             query.setParameter("key", configKey);
             return query.uniqueResult();
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error fetching SystemConfig by key=" + configKey, e);
+            LOGGER.log(Level.SEVERE, () -> "Error fetching SystemConfig by key=" + configKey);
             return null;
         }
     }
@@ -122,7 +122,7 @@ public class SystemConfigDAO {
             if (transaction != null) {
                 transaction.rollback();
             }
-            LOGGER.log(Level.SEVERE, "Error deleting SystemConfig by id=" + idConfig, e);
+            LOGGER.log(Level.SEVERE, () -> "Error deleting SystemConfig by id=" + idConfig);
             return false;
         }
     }

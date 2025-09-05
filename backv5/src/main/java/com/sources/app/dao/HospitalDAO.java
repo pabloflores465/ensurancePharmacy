@@ -44,7 +44,7 @@ public class HospitalDAO {
 
             session.persist(hospital);
             tx.commit();
-        } catch (Exception e) {
+        } catch (Exception _) {
             if (tx != null) tx.rollback();
             LOGGER.log(Level.SEVERE, () -> "Error creating Hospital (name=" + name + ", email=" + email + ")");
         }
@@ -75,7 +75,7 @@ public class HospitalDAO {
     public Hospital getById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Hospital.class, id);
-        } catch (Exception e) {
+        } catch (Exception _) {
             LOGGER.log(Level.SEVERE, () -> "Error fetching Hospital by id=" + id);
             return null;
         }

@@ -57,7 +57,7 @@ public class ServiceApprovalDAO {
             session.persist(approval);
             transaction.commit();
             return approval;
-        } catch (Exception e) {
+        } catch (Exception _) {
             if (transaction != null) {
                 transaction.rollback();
             }
@@ -69,7 +69,7 @@ public class ServiceApprovalDAO {
     /**
      * @deprecated Use {@link #create(ServiceApprovalCreateRequest)} instead.
      */
-    @Deprecated
+    @Deprecated(since = "1.0", forRemoval = true)
     public ServiceApproval create(User user, Hospital hospital, String serviceId, String serviceName,
                                 String serviceDescription, Double serviceCost, Double coveredAmount,
                                 Double patientAmount, String status) {
@@ -100,7 +100,7 @@ public class ServiceApprovalDAO {
                 return approval;
             }
             return null;
-        } catch (Exception e) {
+        } catch (Exception _) {
             if (transaction != null) {
                 transaction.rollback();
             }
@@ -139,7 +139,7 @@ public class ServiceApprovalDAO {
             session.merge(serviceApproval);
             transaction.commit();
             return serviceApproval;
-        } catch (Exception e) {
+        } catch (Exception _) {
             if (transaction != null) {
                 transaction.rollback();
             }
@@ -171,7 +171,7 @@ public class ServiceApprovalDAO {
     public ServiceApproval getById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(ServiceApproval.class, id);
-        } catch (Exception e) {
+        } catch (Exception _) {
             LOGGER.log(Level.SEVERE, () -> "Error fetching ServiceApproval by id=" + id);
             return null;
         }
@@ -189,7 +189,7 @@ public class ServiceApprovalDAO {
                 "FROM ServiceApproval WHERE approvalCode = :code", ServiceApproval.class);
             query.setParameter("code", approvalCode);
             return query.uniqueResult();
-        } catch (Exception e) {
+        } catch (Exception _) {
             LOGGER.log(Level.SEVERE, () -> "Error fetching ServiceApproval by approvalCode=" + approvalCode);
             return null;
         }
@@ -207,7 +207,7 @@ public class ServiceApprovalDAO {
                 "FROM ServiceApproval WHERE user.idUser = :userId ORDER BY createdAt DESC", ServiceApproval.class);
             query.setParameter("userId", userId);
             return query.list();
-        } catch (Exception e) {
+        } catch (Exception _) {
             LOGGER.log(Level.SEVERE, () -> "Error fetching ServiceApproval by userId=" + userId);
             return null;
         }
@@ -226,7 +226,7 @@ public class ServiceApprovalDAO {
             query.setParameter("hospitalId", hospitalId);
             return query.list();
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error fetching ServiceApproval by hospital id=" + hospitalId, e);
+            LOGGER.log(Level.SEVERE, () -> "Error fetching ServiceApproval by hospital id=" + hospitalId);
             return null;
         }
     }

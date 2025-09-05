@@ -57,7 +57,7 @@ public class MedicineDAO {
 
             session.persist(med);
             tx.commit();
-        } catch (Exception e) {
+        } catch (Exception _) {
             if (tx != null) tx.rollback();
             LOGGER.log(Level.SEVERE, () -> "Error creating Medicine (name=" + request.getName() + ")");
         }
@@ -67,7 +67,7 @@ public class MedicineDAO {
     /**
      * @deprecated Use {@link #create(MedicineCreateRequest)} instead.
      */
-    @Deprecated
+    @Deprecated(since = "1.0", forRemoval = true)
     public Medicine create(String name, String activeMedicament, String description, String image,
                            String concentration, Double presentacion, Integer stock, String brand,
                            Boolean prescription, Double price, Integer soldUnits) {
@@ -100,7 +100,7 @@ public class MedicineDAO {
     public Medicine getById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Medicine.class, id);
-        } catch (Exception e) {
+        } catch (Exception _) {
             LOGGER.log(Level.SEVERE, () -> "Error fetching Medicine by id=" + id);
             return null;
         }
@@ -119,7 +119,7 @@ public class MedicineDAO {
             session.merge(medicine);
             tx.commit();
             return medicine;
-        } catch (Exception e) {
+        } catch (Exception _) {
             if (tx != null) tx.rollback();
             LOGGER.log(Level.SEVERE, () -> "Error updating Medicine (id=" + medicine.getIdMedicine() + ")");
             return null;
