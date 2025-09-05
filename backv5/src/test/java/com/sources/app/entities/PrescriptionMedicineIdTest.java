@@ -6,13 +6,13 @@ import static org.junit.jupiter.api.Assertions.*;
 public class PrescriptionMedicineIdTest {
 
     @Test
-    public void testPrescriptionMedicineIdInstantiation() {
+    void testPrescriptionMedicineIdInstantiation() {
         PrescriptionMedicineId instance = new PrescriptionMedicineId();
         assertNotNull(instance);
     }
 
     @Test
-    public void testPrescriptionMedicineIdConstructorWithParameters() {
+    void testPrescriptionMedicineIdConstructorWithParameters() {
         Long prescriptionId = 1L;
         Long medicineId = 2L;
         PrescriptionMedicineId id = new PrescriptionMedicineId(prescriptionId, medicineId);
@@ -22,7 +22,7 @@ public class PrescriptionMedicineIdTest {
     }
 
     @Test
-    public void testPrescriptionMedicineIdSettersAndGetters() {
+    void testPrescriptionMedicineIdSettersAndGetters() {
         PrescriptionMedicineId id = new PrescriptionMedicineId();
         Long prescriptionId = 10L;
         Long medicineId = 20L;
@@ -35,7 +35,7 @@ public class PrescriptionMedicineIdTest {
     }
 
     @Test
-    public void testPrescriptionMedicineIdEquals() {
+    void testPrescriptionMedicineIdEquals() {
         PrescriptionMedicineId id1 = new PrescriptionMedicineId(1L, 2L);
         PrescriptionMedicineId id2 = new PrescriptionMedicineId(1L, 2L);
         PrescriptionMedicineId id3 = new PrescriptionMedicineId(2L, 3L);
@@ -48,7 +48,7 @@ public class PrescriptionMedicineIdTest {
     }
 
     @Test
-    public void testPrescriptionMedicineIdHashCode() {
+    void testPrescriptionMedicineIdHashCode() {
         PrescriptionMedicineId id1 = new PrescriptionMedicineId(1L, 2L);
         PrescriptionMedicineId id2 = new PrescriptionMedicineId(1L, 2L);
         PrescriptionMedicineId id3 = new PrescriptionMedicineId(2L, 3L);
@@ -58,7 +58,7 @@ public class PrescriptionMedicineIdTest {
     }
 
     @Test
-    public void testPrescriptionMedicineIdWithNullValues() {
+    void testPrescriptionMedicineIdWithNullValues() {
         PrescriptionMedicineId id1 = new PrescriptionMedicineId(null, null);
         PrescriptionMedicineId id2 = new PrescriptionMedicineId(null, null);
         PrescriptionMedicineId id3 = new PrescriptionMedicineId(1L, null);

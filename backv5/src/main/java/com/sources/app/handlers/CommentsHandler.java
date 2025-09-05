@@ -1,10 +1,12 @@
 package com.sources.app.handlers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sources.app.dao.CommentsDAO;
 import com.sources.app.entities.Comments;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -21,7 +23,6 @@ import java.util.logging.Logger;
 public class CommentsHandler implements HttpHandler {
     private final CommentsDAO commentsDAO;
     private final ObjectMapper objectMapper;
-    private static final String ENDPOINT = "/api2/comments";
     private static final Logger LOGGER = Logger.getLogger(CommentsHandler.class.getName());
 
     /**
@@ -66,9 +67,20 @@ public class CommentsHandler implements HttpHandler {
             } else {
                 exchange.sendResponseHeaders(405, -1); // Method Not Allowed
             }
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "IO error handling Comments request", e);
+            try {
+                exchange.sendResponseHeaders(500, -1);
+            } catch (IOException _) {
+                // Already in error state, can't send response
+            }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error handling Comments request", e);
-            exchange.sendResponseHeaders(500, -1); // Internal Server Error
+            LOGGER.log(Level.SEVERE, "Unexpected error handling Comments request", e);
+            try {
+                exchange.sendResponseHeaders(500, -1);
+            } catch (IOException _) {
+                // Already in error state, can't send response
+            }
         }
     }
 

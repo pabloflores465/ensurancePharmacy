@@ -1,6 +1,7 @@
 package com.sources.app.dao;
 
 import com.sources.app.entities.Prescription;
+import com.sources.app.exceptions.ExternalServiceException;
 import com.sources.app.util.HibernateUtil;
 import com.sun.net.httpserver.HttpExchange;
 import org.hibernate.Session;
@@ -9,8 +10,8 @@ import org.hibernate.Transaction;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.URL;
 import java.net.URI;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
@@ -62,7 +63,7 @@ public class ExternalPrescriptionDAO {
                 }
                 
                 return fetchPrescriptionById(session, transaction, id);
-            } catch (Exception e) {
+            } catch (Exception _) {
                 rollbackTransaction(transaction, "top-level error for id=" + id + ", email=" + email);
                 LOGGER.log(Level.SEVERE, () -> "Error fetching Prescription by id: " + id + " after external verification for email: " + email);
                 return null;
@@ -75,26 +76,38 @@ public class ExternalPrescriptionDAO {
             final String baseNoSlash = base.endsWith("/") ? base.substring(0, base.length() - 1) : base;
             String encodedEmail = email == null ? "" : URLEncoder.encode(email, StandardCharsets.UTF_8);
             String verifyUrl = String.format("%s/api2/verification?email=%s", baseNoSlash, encodedEmail);
-            URL url = URI.create(verifyUrl).toURL();
-            LOGGER.log(Level.INFO, () -> "Verification URL built: " + url);
-            
-            return performHttpVerification(url, email);
-        } catch(Exception e) {
+            try {
+                URL url = URI.create(verifyUrl).toURL();
+                LOGGER.log(Level.INFO, () -> "Verification URL built: " + url);
+                
+                return performHttpVerification(url, email);
+            } catch(ExternalServiceException _) {
+                LOGGER.log(Level.SEVERE, () -> "Error verifying user via external service for email: " + email + "; baseURI: " + base);
+                return false;
+            } catch(Exception _) {
+                LOGGER.log(Level.SEVERE, () -> "Unexpected error verifying user via external service for email: " + email + "; baseURI: " + base);
+                return false;
+            }
+        } catch(Exception _) {
             LOGGER.log(Level.SEVERE, () -> "Error verifying user via external service for email: " + email + "; baseURI: " + base);
             return false;
         }
     }
     
-    private boolean performHttpVerification(URL url, String email) throws Exception {
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
-        
-        int status = con.getResponseCode();
-        String verify = readHttpResponse(con).trim();
-        con.disconnect();
-        
-        LOGGER.log(Level.INFO, () -> "Verification HTTP status=" + status + ", body='" + verify + "'");
-        return "1".equals(verify);
+    private boolean performHttpVerification(URL url, String email) throws ExternalServiceException {
+        try {
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            
+            int status = con.getResponseCode();
+            String verify = readHttpResponse(con).trim();
+            con.disconnect();
+            
+            LOGGER.log(Level.INFO, () -> "Verification HTTP status=" + status + ", body='" + verify + "'");
+            return "1".equals(verify);
+        } catch (Exception e) {
+            throw new ExternalServiceException("Failed to perform HTTP verification for email: " + email, e);
+        }
     }
     
     private String readHttpResponse(HttpURLConnection con) throws Exception {

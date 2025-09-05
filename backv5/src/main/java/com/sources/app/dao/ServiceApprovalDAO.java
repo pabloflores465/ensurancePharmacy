@@ -225,7 +225,7 @@ public class ServiceApprovalDAO {
                 "FROM ServiceApproval WHERE hospital.idHospital = :hospitalId ORDER BY createdAt DESC", ServiceApproval.class);
             query.setParameter("hospitalId", hospitalId);
             return query.list();
-        } catch (Exception e) {
+        } catch (Exception _) {
             LOGGER.log(Level.SEVERE, () -> "Error fetching ServiceApproval by hospital id=" + hospitalId);
             return null;
         }
@@ -241,8 +241,8 @@ public class ServiceApprovalDAO {
             Query<ServiceApproval> query = session.createQuery(
                 "FROM ServiceApproval ORDER BY createdAt DESC", ServiceApproval.class);
             return query.list();
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error fetching all ServiceApproval records", e);
+        } catch (Exception _) {
+            LOGGER.log(Level.SEVERE, () -> "Error fetching all ServiceApproval records");
             return null;
         }
     }

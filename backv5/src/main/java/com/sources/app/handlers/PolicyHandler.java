@@ -20,7 +20,6 @@ import java.util.logging.Logger;
 public class PolicyHandler implements HttpHandler {
     private final PolicyDAO policyDAO;
     private final ObjectMapper objectMapper;
-    private static final String ENDPOINT = "/api2/policies";
     private static final Logger LOGGER = Logger.getLogger(PolicyHandler.class.getName());
 
     /**
