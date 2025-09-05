@@ -12,14 +12,14 @@ import com.sun.net.httpserver.HttpExchange;
 public class HospitalClientTest {
 
     @Test
-    public void testHospitalClientInstantiation() {
+    void testHospitalClientInstantiation() {
         // TODO: implement tests for HospitalClient
         HospitalClient instance = new HospitalClient();
         assertNotNull(instance);
     }
 
     @Test
-    public void testGetSuccessWithEmbeddedServer() throws Exception {
+    void testGetSuccessWithEmbeddedServer() throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         try {
             server.createContext("/ping", exchange -> ok(exchange, "pong"));
@@ -37,7 +37,7 @@ public class HospitalClientTest {
     }
 
     @Test
-    public void testPostSuccessWithEmbeddedServer() throws Exception {
+    void testPostSuccessWithEmbeddedServer() throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         try {
             server.createContext("/echo", exchange -> ok(exchange, "ok"));
@@ -55,7 +55,7 @@ public class HospitalClientTest {
     }
 
     @Test
-    public void testPutSuccessWithEmbeddedServer() throws Exception {
+    void testPutSuccessWithEmbeddedServer() throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         try {
             server.createContext("/update", exchange -> ok(exchange, "updated"));
@@ -73,7 +73,7 @@ public class HospitalClientTest {
     }
 
     @Test
-    public void testErrorPathReturnsJson() throws Exception {
+    void testErrorPathReturnsJson() throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         try {
             server.createContext("/error", exchange -> error(exchange, 500, "{\"error\":true,\"statusCode\":500,\"message\":\"failure\"}"));
@@ -93,7 +93,7 @@ public class HospitalClientTest {
     }
 
     @Test
-    public void testGetThrowsIOExceptionWhenServerUnavailable() {
+    void testGetThrowsIOExceptionWhenServerUnavailable() {
         HospitalClient.setBaseUrlForTests("http://nonexistent.invalid");
         Throwable t = assertThrows(IOException.class, () -> HospitalClient.get("/unavailable"));
         assertNotNull(t);
@@ -101,7 +101,7 @@ public class HospitalClientTest {
     }
 
     @Test
-    public void testPostThrowsIOExceptionWhenServerUnavailable() {
+    void testPostThrowsIOExceptionWhenServerUnavailable() {
         HospitalClient.setBaseUrlForTests("http://nonexistent.invalid");
         Throwable t = assertThrows(IOException.class, () -> HospitalClient.post("/unavailable", java.util.Map.of("x", 1)));
         assertNotNull(t);
@@ -109,7 +109,7 @@ public class HospitalClientTest {
     }
 
     @Test
-    public void testPutThrowsIOExceptionWhenServerUnavailable() {
+    void testPutThrowsIOExceptionWhenServerUnavailable() {
         HospitalClient.setBaseUrlForTests("http://nonexistent.invalid");
         Throwable t = assertThrows(IOException.class, () -> HospitalClient.put("/unavailable", java.util.Map.of("x", 1)));
         assertNotNull(t);

@@ -17,21 +17,21 @@ import com.sun.net.httpserver.HttpExchange;
 public class ExternalServiceClientTest {
 
     @Test
-    public void testExternalServiceClientInstantiation() {
+    void testExternalServiceClientInstantiation() {
         // TODO: implement tests for ExternalServiceClient
         ExternalServiceClient instance = new ExternalServiceClient();
         assertNotNull(instance);
     }
 
     @Test
-    public void testGetBaseUrlValidation() {
+    void testGetBaseUrlValidation() {
         ExternalServiceClient client = new ExternalServiceClient();
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> client.get("unknown", "/ping"));
         assertTrue(ex.getMessage().toLowerCase().contains("tipo de servicio"));
     }
 
     @Test
-    public void testGetAsyncDelegatesAndReturnsValue() throws Exception {
+    void testGetAsyncDelegatesAndReturnsValue() throws Exception {
         ExternalServiceClient client = spy(new ExternalServiceClient());
         doReturn("OK").when(client).get("HOSPITAL", "/ping");
 
@@ -41,7 +41,7 @@ public class ExternalServiceClientTest {
     }
 
     @Test
-    public void testPostAsyncDelegatesAndReturnsValue() throws Exception {
+    void testPostAsyncDelegatesAndReturnsValue() throws Exception {
         ExternalServiceClient client = spy(new ExternalServiceClient());
         doReturn("CREATED").when(client).post(eq("INSURANCE"), eq("/create"), any());
 
@@ -51,7 +51,7 @@ public class ExternalServiceClientTest {
     }
 
     @Test
-    public void testPutAsyncDelegatesAndReturnsValue() throws Exception {
+    void testPutAsyncDelegatesAndReturnsValue() throws Exception {
         ExternalServiceClient client = spy(new ExternalServiceClient());
         doReturn("UPDATED").when(client).put(eq("PHARMACY"), eq("/update/1"), any());
 
@@ -61,7 +61,7 @@ public class ExternalServiceClientTest {
     }
 
     @Test
-    public void testGetAsyncWrapsIOException() throws InterruptedException, TimeoutException {
+    void testGetAsyncWrapsIOException() throws InterruptedException, TimeoutException {
         ExternalServiceClient client = spy(new ExternalServiceClient());
         try {
             doThrow(new IOException("boom")).when(client).get("HOSPITAL", "/ping");
@@ -76,7 +76,7 @@ public class ExternalServiceClientTest {
     }
 
     @Test
-    public void testPostBaseUrlValidation() {
+    void testPostBaseUrlValidation() {
         ExternalServiceClient client = new ExternalServiceClient();
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> client.post("unknown", "/create", new Object()));
@@ -84,7 +84,7 @@ public class ExternalServiceClientTest {
     }
 
     @Test
-    public void testPutBaseUrlValidation() {
+    void testPutBaseUrlValidation() {
         ExternalServiceClient client = new ExternalServiceClient();
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> client.put("unknown", "/update/1", new Object()));
@@ -92,7 +92,7 @@ public class ExternalServiceClientTest {
     }
 
     @Test
-    public void testPostAsyncWrapsIOException() throws InterruptedException, TimeoutException {
+    void testPostAsyncWrapsIOException() throws InterruptedException, TimeoutException {
         ExternalServiceClient client = spy(new ExternalServiceClient());
         try {
             doThrow(new IOException("boom")).when(client).post(eq("INSURANCE"), eq("/create"), any());
@@ -107,7 +107,7 @@ public class ExternalServiceClientTest {
     }
 
     @Test
-    public void testPutAsyncWrapsIOException() throws InterruptedException, TimeoutException {
+    void testPutAsyncWrapsIOException() throws InterruptedException, TimeoutException {
         ExternalServiceClient client = spy(new ExternalServiceClient());
         try {
             doThrow(new IOException("boom")).when(client).put(eq("PHARMACY"), eq("/update/1"), any());
@@ -122,7 +122,7 @@ public class ExternalServiceClientTest {
     }
 
     @Test
-    public void testAsyncInvalidServiceTypePropagatesForGet() {
+    void testAsyncInvalidServiceTypePropagatesForGet() {
         ExternalServiceClient client = new ExternalServiceClient();
         ExecutionException ee = assertThrows(ExecutionException.class,
                 () -> client.getAsync("unknown", "/ping").get(2, TimeUnit.SECONDS));
@@ -130,7 +130,7 @@ public class ExternalServiceClientTest {
     }
 
     @Test
-    public void testAsyncInvalidServiceTypePropagatesForPost() {
+    void testAsyncInvalidServiceTypePropagatesForPost() {
         ExternalServiceClient client = new ExternalServiceClient();
         ExecutionException ee = assertThrows(ExecutionException.class,
                 () -> client.postAsync("unknown", "/create", new Object()).get(2, TimeUnit.SECONDS));
@@ -138,7 +138,7 @@ public class ExternalServiceClientTest {
     }
 
     @Test
-    public void testAsyncInvalidServiceTypePropagatesForPut() {
+    void testAsyncInvalidServiceTypePropagatesForPut() {
         ExternalServiceClient client = new ExternalServiceClient();
         ExecutionException ee = assertThrows(ExecutionException.class,
                 () -> client.putAsync("unknown", "/update/1", new Object()).get(2, TimeUnit.SECONDS));
@@ -146,7 +146,7 @@ public class ExternalServiceClientTest {
     }
 
     @Test
-    public void testGetSuccessHospitalWithEmbeddedServer() throws Exception {
+    void testGetSuccessHospitalWithEmbeddedServer() throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         try {
             server.createContext("/api/ping", exchange -> ok(exchange, "pong"));
@@ -165,7 +165,7 @@ public class ExternalServiceClientTest {
     }
 
     @Test
-    public void testGetAsyncSuccessWithEmbeddedServer() throws Exception {
+    void testGetAsyncSuccessWithEmbeddedServer() throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         try {
             server.createContext("/api/ping", exchange -> ok(exchange, "pong"));
@@ -184,7 +184,7 @@ public class ExternalServiceClientTest {
     }
 
     @Test
-    public void testPostAsyncSuccessWithEmbeddedServer() throws Exception {
+    void testPostAsyncSuccessWithEmbeddedServer() throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         try {
             server.createContext("/api/pharmacy-insurance/create", exchange -> ok(exchange, "ok"));
@@ -204,7 +204,7 @@ public class ExternalServiceClientTest {
     }
 
     @Test
-    public void testPutAsyncSuccessWithEmbeddedServer() throws Exception {
+    void testPutAsyncSuccessWithEmbeddedServer() throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         try {
             server.createContext("/api/put-async", exchange -> ok(exchange, "ok"));
@@ -224,7 +224,7 @@ public class ExternalServiceClientTest {
     }
 
     @Test
-    public void testPostSuccessInsuranceWithEmbeddedServer() throws Exception {
+    void testPostSuccessInsuranceWithEmbeddedServer() throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         try {
             server.createContext("/api/pharmacy-insurance/create", exchange -> ok(exchange, "ok"));
@@ -243,7 +243,7 @@ public class ExternalServiceClientTest {
     }
 
     @Test
-    public void testPostSuccessPharmacyWithEmbeddedServer() throws Exception {
+    void testPostSuccessPharmacyWithEmbeddedServer() throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         try {
             server.createContext("/api/echo", exchange -> ok(exchange, "ok"));
@@ -262,7 +262,7 @@ public class ExternalServiceClientTest {
     }
 
     @Test
-    public void testGetSuccessPharmacyWithEmbeddedServer() throws Exception {
+    void testGetSuccessPharmacyWithEmbeddedServer() throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         try {
             server.createContext("/api/ping", exchange -> ok(exchange, "pong"));
@@ -281,7 +281,7 @@ public class ExternalServiceClientTest {
     }
 
     @Test
-    public void testPutErrorInsuranceWithEmbeddedServer() throws Exception {
+    void testPutErrorInsuranceWithEmbeddedServer() throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         try {
             server.createContext("/api/pharmacy-insurance/update", exchange -> error(exchange, 500, "err"));
@@ -300,7 +300,7 @@ public class ExternalServiceClientTest {
     }
 
     @Test
-    public void testGetNotFoundHospitalWithEmbeddedServer() throws Exception {
+    void testGetNotFoundHospitalWithEmbeddedServer() throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         try {
             server.createContext("/api/missing", exchange -> error(exchange, 404, ""));
@@ -320,7 +320,7 @@ public class ExternalServiceClientTest {
     }
 
     @Test
-    public void testPutSuccessPharmacyWithNullBody() throws Exception {
+    void testPutSuccessPharmacyWithNullBody() throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         try {
             server.createContext("/api/putnull", exchange -> ok(exchange, "ok"));
@@ -339,7 +339,7 @@ public class ExternalServiceClientTest {
     }
 
     @Test
-    public void testGetNoContentHospitalWithEmbeddedServer() throws Exception {
+    void testGetNoContentHospitalWithEmbeddedServer() throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         try {
             server.createContext("/api/nocontent", this::noContent);
@@ -358,7 +358,7 @@ public class ExternalServiceClientTest {
     }
 
     @Test
-    public void testPostSendsJsonHeaderAndBodyPharmacy() throws Exception {
+    void testPostSendsJsonHeaderAndBodyPharmacy() throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         try {
             server.createContext("/api/validate-post", exchange -> {
@@ -387,7 +387,7 @@ public class ExternalServiceClientTest {
     }
 
     @Test
-    public void testPutSendsJsonHeaderWithNullBodyInsurance() throws Exception {
+    void testPutSendsJsonHeaderWithNullBodyInsurance() throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         try {
             server.createContext("/api/pharmacy-insurance/validate-put-null", exchange -> {
@@ -416,7 +416,7 @@ public class ExternalServiceClientTest {
     }
 
     @Test
-    public void testServiceTypeMatchingIsCaseInsensitive() throws Exception {
+    void testServiceTypeMatchingIsCaseInsensitive() throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         try {
             server.createContext("/api/case", exchange -> ok(exchange, "ok"));

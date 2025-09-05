@@ -47,7 +47,10 @@ public class InsuranceIntegrationHandlerTest {
         @Override public void close() {}
         @Override public InputStream getRequestBody() { return requestBody; }
         @Override public OutputStream getResponseBody() { return responseBody; }
-        @Override public void sendResponseHeaders(int rCode, long responseLength) throws IOException { this.responseCode = rCode; }
+        @Override
+        public void sendResponseHeaders(int responseCode, long responseLength) throws IOException {
+            this.responseCode = responseCode;
+        }
         @Override public InetSocketAddress getRemoteAddress() { return new InetSocketAddress(0); }
         @Override public InetSocketAddress getLocalAddress() { return new InetSocketAddress(0); }
         @Override public String getProtocol() { return "HTTP/1.1"; }
@@ -55,7 +58,9 @@ public class InsuranceIntegrationHandlerTest {
         @Override public void setAttribute(String name, Object value) {}
         @Override public void setStreams(InputStream i, OutputStream o) {}
         @Override public com.sun.net.httpserver.HttpPrincipal getPrincipal() { return null; }
-        public int getResponseCode() { return responseCode; }
+        public int getResponseCode() {
+            return responseCode;
+        }
         byte[] getResponseBytes() { return responseBody.toByteArray(); }
     }
 
@@ -97,7 +102,7 @@ public class InsuranceIntegrationHandlerTest {
 
     // 405 on invalid methods
     @Test
-    public void testValidatePrescriptionGetMethodNotAllowed() throws Exception {
+    void testValidatePrescriptionGetMethodNotAllowed() throws Exception {
         InsuranceIntegrationHandler handler = new InsuranceIntegrationHandler(new MockPrescriptionDAO(null), new MockBillDAO(null, null));
         MockHttpExchange ex = new MockHttpExchange("GET", "http://localhost/api2/insurance/validate-prescription");
         handler.handle(ex);
@@ -105,7 +110,7 @@ public class InsuranceIntegrationHandlerTest {
     }
 
     @Test
-    public void testCheckCoverageGetMethodNotAllowed() throws Exception {
+    void testCheckCoverageGetMethodNotAllowed() throws Exception {
         InsuranceIntegrationHandler handler = new InsuranceIntegrationHandler(new MockPrescriptionDAO(null), new MockBillDAO(null, null));
         MockHttpExchange ex = new MockHttpExchange("GET", "http://localhost/api2/insurance/check-coverage");
         handler.handle(ex);
@@ -114,7 +119,7 @@ public class InsuranceIntegrationHandlerTest {
 
     // 404 unknown route
     @Test
-    public void testUnknownRouteReturns404() throws Exception {
+    void testUnknownRouteReturns404() throws Exception {
         InsuranceIntegrationHandler handler = new InsuranceIntegrationHandler(new MockPrescriptionDAO(null), new MockBillDAO(null, null));
         MockHttpExchange ex = new MockHttpExchange("POST", "http://localhost/api2/insurance/unknown");
         handler.handle(ex);
@@ -123,7 +128,7 @@ public class InsuranceIntegrationHandlerTest {
 
     // 400 missing fields validate-prescription
     @Test
-    public void testValidatePrescriptionMissingFieldsReturns400() throws Exception {
+    void testValidatePrescriptionMissingFieldsReturns400() throws Exception {
         InsuranceIntegrationHandler handler = new InsuranceIntegrationHandler(new MockPrescriptionDAO(null), new MockBillDAO(null, null));
         MockHttpExchange ex = new MockHttpExchange("POST", "http://localhost/api2/insurance/validate-prescription");
         ex.setRequestBody("{\"prescriptionId\": 5}"); // missing approvalCode
@@ -135,7 +140,7 @@ public class InsuranceIntegrationHandlerTest {
 
     // 404 when prescription not found
     @Test
-    public void testValidatePrescriptionPrescriptionNotFoundReturns404() throws Exception {
+    void testValidatePrescriptionPrescriptionNotFoundReturns404() throws Exception {
         InsuranceIntegrationHandler handler = new InsuranceIntegrationHandler(new MockPrescriptionDAO(null), new MockBillDAO(null, null));
         MockHttpExchange ex = new MockHttpExchange("POST", "http://localhost/api2/insurance/validate-prescription");
         ex.setRequestBody("{\"prescriptionId\": 5, \"approvalCode\": \"ABC\"}");
@@ -147,7 +152,7 @@ public class InsuranceIntegrationHandlerTest {
 
     // 400 when already billed
     @Test
-    public void testValidatePrescriptionAlreadyBilledReturns400() throws Exception {
+    void testValidatePrescriptionAlreadyBilledReturns400() throws Exception {
         Prescription p = new Prescription();
         Bill existing = new Bill();
         InsuranceIntegrationHandler handler = new InsuranceIntegrationHandler(new MockPrescriptionDAO(p), new MockBillDAO(existing, null));
@@ -161,7 +166,7 @@ public class InsuranceIntegrationHandlerTest {
 
     // 500 when external client throws (validate-prescription)
     @Test
-    public void testValidatePrescriptionExternalErrorReturns500() throws Exception {
+    void testValidatePrescriptionExternalErrorReturns500() throws Exception {
         Prescription p = new Prescription();
         MockExternalServiceClient client = new MockExternalServiceClient();
         client.setPostMode(MockExternalServiceClient.Mode.THROW_ERROR);
@@ -176,7 +181,7 @@ public class InsuranceIntegrationHandlerTest {
 
     // 400 missing field for check-coverage
     @Test
-    public void testCheckCoverageMissingPrescriptionIdReturns400() throws Exception {
+    void testCheckCoverageMissingPrescriptionIdReturns400() throws Exception {
         InsuranceIntegrationHandler handler = new InsuranceIntegrationHandler(new MockPrescriptionDAO(null), new MockBillDAO(null, null));
         MockHttpExchange ex = new MockHttpExchange("POST", "http://localhost/api2/insurance/check-coverage");
         ex.setRequestBody("{\"foo\": 1}");
@@ -188,7 +193,7 @@ public class InsuranceIntegrationHandlerTest {
 
     // 500 when external client throws (check-coverage)
     @Test
-    public void testCheckCoverageExternalErrorReturns500() throws Exception {
+    void testCheckCoverageExternalErrorReturns500() throws Exception {
         MockExternalServiceClient client = new MockExternalServiceClient();
         client.setGetMode(MockExternalServiceClient.Mode.THROW_ERROR);
         InsuranceIntegrationHandler handler = new InsuranceIntegrationHandler(new MockPrescriptionDAO(null), new MockBillDAO(null, null), client);
@@ -202,7 +207,7 @@ public class InsuranceIntegrationHandlerTest {
 
     // 200 success path for validate-prescription creates bill and returns billId
     @Test
-    public void testValidatePrescriptionSuccessReturns200WithBillId() throws Exception {
+    void testValidatePrescriptionSuccessReturns200WithBillId() throws Exception {
         Prescription p = new Prescription();
         Bill created = new Bill();
         created.setIdBill(10L);
@@ -220,7 +225,7 @@ public class InsuranceIntegrationHandlerTest {
 
     // 200 success path for check-coverage proxies insurance response
     @Test
-    public void testCheckCoverageSuccessReturns200() throws Exception {
+    void testCheckCoverageSuccessReturns200() throws Exception {
         MockExternalServiceClient client = new MockExternalServiceClient();
         client.setGetMode(MockExternalServiceClient.Mode.RETURN_SUCCESS);
         InsuranceIntegrationHandler handler = new InsuranceIntegrationHandler(new MockPrescriptionDAO(null), new MockBillDAO(null, null), client);
@@ -235,7 +240,7 @@ public class InsuranceIntegrationHandlerTest {
 
     // OPTIONS CORS preflight
     @Test
-    public void testOptionsCorsReturns204AndHeaders() throws Exception {
+    void testOptionsCorsReturns204AndHeaders() throws Exception {
         InsuranceIntegrationHandler handler = new InsuranceIntegrationHandler(new MockPrescriptionDAO(null), new MockBillDAO(null, null));
         MockHttpExchange ex = new MockHttpExchange("OPTIONS", "http://localhost/api2/insurance/validate-prescription");
         handler.handle(ex);
