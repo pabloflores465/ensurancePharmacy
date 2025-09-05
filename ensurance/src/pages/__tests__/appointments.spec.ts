@@ -536,4 +536,77 @@ describe('appointments.vue', () => {
     expect(window.alert).toHaveBeenCalledWith('Cita cancelada correctamente')
     expect(hoisted.axios.delete).toHaveBeenCalledTimes(2)
   })
+
+  it('muestra "Error desconocido" al crear cita cuando el error no tiene estructura conocida', async () => {
+    // Usuario autenticado
+    localStorage.setItem('user', JSON.stringify({ idUser: 12, email: 'unk@test.com', name: 'Unknown Err' }))
+
+    // Mount sequence
+    hoisted.axios.get.mockResolvedValueOnce({ data: { doctors: [{ _id: 'd12', name: 'D12' }] } })
+    hoisted.axios.get.mockResolvedValueOnce({ data: { services: [] } })
+    hoisted.axios.get.mockResolvedValueOnce({ data: { appointments: [] } })
+
+    const wrapper = mount(Appointments)
+    await flushPromises()
+
+    // Select a slot and fill minimal fields
+    const slots = wrapper.findAll('.slot')
+    await slots[0].trigger('click')
+    ;(wrapper.vm as any).appointment.reason = 'R'
+    ;(wrapper.vm as any).appointment.doctor = 'd12'
+
+    // User exists in hospital
+    hoisted.axios.get.mockResolvedValueOnce({ data: { appointments: [{ _id: 'h12', email: 'unk@test.com' }] } })
+    // Hospital create fails with unknown structure (no response, no message)
+    hoisted.axios.post.mockRejectedValueOnce({})
+
+    await wrapper.find('form').trigger('submit.prevent')
+    await flushPromises()
+
+    expect(window.alert).toHaveBeenCalledWith('Error al crear la cita: Error desconocido')
+  })
+
+  it('muestra detalle (.detail) cuando falla la cancelación en el hospital', async () => {
+    localStorage.setItem('user', JSON.stringify({ idUser: 13, email: 'det@test.com', name: 'Det User' }))
+
+    hoisted.axios.get.mockResolvedValueOnce({ data: { doctors: [] } })
+    hoisted.axios.get.mockResolvedValueOnce({ data: { services: [] } })
+    hoisted.axios.get.mockResolvedValueOnce({ data: { appointments: [] } })
+
+    const wrapper = mount(Appointments)
+    await flushPromises()
+
+    ;(wrapper.vm as any).userAppointments = [{ _id: 'aptDet', start: new Date().toISOString(), doctor: 'd', reason: 'R' }]
+    await wrapper.vm.$nextTick()
+
+    hoisted.axios.delete.mockRejectedValueOnce({ response: { data: { detail: 'Detalle cancelación' } } })
+
+    const cancelBtn = wrapper.find('button.btn-danger-sm')
+    await cancelBtn.trigger('click')
+    await flushPromises()
+
+    expect(window.alert).toHaveBeenCalledWith('Error al cancelar la cita: Detalle cancelación')
+  })
+
+  it('muestra "Error desconocido" cuando falla la cancelación sin estructura conocida', async () => {
+    localStorage.setItem('user', JSON.stringify({ idUser: 14, email: 'unkc@test.com', name: 'Unknown Cancel' }))
+
+    hoisted.axios.get.mockResolvedValueOnce({ data: { doctors: [] } })
+    hoisted.axios.get.mockResolvedValueOnce({ data: { services: [] } })
+    hoisted.axios.get.mockResolvedValueOnce({ data: { appointments: [] } })
+
+    const wrapper = mount(Appointments)
+    await flushPromises()
+
+    ;(wrapper.vm as any).userAppointments = [{ _id: 'aptUnk', start: new Date().toISOString(), doctor: 'd', reason: 'R' }]
+    await wrapper.vm.$nextTick()
+
+    hoisted.axios.delete.mockRejectedValueOnce({})
+
+    const cancelBtn = wrapper.find('button.btn-danger-sm')
+    await cancelBtn.trigger('click')
+    await flushPromises()
+
+    expect(window.alert).toHaveBeenCalledWith('Error al cancelar la cita: Error desconocido')
+  })
 })

@@ -151,4 +151,91 @@ public class ServiceApprovalDAOTest {
             assertTrue(byUser.get(0).getCreatedAt().compareTo(byUser.get(1).getCreatedAt()) >= 0);
         }
     }
+
+    @Test
+    public void testCreateFailsOnNullRequiredFields() {
+        // Build a request with null user and hospital to violate NOT NULL constraints
+        ServiceApprovalDAO dao = new ServiceApprovalDAO();
+        com.sources.app.dto.ServiceApprovalCreateRequest req = new com.sources.app.dto.ServiceApprovalCreateRequest();
+        req.setUser(null);
+        req.setHospital(null);
+        req.setServiceId("SRV-NULL");
+        req.setServiceName("Servicio Null");
+        req.setServiceDescription("Desc");
+        req.setServiceCost(100.0);
+        req.setCoveredAmount(50.0);
+        req.setPatientAmount(50.0);
+        req.setStatus("PENDING");
+        try {
+            ServiceApproval created = dao.create(req);
+            assertNull(created, "DAO.create should return null when constraints are violated and rollback occurs");
+        } catch (Exception e) {
+            // Some providers (SQLite + Hibernate) may close the connection on failed commit/rollback.
+            // Accept this as an expected negative-path outcome.
+            String msg = e.getMessage() == null ? "" : e.getMessage();
+            assertTrue(e instanceof IllegalStateException || msg.toLowerCase().contains("constraint") || msg.toLowerCase().contains("closed"));
+        }
+    }
+
+    @Test
+    public void testUpdatePrescription_NotFound_ReturnsNull() {
+        ServiceApprovalDAO dao = new ServiceApprovalDAO();
+        // Use a very large ID unlikely to exist in test DB
+        ServiceApproval updated = dao.updatePrescription(999_999_999L, "RX-NONE", 12.34);
+        assertNull(updated);
+    }
+
+    @Test
+    public void testUpdateStatus_NotFound_ReturnsNull() {
+        ServiceApprovalDAO dao = new ServiceApprovalDAO();
+        ServiceApproval updated = dao.updateStatus(888_888_888L, "APPROVED", null);
+        assertNull(updated);
+    }
+
+    @Test
+    public void testUpdateStatus_SpanishVariants() {
+        String email = "user_" + (System.currentTimeMillis() + 3) + "@test.com";
+        User u = createUser(email);
+        Hospital h = createHospital();
+        ServiceApprovalDAO dao = new ServiceApprovalDAO();
+        ServiceApproval saved = createApproval(u, h, "ES");
+
+        // RECHAZADO -> sets rejection reason
+        ServiceApproval rechazado = dao.updateStatus(saved.getIdApproval(), "RECHAZADO", "falta de datos");
+        assertNotNull(rechazado);
+        assertEquals("RECHAZADO", rechazado.getStatus());
+        assertEquals("falta de datos", rechazado.getRejectionReason());
+        assertNull(rechazado.getCompletedDate());
+
+        // COMPLETADO -> sets completed date
+        ServiceApproval completado = dao.updateStatus(saved.getIdApproval(), "COMPLETADO", null);
+        assertNotNull(completado);
+        assertEquals("COMPLETADO", completado.getStatus());
+        assertNotNull(completado.getCompletedDate());
+    }
+
+    @Test
+    public void testUpdateStatus_NullStatusTriggersRollback() {
+        String email = "user_" + (System.currentTimeMillis() + 4) + "@test.com";
+        User u = createUser(email);
+        Hospital h = createHospital();
+        ServiceApprovalDAO dao = new ServiceApprovalDAO();
+        ServiceApproval saved = createApproval(u, h, "NULLS");
+
+        // Setting null to a NOT NULL column may trigger provider-specific exceptions on rollback
+        try {
+            ServiceApproval result = dao.updateStatus(saved.getIdApproval(), null, null);
+            assertNull(result);
+        } catch (Exception e) {
+            String msg = e.getMessage() == null ? "" : e.getMessage();
+            assertTrue(e instanceof IllegalStateException || msg.toLowerCase().contains("constraint") || msg.toLowerCase().contains("closed"));
+        }
+    }
+
+    @Test
+    public void testGetByApprovalCode_NotFoundReturnsNull() {
+        ServiceApprovalDAO dao = new ServiceApprovalDAO();
+        ServiceApproval byCode = dao.getByApprovalCode("AP00000000");
+        assertNull(byCode);
+    }
 }

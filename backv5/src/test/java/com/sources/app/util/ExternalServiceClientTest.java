@@ -165,6 +165,65 @@ public class ExternalServiceClientTest {
     }
 
     @Test
+    public void testGetAsyncSuccessWithEmbeddedServer() throws Exception {
+        HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
+        try {
+            server.createContext("/api/ping", exchange -> ok(exchange, "pong"));
+            server.start();
+
+            int port = server.getAddress().getPort();
+            String hospitalBase = "http://localhost:" + port + "/api";
+            String pharmacyBase = "http://localhost:" + port + "/api";
+            String insuranceBase = "http://localhost:" + port + "/api/pharmacy-insurance";
+            ExternalServiceClient client = new ExternalServiceClient(hospitalBase, pharmacyBase, insuranceBase);
+            String resp = client.getAsync("HOSPITAL", "/ping").get(2, TimeUnit.SECONDS);
+            assertEquals("pong", resp);
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    @Test
+    public void testPostAsyncSuccessWithEmbeddedServer() throws Exception {
+        HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
+        try {
+            server.createContext("/api/pharmacy-insurance/create", exchange -> ok(exchange, "ok"));
+            server.start();
+
+            int port = server.getAddress().getPort();
+            String hospitalBase = "http://localhost:" + port + "/api";
+            String pharmacyBase = "http://localhost:" + port + "/api";
+            String insuranceBase = "http://localhost:" + port + "/api/pharmacy-insurance";
+            ExternalServiceClient client = new ExternalServiceClient(hospitalBase, pharmacyBase, insuranceBase);
+            String resp = client.postAsync("INSURANCE", "/create", java.util.Map.of("x", 1))
+                                .get(2, TimeUnit.SECONDS);
+            assertEquals("ok", resp);
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    @Test
+    public void testPutAsyncSuccessWithEmbeddedServer() throws Exception {
+        HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
+        try {
+            server.createContext("/api/put-async", exchange -> ok(exchange, "ok"));
+            server.start();
+
+            int port = server.getAddress().getPort();
+            String hospitalBase = "http://localhost:" + port + "/api";
+            String pharmacyBase = "http://localhost:" + port + "/api";
+            String insuranceBase = "http://localhost:" + port + "/api/pharmacy-insurance";
+            ExternalServiceClient client = new ExternalServiceClient(hospitalBase, pharmacyBase, insuranceBase);
+            String resp = client.putAsync("PHARMACY", "/put-async", java.util.Map.of("y", true))
+                                .get(2, TimeUnit.SECONDS);
+            assertEquals("ok", resp);
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    @Test
     public void testPostSuccessInsuranceWithEmbeddedServer() throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         try {
@@ -355,6 +414,27 @@ public class ExternalServiceClientTest {
             server.stop(0);
         }
     }
+
+    @Test
+    public void testServiceTypeMatchingIsCaseInsensitive() throws Exception {
+        HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
+        try {
+            server.createContext("/api/case", exchange -> ok(exchange, "ok"));
+            server.start();
+
+            int port = server.getAddress().getPort();
+            String hospitalBase = "http://localhost:" + port + "/api";
+            String pharmacyBase = "http://localhost:" + port + "/api";
+            String insuranceBase = "http://localhost:" + port + "/api/pharmacy-insurance";
+            ExternalServiceClient client = new ExternalServiceClient(hospitalBase, pharmacyBase, insuranceBase);
+            // Use lowercase service type to ensure toUpperCase() mapping works
+            String resp = client.get("hospital", "/case");
+            assertEquals("ok", resp);
+        } finally {
+            server.stop(0);
+        }
+    }
+
     private void ok(HttpExchange exchange, String body) throws IOException {
         byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().add("Content-Type", "application/json");

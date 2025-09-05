@@ -10,6 +10,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -50,10 +53,15 @@ public class ExternalPrescriptionDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             try {
                 transaction = session.beginTransaction();
-                String path = exchange.getRequestURI().getPath();
+                final String base = exchange.getRequestURI().toString();
+                LOGGER.log(Level.INFO, "ExternalPrescriptionDAO verifying for email=" + email + ", baseURI=" + base);
                 try {
                     // Crea un objeto URL con el endpoint de la API incluyendo el email proporcionado
-                    URL url = new URL(path + "/api2/verification?email=" + email);
+                    final String baseNoSlash = base.endsWith("/") ? base.substring(0, base.length() - 1) : base;
+                    String encodedEmail = email == null ? "" : URLEncoder.encode(email, StandardCharsets.UTF_8);
+                    String verifyUrl = baseNoSlash + "/api2/verification?email=" + encodedEmail;
+                    URL url = URI.create(verifyUrl).toURL();
+                    LOGGER.log(Level.INFO, "Verification URL built: " + url);
                     // Abre una conexión a la URL
                     HttpURLConnection con = (HttpURLConnection) url.openConnection();
                     // Establece el método de solicitud HTTP a GET
@@ -61,17 +69,18 @@ public class ExternalPrescriptionDAO {
                     // Obtiene el código de respuesta
                     int status = con.getResponseCode();
                     // Lee la respuesta
-                    BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-                    String inputLine;
                     StringBuilder content = new StringBuilder();
-                    while ((inputLine = in.readLine()) != null) {
-                        content.append(inputLine);
+                    try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
+                        String inputLine;
+                        while ((inputLine = in.readLine()) != null) {
+                            content.append(inputLine);
+                        }
                     }
-                    in.close();
                     // Desconecta la conexión
                     con.disconnect();
                     // Guarda la respuesta en la variable 'verify'
-                    String verify = content.toString();
+                    String verify = content.toString().trim();
+                    LOGGER.log(Level.INFO, "Verification HTTP status=" + status + ", body='" + verify + "'");
                     
                     // Si el usuario no está verificado, retornar null
                     if (!"1".equals(verify)) {
@@ -83,7 +92,7 @@ public class ExternalPrescriptionDAO {
                     
                 } catch(Exception e) {
                     LOGGER.log(Level.SEVERE, "Error verifying user via external service for email: " + email + 
-                            "; path: " + path, e);
+                            "; baseURI: " + base, e);
                     if (transaction != null) {
                         try { transaction.rollback(); } catch (Exception re) { LOGGER.log(Level.WARNING, "Rollback failed after verification error for email=" + email, re); }
                     }
@@ -91,6 +100,11 @@ public class ExternalPrescriptionDAO {
                 }
                 
                 Prescription prescription = session.get(Prescription.class, id);
+                if (prescription == null) {
+                    LOGGER.log(Level.INFO, "Prescription not found after verification for id=" + id);
+                } else {
+                    LOGGER.log(Level.INFO, "Prescription found after verification: id=" + prescription.getIdPrescription());
+                }
                 transaction.commit();
                 return prescription;
             } catch (Exception e) {

@@ -3,7 +3,8 @@
     <session-factory>
         <!-- Configuración para SQLite en memoria -->
         <property name="hibernate.connection.driver_class">org.sqlite.JDBC</property>
-        <property name="hibernate.connection.url">jdbc:sqlite::memory:</property>
+        <!-- Use shared in-memory database so multiple connections (sessions) can see the same data -->
+        <property name="hibernate.connection.url">jdbc:sqlite:file:memdb1?mode=memory&amp;cache=shared</property>
         <property name="hibernate.dialect">org.hibernate.community.dialect.SQLiteDialect</property>
         <property name="hibernate.hbm2ddl.auto">create-drop</property>
         <property name="show_sql">true</property>

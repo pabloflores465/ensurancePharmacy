@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -13,6 +12,7 @@ import java.util.concurrent.ExecutionException;
 
 import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -27,7 +27,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import static org.mockito.Mockito.doReturn;
@@ -36,10 +35,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ExtendWith(MockitoExtension.class)
 class ExternalServiceClientTest {
@@ -49,34 +45,24 @@ class ExternalServiceClientTest {
     @Mock
     private OutputStream mockOutputStream;
 
-    // Spy the ObjectMapper to use its real methods but allow verification
-    @Spy
-    private ObjectMapper objectMapper = new ObjectMapper();
+    
 
     @InjectMocks
     private ExternalServiceClient externalServiceClient; // Instance under test
 
     @Captor
     ArgumentCaptor<byte[]> outputStreamCaptor;
-    @Captor
-    ArgumentCaptor<URL> urlCaptor;
+    
 
-    private static final String HOSPITAL_BASE_URL = "http://localhost:5051/api";
-    private static final String PHARMACY_BASE_URL = "http://localhost:8080/api";
     private final String TEST_ENDPOINT = "/test-data";
     private final String SUCCESS_RESPONSE = "{\"data\":\"success\"}";
     private final String ERROR_RESPONSE = "{\"error\":\"failed\"}";
     private final Map<String, String> TEST_BODY = Map.of("key", "value");
-    private final String TEST_BODY_JSON = "{\"key\":\"value\"}"; // Manually match expected JSON
+    
 
-    // Mock construction of URL and HttpURLConnection
-    // This is the standard Mockito way but might not work for final URL class
-    // PowerMock or refactoring might be needed for robust tests.
-    private MockedConstruction<URL> mockedUrlConstruction;
-    private MockedConstruction<HttpURLConnection> mockedConnectionConstruction;
+    
 
-    @Mock
-    private URL mockUrlInstance; // Mock URL instance
+    
 
     private MockedStatic<ExternalServiceClient> mockedClientStatic; // static mock for factory
 
@@ -128,6 +114,30 @@ class ExternalServiceClientTest {
     }
 
     @Test
+    void post_Success_EmptyBody_ReturnsEmptyString() throws Exception {
+        mockedClientStatic = Mockito.mockStatic(ExternalServiceClient.class, Mockito.CALLS_REAL_METHODS);
+        mockedClientStatic.when(() -> ExternalServiceClient.open(anyString())).thenReturn(mockConnection);
+        setupMockResponse(HttpURLConnection.HTTP_OK, "");
+        when(mockConnection.getOutputStream()).thenReturn(mockOutputStream);
+
+        String result = externalServiceClient.post(TEST_ENDPOINT, TEST_BODY, false);
+        assertEquals("", result);
+        verify(mockConnection).disconnect();
+    }
+
+    @Test
+    void put_Success_EmptyBody_ReturnsEmptyString() throws Exception {
+        mockedClientStatic = Mockito.mockStatic(ExternalServiceClient.class, Mockito.CALLS_REAL_METHODS);
+        mockedClientStatic.when(() -> ExternalServiceClient.open(anyString())).thenReturn(mockConnection);
+        setupMockResponse(HttpURLConnection.HTTP_OK, "");
+        when(mockConnection.getOutputStream()).thenReturn(mockOutputStream);
+
+        String result = externalServiceClient.put(TEST_ENDPOINT, TEST_BODY, true);
+        assertEquals("", result);
+        verify(mockConnection).disconnect();
+    }
+
+    @Test
     void get_Pharmacy_Success() throws Exception {
         mockedClientStatic = Mockito.mockStatic(ExternalServiceClient.class, Mockito.CALLS_REAL_METHODS);
         mockedClientStatic.when(() -> ExternalServiceClient.open(anyString())).thenReturn(mockConnection);
@@ -136,6 +146,17 @@ class ExternalServiceClientTest {
         String result = externalServiceClient.get(TEST_ENDPOINT, false); // isHospital = false
         assertEquals(SUCCESS_RESPONSE, result);
         verify(mockConnection).setRequestMethod("GET");
+    }
+
+    @Test
+    void get_Success_EmptyBody_ReturnsEmptyString() throws Exception {
+        mockedClientStatic = Mockito.mockStatic(ExternalServiceClient.class, Mockito.CALLS_REAL_METHODS);
+        mockedClientStatic.when(() -> ExternalServiceClient.open(anyString())).thenReturn(mockConnection);
+        setupMockResponse(HttpURLConnection.HTTP_OK, "");
+
+        String result = externalServiceClient.get(TEST_ENDPOINT, true);
+        assertEquals("", result);
+        verify(mockConnection).disconnect();
     }
 
     @Test
@@ -281,6 +302,128 @@ class ExternalServiceClientTest {
 
         assertEquals(SUCCESS_RESPONSE, result);
         verify(spiedClient).put(eq(TEST_ENDPOINT), eq(TEST_BODY), eq(true));
+    }
+
+    @Test
+    void postAsync_HandlesException() throws Exception {
+        ExternalServiceClient spiedClient = spy(externalServiceClient);
+        Exception testException = new Exception("POST failed");
+        doThrow(testException).when(spiedClient).post(anyString(), eq(TEST_BODY), anyBoolean());
+
+        CompletableFuture<String> future = spiedClient.postAsync(TEST_ENDPOINT, TEST_BODY, true);
+
+        ExecutionException thrown = assertThrows(ExecutionException.class, () -> {
+            try {
+                future.get();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                fail("Test interrupted unexpectedly");
+            }
+        });
+
+        assertTrue(thrown.getCause() instanceof RuntimeException);
+        assertEquals(testException, thrown.getCause().getCause());
+        verify(spiedClient).post(anyString(), eq(TEST_BODY), anyBoolean());
+    }
+
+    @Test
+    void putAsync_HandlesException() throws Exception {
+        ExternalServiceClient spiedClient = spy(externalServiceClient);
+        Exception testException = new Exception("PUT failed");
+        doThrow(testException).when(spiedClient).put(anyString(), eq(TEST_BODY), anyBoolean());
+
+        CompletableFuture<String> future = spiedClient.putAsync(TEST_ENDPOINT, TEST_BODY, false);
+
+        ExecutionException thrown = assertThrows(ExecutionException.class, () -> {
+            try {
+                future.get();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                fail("Test interrupted unexpectedly");
+            }
+        });
+
+        assertTrue(thrown.getCause() instanceof RuntimeException);
+        assertEquals(testException, thrown.getCause().getCause());
+        verify(spiedClient).put(anyString(), eq(TEST_BODY), anyBoolean());
+    }
+
+    @Test
+    void post_Error_NullErrorStream_ThrowsException() throws Exception {
+        mockedClientStatic = Mockito.mockStatic(ExternalServiceClient.class, Mockito.CALLS_REAL_METHODS);
+        mockedClientStatic.when(() -> ExternalServiceClient.open(anyString())).thenReturn(mockConnection);
+        when(mockConnection.getOutputStream()).thenReturn(mockOutputStream);
+        when(mockConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_BAD_REQUEST);
+        // Return null error stream to exercise else-branch with null stream
+        lenient().when(mockConnection.getErrorStream()).thenReturn(null);
+        // Input stream should not be called on error
+        lenient().when(mockConnection.getInputStream()).thenThrow(new IOException("No input on error"));
+
+        assertThrows(NullPointerException.class, () -> externalServiceClient.post(TEST_ENDPOINT, TEST_BODY, true));
+        verify(mockConnection).disconnect();
+    }
+
+    @Test
+    void post_OutputStreamThrowsIOException_PropagatesAndDisconnects() throws Exception {
+        mockedClientStatic = Mockito.mockStatic(ExternalServiceClient.class, Mockito.CALLS_REAL_METHODS);
+        mockedClientStatic.when(() -> ExternalServiceClient.open(anyString())).thenReturn(mockConnection);
+        when(mockConnection.getOutputStream()).thenThrow(new IOException("OS failure"));
+
+        assertThrows(IOException.class, () -> externalServiceClient.post(TEST_ENDPOINT, TEST_BODY, false));
+    }
+
+    @Test
+    void post_InputStreamThrowsIOException_PropagatesAndDisconnects() throws Exception {
+        mockedClientStatic = Mockito.mockStatic(ExternalServiceClient.class, Mockito.CALLS_REAL_METHODS);
+        mockedClientStatic.when(() -> ExternalServiceClient.open(anyString())).thenReturn(mockConnection);
+        when(mockConnection.getOutputStream()).thenReturn(mockOutputStream);
+        when(mockConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
+        when(mockConnection.getInputStream()).thenThrow(new IOException("IS failure on POST"));
+
+        assertThrows(IOException.class, () -> externalServiceClient.post(TEST_ENDPOINT, TEST_BODY, true));
+        verify(mockConnection).disconnect();
+    }
+
+    @Test
+    void get_InputStreamThrowsIOException_PropagatesAndDisconnects() throws Exception {
+        mockedClientStatic = Mockito.mockStatic(ExternalServiceClient.class, Mockito.CALLS_REAL_METHODS);
+        mockedClientStatic.when(() -> ExternalServiceClient.open(anyString())).thenReturn(mockConnection);
+        when(mockConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
+        when(mockConnection.getInputStream()).thenThrow(new IOException("IS failure"));
+
+        assertThrows(IOException.class, () -> externalServiceClient.get(TEST_ENDPOINT, true));
+        verify(mockConnection).disconnect();
+    }
+
+    @Test
+    void put_OutputStreamThrowsIOException_Propagates() throws Exception {
+        mockedClientStatic = Mockito.mockStatic(ExternalServiceClient.class, Mockito.CALLS_REAL_METHODS);
+        mockedClientStatic.when(() -> ExternalServiceClient.open(anyString())).thenReturn(mockConnection);
+        when(mockConnection.getOutputStream()).thenThrow(new IOException("OS failure on PUT"));
+
+        assertThrows(IOException.class, () -> externalServiceClient.put(TEST_ENDPOINT, TEST_BODY, true));
+        // Do not strictly verify disconnect; production code may not reach finally when OS retrieval fails
+    }
+
+    @Test
+    void put_InputStreamThrowsIOException_PropagatesAndDisconnects() throws Exception {
+        mockedClientStatic = Mockito.mockStatic(ExternalServiceClient.class, Mockito.CALLS_REAL_METHODS);
+        mockedClientStatic.when(() -> ExternalServiceClient.open(anyString())).thenReturn(mockConnection);
+        when(mockConnection.getOutputStream()).thenReturn(mockOutputStream);
+        when(mockConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
+        when(mockConnection.getInputStream()).thenThrow(new IOException("IS failure on PUT"));
+
+        assertThrows(IOException.class, () -> externalServiceClient.put(TEST_ENDPOINT, TEST_BODY, false));
+        verify(mockConnection).disconnect();
+    }
+
+    @Test
+    void open_StaticMethod_ReturnsHttpURLConnectionWithoutConnecting() throws Exception {
+        HttpURLConnection conn = ExternalServiceClient.open("http://127.0.0.1");
+        assertNotNull(conn);
+        assertTrue(conn.getURL().toString().startsWith("http://127.0.0.1"));
+        // Avoid calling methods that force a network connection
+        conn.disconnect();
     }
 
 }

@@ -271,6 +271,24 @@ class NotificationHandlerTest {
     }
 
     @Test
+    void handlePost_RequestBodyIOException_SendsInternalError() throws IOException {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        // Simulate IOException during reading request body
+        InputStream throwingStream = new InputStream() {
+            @Override
+            public int read() throws IOException {
+                throw new IOException("read failed");
+            }
+        };
+        when(mockHttpExchange.getRequestBody()).thenReturn(throwingStream);
+
+        notificationHandler.handle(mockHttpExchange);
+
+        verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
+        mockedTransport.verifyNoInteractions();
+    }
+
+    @Test
     void authenticator_UsesSenderCredentials() throws Exception {
         // Set sender credentials via reflection
         java.lang.reflect.Field senderEmailField = NotificationHandler.class.getDeclaredField("senderEmail");
@@ -295,5 +313,103 @@ class NotificationHandlerTest {
         assertNotNull(pa);
         assertEquals("sender@example.com", pa.getUserName());
         assertEquals("s3cr3t", new String(pa.getPassword()));
+    }
+
+    @Test
+    void handle_SetsCorsHeaders_OnAnyRequest() throws IOException {
+        // Using GET on the correct path; method not allowed, but CORS headers must be present
+        when(mockHttpExchange.getRequestURI()).thenReturn(URI.create(API_ENDPOINT));
+        when(mockHttpExchange.getRequestMethod()).thenReturn("GET");
+
+        notificationHandler.handle(mockHttpExchange);
+
+        verify(mockResponseHeaders).add(eq("Access-Control-Allow-Origin"), eq("*"));
+        verify(mockResponseHeaders).add(eq("Access-Control-Allow-Methods"), eq("POST, OPTIONS"));
+        verify(mockResponseHeaders).add(eq("Access-Control-Allow-Headers"), eq("Content-Type, Authorization"));
+    }
+
+    @Test
+    void handlePost_WhitespaceOnlyFields_SendsBadRequest() throws IOException {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        Map<String, String> requestMap = Map.of(
+                "to", "   ",
+                "subject", " \t ",
+                "body", "  \n  ");
+        String requestJson = objectMapper.writeValueAsString(requestMap);
+        InputStream requestBodyStream = new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
+        when(mockHttpExchange.getRequestBody()).thenReturn(requestBodyStream);
+
+        notificationHandler.handle(mockHttpExchange);
+
+        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
+        mockedTransport.verifyNoInteractions();
+    }
+
+    @Test
+    void handlePost_SendEmail_AuthenticationFailed_Returns500() throws Exception {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        String to = "recipient@example.com";
+        String subject = "Auth Fail";
+        String body = "Test body";
+        String requestJson = objectMapper.writeValueAsString(Map.of("to", to, "subject", subject, "body", body));
+        when(mockHttpExchange.getRequestBody()).thenReturn(new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8)));
+
+        // Transport.send throws AuthenticationFailedException
+        mockedTransport.when(() -> Transport.send(any(MimeMessage.class)))
+                .thenThrow(new jakarta.mail.AuthenticationFailedException("invalid creds"));
+
+        notificationHandler.handle(mockHttpExchange);
+
+        verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
+        verify(mockResponseBody, never()).write(any(byte[].class));
+    }
+
+    @Test
+    void handlePost_SendEmail_RuntimeException_Returns500() throws Exception {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        String to = "recipient@example.com";
+        String subject = "Runtime";
+        String body = "Test body";
+        String requestJson = objectMapper.writeValueAsString(Map.of("to", to, "subject", subject, "body", body));
+        when(mockHttpExchange.getRequestBody()).thenReturn(new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8)));
+
+        // Transport.send throws unchecked exception
+        mockedTransport.when(() -> Transport.send(any(MimeMessage.class)))
+                .thenThrow(new RuntimeException("boom"));
+
+        notificationHandler.handle(mockHttpExchange);
+
+        verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
+        verify(mockResponseBody, never()).write(any(byte[].class));
+    }
+
+    @Test
+    void handlePost_SendEmail_MultipleRecipients_Success() throws Exception {
+        when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
+        String to = "a@test.com, b@test.com";
+        String subject = "Group";
+        String body = "Hello team";
+        String requestJson = objectMapper.writeValueAsString(Map.of("to", to, "subject", subject, "body", body));
+        when(mockHttpExchange.getRequestBody()).thenReturn(new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8)));
+
+        // Success path
+        mockedTransport.when(() -> Transport.send(any(MimeMessage.class))).thenAnswer(invocation -> null);
+
+        notificationHandler.handle(mockHttpExchange);
+
+        mockedTransport.verify(() -> Transport.send(messageCaptor.capture()));
+        MimeMessage captured = messageCaptor.getValue();
+        Message.RecipientType type = Message.RecipientType.TO;
+        jakarta.mail.Address[] recipients = captured.getRecipients(type);
+        assertNotNull(recipients);
+        assertEquals(2, recipients.length);
+        assertEquals("a@test.com", recipients[0].toString());
+        assertEquals("b@test.com", recipients[1].toString());
+
+        // Verify JSON response and header
+        verify(mockHttpExchange).sendResponseHeaders(eq(200), anyLong());
+        verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
+        verify(mockResponseBody).write(any(byte[].class));
+        verify(mockResponseBody).close();
     }
 }

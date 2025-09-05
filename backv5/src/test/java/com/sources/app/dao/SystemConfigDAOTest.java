@@ -33,7 +33,6 @@ public class SystemConfigDAOTest {
     }
 
     @Test
-    @org.junit.jupiter.api.Disabled("Disabled due to Hibernate connection pool issues")
     public void testSaveOrUpdateUpdateValueOnlyAndDescription() throws Exception {
         SystemConfigDAO dao = new SystemConfigDAO();
         String key = "MAX_USERS_" + System.currentTimeMillis(); // Make key unique

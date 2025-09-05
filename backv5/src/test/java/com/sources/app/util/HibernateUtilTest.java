@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.hibernate.SessionFactory;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
@@ -46,5 +47,18 @@ public class HibernateUtilTest {
         String out = baos.toString();
         assertTrue(out.contains("DB_SCHEMA_PHARMACY no definida") || out.contains("Configurando esquema de BD para farmacia"),
                 "Expected a schema configuration message, got: " + out);
+    }
+
+    @Test
+    public void testSimpleNativeQuerySelectOne() {
+        SessionFactory sf = HibernateUtil.getSessionFactory();
+        assertNotNull(sf);
+        try (Session session = sf.openSession()) {
+            Transaction tx = session.beginTransaction();
+            Integer one = session.createNativeQuery("select 1", Integer.class).getSingleResult();
+            assertNotNull(one);
+            assertEquals(1, one.intValue());
+            tx.commit();
+        }
     }
 }

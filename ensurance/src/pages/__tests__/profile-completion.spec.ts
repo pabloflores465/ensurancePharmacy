@@ -284,4 +284,52 @@ describe('profile-completion.vue', () => {
     expect(hoisted.axiosPut).toHaveBeenCalled()
     expect(wrapper.text()).toContain('No se pudo guardar tu perfil')
   })
+
+  it('actualiza campos básicos via v-model y envía PUT con valores actualizados', async () => {
+    // Usuario PATIENT con todos los campos base completos
+    localStorage.setItem('user', JSON.stringify({
+      idUser: 44,
+      name: 'Nombre Original',
+      email: 'orig@test.com',
+      cui: 123456,
+      phone: '1111',
+      address: 'Dir Original',
+      birthDate: '1990-01-01',
+      role: 'PATIENT',
+      enabled: 1,
+      password: 'pwd',
+    }))
+
+    hoisted.axiosGet.mockResolvedValueOnce({ data: {} })
+    hoisted.axiosPut.mockResolvedValueOnce({ status: 200, data: { idUser: 44 } })
+
+    const wrapper = mount(ProfileCompletion)
+    await flushPromises()
+
+    // Interactuar con los inputs que usan v-model en el template
+    await wrapper.get('#name').setValue('Nuevo Nombre')
+    await wrapper.get('#email').setValue('nuevo@test.com')
+    await wrapper.get('#phone').setValue('7777')
+    await wrapper.get('#address').setValue('Nueva Dirección')
+
+    // Campos adicionales requeridos por PATIENT
+    await wrapper.get('#insuranceNumber').setValue('INS-99')
+    await wrapper.get('#allergies').setValue('Ninguna')
+
+    const saveBtn = wrapper.get('button')
+    expect(saveBtn.attributes('disabled')).toBeUndefined()
+    await saveBtn.trigger('click')
+    await flushPromises()
+
+    // Verificar que el payload del PUT contiene los nuevos valores
+    expect(hoisted.axiosPut).toHaveBeenCalled()
+    const putPayload = hoisted.axiosPut.mock.calls[0][1]
+    expect(putPayload).toMatchObject({
+      idUser: 44,
+      name: 'Nuevo Nombre',
+      email: 'nuevo@test.com',
+      phone: '7777',
+      address: 'Nueva Dirección',
+    })
+  })
 })

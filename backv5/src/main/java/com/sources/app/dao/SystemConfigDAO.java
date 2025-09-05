@@ -33,10 +33,12 @@ public class SystemConfigDAO {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-            
-            // Verificar si ya existe la configuración
-            SystemConfig config = getByKey(configKey);
-            
+            // Verificar si ya existe la configuración usando la MISMA sesión
+            Query<SystemConfig> query = session.createQuery(
+                "FROM SystemConfig WHERE configKey = :key", SystemConfig.class);
+            query.setParameter("key", configKey);
+            SystemConfig config = query.uniqueResult();
+
             if (config == null) {
                 // Crear nueva configuración
                 config = new SystemConfig();
@@ -45,19 +47,19 @@ public class SystemConfigDAO {
                 config.setDescription(description);
                 session.persist(config);
             } else {
-                // Actualizar configuración existente
+                // Actualizar configuración existente (la entidad ya está gestionada por 'session')
                 config.setConfigValue(configValue);
                 if (description != null && !description.isEmpty()) {
                     config.setDescription(description);
                 }
-                session.merge(config);
+                // No es necesario llamar a merge porque 'config' está adjunta al contexto de persistencia
             }
-            
+
             transaction.commit();
             return config;
         } catch (Exception e) {
             if (transaction != null) {
-                transaction.rollback();
+                try { transaction.rollback(); } catch (Exception ignore) { /* no-op */ }
             }
             LOGGER.log(Level.SEVERE, "Error saving/updating SystemConfig (key=" + configKey + ", value=" + configValue + ", descNull=" + (description == null) + ")", e);
             return null;
