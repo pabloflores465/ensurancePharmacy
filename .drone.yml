@@ -336,7 +336,7 @@ steps:
     image: curlimages/curl:latest
     commands:
       - export ENVIRONMENT=$(cat .environment)
-      - echo "🔍 Verificando deployment en ambiente: $ENVIRONMENT"
+      - 'echo "🔍 Verificando deployment en ambiente: $ENVIRONMENT"'
       - |
         if [ "$ENVIRONMENT" = "dev" ]; then
           curl -f http://localhost:3000 || echo "❌ Frontend DEV no responde"
