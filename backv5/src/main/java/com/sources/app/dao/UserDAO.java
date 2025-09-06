@@ -42,7 +42,7 @@ public class UserDAO {
             query.setParameter("password", password);
             return query.uniqueResult(); // Retorna null si no encuentra el usuario
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error during login for email=" + email, e);
+            LOGGER.log(Level.SEVERE, () -> "Error during login for email=" + email);
             return null;
         }
     }
@@ -75,7 +75,7 @@ public class UserDAO {
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
-            LOGGER.log(Level.SEVERE, "Error creating User (email=" + request.getEmail() + ")", e);
+            LOGGER.log(Level.SEVERE, () -> "Error creating User (email=" + request.getEmail() + ")");
         }
         return user;
     }
@@ -84,7 +84,7 @@ public class UserDAO {
      * Método de conveniencia para mantener compatibilidad con código existente.
      * @deprecated Use create(UserCreateRequest) instead
      */
-    @Deprecated
+    @Deprecated(since = "1.0", forRemoval = true)
     public User create(String name, String cui, String phone, String email, Date birthDate, String address, String password) {
         UserCreateRequest request = new UserCreateRequest(name, cui, phone, email, birthDate, address, password);
         return create(request);
@@ -115,7 +115,7 @@ public class UserDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(User.class, id);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error fetching User by id=" + id, e);
+            LOGGER.log(Level.SEVERE, () -> "Error fetching User by id=" + id);
             return null;
         }
     }
@@ -138,7 +138,7 @@ public class UserDAO {
             return user;
         } catch (Exception e) {
             if (tx != null) tx.rollback();
-            LOGGER.log(Level.SEVERE, "Error updating User (id=" + (user != null ? user.getIdUser() : null) + ")", e);
+            LOGGER.log(Level.SEVERE, () -> "Error updating User (id=" + (user != null ? user.getIdUser() : null) + ")");
             return null;
         }
     }

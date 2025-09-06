@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class HospitalTest {
 
     @Test
-    public void testHospitalInstantiation() {
+    void testHospitalInstantiation() {
         // TODO: implement tests for Hospital
         Hospital instance = new Hospital();
         assertNotNull(instance);

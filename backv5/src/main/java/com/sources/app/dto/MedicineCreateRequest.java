@@ -19,6 +19,10 @@ public class MedicineCreateRequest {
 
     public MedicineCreateRequest() {}
 
+    /**
+     * @deprecated Use builder pattern instead: MedicineCreateRequest.builder()...build()
+     */
+    @Deprecated(since = "1.0", forRemoval = true)
     public MedicineCreateRequest(String name, String activeMedicament, String description, String image,
                                String concentration, Double presentacion, Integer stock, String brand,
                                Boolean prescription, Double price, Integer soldUnits) {
@@ -33,6 +37,95 @@ public class MedicineCreateRequest {
         this.prescription = prescription;
         this.price = price;
         this.soldUnits = soldUnits;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String name;
+        private String activeMedicament;
+        private String description;
+        private String image;
+        private String concentration;
+        private Double presentacion;
+        private Integer stock;
+        private String brand;
+        private Boolean prescription;
+        private Double price;
+        private Integer soldUnits;
+
+        public Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder activeMedicament(String activeMedicament) {
+            this.activeMedicament = activeMedicament;
+            return this;
+        }
+
+        public Builder description(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public Builder image(String image) {
+            this.image = image;
+            return this;
+        }
+
+        public Builder concentration(String concentration) {
+            this.concentration = concentration;
+            return this;
+        }
+
+        public Builder presentacion(Double presentacion) {
+            this.presentacion = presentacion;
+            return this;
+        }
+
+        public Builder stock(Integer stock) {
+            this.stock = stock;
+            return this;
+        }
+
+        public Builder brand(String brand) {
+            this.brand = brand;
+            return this;
+        }
+
+        public Builder prescription(Boolean prescription) {
+            this.prescription = prescription;
+            return this;
+        }
+
+        public Builder price(Double price) {
+            this.price = price;
+            return this;
+        }
+
+        public Builder soldUnits(Integer soldUnits) {
+            this.soldUnits = soldUnits;
+            return this;
+        }
+
+        public MedicineCreateRequest build() {
+            MedicineCreateRequest request = new MedicineCreateRequest();
+            request.name = this.name;
+            request.activeMedicament = this.activeMedicament;
+            request.description = this.description;
+            request.image = this.image;
+            request.concentration = this.concentration;
+            request.presentacion = this.presentacion;
+            request.stock = this.stock;
+            request.brand = this.brand;
+            request.prescription = this.prescription;
+            request.price = this.price;
+            request.soldUnits = this.soldUnits;
+            return request;
+        }
     }
 
     // Getters and Setters

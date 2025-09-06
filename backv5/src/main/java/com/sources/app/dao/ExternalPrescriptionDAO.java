@@ -1,6 +1,7 @@
 package com.sources.app.dao;
 
 import com.sources.app.entities.Prescription;
+import com.sources.app.exceptions.ExternalServiceException;
 import com.sources.app.util.HibernateUtil;
 import com.sun.net.httpserver.HttpExchange;
 import org.hibernate.Session;
@@ -9,8 +10,8 @@ import org.hibernate.Transaction;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.URL;
 import java.net.URI;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
@@ -54,65 +55,89 @@ public class ExternalPrescriptionDAO {
             try {
                 transaction = session.beginTransaction();
                 final String base = exchange.getRequestURI().toString();
-                LOGGER.log(Level.INFO, "ExternalPrescriptionDAO verifying for email=" + email + ", baseURI=" + base);
-                try {
-                    // Crea un objeto URL con el endpoint de la API incluyendo el email proporcionado
-                    final String baseNoSlash = base.endsWith("/") ? base.substring(0, base.length() - 1) : base;
-                    String encodedEmail = email == null ? "" : URLEncoder.encode(email, StandardCharsets.UTF_8);
-                    String verifyUrl = baseNoSlash + "/api2/verification?email=" + encodedEmail;
-                    URL url = URI.create(verifyUrl).toURL();
-                    LOGGER.log(Level.INFO, "Verification URL built: " + url);
-                    // Abre una conexión a la URL
-                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                    // Establece el método de solicitud HTTP a GET
-                    con.setRequestMethod("GET");
-                    // Obtiene el código de respuesta
-                    int status = con.getResponseCode();
-                    // Lee la respuesta
-                    StringBuilder content = new StringBuilder();
-                    try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
-                        String inputLine;
-                        while ((inputLine = in.readLine()) != null) {
-                            content.append(inputLine);
-                        }
-                    }
-                    // Desconecta la conexión
-                    con.disconnect();
-                    // Guarda la respuesta en la variable 'verify'
-                    String verify = content.toString().trim();
-                    LOGGER.log(Level.INFO, "Verification HTTP status=" + status + ", body='" + verify + "'");
-                    
-                    // Si el usuario no está verificado, retornar null
-                    if (!"1".equals(verify)) {
-                        if (transaction != null) {
-                            try { transaction.rollback(); } catch (Exception re) { LOGGER.log(Level.WARNING, "Rollback failed after unverified user for email=" + email, re); }
-                        }
-                        return null;
-                    }
-                    
-                } catch(Exception e) {
-                    LOGGER.log(Level.SEVERE, "Error verifying user via external service for email: " + email + 
-                            "; baseURI: " + base, e);
-                    if (transaction != null) {
-                        try { transaction.rollback(); } catch (Exception re) { LOGGER.log(Level.WARNING, "Rollback failed after verification error for email=" + email, re); }
-                    }
+                LOGGER.log(Level.INFO, () -> "ExternalPrescriptionDAO verifying for email=" + email + ", baseURI=" + base);
+                
+                if (!verifyUserExternally(base, email)) {
+                    rollbackTransaction(transaction, "unverified user for email=" + email);
                     return null;
                 }
                 
-                Prescription prescription = session.get(Prescription.class, id);
-                if (prescription == null) {
-                    LOGGER.log(Level.INFO, "Prescription not found after verification for id=" + id);
-                } else {
-                    LOGGER.log(Level.INFO, "Prescription found after verification: id=" + prescription.getIdPrescription());
-                }
-                transaction.commit();
-                return prescription;
-            } catch (Exception e) {
-                if (transaction != null) {
-                    try { transaction.rollback(); } catch (Exception re) { LOGGER.log(Level.WARNING, "Rollback failed after top-level error for id=" + id + ", email=" + email, re); }
-                }
-                LOGGER.log(Level.SEVERE, "Error fetching Prescription by id: " + id + " after external verification for email: " + email, e);
+                return fetchPrescriptionById(session, transaction, id);
+            } catch (Exception _) {
+                rollbackTransaction(transaction, "top-level error for id=" + id + ", email=" + email);
+                LOGGER.log(Level.SEVERE, () -> "Error fetching Prescription by id: " + id + " after external verification for email: " + email);
                 return null;
+            }
+        }
+    }
+    
+    private boolean verifyUserExternally(String base, String email) {
+        try {
+            final String baseNoSlash = base.endsWith("/") ? base.substring(0, base.length() - 1) : base;
+            String encodedEmail = email == null ? "" : URLEncoder.encode(email, StandardCharsets.UTF_8);
+            String verifyUrl = String.format("%s/api2/verification?email=%s", baseNoSlash, encodedEmail);
+            try {
+                URL url = URI.create(verifyUrl).toURL();
+                LOGGER.log(Level.INFO, () -> "Verification URL built: " + url);
+                
+                return performHttpVerification(url, email);
+            } catch(ExternalServiceException _) {
+                LOGGER.log(Level.SEVERE, () -> "Error verifying user via external service for email: " + email + "; baseURI: " + base);
+                return false;
+            } catch(Exception _) {
+                LOGGER.log(Level.SEVERE, () -> "Unexpected error verifying user via external service for email: " + email + "; baseURI: " + base);
+                return false;
+            }
+        } catch(Exception _) {
+            LOGGER.log(Level.SEVERE, () -> "Error verifying user via external service for email: " + email + "; baseURI: " + base);
+            return false;
+        }
+    }
+    
+    private boolean performHttpVerification(URL url, String email) throws ExternalServiceException {
+        try {
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            
+            int status = con.getResponseCode();
+            String verify = readHttpResponse(con).trim();
+            con.disconnect();
+            
+            LOGGER.log(Level.INFO, () -> "Verification HTTP status=" + status + ", body='" + verify + "'");
+            return "1".equals(verify);
+        } catch (Exception e) {
+            throw new ExternalServiceException("Failed to perform HTTP verification for email: " + email, e);
+        }
+    }
+    
+    private String readHttpResponse(HttpURLConnection con) throws Exception {
+        StringBuilder content = new StringBuilder();
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
+            String inputLine;
+            while ((inputLine = in.readLine()) != null) {
+                content.append(inputLine);
+            }
+        }
+        return content.toString();
+    }
+    
+    private Prescription fetchPrescriptionById(Session session, Transaction transaction, Long id) {
+        Prescription prescription = session.get(Prescription.class, id);
+        if (prescription == null) {
+            LOGGER.log(Level.INFO, () -> "Prescription not found after verification for id=" + id);
+        } else {
+            LOGGER.log(Level.INFO, () -> "Prescription found after verification: id=" + prescription.getIdPrescription());
+        }
+        transaction.commit();
+        return prescription;
+    }
+    
+    private void rollbackTransaction(Transaction transaction, String context) {
+        if (transaction != null) {
+            try { 
+                transaction.rollback(); 
+            } catch (Exception re) { 
+                LOGGER.log(Level.WARNING, () -> "Rollback failed after " + context);
             }
         }
     }

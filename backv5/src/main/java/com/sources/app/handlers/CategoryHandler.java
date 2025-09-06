@@ -20,7 +20,6 @@ import java.util.logging.Logger;
 public class CategoryHandler implements HttpHandler {
     private final CategoryDAO categoryDAO;
     private final ObjectMapper objectMapper;
-    private static final String ENDPOINT = "/api2/categories";
     private static final Logger LOGGER = Logger.getLogger(CategoryHandler.class.getName());
 
     /**

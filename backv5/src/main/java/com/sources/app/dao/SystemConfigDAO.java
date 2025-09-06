@@ -57,11 +57,11 @@ public class SystemConfigDAO {
 
             transaction.commit();
             return config;
-        } catch (Exception e) {
+        } catch (Exception _) {
             if (transaction != null) {
-                try { transaction.rollback(); } catch (Exception ignore) { /* no-op */ }
+                try { transaction.rollback(); } catch (Exception __) { /* no-op */ }
             }
-            LOGGER.log(Level.SEVERE, "Error saving/updating SystemConfig (key=" + configKey + ", value=" + configValue + ", descNull=" + (description == null) + ")", e);
+            LOGGER.log(Level.SEVERE, () -> "Error saving/updating SystemConfig (key=" + configKey + ", value=" + configValue + ", descNull=" + (description == null) + ")");
             return null;
         }
     }
@@ -78,8 +78,8 @@ public class SystemConfigDAO {
                 "FROM SystemConfig WHERE configKey = :key", SystemConfig.class);
             query.setParameter("key", configKey);
             return query.uniqueResult();
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error fetching SystemConfig by key=" + configKey, e);
+        } catch (Exception _) {
+            LOGGER.log(Level.SEVERE, () -> "Error fetching SystemConfig by key=" + configKey);
             return null;
         }
     }
@@ -94,8 +94,8 @@ public class SystemConfigDAO {
             Query<SystemConfig> query = session.createQuery(
                 "FROM SystemConfig ORDER BY configKey", SystemConfig.class);
             return query.list();
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error fetching all SystemConfig records", e);
+        } catch (Exception _) {
+            LOGGER.log(Level.SEVERE, () -> "Error fetching all SystemConfig records");
             return null;
         }
     }
@@ -118,11 +118,11 @@ public class SystemConfigDAO {
                 return true;
             }
             return false;
-        } catch (Exception e) {
+        } catch (Exception _) {
             if (transaction != null) {
                 transaction.rollback();
             }
-            LOGGER.log(Level.SEVERE, "Error deleting SystemConfig by id=" + idConfig, e);
+            LOGGER.log(Level.SEVERE, () -> "Error deleting SystemConfig by id=" + idConfig);
             return false;
         }
     }
@@ -152,7 +152,7 @@ public class SystemConfigDAO {
         if (config != null) {
             try {
                 return Double.parseDouble(config.getConfigValue());
-            } catch (NumberFormatException e) {
+            } catch (NumberFormatException _) {
                 return defaultValue;
             }
         }

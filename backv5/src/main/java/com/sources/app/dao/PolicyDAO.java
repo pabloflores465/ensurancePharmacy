@@ -7,6 +7,7 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import java.util.List;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -38,7 +39,7 @@ public class PolicyDAO {
 
             session.save(policy);
             tx.commit();
-        } catch (Exception e) {
+        } catch (Exception _) {
             if (tx != null) tx.rollback();
             LOGGER.log(Level.SEVERE, () -> "Error creating Policy (percentage=" + percentage + ", enabled=" + enabled + ")");
         }
@@ -56,7 +57,7 @@ public class PolicyDAO {
             return query.list();
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching all Policy records", e);
-            return null;
+            return Collections.emptyList();
         }
     }
 
@@ -69,7 +70,7 @@ public class PolicyDAO {
     public Policy getById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Policy.class, id);
-        } catch (Exception e) {
+        } catch (Exception _) {
             LOGGER.log(Level.SEVERE, () -> "Error fetching Policy by id=" + id);
             return null;
         }
@@ -88,7 +89,7 @@ public class PolicyDAO {
             session.update(policy);
             tx.commit();
             return policy;
-        } catch (Exception e) {
+        } catch (Exception _) {
             if (tx != null) tx.rollback();
             LOGGER.log(Level.SEVERE, () -> "Error updating Policy (id=" + policy.getIdPolicy() + ")");
             return null;

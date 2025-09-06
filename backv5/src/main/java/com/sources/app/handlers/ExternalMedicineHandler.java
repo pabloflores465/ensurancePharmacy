@@ -21,7 +21,6 @@ import java.util.logging.Logger;
 public class ExternalMedicineHandler implements HttpHandler {
     private ExternalMedicineDAO externalMedicineDAO;
     private ObjectMapper objectMapper;
-    private static final String ENDPOINT = "/api2/external_medicines";
     private static final Logger LOGGER = Logger.getLogger(ExternalMedicineHandler.class.getName());
 
     /**

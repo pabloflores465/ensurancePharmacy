@@ -7,6 +7,7 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import java.util.List;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,7 +36,7 @@ public class CategoryDAO {
 
             session.persist(category);
             tx.commit();
-        } catch (Exception e) {
+        } catch (Exception _) {
             if (tx != null) tx.rollback();
             LOGGER.log(Level.SEVERE, () -> "Error creating Category with name: " + name);
         }
@@ -53,7 +54,7 @@ public class CategoryDAO {
             return query.list();
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching all Category records", e);
-            return null;
+            return Collections.emptyList();
         }
     }
 
@@ -66,7 +67,7 @@ public class CategoryDAO {
     public Category getById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Category.class, id);
-        } catch (Exception e) {
+        } catch (Exception _) {
             LOGGER.log(Level.SEVERE, () -> "Error fetching Category by id: " + id);
             return null;
         }

@@ -9,6 +9,7 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import java.util.List;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -63,7 +64,7 @@ public class CommentsDAO {
             return query.list();
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching all Comments records", e);
-            return null;
+            return Collections.emptyList();
         }
     }
 

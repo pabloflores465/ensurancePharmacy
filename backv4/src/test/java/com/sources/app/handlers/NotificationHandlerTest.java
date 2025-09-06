@@ -90,7 +90,7 @@ class NotificationHandlerTest {
     void handle_OptionsRequest_SendsNoContent() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("OPTIONS");
         notificationHandler.handle(mockHttpExchange);
-        verify(mockHttpExchange).sendResponseHeaders(eq(204), eq(-1L));
+        verify(mockHttpExchange).sendResponseHeaders(204, -1L);
         mockedTransport.verifyNoInteractions();
     }
 
@@ -99,7 +99,7 @@ class NotificationHandlerTest {
         when(mockHttpExchange.getRequestURI()).thenReturn(URI.create("/api/wrong"));
         when(mockHttpExchange.getRequestMethod()).thenReturn("POST");
         notificationHandler.handle(mockHttpExchange);
-        verify(mockHttpExchange).sendResponseHeaders(eq(404), eq(-1L));
+        verify(mockHttpExchange).sendResponseHeaders(404, -1L);
         mockedTransport.verifyNoInteractions();
     }
 
@@ -112,7 +112,7 @@ class NotificationHandlerTest {
 
         notificationHandler.handle(mockHttpExchange);
 
-        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
+        verify(mockHttpExchange).sendResponseHeaders(400, -1L);
     }
 
     @Test
@@ -122,14 +122,14 @@ class NotificationHandlerTest {
 
         notificationHandler.handle(mockHttpExchange);
 
-        verify(mockHttpExchange).sendResponseHeaders(eq(405), eq(-1L));
+        verify(mockHttpExchange).sendResponseHeaders(405, -1L);
     }
 
     @Test
     void handle_GetRequest_SendsMethodNotAllowed() throws IOException {
         when(mockHttpExchange.getRequestMethod()).thenReturn("GET"); // Unsupported
         notificationHandler.handle(mockHttpExchange);
-        verify(mockHttpExchange).sendResponseHeaders(eq(405), eq(-1L));
+        verify(mockHttpExchange).sendResponseHeaders(405, -1L);
     }
 
     // --- POST Tests ---
@@ -158,7 +158,8 @@ class NotificationHandlerTest {
         assertTrue(((String) capturedMessage.getContent()).contains(body));
 
         // Verify success response
-        verify(mockHttpExchange).sendResponseHeaders(eq(200), anyLong());
+        verify(mockHttpExchange).sendResponseHeaders(statusCodeCaptor.capture(), responseLengthCaptor.capture());
+        assertEquals(200, statusCodeCaptor.getValue());
         verify(mockResponseBody).write(responseBodyCaptor.capture());
         String responseJson = new String(responseBodyCaptor.getValue(), StandardCharsets.UTF_8);
         assertTrue(responseJson.contains("\"success\":true"));
@@ -181,7 +182,7 @@ class NotificationHandlerTest {
         notificationHandler.handle(mockHttpExchange);
 
         mockedTransport.verify(() -> Transport.send(any(MimeMessage.class)));
-        verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
+        verify(mockHttpExchange).sendResponseHeaders(500, -1L);
         verify(mockResponseBody, never()).write(any(byte[].class)); // No response body on 500
     }
 
@@ -206,7 +207,7 @@ class NotificationHandlerTest {
         notificationHandler.handle(mockHttpExchange);
 
         // Al faltar credenciales, sendEmail devuelve false y el handler responde 500
-        verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
+        verify(mockHttpExchange).sendResponseHeaders(500, -1L);
         mockedTransport.verifyNoInteractions();
     }
 
@@ -239,7 +240,7 @@ class NotificationHandlerTest {
         notificationHandler.handle(mockHttpExchange);
 
         // Faltando host/port, sendEmail devuelve false -> handler responde 500
-        verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
+        verify(mockHttpExchange).sendResponseHeaders(500, -1L);
     }
 
     @Test
@@ -253,7 +254,7 @@ class NotificationHandlerTest {
 
         notificationHandler.handle(mockHttpExchange);
 
-        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
+        verify(mockHttpExchange).sendResponseHeaders(400, -1L);
         mockedTransport.verifyNoInteractions(); // Should not attempt to send email
     }
 
@@ -266,7 +267,7 @@ class NotificationHandlerTest {
 
         notificationHandler.handle(mockHttpExchange);
 
-        verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L)); // Caught by generic Exception handler
+        verify(mockHttpExchange).sendResponseHeaders(500, -1L); // Caught by generic Exception handler
         mockedTransport.verifyNoInteractions();
     }
 
@@ -284,7 +285,7 @@ class NotificationHandlerTest {
 
         notificationHandler.handle(mockHttpExchange);
 
-        verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
+        verify(mockHttpExchange).sendResponseHeaders(500, -1L);
         mockedTransport.verifyNoInteractions();
     }
 
@@ -323,9 +324,9 @@ class NotificationHandlerTest {
 
         notificationHandler.handle(mockHttpExchange);
 
-        verify(mockResponseHeaders).add(eq("Access-Control-Allow-Origin"), eq("*"));
-        verify(mockResponseHeaders).add(eq("Access-Control-Allow-Methods"), eq("POST, OPTIONS"));
-        verify(mockResponseHeaders).add(eq("Access-Control-Allow-Headers"), eq("Content-Type, Authorization"));
+        verify(mockResponseHeaders).add("Access-Control-Allow-Origin", "*");
+        verify(mockResponseHeaders).add("Access-Control-Allow-Methods", "POST, OPTIONS");
+        verify(mockResponseHeaders).add("Access-Control-Allow-Headers", "Content-Type, Authorization");
     }
 
     @Test
@@ -341,7 +342,7 @@ class NotificationHandlerTest {
 
         notificationHandler.handle(mockHttpExchange);
 
-        verify(mockHttpExchange).sendResponseHeaders(eq(400), eq(-1L));
+        verify(mockHttpExchange).sendResponseHeaders(400, -1L);
         mockedTransport.verifyNoInteractions();
     }
 
@@ -360,7 +361,7 @@ class NotificationHandlerTest {
 
         notificationHandler.handle(mockHttpExchange);
 
-        verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
+        verify(mockHttpExchange).sendResponseHeaders(500, -1L);
         verify(mockResponseBody, never()).write(any(byte[].class));
     }
 
@@ -379,7 +380,7 @@ class NotificationHandlerTest {
 
         notificationHandler.handle(mockHttpExchange);
 
-        verify(mockHttpExchange).sendResponseHeaders(eq(500), eq(-1L));
+        verify(mockHttpExchange).sendResponseHeaders(500, -1L);
         verify(mockResponseBody, never()).write(any(byte[].class));
     }
 
@@ -407,8 +408,9 @@ class NotificationHandlerTest {
         assertEquals("b@test.com", recipients[1].toString());
 
         // Verify JSON response and header
-        verify(mockHttpExchange).sendResponseHeaders(eq(200), anyLong());
-        verify(mockResponseHeaders).set(eq("Content-Type"), eq("application/json"));
+        verify(mockHttpExchange).sendResponseHeaders(statusCodeCaptor.capture(), responseLengthCaptor.capture());
+        assertEquals(200, statusCodeCaptor.getValue());
+        verify(mockResponseHeaders).set("Content-Type", "application/json");
         verify(mockResponseBody).write(any(byte[].class));
         verify(mockResponseBody).close();
     }

@@ -9,6 +9,7 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import java.util.List;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -41,7 +42,7 @@ public class PrescriptionDAO {
 
             session.save(prescription);
             tx.commit();
-        } catch (Exception e) {
+        } catch (Exception _) {
             if (tx != null) tx.rollback();
             LOGGER.log(Level.SEVERE, () -> "Error creating Prescription (hospitalNull=" + (hospital == null) + ", userNull=" + (user == null) + ", approved=" + approved + ")");
         }
@@ -59,7 +60,7 @@ public class PrescriptionDAO {
             return query.list();
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching all Prescription records", e);
-            return null;
+            return Collections.emptyList();
         }
     }
 
@@ -72,7 +73,7 @@ public class PrescriptionDAO {
     public Prescription getById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Prescription.class, id);
-        } catch (Exception e) {
+        } catch (Exception _) {
             LOGGER.log(Level.SEVERE, () -> "Error fetching Prescription by id=" + id);
             return null;
         }
@@ -91,7 +92,7 @@ public class PrescriptionDAO {
             session.update(prescription);
             tx.commit();
             return prescription;
-        } catch (Exception e) {
+        } catch (Exception _) {
             if (tx != null) tx.rollback();
             LOGGER.log(Level.SEVERE, () -> "Error updating Prescription (id=" + prescription.getIdPrescription() + ")");
             return null;

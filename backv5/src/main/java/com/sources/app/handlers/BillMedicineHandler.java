@@ -24,7 +24,6 @@ import java.util.logging.Logger;
 public class BillMedicineHandler implements HttpHandler {
     private final BillMedicineDAO billMedicineDAO;
     private final ObjectMapper objectMapper;
-    private static final String ENDPOINT = "/api2/bill_medicines";
     private static final Logger LOGGER = Logger.getLogger(BillMedicineHandler.class.getName());
 
     /**

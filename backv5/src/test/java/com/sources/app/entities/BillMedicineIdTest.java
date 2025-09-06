@@ -6,13 +6,13 @@ import static org.junit.jupiter.api.Assertions.*;
 public class BillMedicineIdTest {
 
     @Test
-    public void testBillMedicineIdInstantiation() {
+    void testBillMedicineIdInstantiation() {
         BillMedicineId instance = new BillMedicineId();
         assertNotNull(instance);
     }
 
     @Test
-    public void testBillMedicineIdConstructorWithParameters() {
+    void testBillMedicineIdConstructorWithParameters() {
         Long billId = 1L;
         Long medicineId = 2L;
         BillMedicineId id = new BillMedicineId(billId, medicineId);
@@ -22,7 +22,7 @@ public class BillMedicineIdTest {
     }
 
     @Test
-    public void testBillMedicineIdSettersAndGetters() {
+    void testBillMedicineIdSettersAndGetters() {
         BillMedicineId id = new BillMedicineId();
         Long billId = 10L;
         Long medicineId = 20L;
@@ -35,7 +35,7 @@ public class BillMedicineIdTest {
     }
 
     @Test
-    public void testBillMedicineIdEquals() {
+    void testBillMedicineIdEquals() {
         BillMedicineId id1 = new BillMedicineId(1L, 2L);
         BillMedicineId id2 = new BillMedicineId(1L, 2L);
         BillMedicineId id3 = new BillMedicineId(2L, 3L);
@@ -55,7 +55,7 @@ public class BillMedicineIdTest {
     }
 
     @Test
-    public void testBillMedicineIdHashCode() {
+    void testBillMedicineIdHashCode() {
         BillMedicineId id1 = new BillMedicineId(1L, 2L);
         BillMedicineId id2 = new BillMedicineId(1L, 2L);
         BillMedicineId id3 = new BillMedicineId(2L, 3L);
@@ -68,7 +68,7 @@ public class BillMedicineIdTest {
     }
 
     @Test
-    public void testBillMedicineIdWithNullValues() {
+    void testBillMedicineIdWithNullValues() {
         BillMedicineId id1 = new BillMedicineId(null, null);
         BillMedicineId id2 = new BillMedicineId(null, null);
         BillMedicineId id3 = new BillMedicineId(1L, null);
