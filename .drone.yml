@@ -417,13 +417,13 @@ steps:
         - pablopolis2016@gmail.com
         - jflores@unis.edu.gt
       subject: >
-        {{#success build.status}}
+        "{{#success build.status}}
           ✅ Deploy exitoso: {{repo.name}} #{{build.number}} [{{build.branch}}]
         {{else}}
           ⚠️ Pipeline fallido: {{repo.name}} #{{build.number}} [{{build.branch}}]
-        {{/success}}
+        {{/success}}"
       body: >
-        {{#success build.status}}
+        "{{#success build.status}}
           Deploy completado exitosamente en rama {{build.branch}}.
           
           🎯 Quality Gate: APROBADO
@@ -460,7 +460,7 @@ steps:
           1. Revisar logs en Drone UI
           2. Verificar Quality Gate en SonarQube
           3. Revisar estado de contenedores
-        {{/success}}
+        {{/success}}"
 
 # Trigger only on main pipeline completion
 trigger:
