@@ -93,15 +93,7 @@ jobs:
         working-directory: ./ensurance
 
       - name: Run tests with coverage
-        run: |
-          npm ci --prefer-offline --no-audit --progress=false
-          npm run test:coverage -- --passWithNoTests
-        working-directory: ./ensurance
-        
-      - name: Verify coverage report
-        run: |
-          ls -la coverage/
-          cat coverage/lcov.info | head -20
+        run: npm run test:coverage
         working-directory: ./ensurance
 
       - name: Upload Ensurance Coverage
@@ -132,16 +124,7 @@ jobs:
         working-directory: ./pharmacy
 
       - name: Run tests with coverage
-        run: |
-          npm ci --prefer-offline --no-audit --progress=false
-          npm install --save-dev jest-junit
-          npm run test:unit:coverage -- --passWithNoTests
-        working-directory: ./pharmacy
-        
-      - name: Verify coverage report
-        run: |
-          ls -la coverage/
-          cat coverage/lcov.info | head -20
+        run: npm run test:unit:coverage
         working-directory: ./pharmacy
 
       - name: Upload Pharmacy Coverage
@@ -300,51 +283,67 @@ jobs:
         run: |
           cd pharmacy && npm run test:unit:coverage
 
-      - name: Run SonarQube Analysis - Pharmacy DEV
+      - name: Run SonarQube Analysis - Pharmacy Backend DEV
         if: github.ref == 'refs/heads/develop'
         uses: SonarSource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          SONAR_TOKEN: ${{ secrets.PHARMACY_FRONT_DEV }}
         with:
           projectBaseDir: ./pharmacy
           args: >
-            -Dsonar.projectKey=pharmacy-frontend-dev
+            -Dsonar.projectKey=pharmacy-backend-dev
+            -Dsonar.login=${{ secrets.PHARMACY_BACK_DEV }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.qualitygate.wait=true
             -Dsonar.qualitygate.timeout=300
 
-      - name: Run SonarQube Analysis - Pharmacy QA
+      - name: Run SonarQube Analysis - Pharmacy Backend QA
         if: github.ref == 'refs/heads/qa'
         uses: SonarSource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          SONAR_TOKEN: ${{ secrets.PHARMACY_FRONT_QA }}
         with:
           projectBaseDir: ./pharmacy
           args: >
-            -Dsonar.projectKey=pharmacy-frontend-qa
+            -Dsonar.projectKey=pharmacy-backend-qa
+            -Dsonar.login=${{ secrets.PHARMACY_BACK_QA }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.qualitygate.wait=true
             -Dsonar.qualitygate.timeout=300
 
-      - name: Run SonarQube Analysis - Pharmacy MAIN
+      - name: Run SonarQube Analysis - Pharmacy Backend MAIN
         if: github.ref == 'refs/heads/main'
         uses: SonarSource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          SONAR_TOKEN: ${{ secrets.PHARMACY_FRONT_MAIN }}
         with:
           projectBaseDir: ./pharmacy
           args: >
-            -Dsonar.projectKey=pharmacy-frontend-main
+            -Dsonar.projectKey=pharmacy-backend-main
+            -Dsonar.login=${{ secrets.PHARMACY_BACK_MAIN }}
+            -Dsonar.sources=src
+            -Dsonar.tests=tests
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.timeout=300
+
+      - name: Run SonarQube Analysis - Pharmacy Frontend
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          projectBaseDir: ./pharmacy
+          args: >
+            -Dsonar.projectKey=${{ github.ref == 'refs/heads/main' && 'pharmacy-backend-main' || github.ref == 'refs/heads/qa' && 'pharmacy-frontend-qa' || 'pharmacy-frontend-dev' }}
+            -Dsonar.login=${{ github.ref == 'refs/heads/main' && secrets.PHARMACY_FRONT_MAIN || github.ref == 'refs/heads/qa' && secrets.PHARMACY_FRONT_QA || secrets.PHARMACY_FRONT_DEV }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
