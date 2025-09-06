@@ -20,7 +20,6 @@ import java.util.logging.Logger;
 public class HospitalHandler implements HttpHandler {
     private final HospitalDAO hospitalDAO;
     private final ObjectMapper objectMapper;
-    private static final String ENDPOINT = "/api2/hospitals";
     private static final Logger LOGGER = Logger.getLogger(HospitalHandler.class.getName());
 
     /**
