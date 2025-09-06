@@ -184,10 +184,10 @@ steps:
       - sleep 30
       - docker-compose -f docker-compose.dev.yml ps
       - echo "DEV desplegado en:"
-      - echo "   - Ensurance Frontend: http://localhost:3000"
-      - echo "   - Pharmacy Frontend: http://localhost:3001"
-      - echo "   - Ensurance Backend: http://localhost:3002/api"
-      - echo "   - Pharmacy Backend: http://localhost:3003/api2"
+      - echo '   - Ensurance Frontend: http://localhost:3000'
+      - echo '   - Pharmacy Frontend: http://localhost:3001'
+      - echo '   - Ensurance Backend: http://localhost:3002/api'
+      - echo '   - Pharmacy Backend: http://localhost:3003/api2'
     volumes:
       - name: docker-sock
         path: /var/run/docker.sock
@@ -209,10 +209,10 @@ steps:
       - sleep 30
       - docker-compose -f docker-compose.qa.yml ps
       - echo "QA desplegado en:"
-      - echo "   - Ensurance Frontend: http://localhost:4000"
-      - echo "   - Pharmacy Frontend: http://localhost:4001"
-      - echo "   - Ensurance Backend: http://localhost:4002/api"
-      - echo "   - Pharmacy Backend: http://localhost:4003/api2"
+      - echo '   - Ensurance Frontend: http://localhost:4000'
+      - echo '   - Pharmacy Frontend: http://localhost:4001'
+      - echo '   - Ensurance Backend: http://localhost:4002/api'
+      - echo '   - Pharmacy Backend: http://localhost:4003/api2'
     volumes:
       - name: docker-sock
         path: /var/run/docker.sock
@@ -232,10 +232,10 @@ steps:
       - sleep 30
       - docker-compose -f docker-compose.main.yml ps
       - echo "MAIN desplegado en:"
-      - echo "   - Ensurance Frontend: http://localhost:5000"
-      - echo "   - Pharmacy Frontend: http://localhost:5001"
-      - echo "   - Ensurance Backend: http://localhost:5002/api"
-      - echo "   - Pharmacy Backend: http://localhost:5003/api2"
+      - echo '   - Ensurance Frontend: http://localhost:5000'
+      - echo '   - Pharmacy Frontend: http://localhost:5001'
+      - echo '   - Ensurance Backend: http://localhost:5002/api'
+      - echo '   - Pharmacy Backend: http://localhost:5003/api2'
     volumes:
       - name: docker-sock
         path: /var/run/docker.sock
@@ -262,9 +262,9 @@ steps:
     commands:
       - export ENVIRONMENT=$(cat .environment)
       - 'echo "Pipeline completado exitosamente para ambiente: $ENVIRONMENT"'
-      - echo "Quality Gate: APROBADO"
-      - echo "Tests: PASADOS"
-      - echo "Deploy: EXITOSO"
+      - echo 'Quality Gate: APROBADO'
+      - echo 'Tests: PASADOS'
+      - echo 'Deploy: EXITOSO'
       - 'echo "Notificación enviada a: ${EMAIL_TO}"'
     when:
       status:
