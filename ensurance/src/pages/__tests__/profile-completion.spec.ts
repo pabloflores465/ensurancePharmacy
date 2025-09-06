@@ -57,7 +57,6 @@ describe('profile-completion.vue', () => {
       birthDate: '2000-01-01',
       role: 'PATIENT',
       enabled: 1,
-      password: 'x',
     }))
 
     hoisted.axiosGet.mockResolvedValueOnce({
@@ -83,7 +82,6 @@ describe('profile-completion.vue', () => {
       birthDate: '1999-01-01',
       role: 'PATIENT',
       enabled: 1,
-      password: 'x',
     }))
 
     hoisted.axiosGet.mockRejectedValueOnce(new Error('Network'))
@@ -105,7 +103,6 @@ describe('profile-completion.vue', () => {
       birthDate: '2000-01-01',
       role: 'PATIENT',
       enabled: 1,
-      password: 'x',
     }))
 
     // No se llama a axios.get si no lo necesitamos; pero con idUser sí se llama; retornamos data vacío
@@ -137,7 +134,6 @@ describe('profile-completion.vue', () => {
       birthDate: '1990-05-05',
       role: 'PATIENT',
       enabled: 1,
-      password: 'pwd',
       policy: { idPolicy: 5 },
     }))
 
@@ -262,7 +258,6 @@ describe('profile-completion.vue', () => {
       birthDate: '2003-01-01',
       role: 'PATIENT',
       enabled: 1,
-      password: 'pwd',
       policy: { idPolicy: 1 },
     }))
 
@@ -297,7 +292,6 @@ describe('profile-completion.vue', () => {
       birthDate: '1990-01-01',
       role: 'PATIENT',
       enabled: 1,
-      password: 'pwd',
     }))
 
     hoisted.axiosGet.mockResolvedValueOnce({ data: {} })
