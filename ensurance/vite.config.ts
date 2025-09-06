@@ -12,5 +12,11 @@ export default defineConfig({
     globals: true,
     setupFiles: "src/test/setup.ts",
     css: true,
+    coverage: {
+      reporter: "lcov",
+      reportsDirectory: "coverage",
+      include: ["src/**/*"],
+      exclude: ["src/test/**", "**/*.d.ts"]
+    }
   },
 });
