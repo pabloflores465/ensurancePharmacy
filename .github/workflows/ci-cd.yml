@@ -93,7 +93,15 @@ jobs:
         working-directory: ./ensurance
 
       - name: Run tests with coverage
-        run: npm run test:coverage
+        run: |
+          npm ci --prefer-offline --no-audit --progress=false
+          npm run test:coverage -- --coverage --coverageReporters=lcov --coverageDirectory=coverage --testResultsProcessor="jest-junit" --passWithNoTests
+        working-directory: ./ensurance
+        
+      - name: Verify coverage report
+        run: |
+          ls -la coverage/
+          cat coverage/lcov.info | head -20
         working-directory: ./ensurance
 
       - name: Upload Ensurance Coverage
@@ -124,7 +132,15 @@ jobs:
         working-directory: ./pharmacy
 
       - name: Run tests with coverage
-        run: npm run test:unit:coverage
+        run: |
+          npm ci --prefer-offline --no-audit --progress=false
+          npm run test:unit:coverage -- --coverage --coverageReporters=lcov --coverageDirectory=coverage --testResultsProcessor="jest-junit" --passWithNoTests
+        working-directory: ./pharmacy
+        
+      - name: Verify coverage report
+        run: |
+          ls -la coverage/
+          cat coverage/lcov.info | head -20
         working-directory: ./pharmacy
 
       - name: Upload Pharmacy Coverage
@@ -139,12 +155,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    needs:
-      [
-        test-backend-v4,
-        test-backend-v5,
-        test-ensurance-frontend,
-      ]
+    needs: [test-backend-v4, test-backend-v5, test-ensurance-frontend]
 
     steps:
       - uses: actions/checkout@v4
@@ -261,10 +272,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    needs:
-      [
-        test-pharmacy-frontend,
-      ]
+    needs: [test-pharmacy-frontend]
 
     steps:
       - uses: actions/checkout@v4
@@ -418,7 +426,15 @@ jobs:
   notify-status:
     runs-on: ubuntu-latest
     name: Send Email Notification
-    needs: [test-backend-v4, test-backend-v5, test-ensurance-frontend, test-pharmacy-frontend, sonarqube-ensurance-analysis, sonarqube-pharmacy-analysis]
+    needs:
+      [
+        test-backend-v4,
+        test-backend-v5,
+        test-ensurance-frontend,
+        test-pharmacy-frontend,
+        sonarqube-ensurance-analysis,
+        sonarqube-pharmacy-analysis,
+      ]
     if: always()
 
     steps:
@@ -439,7 +455,7 @@ jobs:
             echo "color=red" >> $GITHUB_OUTPUT
             echo "summary=One or more jobs failed. Check the workflow for details" >> $GITHUB_OUTPUT
           fi
-          
+
           # Environment detection
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
             echo "environment=PRODUCTION" >> $GITHUB_OUTPUT
