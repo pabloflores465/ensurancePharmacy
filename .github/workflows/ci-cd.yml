@@ -95,7 +95,7 @@ jobs:
       - name: Run tests with coverage
         run: |
           npm ci --prefer-offline --no-audit --progress=false
-          npm run test:coverage -- --coverage --coverageReporters=lcov --coverageDirectory=coverage --testResultsProcessor="jest-junit" --passWithNoTests
+          npm run test:coverage -- --coverage --coverageReporters=lcov --coverageDirectory=coverage --passWithNoTests
         working-directory: ./ensurance
         
       - name: Verify coverage report
@@ -134,7 +134,8 @@ jobs:
       - name: Run tests with coverage
         run: |
           npm ci --prefer-offline --no-audit --progress=false
-          npm run test:unit:coverage -- --coverage --coverageReporters=lcov --coverageDirectory=coverage --testResultsProcessor="jest-junit" --passWithNoTests
+          npm install --save-dev jest-junit
+          npm run test:unit:coverage -- --coverage --coverageReporters=lcov --coverageDirectory=coverage --passWithNoTests
         working-directory: ./pharmacy
         
       - name: Verify coverage report
