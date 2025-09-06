@@ -192,13 +192,13 @@ jobs:
           cd backv4 && mvn sonar:sonar \
             -Dsonar.projectKey=ensurance-backend-dev \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.ENSURANCE_BACK_DEV }} \
+            -Dsonar.token=${{ secrets.ENSURANCE_BACK_DEV }} \
             -Dsonar.qualitygate.wait=true \
             -Dsonar.qualitygate.timeout=300
           cd ../backv5 && mvn sonar:sonar \
             -Dsonar.projectKey=ensurance-backend-dev \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.ENSURANCE_BACK_DEV }} \
+            -Dsonar.token=${{ secrets.ENSURANCE_BACK_DEV }} \
             -Dsonar.qualitygate.wait=true \
             -Dsonar.qualitygate.timeout=300
 
@@ -208,13 +208,13 @@ jobs:
           cd backv4 && mvn sonar:sonar \
             -Dsonar.projectKey=ensurance-backend-qa \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.ENSURANCE_BACK_QA }} \
+            -Dsonar.token=${{ secrets.ENSURANCE_BACK_QA }} \
             -Dsonar.qualitygate.wait=true \
             -Dsonar.qualitygate.timeout=300
           cd ../backv5 && mvn sonar:sonar \
             -Dsonar.projectKey=ensurance-backend-qa \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.ENSURANCE_BACK_QA }} \
+            -Dsonar.token=${{ secrets.ENSURANCE_BACK_QA }} \
             -Dsonar.qualitygate.wait=true \
             -Dsonar.qualitygate.timeout=300
 
@@ -224,13 +224,13 @@ jobs:
           cd backv4 && mvn sonar:sonar \
             -Dsonar.projectKey=ensurance-backend-main \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.ENSURANCE_BACK_MAIN }} \
+            -Dsonar.token=${{ secrets.ENSURANCE_BACK_MAIN }} \
             -Dsonar.qualitygate.wait=true \
             -Dsonar.qualitygate.timeout=300
           cd ../backv5 && mvn sonar:sonar \
             -Dsonar.projectKey=ensurance-backend-main \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.ENSURANCE_BACK_MAIN }} \
+            -Dsonar.token=${{ secrets.ENSURANCE_BACK_MAIN }} \
             -Dsonar.qualitygate.wait=true \
             -Dsonar.qualitygate.timeout=300
 
@@ -243,7 +243,7 @@ jobs:
           projectBaseDir: ./ensurance
           args: >
             -Dsonar.projectKey=${{ github.ref == 'refs/heads/main' && 'ensurance-frontend-main' || github.ref == 'refs/heads/qa' && 'ensurance-frontend-qa' || 'ensurance-frontend-dev' }}
-            -Dsonar.login=${{ github.ref == 'refs/heads/main' && secrets.ENSURANCE_FRONT_MAIN || github.ref == 'refs/heads/qa' && secrets.ENSURANCE_FRONT_QA || secrets.ENSURANCE_FRONT_DEV }}
+            -Dsonar.token=${{ github.ref == 'refs/heads/main' && secrets.ENSURANCE_FRONT_MAIN || github.ref == 'refs/heads/qa' && secrets.ENSURANCE_FRONT_QA || secrets.ENSURANCE_FRONT_DEV }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
@@ -293,7 +293,7 @@ jobs:
           projectBaseDir: ./pharmacy
           args: >
             -Dsonar.projectKey=pharmacy-backend-dev
-            -Dsonar.login=${{ secrets.PHARMACY_BACK_DEV }}
+            -Dsonar.token=${{ secrets.PHARMACY_BACK_DEV }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
@@ -310,7 +310,7 @@ jobs:
           projectBaseDir: ./pharmacy
           args: >
             -Dsonar.projectKey=pharmacy-backend-qa
-            -Dsonar.login=${{ secrets.PHARMACY_BACK_QA }}
+            -Dsonar.token=${{ secrets.PHARMACY_BACK_QA }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
@@ -327,7 +327,7 @@ jobs:
           projectBaseDir: ./pharmacy
           args: >
             -Dsonar.projectKey=pharmacy-backend-main
-            -Dsonar.login=${{ secrets.PHARMACY_BACK_MAIN }}
+            -Dsonar.token=${{ secrets.PHARMACY_BACK_MAIN }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
@@ -343,7 +343,7 @@ jobs:
           projectBaseDir: ./pharmacy
           args: >
             -Dsonar.projectKey=${{ github.ref == 'refs/heads/main' && 'pharmacy-frontend-main' || github.ref == 'refs/heads/qa' && 'pharmacy-frontend-qa' || 'pharmacy-frontend-dev' }}
-            -Dsonar.login=${{ github.ref == 'refs/heads/main' && secrets.PHARMACY_FRONT_MAIN || github.ref == 'refs/heads/qa' && secrets.PHARMACY_FRONT_QA || secrets.PHARMACY_FRONT_DEV }}
+            -Dsonar.token=${{ github.ref == 'refs/heads/main' && secrets.PHARMACY_FRONT_MAIN || github.ref == 'refs/heads/qa' && secrets.PHARMACY_FRONT_QA || secrets.PHARMACY_FRONT_DEV }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
