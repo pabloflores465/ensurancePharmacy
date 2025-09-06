@@ -95,7 +95,7 @@ jobs:
       - name: Run tests with coverage
         run: |
           npm ci --prefer-offline --no-audit --progress=false
-          npm run test:coverage -- --coverage --coverageReporters=lcov --coverageDirectory=coverage --passWithNoTests
+          npm run test:coverage -- --coverageReporters=lcov --coverageDirectory=coverage --passWithNoTests
         working-directory: ./ensurance
         
       - name: Verify coverage report
