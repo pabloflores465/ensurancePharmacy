@@ -30,13 +30,13 @@ pipeline {
         }
       }
     }
-    stage('SonarQube Ensurance Analysis') {
+    stage('SonarQube Ensurance Backend Analysis') {
       steps {
         script {
           def scannerHome = tool 'Scanner'
-          def projectKey = ""
-          def projectName = ""
-          
+          def projectKey = ''
+          def projectName = ''
+
           if (BRANCH_NAME == 'main' || BRANCH_NAME == 'master') {
             projectKey = 'ENSURANCE_BACK_MAIN'
             projectName = 'Ensurance Backend MAIN'
@@ -47,11 +47,51 @@ pipeline {
             projectKey = 'ENSURANCE_BACK_DEV'
             projectName = 'Ensurance Backend DEV'
           }
-          
+
           withSonarQubeEnv("${SONARQUBE_SERVER}") {
             sh """
           set -e
-          echo "🔍 SonarQube Ensurance Analysis for branch: ${BRANCH_NAME}"
+          echo "🔍 SonarQube Ensurance Backend Analysis for branch: ${BRANCH_NAME}"
+          echo "Project: ${projectKey}"
+          echo "Sonar host: $SONAR_HOST_URL"
+          echo "Version: ${BUILD_NUMBER}"
+
+          "${scannerHome}/bin/sonar-scanner" \
+            -Dsonar.projectKey=${projectKey} \
+            -Dsonar.projectName="${projectName}" \
+            -Dsonar.projectVersion=${BUILD_NUMBER} \
+            -Dsonar.sources=backv4/src/main \
+            -Dsonar.tests=backv4/src/test \
+            -Dsonar.java.binaries=backv4/target/classes \
+            -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml
+        """
+          }
+        }
+      }
+    }
+
+    stage('SonarQube Ensurance Frontend Analysis') {
+      steps {
+        script {
+          def scannerHome = tool 'Scanner'
+          def projectKey = ''
+          def projectName = ''
+
+          if (BRANCH_NAME == 'main' || BRANCH_NAME == 'master') {
+            projectKey = 'ENSURANCE_FRONT_MAIN'
+            projectName = 'Ensurance Frontend MAIN'
+          } else if (BRANCH_NAME == 'qa') {
+            projectKey = 'ENSURANCE_FRONT_QA'
+            projectName = 'Ensurance Frontend QA'
+          } else {
+            projectKey = 'ENSURANCE_FRONT_DEV'
+            projectName = 'Ensurance Frontend DEV'
+          }
+
+          withSonarQubeEnv("${SONARQUBE_SERVER}") {
+            sh """
+          set -e
+          echo "🔍 SonarQube Ensurance Frontend Analysis for branch: ${BRANCH_NAME}"
           echo "Project: ${projectKey}"
           echo "Sonar host: $SONAR_HOST_URL"
           echo "Version: ${BUILD_NUMBER}"
@@ -65,10 +105,8 @@ pipeline {
             -Dsonar.projectKey=${projectKey} \
             -Dsonar.projectName="${projectName}" \
             -Dsonar.projectVersion=${BUILD_NUMBER} \
-            -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src \
-            -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests \
-            -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes \
-            -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml,backv5/target/site/jacoco/jacoco.xml \
+            -Dsonar.sources=ensurance/src \
+            -Dsonar.tests=ensurance/tests \
             -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info
         """
           }
@@ -76,38 +114,69 @@ pipeline {
       }
     }
 
-    stage('SonarQube Pharmacy Analysis') {
+    stage('SonarQube Pharmacy Backend Analysis') {
       steps {
         script {
           def scannerHome = tool 'Scanner'
-          def backendProjectKey = ""
-          def frontendProjectKey = ""
-          def backendProjectName = ""
-          def frontendProjectName = ""
-          
+          def projectKey = ''
+          def projectName = ''
+
           if (BRANCH_NAME == 'main' || BRANCH_NAME == 'master') {
-            backendProjectKey = 'PHARMACY_BACK_MAIN'
-            frontendProjectKey = 'PHARMACY_FRONT_MAIN'
-            backendProjectName = 'Pharmacy Backend MAIN'
-            frontendProjectName = 'Pharmacy Frontend MAIN'
+            projectKey = 'PHARMACY_BACK_MAIN'
+            projectName = 'Pharmacy Backend MAIN'
           } else if (BRANCH_NAME == 'qa') {
-            backendProjectKey = 'PHARMACY_BACK_QA'
-            frontendProjectKey = 'PHARMACY_FRONT_QA'
-            backendProjectName = 'Pharmacy Backend QA'
-            frontendProjectName = 'Pharmacy Frontend QA'
+            projectKey = 'PHARMACY_BACK_QA'
+            projectName = 'Pharmacy Backend QA'
           } else {
-            backendProjectKey = 'PHARMACY_BACK_DEV'
-            frontendProjectKey = 'PHARMACY_FRONT_DEV'
-            backendProjectName = 'Pharmacy Backend DEV'
-            frontendProjectName = 'Pharmacy Frontend DEV'
+            projectKey = 'PHARMACY_BACK_DEV'
+            projectName = 'Pharmacy Backend DEV'
           }
-          
+
           withSonarQubeEnv("${SONARQUBE_SERVER}") {
             sh """
           set -e
-          echo "🔍 SonarQube Pharmacy Analysis for branch: ${BRANCH_NAME}"
-          echo "Backend Project: ${backendProjectKey}"
-          echo "Frontend Project: ${frontendProjectKey}"
+          echo "🔍 SonarQube Pharmacy Backend Analysis for branch: ${BRANCH_NAME}"
+          echo "Project: ${projectKey}"
+          echo "Sonar host: $SONAR_HOST_URL"
+          echo "Version: ${BUILD_NUMBER}"
+
+          "${scannerHome}/bin/sonar-scanner" \
+            -Dsonar.projectKey=${projectKey} \
+            -Dsonar.projectName="${projectName}" \
+            -Dsonar.projectVersion=${BUILD_NUMBER} \
+            -Dsonar.sources=backv5/src/main \
+            -Dsonar.tests=backv5/src/test \
+            -Dsonar.java.binaries=backv5/target/classes \
+            -Dsonar.coverage.jacoco.xmlReportPaths=backv5/target/site/jacoco/jacoco.xml
+        """
+          }
+        }
+      }
+    }
+
+    stage('SonarQube Pharmacy Frontend Analysis') {
+      steps {
+        script {
+          def scannerHome = tool 'Scanner'
+          def projectKey = ''
+          def projectName = ''
+
+          if (BRANCH_NAME == 'main' || BRANCH_NAME == 'master') {
+            projectKey = 'PHARMACY_FRONT_MAIN'
+            projectName = 'Pharmacy Frontend MAIN'
+          } else if (BRANCH_NAME == 'qa') {
+            projectKey = 'PHARMACY_FRONT_QA'
+            projectName = 'Pharmacy Frontend QA'
+          } else {
+            projectKey = 'PHARMACY_FRONT_DEV'
+            projectName = 'Pharmacy Frontend DEV'
+          }
+
+          withSonarQubeEnv("${SONARQUBE_SERVER}") {
+            sh """
+          set -e
+          echo "🔍 SonarQube Pharmacy Frontend Analysis for branch: ${BRANCH_NAME}"
+          echo "Project: ${projectKey}"
           echo "Sonar host: $SONAR_HOST_URL"
           echo "Version: ${BUILD_NUMBER}"
 
@@ -116,19 +185,9 @@ pipeline {
             cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
           fi
 
-          # Análisis Backend Pharmacy
           "${scannerHome}/bin/sonar-scanner" \
-            -Dsonar.projectKey=${backendProjectKey} \
-            -Dsonar.projectName="${backendProjectName}" \
-            -Dsonar.projectVersion=${BUILD_NUMBER} \
-            -Dsonar.sources=pharmacy/src \
-            -Dsonar.tests=pharmacy/tests \
-            -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info
-            
-          # Análisis Frontend Pharmacy
-          "${scannerHome}/bin/sonar-scanner" \
-            -Dsonar.projectKey=${frontendProjectKey} \
-            -Dsonar.projectName="${frontendProjectName}" \
+            -Dsonar.projectKey=${projectKey} \
+            -Dsonar.projectName="${projectName}" \
             -Dsonar.projectVersion=${BUILD_NUMBER} \
             -Dsonar.sources=pharmacy/src \
             -Dsonar.tests=pharmacy/tests \

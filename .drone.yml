@@ -29,30 +29,61 @@ steps:
         - qa
         - feature/*
 
-  - name: sonarqube-ensurance-analysis-dev
+  - name: sonarqube-ensurance-backend-analysis-dev
     image: sonarqube/sonar-scanner-cli:latest
     environment:
       SONAR_TOKEN:
         from_secret: ensurance_back_dev
       SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
     commands:
-      - echo "SonarQube Ensurance analysis for DEV environment"
-      - sonar-scanner -Dsonar.projectKey=ENSURANCE_BACK_DEV -Dsonar.projectName="Ensurance Backend DEV" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml,backv5/target/site/jacoco/jacoco.xml -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+      - echo "SonarQube Ensurance Backend analysis for DEV environment"
+      - sonar-scanner -Dsonar.projectKey=ENSURANCE_BACK_DEV -Dsonar.projectName="Ensurance Backend DEV" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=backv4/src/main -Dsonar.tests=backv4/src/test -Dsonar.java.binaries=backv4/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
     when:
       branch:
         - develop
         - dev
         - feature/*
 
-  - name: sonarqube-pharmacy-analysis-dev
+  - name: sonarqube-ensurance-frontend-analysis-dev
+    image: sonarqube/sonar-scanner-cli:latest
+    environment:
+      SONAR_TOKEN:
+        from_secret: ensurance_front_dev
+      SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
+    commands:
+      - echo "SonarQube Ensurance Frontend analysis for DEV environment"
+      - cd ensurance && npm ci && npm run test:coverage || true && cd ..
+      - sonar-scanner -Dsonar.projectKey=ENSURANCE_FRONT_DEV -Dsonar.projectName="Ensurance Frontend DEV" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=ensurance/src -Dsonar.tests=ensurance/tests -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+    when:
+      branch:
+        - develop
+        - dev
+        - feature/*
+
+  - name: sonarqube-pharmacy-backend-analysis-dev
     image: sonarqube/sonar-scanner-cli:latest
     environment:
       SONAR_TOKEN:
         from_secret: pharmacy_back_dev
       SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
     commands:
-      - echo "SonarQube Pharmacy analysis for DEV environment"
-      - sonar-scanner -Dsonar.projectKey=PHARMACY_BACK_DEV -Dsonar.projectName="Pharmacy Backend DEV" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=pharmacy/src -Dsonar.tests=pharmacy/tests -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+      - echo "SonarQube Pharmacy Backend analysis for DEV environment"
+      - sonar-scanner -Dsonar.projectKey=PHARMACY_BACK_DEV -Dsonar.projectName="Pharmacy Backend DEV" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=backv5/src/main -Dsonar.tests=backv5/src/test -Dsonar.java.binaries=backv5/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=backv5/target/site/jacoco/jacoco.xml -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+    when:
+      branch:
+        - develop
+        - dev
+        - feature/*
+
+  - name: sonarqube-pharmacy-frontend-analysis-dev
+    image: sonarqube/sonar-scanner-cli:latest
+    environment:
+      SONAR_TOKEN:
+        from_secret: pharmacy_front_dev
+      SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
+    commands:
+      - echo "SonarQube Pharmacy Frontend analysis for DEV environment"
+      - cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
       - sonar-scanner -Dsonar.projectKey=PHARMACY_FRONT_DEV -Dsonar.projectName="Pharmacy Frontend DEV" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=pharmacy/src -Dsonar.tests=pharmacy/tests -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
     when:
       branch:
@@ -60,56 +91,112 @@ steps:
         - dev
         - feature/*
 
-  - name: sonarqube-ensurance-analysis-qa
+  - name: sonarqube-ensurance-backend-analysis-qa
     image: sonarqube/sonar-scanner-cli:latest
     environment:
       SONAR_TOKEN:
         from_secret: ensurance_back_qa
       SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
     commands:
-      - echo "SonarQube Ensurance analysis for QA environment"
-      - sonar-scanner -Dsonar.projectKey=ENSURANCE_BACK_QA -Dsonar.projectName="Ensurance Backend QA" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml,backv5/target/site/jacoco/jacoco.xml -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+      - echo "SonarQube Ensurance Backend analysis for QA environment"
+      - sonar-scanner -Dsonar.projectKey=ENSURANCE_BACK_QA -Dsonar.projectName="Ensurance Backend QA" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=backv4/src/main -Dsonar.tests=backv4/src/test -Dsonar.java.binaries=backv4/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
     when:
       branch:
         - qa
 
-  - name: sonarqube-pharmacy-analysis-qa
+  - name: sonarqube-ensurance-frontend-analysis-qa
+    image: sonarqube/sonar-scanner-cli:latest
+    environment:
+      SONAR_TOKEN:
+        from_secret: ensurance_front_qa
+      SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
+    commands:
+      - echo "SonarQube Ensurance Frontend analysis for QA environment"
+      - cd ensurance && npm ci && npm run test:coverage || true && cd ..
+      - sonar-scanner -Dsonar.projectKey=ENSURANCE_FRONT_QA -Dsonar.projectName="Ensurance Frontend QA" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=ensurance/src -Dsonar.tests=ensurance/tests -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+    when:
+      branch:
+        - qa
+
+  - name: sonarqube-pharmacy-backend-analysis-qa
     image: sonarqube/sonar-scanner-cli:latest
     environment:
       SONAR_TOKEN:
         from_secret: pharmacy_back_qa
       SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
     commands:
-      - echo "SonarQube Pharmacy analysis for QA environment"
-      - sonar-scanner -Dsonar.projectKey=PHARMACY_BACK_QA -Dsonar.projectName="Pharmacy Backend QA" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=pharmacy/src -Dsonar.tests=pharmacy/tests -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+      - echo "SonarQube Pharmacy Backend analysis for QA environment"
+      - sonar-scanner -Dsonar.projectKey=PHARMACY_BACK_QA -Dsonar.projectName="Pharmacy Backend QA" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=backv5/src/main -Dsonar.tests=backv5/src/test -Dsonar.java.binaries=backv5/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=backv5/target/site/jacoco/jacoco.xml -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+    when:
+      branch:
+        - qa
+
+  - name: sonarqube-pharmacy-frontend-analysis-qa
+    image: sonarqube/sonar-scanner-cli:latest
+    environment:
+      SONAR_TOKEN:
+        from_secret: pharmacy_front_qa
+      SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
+    commands:
+      - echo "SonarQube Pharmacy Frontend analysis for QA environment"
+      - cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
       - sonar-scanner -Dsonar.projectKey=PHARMACY_FRONT_QA -Dsonar.projectName="Pharmacy Frontend QA" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=pharmacy/src -Dsonar.tests=pharmacy/tests -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
     when:
       branch:
         - qa
 
-  - name: sonarqube-ensurance-analysis-main
+  - name: sonarqube-ensurance-backend-analysis-main
     image: sonarqube/sonar-scanner-cli:latest
     environment:
       SONAR_TOKEN:
         from_secret: ensurance_back_main
       SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
     commands:
-      - echo "SonarQube Ensurance analysis for MAIN environment"
-      - sonar-scanner -Dsonar.projectKey=ENSURANCE_BACK_MAIN -Dsonar.projectName="Ensurance Backend MAIN" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml,backv5/target/site/jacoco/jacoco.xml -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+      - echo "SonarQube Ensurance Backend analysis for MAIN environment"
+      - sonar-scanner -Dsonar.projectKey=ENSURANCE_BACK_MAIN -Dsonar.projectName="Ensurance Backend MAIN" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=backv4/src/main -Dsonar.tests=backv4/src/test -Dsonar.java.binaries=backv4/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
     when:
       branch:
         - main
         - master
 
-  - name: sonarqube-pharmacy-analysis-main
+  - name: sonarqube-ensurance-frontend-analysis-main
+    image: sonarqube/sonar-scanner-cli:latest
+    environment:
+      SONAR_TOKEN:
+        from_secret: ensurance_front_main
+      SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
+    commands:
+      - echo "SonarQube Ensurance Frontend analysis for MAIN environment"
+      - cd ensurance && npm ci && npm run test:coverage || true && cd ..
+      - sonar-scanner -Dsonar.projectKey=ENSURANCE_FRONT_MAIN -Dsonar.projectName="Ensurance Frontend MAIN" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=ensurance/src -Dsonar.tests=ensurance/tests -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+    when:
+      branch:
+        - main
+        - master
+
+  - name: sonarqube-pharmacy-backend-analysis-main
     image: sonarqube/sonar-scanner-cli:latest
     environment:
       SONAR_TOKEN:
         from_secret: pharmacy_back_main
       SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
     commands:
-      - echo "SonarQube Pharmacy analysis for MAIN environment"
-      - sonar-scanner -Dsonar.projectKey=PHARMACY_BACK_MAIN -Dsonar.projectName="Pharmacy Backend MAIN" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=pharmacy/src -Dsonar.tests=pharmacy/tests -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+      - echo "SonarQube Pharmacy Backend analysis for MAIN environment"
+      - sonar-scanner -Dsonar.projectKey=PHARMACY_BACK_MAIN -Dsonar.projectName="Pharmacy Backend MAIN" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=backv5/src/main -Dsonar.tests=backv5/src/test -Dsonar.java.binaries=backv5/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=backv5/target/site/jacoco/jacoco.xml -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+    when:
+      branch:
+        - main
+        - master
+
+  - name: sonarqube-pharmacy-frontend-analysis-main
+    image: sonarqube/sonar-scanner-cli:latest
+    environment:
+      SONAR_TOKEN:
+        from_secret: pharmacy_front_main
+      SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
+    commands:
+      - echo "SonarQube Pharmacy Frontend analysis for MAIN environment"
+      - cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
       - sonar-scanner -Dsonar.projectKey=PHARMACY_FRONT_MAIN -Dsonar.projectName="Pharmacy Frontend MAIN" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=pharmacy/src -Dsonar.tests=pharmacy/tests -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
     when:
       branch:
