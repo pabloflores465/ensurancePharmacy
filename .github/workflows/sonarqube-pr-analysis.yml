@@ -2,7 +2,7 @@ name: SonarQube PR Analysis
 
 on:
   pull_request:
-    branches: [main, develop, qa]
+    branches: [main, develop, qa, dev]
 
 jobs:
   sonarqube-ensurance-pr-analysis:
@@ -17,11 +17,11 @@ jobs:
         with:
           fetch-depth: 0 # Disable shallow clone for better analysis
 
-      - name: Set up JDK 23
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: "23"
-          distribution: "temurin"
+          java-version: '17'
+          distribution: 'temurin'
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -39,61 +39,67 @@ jobs:
         run: |
           cd ensurance && npm ci --prefer-offline --no-audit --progress=false
 
-      - name: Run Backend Tests with Coverage
-        run: |
-          cd backv4 && mvn clean verify
-          cd ../backv5 && mvn clean verify
-
       - name: Run Ensurance Frontend Tests with Coverage
         run: |
           cd ensurance && npm run test:coverage
 
+      - name: Generate Jacoco Reports for Backends
+        run: |
+          mvn -B clean test jacoco:report -f backv4/pom.xml
+          mvn -B clean test jacoco:report -f backv5/pom.xml
+
       - name: Run SonarQube Scanner for PR - Ensurance Backend DEV
         if: github.base_ref == 'develop'
-        run: |
-          cd backv4 && mvn sonar:sonar \
-            -Dsonar.projectKey=ensurance-backend-dev \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.ENSURANCE_BACK_DEV }} \
-            -Dsonar.qualitygate.wait=true \
-            -Dsonar.qualitygate.timeout=300
-          cd ../backv5 && mvn sonar:sonar \
-            -Dsonar.projectKey=ensurance-backend-dev \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.ENSURANCE_BACK_DEV }} \
-            -Dsonar.qualitygate.wait=true \
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=ENSURANCE_BACK_DEV
+            -Dsonar.token=${{ secrets.ENSURANCE_BACK_DEV }}
+            -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src
+            -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests
+            -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes
+            -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml,backv5/target/site/jacoco/jacoco.xml
+            -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info
+            -Dsonar.qualitygate.wait=true
             -Dsonar.qualitygate.timeout=300
 
       - name: Run SonarQube Scanner for PR - Ensurance Backend QA
         if: github.base_ref == 'qa'
-        run: |
-          cd backv4 && mvn sonar:sonar \
-            -Dsonar.projectKey=ensurance-backend-qa \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.ENSURANCE_BACK_QA }} \
-            -Dsonar.qualitygate.wait=true \
-            -Dsonar.qualitygate.timeout=300
-          cd ../backv5 && mvn sonar:sonar \
-            -Dsonar.projectKey=ensurance-backend-qa \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.ENSURANCE_BACK_QA }} \
-            -Dsonar.qualitygate.wait=true \
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=ENSURANCE_BACK_QA
+            -Dsonar.token=${{ secrets.ENSURANCE_BACK_QA }}
+            -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src
+            -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests
+            -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes
+            -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml,backv5/target/site/jacoco/jacoco.xml
+            -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info
+            -Dsonar.qualitygate.wait=true
             -Dsonar.qualitygate.timeout=300
 
       - name: Run SonarQube Scanner for PR - Ensurance Backend MAIN
         if: github.base_ref == 'main'
-        run: |
-          cd backv4 && mvn sonar:sonar \
-            -Dsonar.projectKey=ensurance-backend-main \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.ENSURANCE_BACK_MAIN }} \
-            -Dsonar.qualitygate.wait=true \
-            -Dsonar.qualitygate.timeout=300
-          cd ../backv5 && mvn sonar:sonar \
-            -Dsonar.projectKey=ensurance-backend-main \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.ENSURANCE_BACK_MAIN }} \
-            -Dsonar.qualitygate.wait=true \
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=ENSURANCE_BACK_MAIN
+            -Dsonar.token=${{ secrets.ENSURANCE_BACK_MAIN }}
+            -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src
+            -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests
+            -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes
+            -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml,backv5/target/site/jacoco/jacoco.xml
+            -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info
+            -Dsonar.qualitygate.wait=true
             -Dsonar.qualitygate.timeout=300
 
       - name: Run SonarQube Analysis - Ensurance Frontend PR
@@ -104,8 +110,8 @@ jobs:
         with:
           projectBaseDir: ./ensurance
           args: >
-            -Dsonar.projectKey=${{ github.base_ref == 'main' && 'ensurance-frontend-main' || github.base_ref == 'qa' && 'ensurance-frontend-qa' || 'ensurance-frontend-dev' }}
-            -Dsonar.login=${{ github.base_ref == 'main' && secrets.ENSURANCE_FRONT_MAIN || github.base_ref == 'qa' && secrets.ENSURANCE_FRONT_QA || secrets.ENSURANCE_FRONT_DEV }}
+            -Dsonar.projectKey=${{ github.base_ref == 'main' && 'ENSURANCE_FRONT_MAIN' || github.base_ref == 'qa' && 'ENSURANCE_FRONT_QA' || 'ENSURANCE_FRONT_DEV' }}
+            -Dsonar.token=${{ github.base_ref == 'main' && secrets.ENSURANCE_FRONT_MAIN || github.base_ref == 'qa' && secrets.ENSURANCE_FRONT_QA || secrets.ENSURANCE_FRONT_DEV }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
@@ -153,8 +159,8 @@ jobs:
         with:
           projectBaseDir: ./pharmacy
           args: >
-            -Dsonar.projectKey=pharmacy-backend-dev
-            -Dsonar.login=${{ secrets.PHARMACY_BACK_DEV }}
+            -Dsonar.projectKey=PHARMACY_BACK_DEV
+            -Dsonar.token=${{ secrets.PHARMACY_BACK_DEV }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
@@ -170,8 +176,8 @@ jobs:
         with:
           projectBaseDir: ./pharmacy
           args: >
-            -Dsonar.projectKey=pharmacy-backend-qa
-            -Dsonar.login=${{ secrets.PHARMACY_BACK_QA }}
+            -Dsonar.projectKey=PHARMACY_BACK_QA
+            -Dsonar.token=${{ secrets.PHARMACY_BACK_QA }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
@@ -187,8 +193,8 @@ jobs:
         with:
           projectBaseDir: ./pharmacy
           args: >
-            -Dsonar.projectKey=pharmacy-backend-main
-            -Dsonar.login=${{ secrets.PHARMACY_BACK_MAIN }}
+            -Dsonar.projectKey=PHARMACY_BACK_MAIN
+            -Dsonar.token=${{ secrets.PHARMACY_BACK_MAIN }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
@@ -203,8 +209,8 @@ jobs:
         with:
           projectBaseDir: ./pharmacy
           args: >
-            -Dsonar.projectKey=${{ github.base_ref == 'main' && 'pharmacy-frontend-main' || github.base_ref == 'qa' && 'pharmacy-frontend-qa' || 'pharmacy-frontend-dev' }}
-            -Dsonar.login=${{ github.base_ref == 'main' && secrets.PHARMACY_FRONT_MAIN || github.base_ref == 'qa' && secrets.PHARMACY_FRONT_QA || secrets.PHARMACY_FRONT_DEV }}
+            -Dsonar.projectKey=${{ github.base_ref == 'main' && 'PHARMACY_FRONT_MAIN' || github.base_ref == 'qa' && 'PHARMACY_FRONT_QA' || 'PHARMACY_FRONT_DEV' }}
+            -Dsonar.token=${{ github.base_ref == 'main' && secrets.PHARMACY_FRONT_MAIN || github.base_ref == 'qa' && secrets.PHARMACY_FRONT_QA || secrets.PHARMACY_FRONT_DEV }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info

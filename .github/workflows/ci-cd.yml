@@ -1,237 +1,173 @@
-name: CI/CD Pipeline with SonarQube Code Review
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop, qa]
+    branches: [main, develop, qa, dev]
   pull_request:
-    branches: [main, develop, qa]
+    branches: [main, develop, qa, dev]
 
 jobs:
   test-backend-v4:
     runs-on: ubuntu-latest
     name: Test Backend V4
-
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Shallow clones should be disabled for better analysis
 
-      - name: Set up JDK 23
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: "23"
-          distribution: "temurin"
+          java-version: '17'
+          distribution: 'temurin'
 
-      - name: Cache Maven dependencies
-        uses: actions/cache@v3
+      - name: Cache Maven packages
+        uses: actions/cache@v4
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Run Backend V4 Tests with Coverage
-        run: mvn clean verify
+      - name: Run Tests with Coverage
+        run: mvn -B clean test jacoco:report
         working-directory: ./backv4
 
-      - name: Upload Backend V4 Coverage
-        uses: actions/upload-artifact@v4
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
         with:
-          name: backv4-coverage
-          path: backv4/target/site/jacoco/
+          file: ./backv4/target/site/jacoco/jacoco.xml
 
   test-backend-v5:
     runs-on: ubuntu-latest
     name: Test Backend V5
-
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Set up JDK 23
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: "23"
-          distribution: "temurin"
+          java-version: '17'
+          distribution: 'temurin'
 
-      - name: Cache Maven dependencies
-        uses: actions/cache@v3
+      - name: Cache Maven packages
+        uses: actions/cache@v4
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Run Backend V5 Tests with Coverage
-        run: mvn clean verify
+      - name: Run Tests with Coverage
+        run: mvn -B clean test jacoco:report
         working-directory: ./backv5
 
-      - name: Upload Backend V5 Coverage
-        uses: actions/upload-artifact@v4
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
         with:
-          name: backv5-coverage
-          path: backv5/target/site/jacoco/
+          file: ./backv5/target/site/jacoco/jacoco.xml
 
   test-ensurance-frontend:
     runs-on: ubuntu-latest
     name: Test Ensurance Frontend
-
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
-          cache: "npm"
-          cache-dependency-path: "./ensurance/package-lock.json"
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: ./ensurance/package-lock.json
 
       - name: Install dependencies
-        run: |
-          npm ci --prefer-offline --no-audit --progress=false
+        run: npm ci
         working-directory: ./ensurance
 
-      - name: Run tests with coverage
+      - name: Run Tests with Coverage
         run: npm run test:coverage
         working-directory: ./ensurance
 
-      - name: Upload Ensurance Coverage
-        uses: actions/upload-artifact@v4
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
         with:
-          name: ensurance-coverage
-          path: ensurance/coverage/
+          file: ./ensurance/coverage/lcov.info
 
   test-pharmacy-frontend:
     runs-on: ubuntu-latest
     name: Test Pharmacy Frontend
-
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
-          cache: "npm"
-          cache-dependency-path: "./pharmacy/package-lock.json"
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: ./pharmacy/package-lock.json
 
       - name: Install dependencies
-        run: |
-          npm ci --prefer-offline --no-audit --progress=false
+        run: npm ci
         working-directory: ./pharmacy
 
-      - name: Run tests with coverage
+      - name: Run Tests with Coverage
         run: npm run test:unit:coverage
         working-directory: ./pharmacy
 
-      - name: Upload Pharmacy Coverage
-        uses: actions/upload-artifact@v4
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
         with:
-          name: pharmacy-coverage
-          path: pharmacy/coverage/
+          file: ./pharmacy/coverage/lcov.info
 
   sonarqube-ensurance-analysis:
     runs-on: ubuntu-latest
     name: SonarQube Ensurance Analysis
-    permissions:
-      contents: read
-      pull-requests: write
     needs: [test-backend-v4, test-backend-v5, test-ensurance-frontend]
-
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Disable shallow clone for better analysis
 
-      - name: Set up JDK 23
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: "23"
-          distribution: "temurin"
+          java-version: '17'
+          distribution: 'temurin'
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-          cache: "npm"
-          cache-dependency-path: "./ensurance/package-lock.json"
-
-      - name: Cache Maven dependencies
-        uses: actions/cache@v3
+      - name: Cache Maven packages
+        uses: actions/cache@v4
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Download Ensurance coverage artifacts
-        uses: actions/download-artifact@v4
+      - name: Generate Jacoco Reports
+        run: |
+          mvn -B clean test jacoco:report -f backv4/pom.xml
+          mvn -B clean test jacoco:report -f backv5/pom.xml
+
+      - name: Setup Node.js for Ensurance Frontend
+        uses: actions/setup-node@v4
         with:
-          name: "ensurance-coverage"
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: ./ensurance/package-lock.json
 
-      - name: Download Backend coverage artifacts
-        uses: actions/download-artifact@v4
+      - name: Generate Coverage for Ensurance Frontend
+        run: |
+          cd ensurance
+          npm ci
+          npm run test:coverage
+
+      - name: Run SonarQube Analysis - Ensurance Backend
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
-          name: "backv5-coverage"
-
-      - name: Install Ensurance Frontend Dependencies
-        run: |
-          cd ensurance && npm ci --prefer-offline --no-audit --progress=false
-
-      - name: Build and Test Ensurance for Coverage
-        run: |
-          cd backv4 && mvn clean verify
-          cd ../backv5 && mvn clean verify
-          cd ../ensurance && npm run test:coverage
-
-      - name: Run SonarQube Analysis - Ensurance Backend DEV
-        if: github.ref == 'refs/heads/develop'
-        run: |
-          cd backv4 && mvn sonar:sonar \
-            -Dsonar.projectKey=ensurance-backend-dev \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.token=${{ secrets.ENSURANCE_BACK_DEV }} \
-            -Dsonar.qualitygate.wait=true \
-            -Dsonar.qualitygate.timeout=300
-          cd ../backv5 && mvn sonar:sonar \
-            -Dsonar.projectKey=ensurance-backend-dev \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.token=${{ secrets.ENSURANCE_BACK_DEV }} \
-            -Dsonar.qualitygate.wait=true \
-            -Dsonar.qualitygate.timeout=300
-
-      - name: Run SonarQube Analysis - Ensurance Backend QA
-        if: github.ref == 'refs/heads/qa'
-        run: |
-          cd backv4 && mvn sonar:sonar \
-            -Dsonar.projectKey=ensurance-backend-qa \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.token=${{ secrets.ENSURANCE_BACK_QA }} \
-            -Dsonar.qualitygate.wait=true \
-            -Dsonar.qualitygate.timeout=300
-          cd ../backv5 && mvn sonar:sonar \
-            -Dsonar.projectKey=ensurance-backend-qa \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.token=${{ secrets.ENSURANCE_BACK_QA }} \
-            -Dsonar.qualitygate.wait=true \
-            -Dsonar.qualitygate.timeout=300
-
-      - name: Run SonarQube Analysis - Ensurance Backend MAIN
-        if: github.ref == 'refs/heads/main'
-        run: |
-          cd backv4 && mvn sonar:sonar \
-            -Dsonar.projectKey=ensurance-backend-main \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.token=${{ secrets.ENSURANCE_BACK_MAIN }} \
-            -Dsonar.qualitygate.wait=true \
-            -Dsonar.qualitygate.timeout=300
-          cd ../backv5 && mvn sonar:sonar \
-            -Dsonar.projectKey=ensurance-backend-main \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.token=${{ secrets.ENSURANCE_BACK_MAIN }} \
-            -Dsonar.qualitygate.wait=true \
+          args: >
+            -Dsonar.projectKey=${{ github.ref == 'refs/heads/main' && 'ENSURANCE_BACK_MAIN' || github.ref == 'refs/heads/qa' && 'ENSURANCE_BACK_QA' || 'ENSURANCE_BACK_DEV' }}
+            -Dsonar.token=${{ github.ref == 'refs/heads/main' && secrets.ENSURANCE_BACK_MAIN || github.ref == 'refs/heads/qa' && secrets.ENSURANCE_BACK_QA || secrets.ENSURANCE_BACK_DEV }}
+            -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src
+            -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests
+            -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes
+            -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml,backv5/target/site/jacoco/jacoco.xml
+            -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info
+            -Dsonar.qualitygate.wait=true
             -Dsonar.qualitygate.timeout=300
 
       - name: Run SonarQube Analysis - Ensurance Frontend
@@ -242,7 +178,7 @@ jobs:
         with:
           projectBaseDir: ./ensurance
           args: >
-            -Dsonar.projectKey=${{ github.ref == 'refs/heads/main' && 'ensurance-frontend-main' || github.ref == 'refs/heads/qa' && 'ensurance-frontend-qa' || 'ensurance-frontend-dev' }}
+            -Dsonar.projectKey=${{ github.ref == 'refs/heads/main' && 'ENSURANCE_FRONT_MAIN' || github.ref == 'refs/heads/qa' && 'ENSURANCE_FRONT_QA' || 'ENSURANCE_FRONT_DEV' }}
             -Dsonar.token=${{ github.ref == 'refs/heads/main' && secrets.ENSURANCE_FRONT_MAIN || github.ref == 'refs/heads/qa' && secrets.ENSURANCE_FRONT_QA || secrets.ENSURANCE_FRONT_DEV }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
@@ -253,38 +189,24 @@ jobs:
   sonarqube-pharmacy-analysis:
     runs-on: ubuntu-latest
     name: SonarQube Pharmacy Analysis
-    permissions:
-      contents: read
-      pull-requests: write
     needs: [test-pharmacy-frontend]
-
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Disable shallow clone for better analysis
 
-      - name: Set up Node.js
+      - name: Setup Node.js for Pharmacy Frontend
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
-          cache: "npm"
-          cache-dependency-path: "./pharmacy/package-lock.json"
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: ./pharmacy/package-lock.json
 
-      - name: Download Pharmacy coverage artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: "pharmacy-coverage"
-
-      - name: Install Pharmacy Frontend Dependencies
+      - name: Generate Coverage for Pharmacy Frontend
         run: |
-          cd pharmacy && npm ci --prefer-offline --no-audit --progress=false
+          cd pharmacy
+          npm ci
+          npm run test:unit:coverage
 
-      - name: Build and Test Pharmacy for Coverage
-        run: |
-          cd pharmacy && npm run test:unit:coverage
-
-      - name: Run SonarQube Analysis - Pharmacy Backend DEV
-        if: github.ref == 'refs/heads/develop'
+      - name: Run SonarQube Analysis - Pharmacy Backend
         uses: SonarSource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -292,42 +214,8 @@ jobs:
         with:
           projectBaseDir: ./pharmacy
           args: >
-            -Dsonar.projectKey=pharmacy-backend-dev
-            -Dsonar.token=${{ secrets.PHARMACY_BACK_DEV }}
-            -Dsonar.sources=src
-            -Dsonar.tests=tests
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-            -Dsonar.qualitygate.wait=true
-            -Dsonar.qualitygate.timeout=300
-
-      - name: Run SonarQube Analysis - Pharmacy Backend QA
-        if: github.ref == 'refs/heads/qa'
-        uses: SonarSource/sonarqube-scan-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        with:
-          projectBaseDir: ./pharmacy
-          args: >
-            -Dsonar.projectKey=pharmacy-backend-qa
-            -Dsonar.token=${{ secrets.PHARMACY_BACK_QA }}
-            -Dsonar.sources=src
-            -Dsonar.tests=tests
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-            -Dsonar.qualitygate.wait=true
-            -Dsonar.qualitygate.timeout=300
-
-      - name: Run SonarQube Analysis - Pharmacy Backend MAIN
-        if: github.ref == 'refs/heads/main'
-        uses: SonarSource/sonarqube-scan-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        with:
-          projectBaseDir: ./pharmacy
-          args: >
-            -Dsonar.projectKey=pharmacy-backend-main
-            -Dsonar.token=${{ secrets.PHARMACY_BACK_MAIN }}
+            -Dsonar.projectKey=${{ github.ref == 'refs/heads/main' && 'PHARMACY_BACK_MAIN' || github.ref == 'refs/heads/qa' && 'PHARMACY_BACK_QA' || 'PHARMACY_BACK_DEV' }}
+            -Dsonar.token=${{ github.ref == 'refs/heads/main' && secrets.PHARMACY_BACK_MAIN || github.ref == 'refs/heads/qa' && secrets.PHARMACY_BACK_QA || secrets.PHARMACY_BACK_DEV }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
@@ -342,7 +230,7 @@ jobs:
         with:
           projectBaseDir: ./pharmacy
           args: >
-            -Dsonar.projectKey=${{ github.ref == 'refs/heads/main' && 'pharmacy-frontend-main' || github.ref == 'refs/heads/qa' && 'pharmacy-frontend-qa' || 'pharmacy-frontend-dev' }}
+            -Dsonar.projectKey=${{ github.ref == 'refs/heads/main' && 'PHARMACY_FRONT_MAIN' || github.ref == 'refs/heads/qa' && 'PHARMACY_FRONT_QA' || 'PHARMACY_FRONT_DEV' }}
             -Dsonar.token=${{ github.ref == 'refs/heads/main' && secrets.PHARMACY_FRONT_MAIN || github.ref == 'refs/heads/qa' && secrets.PHARMACY_FRONT_QA || secrets.PHARMACY_FRONT_DEV }}
             -Dsonar.sources=src
             -Dsonar.tests=tests

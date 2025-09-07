@@ -1,14 +1,9 @@
 pipeline {
   agent any
-  tools {
-    nodejs 'NodeJS_24_5_0'
-    maven  'Maven_3_9_11'
-    jdk    'JDK_23'
-  }
 
   environment {
-    SONARQUBE_SERVER = 'sonarqube'
-    EMAIL_TO = 'pablopolis2016@gmail.com,jflores@unis.edu.gt'
+    SONARQUBE_SERVER = 'SonarQube'
+    EMAIL_TO = "\${EMAIL_TO}"
   }
 
   options { timestamps() }
@@ -43,13 +38,13 @@ pipeline {
           def projectName = ""
           
           if (BRANCH_NAME == 'main' || BRANCH_NAME == 'master') {
-            projectKey = 'ensurance-backend-main'
+            projectKey = 'ENSURANCE_BACK_MAIN'
             projectName = 'Ensurance Backend MAIN'
           } else if (BRANCH_NAME == 'qa') {
-            projectKey = 'ensurance-backend-qa'
+            projectKey = 'ENSURANCE_BACK_QA'
             projectName = 'Ensurance Backend QA'
           } else {
-            projectKey = 'ensurance-backend-dev'
+            projectKey = 'ENSURANCE_BACK_DEV'
             projectName = 'Ensurance Backend DEV'
           }
           
@@ -91,18 +86,18 @@ pipeline {
           def frontendProjectName = ""
           
           if (BRANCH_NAME == 'main' || BRANCH_NAME == 'master') {
-            backendProjectKey = 'pharmacy-backend-main'
-            frontendProjectKey = 'pharmacy-frontend-main'
+            backendProjectKey = 'PHARMACY_BACK_MAIN'
+            frontendProjectKey = 'PHARMACY_FRONT_MAIN'
             backendProjectName = 'Pharmacy Backend MAIN'
             frontendProjectName = 'Pharmacy Frontend MAIN'
           } else if (BRANCH_NAME == 'qa') {
-            backendProjectKey = 'pharmacy-backend-qa'
-            frontendProjectKey = 'pharmacy-frontend-qa'
+            backendProjectKey = 'PHARMACY_BACK_QA'
+            frontendProjectKey = 'PHARMACY_FRONT_QA'
             backendProjectName = 'Pharmacy Backend QA'
             frontendProjectName = 'Pharmacy Frontend QA'
           } else {
-            backendProjectKey = 'pharmacy-backend-dev'
-            frontendProjectKey = 'pharmacy-frontend-dev'
+            backendProjectKey = 'PHARMACY_BACK_DEV'
+            frontendProjectKey = 'PHARMACY_FRONT_DEV'
             backendProjectName = 'Pharmacy Backend DEV'
             frontendProjectName = 'Pharmacy Frontend DEV'
           }
