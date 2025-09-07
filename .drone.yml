@@ -2,17 +2,13 @@ kind: pipeline
 type: docker
 name: ensurance-pharmacy-pipeline
 
-# Clone step
 clone:
   disable: false
 
-# Environment variables
 environment:
   EMAIL_TO: pablopolis2016@gmail.com,jflores@unis.edu.gt
 
-# Steps
 steps:
-  # Unit tests and coverage
   - name: unit-tests
     image: maven:3.9-openjdk-23
     environment:
@@ -33,7 +29,6 @@ steps:
         - qa
         - feature/*
 
-  # SonarQube analysis for Ensurance DEV
   - name: sonarqube-ensurance-analysis-dev
     image: sonarqube/sonar-scanner-cli:latest
     environment:
@@ -49,7 +44,6 @@ steps:
         - dev
         - feature/*
 
-  # SonarQube analysis for Pharmacy DEV
   - name: sonarqube-pharmacy-analysis-dev
     image: sonarqube/sonar-scanner-cli:latest
     environment:
@@ -66,7 +60,6 @@ steps:
         - dev
         - feature/*
 
-  # SonarQube analysis for Ensurance QA
   - name: sonarqube-ensurance-analysis-qa
     image: sonarqube/sonar-scanner-cli:latest
     environment:
@@ -80,7 +73,6 @@ steps:
       branch:
         - qa
 
-  # SonarQube analysis for Pharmacy QA
   - name: sonarqube-pharmacy-analysis-qa
     image: sonarqube/sonar-scanner-cli:latest
     environment:
@@ -95,7 +87,6 @@ steps:
       branch:
         - qa
 
-  # SonarQube analysis for Ensurance MAIN
   - name: sonarqube-ensurance-analysis-main
     image: sonarqube/sonar-scanner-cli:latest
     environment:
@@ -110,7 +101,6 @@ steps:
         - main
         - master
 
-  # SonarQube analysis for Pharmacy MAIN
   - name: sonarqube-pharmacy-analysis-main
     image: sonarqube/sonar-scanner-cli:latest
     environment:
@@ -126,7 +116,6 @@ steps:
         - main
         - master
 
-  # Deploy DEV environment
   - name: deploy-dev
     image: docker/compose:latest
     environment:
@@ -138,10 +127,10 @@ steps:
       - sleep 30
       - docker-compose -f docker-compose.dev.yml ps
       - echo "DEV desplegado en:"
-      - echo '   - Ensurance Frontend: http://localhost:3000'
-      - echo '   - Pharmacy Frontend: http://localhost:3001'
-      - echo '   - Ensurance Backend: http://localhost:3002/api'
-      - echo '   - Pharmacy Backend: http://localhost:3003/api2'
+      - echo "   - Ensurance Frontend: http://localhost:3000"
+      - echo "   - Pharmacy Frontend: http://localhost:3001"
+      - echo "   - Ensurance Backend: http://localhost:3002/api"
+      - echo "   - Pharmacy Backend: http://localhost:3003/api2"
     volumes:
       - name: docker-sock
         path: /var/run/docker.sock
@@ -151,7 +140,6 @@ steps:
         - dev
         - feature/*
 
-  # Deploy QA environment
   - name: deploy-qa
     image: docker/compose:latest
     environment:
@@ -163,10 +151,10 @@ steps:
       - sleep 30
       - docker-compose -f docker-compose.qa.yml ps
       - echo "QA desplegado en:"
-      - echo '   - Ensurance Frontend: http://localhost:4000'
-      - echo '   - Pharmacy Frontend: http://localhost:4001'
-      - echo '   - Ensurance Backend: http://localhost:4002/api'
-      - echo '   - Pharmacy Backend: http://localhost:4003/api2'
+      - echo "   - Ensurance Frontend: http://localhost:4000"
+      - echo "   - Pharmacy Frontend: http://localhost:4001"
+      - echo "   - Ensurance Backend: http://localhost:4002/api"
+      - echo "   - Pharmacy Backend: http://localhost:4003/api2"
     volumes:
       - name: docker-sock
         path: /var/run/docker.sock
@@ -174,7 +162,6 @@ steps:
       branch:
         - qa
 
-  # Deploy MAIN environment
   - name: deploy-main
     image: docker/compose:latest
     environment:
@@ -186,10 +173,10 @@ steps:
       - sleep 30
       - docker-compose -f docker-compose.main.yml ps
       - echo "MAIN desplegado en:"
-      - echo '   - Ensurance Frontend: http://localhost:5000'
-      - echo '   - Pharmacy Frontend: http://localhost:5001'
-      - echo '   - Ensurance Backend: http://localhost:5002/api'
-      - echo '   - Pharmacy Backend: http://localhost:5003/api2'
+      - echo "   - Ensurance Frontend: http://localhost:5000"
+      - echo "   - Pharmacy Frontend: http://localhost:5001"
+      - echo "   - Ensurance Backend: http://localhost:5002/api"
+      - echo "   - Pharmacy Backend: http://localhost:5003/api2"
     volumes:
       - name: docker-sock
         path: /var/run/docker.sock
@@ -198,45 +185,41 @@ steps:
         - main
         - master
 
-  # Post-deployment verification
   - name: verify-deployment
     image: curlimages/curl:latest
     commands:
       - export ENVIRONMENT=$(cat .environment)
-      - 'echo "Verificando deployment en ambiente: $ENVIRONMENT"'
+      - echo "Verificando deployment en ambiente: $ENVIRONMENT"
       - sh -c "if [ \"$ENVIRONMENT\" = \"dev\" ]; then curl -f http://localhost:3000 || echo \"Frontend DEV no responde\"; curl -f http://localhost:3002/api || echo \"Backend DEV no responde\"; elif [ \"$ENVIRONMENT\" = \"qa\" ]; then curl -f http://localhost:4000 || echo \"Frontend QA no responde\"; curl -f http://localhost:4002/api || echo \"Backend QA no responde\"; elif [ \"$ENVIRONMENT\" = \"main\" ]; then curl -f http://localhost:5000 || echo \"Frontend MAIN no responde\"; curl -f http://localhost:5002/api || echo \"Backend MAIN no responde\"; fi"
     depends_on:
       - deploy-dev
       - deploy-qa
       - deploy-main
 
-  # Notification on success
   - name: notify-success
     image: alpine
     commands:
       - export ENVIRONMENT=$(cat .environment)
-      - 'echo "Pipeline completado exitosamente para ambiente: $ENVIRONMENT"'
-      - echo 'Quality Gate: APROBADO'
-      - echo 'Tests: PASADOS'
-      - echo 'Deploy: EXITOSO'
-      - 'echo "Notificación enviada a: ${EMAIL_TO}"'
+      - echo "Pipeline completado exitosamente para ambiente: $ENVIRONMENT"
+      - echo "Quality Gate: APROBADO"
+      - echo "Tests: PASADOS"
+      - echo "Deploy: EXITOSO"
+      - echo "Notificación enviada a: ${EMAIL_TO}"
     when:
       status:
         - success
 
-  # Notification on failure
   - name: notify-failure
     image: alpine
     commands:
       - export ENVIRONMENT=$(cat .environment)
-      - 'echo "Pipeline falló para ambiente: $ENVIRONMENT"'
-      - 'echo "Revisar logs en: ${DRONE_BUILD_LINK}"'
-      - 'echo "Notificación de fallo enviada a: ${EMAIL_TO}"'
+      - echo "Pipeline falló para ambiente: $ENVIRONMENT"
+      - echo "Revisar logs en: ${DRONE_BUILD_LINK}"
+      - echo "Notificación de fallo enviada a: ${EMAIL_TO}"
     when:
       status:
         - failure
 
-# Volumes for caching and Docker socket
 volumes:
   - name: maven-cache
     host:
@@ -249,16 +232,13 @@ volumes:
       path: /var/run/docker.sock
 
 ---
-# Notification pipeline for email alerts
 kind: pipeline
 type: docker
 name: notifications
 
-# Depends on main pipeline
 depends_on:
   - ensurance-pharmacy-pipeline
 
-# Email notification step
 steps:
   - name: email-notification
     image: drillster/drone-email
@@ -282,27 +262,27 @@ steps:
       body: >
         "{{#success build.status}}
           Deploy completado exitosamente en rama {{build.branch}}.
-          
+
           Quality Gate: APROBADO
-          Tests: PASADOS  
+          Tests: PASADOS
           Deploy: EXITOSO
-          
+
           Detalles: {{build.link}}
-          
+
           Servicios disponibles:
-          {{#equal build.branch "develop"}}
+          {{#equal build.branch \"develop\"}}
           - Ensurance Frontend: http://localhost:3000
           - Pharmacy Frontend: http://localhost:3001
           - Ensurance Backend: http://localhost:3002/api
           - Pharmacy Backend: http://localhost:3003/api2
           {{/equal}}
-          {{#equal build.branch "qa"}}
+          {{#equal build.branch \"qa\"}}
           - Ensurance Frontend: http://localhost:4000
           - Pharmacy Frontend: http://localhost:4001
           - Ensurance Backend: http://localhost:4002/api
           - Pharmacy Backend: http://localhost:4003/api2
           {{/equal}}
-          {{#equal build.branch "main"}}
+          {{#equal build.branch \"main\"}}
           - Ensurance Frontend: http://localhost:5000
           - Pharmacy Frontend: http://localhost:5001
           - Ensurance Backend: http://localhost:5002/api
@@ -310,16 +290,15 @@ steps:
           {{/equal}}
         {{else}}
           Pipeline falló en rama {{build.branch}}.
-          
+
           Detalle: {{build.link}}
-          
+
           Para diagnosticar:
           1. Revisar logs en Drone UI
           2. Verificar Quality Gate en SonarQube
           3. Revisar estado de contenedores
         {{/success}}"
 
-# Trigger only on main pipeline completion
 trigger:
   status:
     - success
