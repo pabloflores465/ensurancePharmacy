@@ -14,7 +14,7 @@ environment:
 steps:
   # Unit tests and coverage
   - name: unit-tests
-    image: maven:3.9-openjdk-17
+    image: maven:3.9-openjdk-23
     environment:
       MAVEN_OPTS: -Dmaven.repo.local=/tmp/.m2
     commands:
