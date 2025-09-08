@@ -20,8 +20,8 @@ jobs:
       - name: Set up JDK 23
         uses: actions/setup-java@v4
         with:
-          java-version: '23'
-          distribution: 'temurin'
+          java-version: "23"
+          distribution: "temurin"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -57,7 +57,7 @@ jobs:
         with:
           args: >
             -Dsonar.projectKey=ENSURANCE_BACK_DEV
-            -Dsonar.token=${{ secrets.ENSURANCE_BACK_DEV }}
+            -Dsonar.token=${{ secrets.ensurance_back_dev }}
             -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src
             -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests
             -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes
@@ -75,7 +75,7 @@ jobs:
         with:
           args: >
             -Dsonar.projectKey=ENSURANCE_BACK_QA
-            -Dsonar.token=${{ secrets.ENSURANCE_BACK_QA }}
+            -Dsonar.token=${{ secrets.ensurance_back_qa }}
             -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src
             -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests
             -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes
@@ -93,7 +93,7 @@ jobs:
         with:
           args: >
             -Dsonar.projectKey=ENSURANCE_BACK_MAIN
-            -Dsonar.token=${{ secrets.ENSURANCE_BACK_MAIN }}
+            -Dsonar.token=${{ secrets.ensurance_back_main }}
             -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src
             -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests
             -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes
@@ -111,7 +111,7 @@ jobs:
           projectBaseDir: ./ensurance
           args: >
             -Dsonar.projectKey=${{ github.base_ref == 'main' && 'ENSURANCE_FRONT_MAIN' || github.base_ref == 'qa' && 'ENSURANCE_FRONT_QA' || 'ENSURANCE_FRONT_DEV' }}
-            -Dsonar.token=${{ github.base_ref == 'main' && secrets.ENSURANCE_FRONT_MAIN || github.base_ref == 'qa' && secrets.ENSURANCE_FRONT_QA || secrets.ENSURANCE_FRONT_DEV }}
+            -Dsonar.token=${{ github.base_ref == 'main' && secrets.ensurance_front_main || github.base_ref == 'qa' && secrets.ensurance_front_qa || secrets.ensurance_front_dev }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
@@ -160,7 +160,7 @@ jobs:
           projectBaseDir: ./pharmacy
           args: >
             -Dsonar.projectKey=PHARMACY_BACK_DEV
-            -Dsonar.token=${{ secrets.PHARMACY_BACK_DEV }}
+            -Dsonar.token=${{ secrets.pharmacy_back_dev }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
@@ -177,7 +177,7 @@ jobs:
           projectBaseDir: ./pharmacy
           args: >
             -Dsonar.projectKey=PHARMACY_BACK_QA
-            -Dsonar.token=${{ secrets.PHARMACY_BACK_QA }}
+            -Dsonar.token=${{ secrets.pharmacy_back_qa }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
@@ -194,7 +194,7 @@ jobs:
           projectBaseDir: ./pharmacy
           args: >
             -Dsonar.projectKey=PHARMACY_BACK_MAIN
-            -Dsonar.token=${{ secrets.PHARMACY_BACK_MAIN }}
+            -Dsonar.token=${{ secrets.pharmacy_back_main }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
@@ -210,7 +210,7 @@ jobs:
           projectBaseDir: ./pharmacy
           args: >
             -Dsonar.projectKey=${{ github.base_ref == 'main' && 'PHARMACY_FRONT_MAIN' || github.base_ref == 'qa' && 'PHARMACY_FRONT_QA' || 'PHARMACY_FRONT_DEV' }}
-            -Dsonar.token=${{ github.base_ref == 'main' && secrets.PHARMACY_FRONT_MAIN || github.base_ref == 'qa' && secrets.PHARMACY_FRONT_QA || secrets.PHARMACY_FRONT_DEV }}
+            -Dsonar.token=${{ github.base_ref == 'main' && secrets.pharmacy_front_main || github.base_ref == 'qa' && secrets.pharmacy_front_qa || secrets.pharmacy_front_dev }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
@@ -236,7 +236,7 @@ jobs:
             echo "color=red" >> $GITHUB_OUTPUT
             echo "summary=SonarQube analysis failed. Please fix issues before merging" >> $GITHUB_OUTPUT
           fi
-          
+
           # Target environment detection
           if [[ "${{ github.base_ref }}" == "main" ]]; then
             echo "target_env=PRODUCTION" >> $GITHUB_OUTPUT

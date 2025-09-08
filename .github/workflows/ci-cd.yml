@@ -146,7 +146,7 @@ jobs:
         with:
           args: >
             -Dsonar.projectKey=${{ github.ref == 'refs/heads/main' && 'ENSURANCE_BACK_MAIN' || github.ref == 'refs/heads/qa' && 'ENSURANCE_BACK_QA' || 'ENSURANCE_BACK_DEV' }}
-            -Dsonar.token=${{ github.ref == 'refs/heads/main' && secrets.ENSURANCE_BACK_MAIN || github.ref == 'refs/heads/qa' && secrets.ENSURANCE_BACK_QA || secrets.ENSURANCE_BACK_DEV }}
+            -Dsonar.token=${{ github.ref == 'refs/heads/main' && secrets.ensurance_back_main || github.ref == 'refs/heads/qa' && secrets.ensurance_back_qa || secrets.ensurance_back_dev }}
             -Dsonar.sources=backv4/src/main
             -Dsonar.tests=backv4/src/test
             -Dsonar.java.binaries=backv4/target/classes
@@ -183,7 +183,7 @@ jobs:
           projectBaseDir: ./ensurance
           args: >
             -Dsonar.projectKey=${{ github.ref == 'refs/heads/main' && 'ENSURANCE_FRONT_MAIN' || github.ref == 'refs/heads/qa' && 'ENSURANCE_FRONT_QA' || 'ENSURANCE_FRONT_DEV' }}
-            -Dsonar.token=${{ github.ref == 'refs/heads/main' && secrets.ENSURANCE_FRONT_MAIN || github.ref == 'refs/heads/qa' && secrets.ENSURANCE_FRONT_QA || secrets.ENSURANCE_FRONT_DEV }}
+            -Dsonar.token=${{ github.ref == 'refs/heads/main' && secrets.ensurance_front_main || github.ref == 'refs/heads/qa' && secrets.ensurance_front_qa || secrets.ensurance_front_dev }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
@@ -221,7 +221,7 @@ jobs:
         with:
           args: >
             -Dsonar.projectKey=${{ github.ref == 'refs/heads/main' && 'PHARMACY_BACK_MAIN' || github.ref == 'refs/heads/qa' && 'PHARMACY_BACK_QA' || 'PHARMACY_BACK_DEV' }}
-            -Dsonar.token=${{ github.ref == 'refs/heads/main' && secrets.PHARMACY_BACK_MAIN || github.ref == 'refs/heads/qa' && secrets.PHARMACY_BACK_QA || secrets.PHARMACY_BACK_DEV }}
+            -Dsonar.token=${{ github.ref == 'refs/heads/main' && secrets.pharmacy_back_main || github.ref == 'refs/heads/qa' && secrets.pharmacy_back_qa || secrets.pharmacy_back_dev }}
             -Dsonar.sources=backv5/src/main
             -Dsonar.tests=backv5/src/test
             -Dsonar.java.binaries=backv5/target/classes
@@ -258,7 +258,7 @@ jobs:
           projectBaseDir: ./pharmacy
           args: >
             -Dsonar.projectKey=${{ github.ref == 'refs/heads/main' && 'PHARMACY_FRONT_MAIN' || github.ref == 'refs/heads/qa' && 'PHARMACY_FRONT_QA' || 'PHARMACY_FRONT_DEV' }}
-            -Dsonar.token=${{ github.ref == 'refs/heads/main' && secrets.PHARMACY_FRONT_MAIN || github.ref == 'refs/heads/qa' && secrets.PHARMACY_FRONT_QA || secrets.PHARMACY_FRONT_DEV }}
+            -Dsonar.token=${{ github.ref == 'refs/heads/main' && secrets.pharmacy_front_main || github.ref == 'refs/heads/qa' && secrets.pharmacy_front_qa || secrets.pharmacy_front_dev }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
@@ -285,10 +285,10 @@ jobs:
           echo "Deploying to Development..."
           # Aquí puedes agregar los comandos específicos de deploy
         env:
-          ENSURANCE_BACK_DEV: ${{ secrets.ENSURANCE_BACK_DEV }}
-          ENSURANCE_FRONT_DEV: ${{ secrets.ENSURANCE_FRONT_DEV }}
-          PHARMACY_BACK_DEV: ${{ secrets.PHARMACY_BACK_DEV }}
-          PHARMACY_FRONT_DEV: ${{ secrets.PHARMACY_FRONT_DEV }}
+          ENSURANCE_BACK_DEV: ${{ secrets.ensurance_back_dev }}
+          ENSURANCE_FRONT_DEV: ${{ secrets.ensurance_front_dev }}
+          PHARMACY_BACK_DEV: ${{ secrets.pharmacy_back_dev }}
+          PHARMACY_FRONT_DEV: ${{ secrets.pharmacy_front_dev }}
 
   deploy-qa:
     runs-on: ubuntu-latest
@@ -310,10 +310,10 @@ jobs:
           echo "Deploying to QA..."
           # Aquí puedes agregar los comandos específicos de deploy
         env:
-          ENSURANCE_BACK_QA: ${{ secrets.ENSURANCE_BACK_QA }}
-          ENSURANCE_FRONT_QA: ${{ secrets.ENSURANCE_FRONT_QA }}
-          PHARMACY_BACK_QA: ${{ secrets.PHARMACY_BACK_QA }}
-          PHARMACY_FRONT_QA: ${{ secrets.PHARMACY_FRONT_QA }}
+          ENSURANCE_BACK_QA: ${{ secrets.ensurance_back_qa }}
+          ENSURANCE_FRONT_QA: ${{ secrets.ensurance_front_qa }}
+          PHARMACY_BACK_QA: ${{ secrets.pharmacy_back_qa }}
+          PHARMACY_FRONT_QA: ${{ secrets.pharmacy_front_qa }}
 
   deploy-main:
     runs-on: ubuntu-latest
@@ -335,10 +335,10 @@ jobs:
           echo "Deploying to Production..."
           # Aquí puedes agregar los comandos específicos de deploy
         env:
-          ENSURANCE_BACK_MAIN: ${{ secrets.ENSURANCE_BACK_MAIN }}
-          ENSURANCE_FRONT_MAIN: ${{ secrets.ENSURANCE_FRONT_MAIN }}
-          PHARMACY_BACK_MAIN: ${{ secrets.PHARMACY_BACK_MAIN }}
-          PHARMACY_FRONT_MAIN: ${{ secrets.PHARMACY_FRONT_MAIN }}
+          ENSURANCE_BACK_MAIN: ${{ secrets.ensurance_back_main }}
+          ENSURANCE_FRONT_MAIN: ${{ secrets.ensurance_front_main }}
+          PHARMACY_BACK_MAIN: ${{ secrets.pharmacy_back_main }}
+          PHARMACY_FRONT_MAIN: ${{ secrets.pharmacy_front_main }}
 
   notify-status:
     runs-on: ubuntu-latest
