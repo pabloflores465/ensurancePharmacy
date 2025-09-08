@@ -287,9 +287,9 @@ steps:
   - name: verify-deployment-dev
     image: curlimages/curl:latest
     commands:
-      - echo "Verificando deployment en ambiente: DEV"
-      - curl -f http://localhost:3000 || echo "Frontend DEV no responde"
-      - curl -f http://localhost:3002/api || echo "Backend DEV no responde"
+      - "echo 'Verificando deployment en ambiente: DEV'"
+      - "curl -f http://localhost:3000 || echo 'Frontend DEV no responde'"
+      - "curl -f http://localhost:3002/api || echo 'Backend DEV no responde'"
     when:
       branch:
         - develop
@@ -301,9 +301,9 @@ steps:
   - name: verify-deployment-qa
     image: curlimages/curl:latest
     commands:
-      - echo "Verificando deployment en ambiente: QA"
-      - curl -f http://localhost:4000 || echo "Frontend QA no responde"
-      - curl -f http://localhost:4002/api || echo "Backend QA no responde"
+      - "echo 'Verificando deployment en ambiente: QA'"
+      - "curl -f http://localhost:4000 || echo 'Frontend QA no responde'"
+      - "curl -f http://localhost:4002/api || echo 'Backend QA no responde'"
     when:
       branch:
         - qa
@@ -313,9 +313,9 @@ steps:
   - name: verify-deployment-main
     image: curlimages/curl:latest
     commands:
-      - echo "Verificando deployment en ambiente: MAIN"
-      - curl -f http://localhost:5000 || echo "Frontend MAIN no responde"
-      - curl -f http://localhost:5002/api || echo "Backend MAIN no responde"
+      - "echo 'Verificando deployment en ambiente: MAIN'"
+      - "curl -f http://localhost:5000 || echo 'Frontend MAIN no responde'"
+      - "curl -f http://localhost:5002/api || echo 'Backend MAIN no responde'"
     when:
       branch:
         - main
@@ -326,16 +326,11 @@ steps:
   - name: notify-success
     image: alpine
     commands:
-      - |
-        echo "Pipeline completado exitosamente para rama: ${DRONE_BRANCH}"
-      - |
-        echo "Quality Gate: APROBADO"
-      - |
-        echo "Tests: PASADOS"
-      - |
-        echo "Deploy: EXITOSO"
-      - |
-        echo "Notificación enviada a: ${EMAIL_TO}"
+      - "echo 'Pipeline completado exitosamente para rama: ${DRONE_BRANCH}'"
+      - "echo 'Quality Gate: APROBADO'"
+      - "echo 'Tests: PASADOS'"
+      - "echo 'Deploy: EXITOSO'"
+      - "echo 'Notificación enviada a: ${EMAIL_TO}'"
     when:
       status:
         - success
@@ -343,12 +338,9 @@ steps:
   - name: notify-failure
     image: alpine
     commands:
-      - |
-        echo "Pipeline falló para rama: ${DRONE_BRANCH}"
-      - |
-        echo "Revisar logs en: ${DRONE_BUILD_LINK}"
-      - |
-        echo "Notificación de fallo enviada a: ${EMAIL_TO}"
+      - "echo 'Pipeline falló para rama: ${DRONE_BRANCH}'"
+      - "echo 'Revisar logs en: ${DRONE_BUILD_LINK}'"
+      - "echo 'Notificación de fallo enviada a: ${EMAIL_TO}'"
     when:
       status:
         - failure
