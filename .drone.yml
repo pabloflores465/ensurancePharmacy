@@ -35,7 +35,7 @@ steps:
         - develop
         - dev
         - qa
-      - feature/*
+        - feature/*
 
   - name: sonarqube-ensurance-backend-analysis-dev
     image: sonarqube/sonar-scanner-cli:latest
