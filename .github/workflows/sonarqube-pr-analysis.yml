@@ -128,7 +128,7 @@ jobs:
             const stateMap = { success: 'success', failure: 'failure', cancelled: 'failure' };
             const state = stateMap['${{ job.status }}'] || 'failure';
             const sha = context.payload.pull_request ? context.payload.pull_request.head.sha : context.sha;
-            await github.repos.createCommitStatus({
+            await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
               repo: context.repo.repo,
               sha,
@@ -260,7 +260,7 @@ jobs:
             const stateMap = { success: 'success', failure: 'failure', cancelled: 'failure' };
             const state = stateMap['${{ job.status }}'] || 'failure';
             const sha = context.payload.pull_request ? context.payload.pull_request.head.sha : context.sha;
-            await github.repos.createCommitStatus({
+            await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
               repo: context.repo.repo,
               sha,
