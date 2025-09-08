@@ -1,6 +1,14 @@
 kind: pipeline
 type: docker
 name: ensurance-pharmacy-pipeline
+platform:
+  os: linux
+  arch: amd64
+
+trigger:
+  event:
+    - push
+    - pull_request
 
 clone:
   disable: false
@@ -27,7 +35,7 @@ steps:
         - develop
         - dev
         - qa
-        - feature/*
+      - feature/*
 
   - name: sonarqube-ensurance-backend-analysis-dev
     image: sonarqube/sonar-scanner-cli:latest
@@ -209,6 +217,7 @@ steps:
       ENVIRONMENT: dev
     commands:
       - echo "Deploy DEV Environment (puertos 3000-3003)"
+      - echo dev > .environment
       - docker-compose -f docker-compose.dev.yml down || true
       - ENVIRONMENT=dev docker-compose -f docker-compose.dev.yml up -d --build
       - sleep 30
@@ -233,6 +242,7 @@ steps:
       ENVIRONMENT: qa
     commands:
       - echo "Deploy QA Environment (puertos 4000-4003)"
+      - echo qa > .environment
       - docker-compose -f docker-compose.qa.yml down || true
       - ENVIRONMENT=qa docker-compose -f docker-compose.qa.yml up -d --build
       - sleep 30
@@ -255,6 +265,7 @@ steps:
       ENVIRONMENT: main
     commands:
       - echo "Deploy MAIN Environment (puertos 5000-5003)"
+      - echo main > .environment
       - docker-compose -f docker-compose.main.yml down || true
       - ENVIRONMENT=main docker-compose -f docker-compose.main.yml up -d --build
       - sleep 30
@@ -272,34 +283,51 @@ steps:
         - main
         - master
 
-  - name: verify-deployment
+  # Verify only the environment that was deployed to avoid pending dependencies
+  - name: verify-deployment-dev
     image: curlimages/curl:latest
     commands:
-      - export ENVIRONMENT=$(cat .environment)
-      - |
-        echo "Verificando deployment en ambiente: $ENVIRONMENT"
-      - |
-        if [ "$ENVIRONMENT" = "dev" ]; then
-          curl -f http://localhost:3000 || echo "Frontend DEV no responde"
-          curl -f http://localhost:3002/api || echo "Backend DEV no responde"
-        elif [ "$ENVIRONMENT" = "qa" ]; then
-          curl -f http://localhost:4000 || echo "Frontend QA no responde"
-          curl -f http://localhost:4002/api || echo "Backend QA no responde"
-        elif [ "$ENVIRONMENT" = "main" ]; then
-          curl -f http://localhost:5000 || echo "Frontend MAIN no responde"
-          curl -f http://localhost:5002/api || echo "Backend MAIN no responde"
-        fi
+      - echo "Verificando deployment en ambiente: DEV"
+      - curl -f http://localhost:3000 || echo "Frontend DEV no responde"
+      - curl -f http://localhost:3002/api || echo "Backend DEV no responde"
+    when:
+      branch:
+        - develop
+        - dev
+        - feature/*
     depends_on:
       - deploy-dev
+
+  - name: verify-deployment-qa
+    image: curlimages/curl:latest
+    commands:
+      - echo "Verificando deployment en ambiente: QA"
+      - curl -f http://localhost:4000 || echo "Frontend QA no responde"
+      - curl -f http://localhost:4002/api || echo "Backend QA no responde"
+    when:
+      branch:
+        - qa
+    depends_on:
       - deploy-qa
+
+  - name: verify-deployment-main
+    image: curlimages/curl:latest
+    commands:
+      - echo "Verificando deployment en ambiente: MAIN"
+      - curl -f http://localhost:5000 || echo "Frontend MAIN no responde"
+      - curl -f http://localhost:5002/api || echo "Backend MAIN no responde"
+    when:
+      branch:
+        - main
+        - master
+    depends_on:
       - deploy-main
 
   - name: notify-success
     image: alpine
     commands:
-      - export ENVIRONMENT=$(cat .environment)
       - |
-        echo "Pipeline completado exitosamente para ambiente: $ENVIRONMENT"
+        echo "Pipeline completado exitosamente para rama: ${DRONE_BRANCH}"
       - |
         echo "Quality Gate: APROBADO"
       - |
@@ -315,9 +343,8 @@ steps:
   - name: notify-failure
     image: alpine
     commands:
-      - export ENVIRONMENT=$(cat .environment)
       - |
-        echo "Pipeline falló para ambiente: $ENVIRONMENT"
+        echo "Pipeline falló para rama: ${DRONE_BRANCH}"
       - |
         echo "Revisar logs en: ${DRONE_BUILD_LINK}"
       - |
