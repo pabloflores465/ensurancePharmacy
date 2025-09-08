@@ -11,6 +11,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+      statuses: write
 
     steps:
       - uses: actions/checkout@v4
@@ -118,12 +119,32 @@ jobs:
             -Dsonar.qualitygate.wait=true
             -Dsonar.qualitygate.timeout=300
 
+      - name: Report required status "SonarQube Ensurance Analysis"
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const stateMap = { success: 'success', failure: 'failure', cancelled: 'failure' };
+            const state = stateMap['${{ job.status }}'] || 'failure';
+            const sha = context.payload.pull_request ? context.payload.pull_request.head.sha : context.sha;
+            await github.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha,
+              state,
+              context: 'SonarQube Ensurance Analysis',
+              description: `SonarQube PR analysis ${state}`,
+              target_url: `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`
+            });
+
   sonarqube-pharmacy-pr-analysis:
     runs-on: ubuntu-latest
     name: SonarQube Pharmacy PR Analysis
     permissions:
       contents: read
       pull-requests: write
+      statuses: write
 
     steps:
       - uses: actions/checkout@v4
@@ -229,6 +250,25 @@ jobs:
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.qualitygate.wait=true
             -Dsonar.qualitygate.timeout=300
+
+      - name: Report required status "SonarQube Pharmacy Analysis"
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const stateMap = { success: 'success', failure: 'failure', cancelled: 'failure' };
+            const state = stateMap['${{ job.status }}'] || 'failure';
+            const sha = context.payload.pull_request ? context.payload.pull_request.head.sha : context.sha;
+            await github.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha,
+              state,
+              context: 'SonarQube Pharmacy Analysis',
+              description: `SonarQube PR analysis ${state}`,
+              target_url: `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`
+            });
 
   notify-pr-status:
     runs-on: ubuntu-latest
