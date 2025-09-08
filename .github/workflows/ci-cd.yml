@@ -118,6 +118,7 @@ jobs:
   sonarqube-ensurance-backend-analysis:
     runs-on: ubuntu-latest
     name: SonarQube Ensurance Backend Analysis
+    if: github.event_name == 'push'
     needs: [test-backend-v4]
     steps:
       - uses: actions/checkout@v4
@@ -157,6 +158,7 @@ jobs:
   sonarqube-ensurance-frontend-analysis:
     runs-on: ubuntu-latest
     name: SonarQube Ensurance Frontend Analysis
+    if: github.event_name == 'push'
     needs: [test-ensurance-frontend]
     steps:
       - uses: actions/checkout@v4
@@ -193,6 +195,7 @@ jobs:
   sonarqube-pharmacy-backend-analysis:
     runs-on: ubuntu-latest
     name: SonarQube Pharmacy Backend Analysis
+    if: github.event_name == 'push'
     needs: [test-backend-v5]
     steps:
       - uses: actions/checkout@v4
@@ -232,6 +235,7 @@ jobs:
   sonarqube-pharmacy-frontend-analysis:
     runs-on: ubuntu-latest
     name: SonarQube Pharmacy Frontend Analysis
+    if: github.event_name == 'push'
     needs: [test-pharmacy-frontend]
     steps:
       - uses: actions/checkout@v4
@@ -275,7 +279,7 @@ jobs:
         sonarqube-pharmacy-backend-analysis,
         sonarqube-pharmacy-frontend-analysis,
       ]
-    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
 
     steps:
       - uses: actions/checkout@v4
@@ -382,7 +386,7 @@ jobs:
             echo "environment=PRODUCTION" >> $GITHUB_OUTPUT
           elif [[ "${{ github.ref }}" == "refs/heads/qa" ]]; then
             echo "environment=QA" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+          elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
             echo "environment=DEVELOPMENT" >> $GITHUB_OUTPUT
           else
             echo "environment=FEATURE" >> $GITHUB_OUTPUT

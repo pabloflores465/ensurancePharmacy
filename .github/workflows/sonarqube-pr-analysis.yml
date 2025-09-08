@@ -50,7 +50,7 @@ jobs:
           mvn -B clean test jacoco:report -f backv5/pom.xml
 
       - name: Run SonarQube Scanner for PR - Ensurance Backend DEV
-        if: github.base_ref == 'develop'
+        if: github.base_ref == 'dev' || github.base_ref == 'develop'
         uses: SonarSource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -104,6 +104,7 @@ jobs:
             -Dsonar.qualitygate.timeout=300
 
       - name: Run SonarQube Analysis - Ensurance Frontend PR
+        if: github.base_ref == 'main' || github.base_ref == 'qa' || github.base_ref == 'dev' || github.base_ref == 'develop'
         uses: SonarSource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -182,7 +183,7 @@ jobs:
           cd pharmacy && npm run test:unit:coverage
 
       - name: Run SonarQube Scanner for PR - Pharmacy Backend DEV
-        if: github.base_ref == 'develop'
+        if: github.base_ref == 'dev' || github.base_ref == 'develop'
         uses: SonarSource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -236,6 +237,7 @@ jobs:
             -Dsonar.qualitygate.timeout=300
 
       - name: Run SonarQube Analysis - Pharmacy Frontend PR
+        if: github.base_ref == 'main' || github.base_ref == 'qa' || github.base_ref == 'dev' || github.base_ref == 'develop'
         uses: SonarSource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
