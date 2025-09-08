@@ -26,13 +26,9 @@ steps:
       - name: maven-cache
         path: /tmp/.m2
     when:
-      branch:
-        - main
-        - master
-        - develop
-        - dev
-        - qa
-        - feature/*
+      event:
+        - push
+        - pull_request
 
   - name: sonarqube-ensurance-backend-analysis-dev
     image: sonarqube/sonar-scanner-cli:latest
