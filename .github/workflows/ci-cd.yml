@@ -143,10 +143,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_TOKEN: ${{ github.ref == 'refs/heads/main' && secrets.ENSURANCE_BACK_MAIN || github.ref == 'refs/heads/qa' && secrets.ENSURANCE_BACK_QA || secrets.ENSURANCE_BACK_DEV }}
         with:
           args: >
             -Dsonar.projectKey=${{ github.ref == 'refs/heads/main' && 'ENSURANCE_BACK_MAIN' || github.ref == 'refs/heads/qa' && 'ENSURANCE_BACK_QA' || 'ENSURANCE_BACK_DEV' }}
-            -Dsonar.token=${{ github.ref == 'refs/heads/main' && secrets.ensurance_back_main || github.ref == 'refs/heads/qa' && secrets.ensurance_back_qa || secrets.ensurance_back_dev }}
             -Dsonar.sources=backv4/src/main
             -Dsonar.tests=backv4/src/test
             -Dsonar.java.binaries=backv4/target/classes
@@ -179,11 +179,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_TOKEN: ${{ github.ref == 'refs/heads/main' && secrets.ENSURANCE_FRONT_MAIN || github.ref == 'refs/heads/qa' && secrets.ENSURANCE_FRONT_QA || secrets.ENSURANCE_FRONT_DEV }}
         with:
           projectBaseDir: ./ensurance
           args: >
             -Dsonar.projectKey=${{ github.ref == 'refs/heads/main' && 'ENSURANCE_FRONT_MAIN' || github.ref == 'refs/heads/qa' && 'ENSURANCE_FRONT_QA' || 'ENSURANCE_FRONT_DEV' }}
-            -Dsonar.token=${{ github.ref == 'refs/heads/main' && secrets.ensurance_front_main || github.ref == 'refs/heads/qa' && secrets.ensurance_front_qa || secrets.ensurance_front_dev }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
@@ -218,10 +218,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_TOKEN: ${{ github.ref == 'refs/heads/main' && secrets.PHARMACY_BACK_MAIN || github.ref == 'refs/heads/qa' && secrets.PHARMACY_BACK_QA || secrets.PHARMACY_BACK_DEV }}
         with:
           args: >
             -Dsonar.projectKey=${{ github.ref == 'refs/heads/main' && 'PHARMACY_BACK_MAIN' || github.ref == 'refs/heads/qa' && 'PHARMACY_BACK_QA' || 'PHARMACY_BACK_DEV' }}
-            -Dsonar.token=${{ github.ref == 'refs/heads/main' && secrets.pharmacy_back_main || github.ref == 'refs/heads/qa' && secrets.pharmacy_back_qa || secrets.pharmacy_back_dev }}
             -Dsonar.sources=backv5/src/main
             -Dsonar.tests=backv5/src/test
             -Dsonar.java.binaries=backv5/target/classes
@@ -254,11 +254,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_TOKEN: ${{ github.ref == 'refs/heads/main' && secrets.PHARMACY_FRONT_MAIN || github.ref == 'refs/heads/qa' && secrets.PHARMACY_FRONT_QA || secrets.PHARMACY_FRONT_DEV }}
         with:
           projectBaseDir: ./pharmacy
           args: >
             -Dsonar.projectKey=${{ github.ref == 'refs/heads/main' && 'PHARMACY_FRONT_MAIN' || github.ref == 'refs/heads/qa' && 'PHARMACY_FRONT_QA' || 'PHARMACY_FRONT_DEV' }}
-            -Dsonar.token=${{ github.ref == 'refs/heads/main' && secrets.pharmacy_front_main || github.ref == 'refs/heads/qa' && secrets.pharmacy_front_qa || secrets.pharmacy_front_dev }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
