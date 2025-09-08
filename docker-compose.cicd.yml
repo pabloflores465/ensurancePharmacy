@@ -7,7 +7,7 @@ services:
     ports:
       - "9000:9000"
     environment:
-      SONAR_WEB_CONTEXT: "/sonnar"
+      SONAR_WEB_CONTEXT: "/sonar"
     volumes:
       - sonarqube_data:/opt/sonarqube/data
       - sonarqube_logs:/opt/sonarqube/logs
@@ -76,11 +76,12 @@ services:
       - DRONE_GITHUB_CLIENT_ID=Ov23liNIJRRkAhUbSDpo
       - DRONE_GITHUB_CLIENT_SECRET=a047db54abd738416570645c9356c9ebe4ae518b
       - DRONE_RPC_SECRET=22dab8c8b09eda98581f60c07344ec32
-      - DRONE_SERVER_HOST=https://macbook-air-de-gp.tail5d54f7.ts.net
+      - DRONE_SERVER_HOST=macbook-air-de-gp.tail5d54f7.ts.net
       - DRONE_SERVER_PROTO=https
       - DRONE_TLS_AUTOCERT=true
       - DRONE_USER_CREATE=username:pabloflores465,admin:true
       - DRONE_USER_FILTER=pabloflores465
+      - DRONE_LOGS_DEBUG=true
     ports:
       - "8000:80"
       - "8443:443"
@@ -94,13 +95,12 @@ services:
     image: drone/drone-runner-docker:1
     container_name: drone-runner
     environment:
-      - DRONE_RPC_HOST=https://macbook-air-de-gp.tail5d54f7.ts.net
+      - DRONE_RPC_HOST=macbook-air-de-gp.tail5d54f7.ts.net
       - DRONE_RPC_PROTO=https
       - DRONE_RPC_SECRET=22dab8c8b09eda98581f60c07344ec32
       - DRONE_RUNNER_NAME=macbook-runner-1
       - DRONE_RUNNER_CAPACITY=2
-      - DRONE_RUNNER_PLATFORM_OS=darwin
-      - DRONE_RUNNER_PLATFORM_ARCH=amd64
+      - DRONE_LOGS_DEBUG=true
     ports:
       - "3010:3000"   # Dashboard del runner (opcional)
     volumes:
