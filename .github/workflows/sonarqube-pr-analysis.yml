@@ -57,7 +57,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.ENSURANCE_BACK_DEV }}
         with:
           args: >
-            -Dsonar.projectKey=ENSURANCE_BACK_DEV
+            -Dsonar.projectKey=ensurance-backend-dev
             -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src
             -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests
             -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes
@@ -75,7 +75,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.ENSURANCE_BACK_QA }}
         with:
           args: >
-            -Dsonar.projectKey=ENSURANCE_BACK_QA
+            -Dsonar.projectKey=ensurance-backend-qa
             -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src
             -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests
             -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes
@@ -93,7 +93,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.ENSURANCE_BACK_MAIN }}
         with:
           args: >
-            -Dsonar.projectKey=ENSURANCE_BACK_MAIN
+            -Dsonar.projectKey=ensurance-backend-main
             -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src
             -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests
             -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes
@@ -111,7 +111,7 @@ jobs:
         with:
           projectBaseDir: ./ensurance
           args: >
-            -Dsonar.projectKey=${{ github.base_ref == 'main' && 'ENSURANCE_FRONT_MAIN' || github.base_ref == 'qa' && 'ENSURANCE_FRONT_QA' || 'ENSURANCE_FRONT_DEV' }}
+            -Dsonar.projectKey=${{ github.base_ref == 'main' && 'ensurance-frontend-main' || github.base_ref == 'qa' && 'ensurance-frontend-qa' || 'ensurance-frontend-dev' }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
@@ -158,12 +158,13 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_TOKEN: ${{ secrets.PHARMACY_BACK_DEV }}
         with:
-          projectBaseDir: ./pharmacy
+          projectBaseDir: ./backv5
           args: >
-            -Dsonar.projectKey=PHARMACY_BACK_DEV
-            -Dsonar.sources=src
-            -Dsonar.tests=tests
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.projectKey=pharmacy-backend-dev
+            -Dsonar.sources=src/main
+            -Dsonar.tests=src/test
+            -Dsonar.java.binaries=target/classes
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
             -Dsonar.qualitygate.wait=true
             -Dsonar.qualitygate.timeout=300
 
@@ -175,12 +176,13 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_TOKEN: ${{ secrets.PHARMACY_BACK_QA }}
         with:
-          projectBaseDir: ./pharmacy
+          projectBaseDir: ./backv5
           args: >
-            -Dsonar.projectKey=PHARMACY_BACK_QA
-            -Dsonar.sources=src
-            -Dsonar.tests=tests
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.projectKey=pharmacy-backend-qa
+            -Dsonar.sources=src/main
+            -Dsonar.tests=src/test
+            -Dsonar.java.binaries=target/classes
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
             -Dsonar.qualitygate.wait=true
             -Dsonar.qualitygate.timeout=300
 
@@ -192,12 +194,13 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_TOKEN: ${{ secrets.PHARMACY_BACK_MAIN }}
         with:
-          projectBaseDir: ./pharmacy
+          projectBaseDir: ./backv5
           args: >
-            -Dsonar.projectKey=PHARMACY_BACK_MAIN
-            -Dsonar.sources=src
-            -Dsonar.tests=tests
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.projectKey=pharmacy-backend-main
+            -Dsonar.sources=src/main
+            -Dsonar.tests=src/test
+            -Dsonar.java.binaries=target/classes
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
             -Dsonar.qualitygate.wait=true
             -Dsonar.qualitygate.timeout=300
 
@@ -210,7 +213,7 @@ jobs:
         with:
           projectBaseDir: ./pharmacy
           args: >
-            -Dsonar.projectKey=${{ github.base_ref == 'main' && 'PHARMACY_FRONT_MAIN' || github.base_ref == 'qa' && 'PHARMACY_FRONT_QA' || 'PHARMACY_FRONT_DEV' }}
+            -Dsonar.projectKey=${{ github.base_ref == 'main' && 'pharmacy-frontend-main' || github.base_ref == 'qa' && 'pharmacy-frontend-qa' || 'pharmacy-frontend-dev' }}
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
