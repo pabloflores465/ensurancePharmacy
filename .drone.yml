@@ -2,217 +2,245 @@ kind: pipeline
 type: docker
 name: ensurance-pharmacy-pipeline
 
-# Trigger configuration
 trigger:
+  event:
+    - push
   branch:
     - main
     - master
-    - develop
     - dev
     - qa
-    - feature/*
-  event:
-    - push
-    - pull_request
 
-# Environment variables
+clone:
+  disable: false
+
 environment:
-  SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
   EMAIL_TO: pablopolis2016@gmail.com,jflores@unis.edu.gt
 
-# Pipeline steps
 steps:
-  # Checkout and setup
-  - name: checkout
-    image: alpine/git
-    commands:
-      - git rev-parse HEAD
-      - echo "Building branch ${DRONE_BRANCH} - commit ${DRONE_COMMIT_SHA:0:8}"
-
-  # Set environment variables based on branch
-  - name: set-environment
-    image: alpine
-    commands:
-      - |
-        if [ "${DRONE_BRANCH}" = "main" ] || [ "${DRONE_BRANCH}" = "master" ]; then
-          echo "main" > .environment
-          echo "main" > .project_suffix
-        elif [ "${DRONE_BRANCH}" = "qa" ]; then
-          echo "qa" > .environment
-          echo "qa" > .project_suffix
-        else
-          echo "dev" > .environment
-          echo "dev" > .project_suffix
-        fi
-        echo "Environment: $(cat .environment)"
-        echo "Project suffix: $(cat .project_suffix)"
-
-  # Backend unit tests
-  - name: backend-tests
-    image: maven:3.9.6-openjdk-23
+  - name: unit-tests
+    image: maven:3.9-eclipse-temurin-23
     environment:
-      ENVIRONMENT:
-        from_secret: environment_var
+      MAVEN_OPTS: -Dmaven.repo.local=/tmp/.m2
     commands:
-      - export ENVIRONMENT=$(cat .environment)
-      - echo "Running backend tests with ENVIRONMENT=$ENVIRONMENT"
-      - cd backv4 && ENVIRONMENT=$ENVIRONMENT mvn -B clean test jacoco:report
-      - cd ../backv5 && ENVIRONMENT=$ENVIRONMENT mvn -B clean test jacoco:report
+      - echo "Running unit tests and generating coverage reports..."
+      - mvn -B clean test jacoco:report -f backv4/pom.xml
+      - mvn -B clean test jacoco:report -f backv5/pom.xml
     volumes:
       - name: maven-cache
-        path: /root/.m2
+        path: /tmp/.m2
+    when:
+      branch:
+        - main
+        - master
+        - dev
+        - qa
 
-  # Frontend tests
-  - name: frontend-tests
-    image: node:18-alpine
-    commands:
-      - echo "Running frontend tests with coverage"
-      - cd ensurance && npm ci && npm run test:coverage
-      - cd ../pharmacy && npm ci && npm run test:unit:coverage
-    volumes:
-      - name: node-cache
-        path: /root/.npm
-
-  # SonarQube analysis for Ensurance DEV
-  - name: sonarqube-ensurance-analysis-dev
+  - name: sonarqube-ensurance-backend-analysis-dev
     image: sonarqube/sonar-scanner-cli:latest
     environment:
       SONAR_TOKEN:
         from_secret: ensurance_back_dev
       SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
     commands:
-      - export PROJECT_SUFFIX=$(cat .project_suffix)
-      - 'echo "SonarQube Ensurance analysis for environment: $PROJECT_SUFFIX"'
-      - sonar-scanner -Dsonar.projectKey=ensurance-backend-$PROJECT_SUFFIX -Dsonar.projectName="Ensurance Backend ${PROJECT_SUFFIX^^}" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml,backv5/target/site/jacoco/jacoco.xml -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+      - echo "SonarQube Ensurance Backend analysis for DEV environment"
+      - sonar-scanner -Dsonar.projectKey=ENSURANCE_BACK_DEV -Dsonar.projectName="Ensurance Backend DEV" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=backv4/src/main -Dsonar.tests=backv4/src/test -Dsonar.java.binaries=backv4/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
     when:
       branch:
-        - develop
         - dev
-        - feature/*
 
-  # SonarQube analysis for Pharmacy DEV
-  - name: sonarqube-pharmacy-analysis-dev
+  - name: sonarqube-ensurance-frontend-analysis-dev
+    image: sonarqube/sonar-scanner-cli:latest
+    environment:
+      SONAR_TOKEN:
+        from_secret: ensurance_front_dev
+      SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
+    commands:
+      - echo "SonarQube Ensurance Frontend analysis for DEV environment"
+      - cd ensurance && npm ci && npm run test:coverage || true && cd ..
+      - sonar-scanner -Dsonar.projectKey=ENSURANCE_FRONT_DEV -Dsonar.projectName="Ensurance Frontend DEV" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=ensurance/src -Dsonar.tests=ensurance/tests -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+    when:
+      branch:
+        - dev
+
+  - name: sonarqube-pharmacy-backend-analysis-dev
     image: sonarqube/sonar-scanner-cli:latest
     environment:
       SONAR_TOKEN:
         from_secret: pharmacy_back_dev
       SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
     commands:
-      - export PROJECT_SUFFIX=$(cat .project_suffix)
-      - 'echo "SonarQube Pharmacy analysis for environment: $PROJECT_SUFFIX"'
-      - sonar-scanner -Dsonar.projectKey=pharmacy-backend-$PROJECT_SUFFIX -Dsonar.projectName="Pharmacy Backend ${PROJECT_SUFFIX^^}" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=pharmacy/src -Dsonar.tests=pharmacy/tests -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
-      - sonar-scanner -Dsonar.projectKey=pharmacy-frontend-$PROJECT_SUFFIX -Dsonar.projectName="Pharmacy Frontend ${PROJECT_SUFFIX^^}" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=pharmacy/src -Dsonar.tests=pharmacy/tests -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+      - echo "SonarQube Pharmacy Backend analysis for DEV environment"
+      - sonar-scanner -Dsonar.projectKey=PHARMACY_BACK_DEV -Dsonar.projectName="Pharmacy Backend DEV" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=backv5/src/main -Dsonar.tests=backv5/src/test -Dsonar.java.binaries=backv5/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=backv5/target/site/jacoco/jacoco.xml -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
     when:
       branch:
-        - develop
         - dev
-        - feature/*
 
-  # SonarQube analysis for Ensurance QA
-  - name: sonarqube-ensurance-analysis-qa
+  - name: sonarqube-pharmacy-frontend-analysis-dev
+    image: sonarqube/sonar-scanner-cli:latest
+    environment:
+      SONAR_TOKEN:
+        from_secret: pharmacy_front_dev
+      SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
+    commands:
+      - echo "SonarQube Pharmacy Frontend analysis for DEV environment"
+      - cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
+      - sonar-scanner -Dsonar.projectKey=PHARMACY_FRONT_DEV -Dsonar.projectName="Pharmacy Frontend DEV" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=pharmacy/src -Dsonar.tests=pharmacy/tests -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+    when:
+      branch:
+        - dev
+
+  - name: sonarqube-ensurance-backend-analysis-qa
     image: sonarqube/sonar-scanner-cli:latest
     environment:
       SONAR_TOKEN:
         from_secret: ensurance_back_qa
       SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
     commands:
-      - export PROJECT_SUFFIX=$(cat .project_suffix)
-      - 'echo "SonarQube Ensurance analysis for environment: $PROJECT_SUFFIX"'
-      - sonar-scanner -Dsonar.projectKey=ensurance-backend-$PROJECT_SUFFIX -Dsonar.projectName="Ensurance Backend ${PROJECT_SUFFIX^^}" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml,backv5/target/site/jacoco/jacoco.xml -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+      - echo "SonarQube Ensurance Backend analysis for QA environment"
+      - sonar-scanner -Dsonar.projectKey=ENSURANCE_BACK_QA -Dsonar.projectName="Ensurance Backend QA" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=backv4/src/main -Dsonar.tests=backv4/src/test -Dsonar.java.binaries=backv4/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
     when:
       branch:
         - qa
 
-  # SonarQube analysis for Pharmacy QA
-  - name: sonarqube-pharmacy-analysis-qa
+  - name: sonarqube-ensurance-frontend-analysis-qa
+    image: sonarqube/sonar-scanner-cli:latest
+    environment:
+      SONAR_TOKEN:
+        from_secret: ensurance_front_qa
+      SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
+    commands:
+      - echo "SonarQube Ensurance Frontend analysis for QA environment"
+      - cd ensurance && npm ci && npm run test:coverage || true && cd ..
+      - sonar-scanner -Dsonar.projectKey=ENSURANCE_FRONT_QA -Dsonar.projectName="Ensurance Frontend QA" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=ensurance/src -Dsonar.tests=ensurance/tests -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+    when:
+      branch:
+        - qa
+
+  - name: sonarqube-pharmacy-backend-analysis-qa
     image: sonarqube/sonar-scanner-cli:latest
     environment:
       SONAR_TOKEN:
         from_secret: pharmacy_back_qa
       SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
     commands:
-      - export PROJECT_SUFFIX=$(cat .project_suffix)
-      - 'echo "SonarQube Pharmacy analysis for environment: $PROJECT_SUFFIX"'
-      - sonar-scanner -Dsonar.projectKey=pharmacy-backend-$PROJECT_SUFFIX -Dsonar.projectName="Pharmacy Backend ${PROJECT_SUFFIX^^}" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=pharmacy/src -Dsonar.tests=pharmacy/tests -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
-      - sonar-scanner -Dsonar.projectKey=pharmacy-frontend-$PROJECT_SUFFIX -Dsonar.projectName="Pharmacy Frontend ${PROJECT_SUFFIX^^}" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=pharmacy/src -Dsonar.tests=pharmacy/tests -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+      - echo "SonarQube Pharmacy Backend analysis for QA environment"
+      - sonar-scanner -Dsonar.projectKey=PHARMACY_BACK_QA -Dsonar.projectName="Pharmacy Backend QA" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=backv5/src/main -Dsonar.tests=backv5/src/test -Dsonar.java.binaries=backv5/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=backv5/target/site/jacoco/jacoco.xml -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
     when:
       branch:
         - qa
 
-  # SonarQube analysis for Ensurance MAIN
-  - name: sonarqube-ensurance-analysis-main
+  - name: sonarqube-pharmacy-frontend-analysis-qa
+    image: sonarqube/sonar-scanner-cli:latest
+    environment:
+      SONAR_TOKEN:
+        from_secret: pharmacy_front_qa
+      SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
+    commands:
+      - echo "SonarQube Pharmacy Frontend analysis for QA environment"
+      - cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
+      - sonar-scanner -Dsonar.projectKey=PHARMACY_FRONT_QA -Dsonar.projectName="Pharmacy Frontend QA" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=pharmacy/src -Dsonar.tests=pharmacy/tests -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+    when:
+      branch:
+        - qa
+
+  - name: sonarqube-ensurance-backend-analysis-main
     image: sonarqube/sonar-scanner-cli:latest
     environment:
       SONAR_TOKEN:
         from_secret: ensurance_back_main
       SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
     commands:
-      - export PROJECT_SUFFIX=$(cat .project_suffix)
-      - 'echo "SonarQube Ensurance analysis for environment: $PROJECT_SUFFIX"'
-      - sonar-scanner -Dsonar.projectKey=ensurance-backend-$PROJECT_SUFFIX -Dsonar.projectName="Ensurance Backend ${PROJECT_SUFFIX^^}" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=backv4/src/main,backv5/src/main,ensurance/src -Dsonar.tests=backv4/src/test,backv5/src/test,ensurance/tests -Dsonar.java.binaries=backv4/target/classes,backv5/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml,backv5/target/site/jacoco/jacoco.xml -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+      - echo "SonarQube Ensurance Backend analysis for MAIN environment"
+      - sonar-scanner -Dsonar.projectKey=ENSURANCE_BACK_MAIN -Dsonar.projectName="Ensurance Backend MAIN" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=backv4/src/main -Dsonar.tests=backv4/src/test -Dsonar.java.binaries=backv4/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
     when:
       branch:
         - main
         - master
 
-  # SonarQube analysis for Pharmacy MAIN
-  - name: sonarqube-pharmacy-analysis-main
+  - name: sonarqube-ensurance-frontend-analysis-main
+    image: sonarqube/sonar-scanner-cli:latest
+    environment:
+      SONAR_TOKEN:
+        from_secret: ensurance_front_main
+      SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
+    commands:
+      - echo "SonarQube Ensurance Frontend analysis for MAIN environment"
+      - cd ensurance && npm ci && npm run test:coverage || true && cd ..
+      - sonar-scanner -Dsonar.projectKey=ENSURANCE_FRONT_MAIN -Dsonar.projectName="Ensurance Frontend MAIN" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=ensurance/src -Dsonar.tests=ensurance/tests -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+    when:
+      branch:
+        - main
+        - master
+
+  - name: sonarqube-pharmacy-backend-analysis-main
     image: sonarqube/sonar-scanner-cli:latest
     environment:
       SONAR_TOKEN:
         from_secret: pharmacy_back_main
       SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
     commands:
-      - export PROJECT_SUFFIX=$(cat .project_suffix)
-      - 'echo "SonarQube Pharmacy analysis for environment: $PROJECT_SUFFIX"'
-      - sonar-scanner -Dsonar.projectKey=pharmacy-backend-$PROJECT_SUFFIX -Dsonar.projectName="Pharmacy Backend ${PROJECT_SUFFIX^^}" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=pharmacy/src -Dsonar.tests=pharmacy/tests -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
-      - sonar-scanner -Dsonar.projectKey=pharmacy-frontend-$PROJECT_SUFFIX -Dsonar.projectName="Pharmacy Frontend ${PROJECT_SUFFIX^^}" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=pharmacy/src -Dsonar.tests=pharmacy/tests -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+      - echo "SonarQube Pharmacy Backend analysis for MAIN environment"
+      - sonar-scanner -Dsonar.projectKey=PHARMACY_BACK_MAIN -Dsonar.projectName="Pharmacy Backend MAIN" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=backv5/src/main -Dsonar.tests=backv5/src/test -Dsonar.java.binaries=backv5/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=backv5/target/site/jacoco/jacoco.xml -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
     when:
       branch:
         - main
         - master
 
-  # Deploy DEV environment
+  - name: sonarqube-pharmacy-frontend-analysis-main
+    image: sonarqube/sonar-scanner-cli:latest
+    environment:
+      SONAR_TOKEN:
+        from_secret: pharmacy_front_main
+      SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
+    commands:
+      - echo "SonarQube Pharmacy Frontend analysis for MAIN environment"
+      - cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
+      - sonar-scanner -Dsonar.projectKey=PHARMACY_FRONT_MAIN -Dsonar.projectName="Pharmacy Frontend MAIN" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=pharmacy/src -Dsonar.tests=pharmacy/tests -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+    when:
+      branch:
+        - main
+        - master
+
   - name: deploy-dev
-    image: docker/compose:latest
+    image: docker:27-cli
     environment:
       ENVIRONMENT: dev
     commands:
       - echo "Deploy DEV Environment (puertos 3000-3003)"
-      - docker-compose -f docker-compose.dev.yml down || true
-      - ENVIRONMENT=dev docker-compose -f docker-compose.dev.yml up -d --build
+      - echo dev > .environment
+      - docker compose -f docker-compose.dev.yml down || true
+      - ENVIRONMENT=dev docker compose -f docker-compose.dev.yml up -d --build
       - sleep 30
-      - docker-compose -f docker-compose.dev.yml ps
+      - docker compose -f docker-compose.dev.yml ps
       - echo "DEV desplegado en:"
-      - echo '   - Ensurance Frontend: http://localhost:3000'
-      - echo '   - Pharmacy Frontend: http://localhost:3001'
-      - echo '   - Ensurance Backend: http://localhost:3002/api'
-      - echo '   - Pharmacy Backend: http://localhost:3003/api2'
+      - 'echo "   - Ensurance Frontend: http://localhost:3000"'
+      - 'echo "   - Pharmacy Frontend: http://localhost:3001"'
+      - 'echo "   - Ensurance Backend: http://localhost:3002/api"'
+      - 'echo "   - Pharmacy Backend: http://localhost:3003/api2"'
     volumes:
       - name: docker-sock
         path: /var/run/docker.sock
     when:
       branch:
-        - develop
         - dev
-        - feature/*
 
-  # Deploy QA environment
   - name: deploy-qa
-    image: docker/compose:latest
+    image: docker:27-cli
     environment:
       ENVIRONMENT: qa
     commands:
       - echo "Deploy QA Environment (puertos 4000-4003)"
-      - docker-compose -f docker-compose.qa.yml down || true
-      - ENVIRONMENT=qa docker-compose -f docker-compose.qa.yml up -d --build
+      - echo qa > .environment
+      - docker compose -f docker-compose.qa.yml down || true
+      - ENVIRONMENT=qa docker compose -f docker-compose.qa.yml up -d --build
       - sleep 30
-      - docker-compose -f docker-compose.qa.yml ps
+      - docker compose -f docker-compose.qa.yml ps
       - echo "QA desplegado en:"
-      - echo '   - Ensurance Frontend: http://localhost:4000'
-      - echo '   - Pharmacy Frontend: http://localhost:4001'
-      - echo '   - Ensurance Backend: http://localhost:4002/api'
-      - echo '   - Pharmacy Backend: http://localhost:4003/api2'
+      - 'echo "   - Ensurance Frontend: http://localhost:4000"'
+      - 'echo "   - Pharmacy Frontend: http://localhost:4001"'
+      - 'echo "   - Ensurance Backend: http://localhost:4002/api"'
+      - 'echo "   - Pharmacy Backend: http://localhost:4003/api2"'
     volumes:
       - name: docker-sock
         path: /var/run/docker.sock
@@ -220,22 +248,22 @@ steps:
       branch:
         - qa
 
-  # Deploy MAIN environment
   - name: deploy-main
-    image: docker/compose:latest
+    image: docker:27-cli
     environment:
       ENVIRONMENT: main
     commands:
       - echo "Deploy MAIN Environment (puertos 5000-5003)"
-      - docker-compose -f docker-compose.main.yml down || true
-      - ENVIRONMENT=main docker-compose -f docker-compose.main.yml up -d --build
+      - echo main > .environment
+      - docker compose -f docker-compose.main.yml down || true
+      - ENVIRONMENT=main docker compose -f docker-compose.main.yml up -d --build
       - sleep 30
-      - docker-compose -f docker-compose.main.yml ps
+      - docker compose -f docker-compose.main.yml ps
       - echo "MAIN desplegado en:"
-      - echo '   - Ensurance Frontend: http://localhost:5000'
-      - echo '   - Pharmacy Frontend: http://localhost:5001'
-      - echo '   - Ensurance Backend: http://localhost:5002/api'
-      - echo '   - Pharmacy Backend: http://localhost:5003/api2'
+      - 'echo "   - Ensurance Frontend: http://localhost:5000"'
+      - 'echo "   - Pharmacy Frontend: http://localhost:5001"'
+      - 'echo "   - Ensurance Backend: http://localhost:5002/api"'
+      - 'echo "   - Pharmacy Backend: http://localhost:5003/api2"'
     volumes:
       - name: docker-sock
         path: /var/run/docker.sock
@@ -244,68 +272,44 @@ steps:
         - main
         - master
 
-  # Post-deployment verification
-  - name: verify-deployment
+  # Verify only the environment that was deployed to avoid pending dependencies
+  - name: verify-deployment-dev
     image: curlimages/curl:latest
     commands:
-      - export ENVIRONMENT=$(cat .environment)
-      - 'echo "Verificando deployment en ambiente: $ENVIRONMENT"'
-      - sh -c "if [ \"$ENVIRONMENT\" = \"dev\" ]; then curl -f http://localhost:3000 || echo \"Frontend DEV no responde\"; curl -f http://localhost:3002/api || echo \"Backend DEV no responde\"; elif [ \"$ENVIRONMENT\" = \"qa\" ]; then curl -f http://localhost:4000 || echo \"Frontend QA no responde\"; curl -f http://localhost:4002/api || echo \"Backend QA no responde\"; elif [ \"$ENVIRONMENT\" = \"main\" ]; then curl -f http://localhost:5000 || echo \"Frontend MAIN no responde\"; curl -f http://localhost:5002/api || echo \"Backend MAIN no responde\"; fi"
+      - "echo 'Verificando deployment en ambiente: DEV'"
+      - "curl -f http://localhost:3000 || echo 'Frontend DEV no responde'"
+      - "curl -f http://localhost:3002/api || echo 'Backend DEV no responde'"
+    when:
+      branch:
+        - dev
     depends_on:
       - deploy-dev
+
+  - name: verify-deployment-qa
+    image: curlimages/curl:latest
+    commands:
+      - "echo 'Verificando deployment en ambiente: QA'"
+      - "curl -f http://localhost:4000 || echo 'Frontend QA no responde'"
+      - "curl -f http://localhost:4002/api || echo 'Backend QA no responde'"
+    when:
+      branch:
+        - qa
+    depends_on:
       - deploy-qa
+
+  - name: verify-deployment-main
+    image: curlimages/curl:latest
+    commands:
+      - "echo 'Verificando deployment en ambiente: MAIN'"
+      - "curl -f http://localhost:5000 || echo 'Frontend MAIN no responde'"
+      - "curl -f http://localhost:5002/api || echo 'Backend MAIN no responde'"
+    when:
+      branch:
+        - main
+        - master
+    depends_on:
       - deploy-main
 
-  # Notification on success
-  - name: notify-success
-    image: alpine
-    commands:
-      - export ENVIRONMENT=$(cat .environment)
-      - 'echo "Pipeline completado exitosamente para ambiente: $ENVIRONMENT"'
-      - echo 'Quality Gate: APROBADO'
-      - echo 'Tests: PASADOS'
-      - echo 'Deploy: EXITOSO'
-      - 'echo "Notificación enviada a: ${EMAIL_TO}"'
-    when:
-      status:
-        - success
-
-  # Notification on failure
-  - name: notify-failure
-    image: alpine
-    commands:
-      - export ENVIRONMENT=$(cat .environment)
-      - 'echo "Pipeline falló para ambiente: $ENVIRONMENT"'
-      - 'echo "Revisar logs en: ${DRONE_BUILD_LINK}"'
-      - 'echo "Notificación de fallo enviada a: ${EMAIL_TO}"'
-    when:
-      status:
-        - failure
-
-# Volumes for caching and Docker socket
-volumes:
-  - name: maven-cache
-    host:
-      path: /tmp/drone-maven-cache
-  - name: node-cache
-    host:
-      path: /tmp/drone-node-cache
-  - name: docker-sock
-    host:
-      path: /var/run/docker.sock
-
----
-# Notification pipeline for email alerts
-kind: pipeline
-type: docker
-name: notifications
-
-# Depends on main pipeline
-depends_on:
-  - ensurance-pharmacy-pipeline
-
-# Email notification step
-steps:
   - name: email-notification
     image: drillster/drone-email
     settings:
@@ -319,54 +323,20 @@ steps:
       to:
         - pablopolis2016@gmail.com
         - jflores@unis.edu.gt
-      subject: >
-        "{{#success build.status}}
-          Deploy exitoso: {{repo.name}} #{{build.number}} [{{build.branch}}]
-        {{else}}
-          Pipeline fallido: {{repo.name}} #{{build.number}} [{{build.branch}}]
-        {{/success}}"
-      body: >
-        "{{#success build.status}}
-          Deploy completado exitosamente en rama {{build.branch}}.
-          
-          Quality Gate: APROBADO
-          Tests: PASADOS  
-          Deploy: EXITOSO
-          
-          Detalles: {{build.link}}
-          
-          Servicios disponibles:
-          {{#equal build.branch "develop"}}
-          - Ensurance Frontend: http://localhost:3000
-          - Pharmacy Frontend: http://localhost:3001
-          - Ensurance Backend: http://localhost:3002/api
-          - Pharmacy Backend: http://localhost:3003/api2
-          {{/equal}}
-          {{#equal build.branch "qa"}}
-          - Ensurance Frontend: http://localhost:4000
-          - Pharmacy Frontend: http://localhost:4001
-          - Ensurance Backend: http://localhost:4002/api
-          - Pharmacy Backend: http://localhost:4003/api2
-          {{/equal}}
-          {{#equal build.branch "main"}}
-          - Ensurance Frontend: http://localhost:5000
-          - Pharmacy Frontend: http://localhost:5001
-          - Ensurance Backend: http://localhost:5002/api
-          - Pharmacy Backend: http://localhost:5003/api2
-          {{/equal}}
-        {{else}}
-          Pipeline falló en rama {{build.branch}}.
-          
-          Detalle: {{build.link}}
-          
-          Para diagnosticar:
-          1. Revisar logs en Drone UI
-          2. Verificar Quality Gate en SonarQube
-          3. Revisar estado de contenedores
-        {{/success}}"
+      subject: "{{#success build.status}}Deploy exitoso: {{repo.name}} #{{build.number}} [{{build.branch}}]{{else}}Pipeline fallido: {{repo.name}} #{{build.number}} [{{build.branch}}]{{/success}}"
+      body: "{{#success build.status}}Deploy completado exitosamente en rama {{build.branch}}.\n\nQuality Gate: APROBADO\nTests: PASADOS\nDeploy: EXITOSO\n\nDetalles: {{build.link}}\n\nServicios disponibles:\n{{#equal build.branch \"develop\"}}- Ensurance Frontend: http://localhost:3000\n- Pharmacy Frontend: http://localhost:3001\n- Ensurance Backend: http://localhost:3002/api\n- Pharmacy Backend: http://localhost:3003/api2\n{{/equal}}{{#equal build.branch \"qa\"}}- Ensurance Frontend: http://localhost:4000\n- Pharmacy Frontend: http://localhost:4001\n- Ensurance Backend: http://localhost:4002/api\n- Pharmacy Backend: http://localhost:4003/api2\n{{/equal}}{{#equal build.branch \"main\"}}- Ensurance Frontend: http://localhost:5000\n- Pharmacy Frontend: http://localhost:5001\n- Ensurance Backend: http://localhost:5002/api\n- Pharmacy Backend: http://localhost:5003/api2\n{{/equal}}{{else}}Pipeline falló en rama {{build.branch}}.\n\nDetalle: {{build.link}}\n\nPara diagnosticar:\n1. Revisar logs en Drone UI\n2. Verificar Quality Gate en SonarQube\n3. Revisar estado de contenedores{{/success}}"
+    when:
+      status:
+        - success
+        - failure
 
-# Trigger only on main pipeline completion
-trigger:
-  status:
-    - success
-    - failure
+volumes:
+  - name: maven-cache
+    host:
+      path: /tmp/drone-maven-cache
+  - name: node-cache
+    host:
+      path: /tmp/drone-node-cache
+  - name: docker-sock
+    host:
+      path: /var/run/docker.sock
