@@ -106,26 +106,18 @@ COPY --from=pharmacy-frontend-build /app/pharmacy/dist /app/pharmacy-frontend/
 
 # Copy built backends
 COPY --from=ensurance-backend-build /app/backv4/target/*.jar /app/ensurance-backend/
-COPY --from=ensurance-backend-build /app/backv4/sqlite/ /app/databases/ensurance/
 COPY --from=pharmacy-backend-build /app/backv5/target/*.jar /app/pharmacy-backend/
-COPY --from=pharmacy-backend-build /app/backv5/sqlite/ /app/databases/pharmacy/
+
+# Copy SQL seed files to a non-mounted path so we can initialize volumes at runtime
+RUN mkdir -p /app/seed-sql/ensurance /app/seed-sql/pharmacy
+COPY --from=ensurance-backend-build /app/backv4/sqlite/ /app/seed-sql/ensurance/
+COPY --from=pharmacy-backend-build /app/backv5/sqlite/ /app/seed-sql/pharmacy/
 
 # Copy backend dependencies and configurations
 COPY --from=ensurance-backend-build /app/backv4/src/main/resources/ /app/ensurance-backend/resources/
 COPY --from=pharmacy-backend-build /app/backv5/src/main/resources/ /app/pharmacy-backend/resources/
 
-# Setup SQLite databases
-RUN cd /app/databases/ensurance && \
-    if [ ! -f USUARIO.sqlite ]; then \
-        sqlite3 USUARIO.sqlite < 01_initial_schema.sql; \
-        sqlite3 USUARIO.sqlite < 02_add_missing_tables.sql; \
-    fi
-
-RUN cd /app/databases/pharmacy && \
-    if [ ! -f USUARIO.sqlite ]; then \
-        sqlite3 USUARIO.sqlite < 01_initial_schema.sql; \
-        sqlite3 USUARIO.sqlite < 02_add_missing_columns.sql; \
-    fi
+# Database initialization moved to start.sh to support named volumes
 
 # Configure Nginx for serving frontends
 RUN mkdir -p /etc/nginx/conf.d
@@ -205,7 +197,7 @@ environment=SERVER_HOST="0.0.0.0",SERVER_PORT="8082"
 EOF
 
 # Create startup script
-COPY <<EOF /app/start.sh
+COPY <<'EOF' /app/start.sh
 #!/bin/sh
 set -e
 
@@ -214,6 +206,31 @@ echo "Ensurance Frontend: http://localhost:5175"
 echo "Pharmacy Frontend: http://localhost:8089"
 echo "Ensurance Backend: http://localhost:8081"
 echo "Pharmacy Backend: http://localhost:8082"
+
+# Ensure database directories exist
+mkdir -p /app/databases/ensurance /app/databases/pharmacy || true
+
+# Initialize Ensurance DB if missing
+if [ ! -f /app/databases/ensurance/USUARIO.sqlite ]; then
+  echo "Initializing Ensurance SQLite database..."
+  if [ -f /app/seed-sql/ensurance/01_initial_schema.sql ]; then
+    sqlite3 /app/databases/ensurance/USUARIO.sqlite < /app/seed-sql/ensurance/01_initial_schema.sql || true
+  fi
+  if [ -f /app/seed-sql/ensurance/02_add_missing_tables.sql ]; then
+    sqlite3 /app/databases/ensurance/USUARIO.sqlite < /app/seed-sql/ensurance/02_add_missing_tables.sql || true
+  fi
+fi
+
+# Initialize Pharmacy DB if missing
+if [ ! -f /app/databases/pharmacy/USUARIO.sqlite ]; then
+  echo "Initializing Pharmacy SQLite database..."
+  if [ -f /app/seed-sql/pharmacy/01_initial_schema.sql ]; then
+    sqlite3 /app/databases/pharmacy/USUARIO.sqlite < /app/seed-sql/pharmacy/01_initial_schema.sql || true
+  fi
+  if [ -f /app/seed-sql/pharmacy/02_add_missing_columns.sql ]; then
+    sqlite3 /app/databases/pharmacy/USUARIO.sqlite < /app/seed-sql/pharmacy/02_add_missing_columns.sql || true
+  fi
+fi
 
 # Start supervisor
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf

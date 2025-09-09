@@ -286,9 +286,14 @@ steps:
   - name: verify-deployment-dev
     image: curlimages/curl:latest
     commands:
-      - "echo 'Verificando deployment en ambiente: DEV'"
-      - "curl -f http://localhost:3000 || echo 'Frontend DEV no responde'"
-      - "curl -f http://localhost:3002/api || echo 'Backend DEV no responde'"
+      - |
+        echo 'Verificando deployment en ambiente: DEV'
+        for i in 1 2 3 4 5; do
+          if curl -fsS http://localhost:3000 > /dev/null; then echo 'Frontend DEV OK'; break; else echo "Frontend intento $i falló"; sleep 5; fi
+        done
+        for i in 1 2 3 4 5; do
+          if curl -fsS http://localhost:3002/api > /dev/null; then echo 'Backend DEV OK'; break; else echo "Backend intento $i falló"; sleep 5; fi
+        done
     when:
       event:
         - push
@@ -300,9 +305,14 @@ steps:
   - name: verify-deployment-qa
     image: curlimages/curl:latest
     commands:
-      - "echo 'Verificando deployment en ambiente: QA'"
-      - "curl -f http://localhost:4000 || echo 'Frontend QA no responde'"
-      - "curl -f http://localhost:4002/api || echo 'Backend QA no responde'"
+      - |
+        echo 'Verificando deployment en ambiente: QA'
+        for i in 1 2 3 4 5; do
+          if curl -fsS http://localhost:4000 > /dev/null; then echo 'Frontend QA OK'; break; else echo "Frontend intento $i falló"; sleep 5; fi
+        done
+        for i in 1 2 3 4 5; do
+          if curl -fsS http://localhost:4002/api > /dev/null; then echo 'Backend QA OK'; break; else echo "Backend intento $i falló"; sleep 5; fi
+        done
     when:
       event:
         - push
@@ -314,9 +324,14 @@ steps:
   - name: verify-deployment-main
     image: curlimages/curl:latest
     commands:
-      - "echo 'Verificando deployment en ambiente: MAIN'"
-      - "curl -f http://localhost:5000 || echo 'Frontend MAIN no responde'"
-      - "curl -f http://localhost:5002/api || echo 'Backend MAIN no responde'"
+      - |
+        echo 'Verificando deployment en ambiente: MAIN'
+        for i in 1 2 3 4 5; do
+          if curl -fsS http://localhost:5000 > /dev/null; then echo 'Frontend MAIN OK'; break; else echo "Frontend intento $i falló"; sleep 5; fi
+        done
+        for i in 1 2 3 4 5; do
+          if curl -fsS http://localhost:5002/api > /dev/null; then echo 'Backend MAIN OK'; break; else echo "Backend intento $i falló"; sleep 5; fi
+        done
     when:
       event:
         - push
