@@ -5,6 +5,7 @@ name: ensurance-pharmacy-pipeline
 trigger:
   event:
     - push
+    - pull_request
   branch:
     - main
     - master
@@ -222,6 +223,8 @@ steps:
       - name: docker-sock
         path: /var/run/docker.sock
     when:
+      event:
+        - push
       branch:
         - dev
 
@@ -245,6 +248,8 @@ steps:
       - name: docker-sock
         path: /var/run/docker.sock
     when:
+      event:
+        - push
       branch:
         - qa
 
@@ -268,6 +273,8 @@ steps:
       - name: docker-sock
         path: /var/run/docker.sock
     when:
+      event:
+        - push
       branch:
         - main
         - master
@@ -280,6 +287,8 @@ steps:
       - "curl -f http://localhost:3000 || echo 'Frontend DEV no responde'"
       - "curl -f http://localhost:3002/api || echo 'Backend DEV no responde'"
     when:
+      event:
+        - push
       branch:
         - dev
     depends_on:
@@ -292,6 +301,8 @@ steps:
       - "curl -f http://localhost:4000 || echo 'Frontend QA no responde'"
       - "curl -f http://localhost:4002/api || echo 'Backend QA no responde'"
     when:
+      event:
+        - push
       branch:
         - qa
     depends_on:
@@ -304,6 +315,8 @@ steps:
       - "curl -f http://localhost:5000 || echo 'Frontend MAIN no responde'"
       - "curl -f http://localhost:5002/api || echo 'Backend MAIN no responde'"
     when:
+      event:
+        - push
       branch:
         - main
         - master
@@ -324,7 +337,7 @@ steps:
         - pablopolis2016@gmail.com
         - jflores@unis.edu.gt
       subject: "{{#success build.status}}Deploy exitoso: {{repo.name}} #{{build.number}} [{{build.branch}}]{{else}}Pipeline fallido: {{repo.name}} #{{build.number}} [{{build.branch}}]{{/success}}"
-      body: "{{#success build.status}}Deploy completado exitosamente en rama {{build.branch}}.\n\nQuality Gate: APROBADO\nTests: PASADOS\nDeploy: EXITOSO\n\nDetalles: {{build.link}}\n\nServicios disponibles:\n{{#equal build.branch \"develop\"}}- Ensurance Frontend: http://localhost:3000\n- Pharmacy Frontend: http://localhost:3001\n- Ensurance Backend: http://localhost:3002/api\n- Pharmacy Backend: http://localhost:3003/api2\n{{/equal}}{{#equal build.branch \"qa\"}}- Ensurance Frontend: http://localhost:4000\n- Pharmacy Frontend: http://localhost:4001\n- Ensurance Backend: http://localhost:4002/api\n- Pharmacy Backend: http://localhost:4003/api2\n{{/equal}}{{#equal build.branch \"main\"}}- Ensurance Frontend: http://localhost:5000\n- Pharmacy Frontend: http://localhost:5001\n- Ensurance Backend: http://localhost:5002/api\n- Pharmacy Backend: http://localhost:5003/api2\n{{/equal}}{{else}}Pipeline falló en rama {{build.branch}}.\n\nDetalle: {{build.link}}\n\nPara diagnosticar:\n1. Revisar logs en Drone UI\n2. Verificar Quality Gate en SonarQube\n3. Revisar estado de contenedores{{/success}}"
+      body: "{{#success build.status}}Deploy completado exitosamente en rama {{build.branch}}.\n\nQuality Gate: APROBADO\nTests: PASADOS\nDeploy: EXITOSO\n\nDetalles: {{build.link}}\n\nServicios disponibles:\n{{#equal build.branch \"dev\"}}- Ensurance Frontend: http://localhost:3000\n- Pharmacy Frontend: http://localhost:3001\n- Ensurance Backend: http://localhost:3002/api\n- Pharmacy Backend: http://localhost:3003/api2\n{{/equal}}{{#equal build.branch \"qa\"}}- Ensurance Frontend: http://localhost:4000\n- Pharmacy Frontend: http://localhost:4001\n- Ensurance Backend: http://localhost:4002/api\n- Pharmacy Backend: http://localhost:4003/api2\n{{/equal}}{{#equal build.branch \"main\"}}- Ensurance Frontend: http://localhost:5000\n- Pharmacy Frontend: http://localhost:5001\n- Ensurance Backend: http://localhost:5002/api\n- Pharmacy Backend: http://localhost:5003/api2\n{{/equal}}{{else}}Pipeline falló en rama {{build.branch}}.\n\nDetalle: {{build.link}}\n\nPara diagnosticar:\n1. Revisar logs en Drone UI\n2. Verificar Quality Gate en SonarQube\n3. Revisar estado de contenedores{{/success}}"
     when:
       status:
         - success
