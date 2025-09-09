@@ -36,19 +36,24 @@ RUN npm run build
 FROM eclipse-temurin:24-jdk-alpine AS ensurance-backend-build
 WORKDIR /app/backv4
 RUN apk add --no-cache maven
+# Harden Maven network settings (TLS + retries)
+ENV MAVEN_OPTS="-Dhttps.protocols=TLSv1.2,TLSv1.3 -Dmaven.wagon.http.retryHandler.count=5 -Dmaven.wagon.http.pool=false"
 COPY backv4/pom.xml ./
-RUN mvn dependency:go-offline -B
+# Retry go-offline to mitigate transient TLS/handshake issues
+RUN set -eux; for i in 1 2 3; do mvn -B dependency:go-offline && break || sleep 5; done
 COPY backv4/ ./
-RUN mvn clean package -DskipTests -B
+# Retry package as well (downloads may still be needed)
+RUN set -eux; for i in 1 2 3; do mvn -B -DskipTests clean package && break || sleep 5; done
 
 # Stage 4: Build Pharmacy Backend (BackV5)
 FROM eclipse-temurin:24-jdk-alpine AS pharmacy-backend-build
 WORKDIR /app/backv5
 RUN apk add --no-cache maven
+ENV MAVEN_OPTS="-Dhttps.protocols=TLSv1.2,TLSv1.3 -Dmaven.wagon.http.retryHandler.count=5 -Dmaven.wagon.http.pool=false"
 COPY backv5/pom.xml ./
-RUN mvn dependency:go-offline -B
+RUN set -eux; for i in 1 2 3; do mvn -B dependency:go-offline && break || sleep 5; done
 COPY backv5/ ./
-RUN mvn clean package -DskipTests -B
+RUN set -eux; for i in 1 2 3; do mvn -B -DskipTests clean package && break || sleep 5; done
 
 # Stage 5: Runtime Environment
 FROM eclipse-temurin:24-jre-alpine AS runtime
