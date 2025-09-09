@@ -6,10 +6,11 @@
 # ============================================================================
 
 # Stage 1: Build Ensurance Frontend
-FROM node:23-alpine3.20 AS ensurance-frontend-build
+FROM node:20-alpine AS ensurance-frontend-build
 WORKDIR /app/ensurance
 COPY ensurance/package*.json ./
-RUN npm ci --only=production
+# Install full deps (dev needed for build tools like vite)
+RUN npm ci
 COPY ensurance/ ./
 # Create .env file with localhost configuration
 RUN echo "VITE_IP=localhost" > .env && \
@@ -18,10 +19,11 @@ RUN echo "VITE_IP=localhost" > .env && \
 RUN npm run build
 
 # Stage 2: Build Pharmacy Frontend
-FROM node:23-alpine3.20 AS pharmacy-frontend-build
+FROM node:20-alpine AS pharmacy-frontend-build
 WORKDIR /app/pharmacy
 COPY pharmacy/package*.json ./
-RUN npm ci --only=production
+# Install full deps (dev needed for build tools like vue-cli-service)
+RUN npm ci
 COPY pharmacy/ ./
 # Create .env file with localhost configuration
 RUN echo "VUE_APP_API_HOST=localhost" > .env && \
