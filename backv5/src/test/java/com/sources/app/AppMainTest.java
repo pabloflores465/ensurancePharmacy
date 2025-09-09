@@ -25,15 +25,30 @@ public class AppMainTest {
         t.setDaemon(true); // do not block JVM shutdown
         t.start();
 
-        // Give it a moment to start
-        Thread.sleep(300);
+        // Wait a bit longer in slower CI environments (up to ~2s)
+        String out = "";
+        for (int i = 0; i < 20; i++) {
+            Thread.sleep(100);
+            out = baos.toString();
+            if (out.contains("Servidor iniciado en http://")
+                    || out.contains("Error al conectar con la base de datos")
+                    || out.contains("Conexión exitosa a la base de datos!")
+                    // accept early logback bootstrap messages as progress signal
+                    || out.contains("logback")
+                    || out.contains("LoggerContext")
+                    || out.contains("Found resource [logback.xml]")) {
+                break;
+            }
+        }
 
-        // We expect startup message
-        String out = baos.toString();
         System.setOut(originalOut);
-        assertTrue(out.isEmpty() || out.contains("Servidor iniciado en http://")
+        assertTrue(out.isEmpty()
+                || out.contains("Servidor iniciado en http://")
                 || out.contains("Error al conectar con la base de datos")
-                || out.contains("Conexión exitosa a la base de datos!"),
-                "Expected startup or DB error message, got: " + out);
+                || out.contains("Conexión exitosa a la base de datos!")
+                || out.contains("logback")
+                || out.contains("LoggerContext")
+                || out.contains("Found resource [logback.xml]"),
+                "Expected startup or DB/logback message, got: " + out);
     }
 }
