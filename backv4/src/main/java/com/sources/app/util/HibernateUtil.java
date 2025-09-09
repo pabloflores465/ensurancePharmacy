@@ -34,6 +34,20 @@ public class HibernateUtil {
             configuration = configuration.configure(); // Carga hibernate.cfg.xml
         }
 
+        // Overrides via system properties for container/runtime flexibility
+        String overrideUrl = System.getProperty("hibernate.connection.url");
+        if (overrideUrl != null && !overrideUrl.isBlank()) {
+            configuration.setProperty("hibernate.connection.url", overrideUrl);
+        }
+        String overrideDriver = System.getProperty("hibernate.connection.driver_class");
+        if (overrideDriver != null && !overrideDriver.isBlank()) {
+            configuration.setProperty("hibernate.connection.driver_class", overrideDriver);
+        }
+        String overrideDialect = System.getProperty("hibernate.dialect");
+        if (overrideDialect != null && !overrideDialect.isBlank()) {
+            configuration.setProperty("hibernate.dialect", overrideDialect);
+        }
+
         // Configurar esquema desde variable de entorno
         String dbSchema = System.getenv("DB_SCHEMA_ENSURANCE");
         if (dbSchema != null && !dbSchema.trim().isEmpty()) {

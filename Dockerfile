@@ -98,7 +98,10 @@ RUN mkdir -p /app/ensurance-frontend \
              /app/pharmacy-backend \
              /app/databases \
              /app/logs \
-             /var/log/supervisor
+             /var/log/supervisor \
+             /var/log/nginx \
+             /var/cache/nginx \
+             /run/nginx
 
 # Copy built frontends
 COPY --from=ensurance-frontend-build /app/ensurance/dist /app/ensurance-frontend/
@@ -178,7 +181,7 @@ stderr_logfile=/app/logs/nginx.err.log
 stdout_logfile=/app/logs/nginx.out.log
 
 [program:ensurance-backend]
-command=java -jar -Dserver.port=8081 -Dhibernate.connection.url=jdbc:sqlite:/app/databases/ensurance/USUARIO.sqlite /app/ensurance-backend/*.jar
+command=/bin/sh -lc "exec java -jar -Dserver.port=8081 -Dhibernate.connection.url=jdbc:sqlite:/app/databases/ensurance/USUARIO.sqlite -Dhibernate.connection.driver_class=org.sqlite.JDBC -Dhibernate.dialect=org.hibernate.community.dialect.SQLiteDialect /app/ensurance-backend/*.jar"
 directory=/app/ensurance-backend
 autostart=true
 autorestart=true
@@ -187,7 +190,7 @@ stdout_logfile=/app/logs/ensurance-backend.out.log
 environment=SERVER_HOST="0.0.0.0",SERVER_PORT="8081"
 
 [program:pharmacy-backend]
-command=java -jar -Dserver.port=8082 -Dhibernate.connection.url=jdbc:sqlite:/app/databases/pharmacy/USUARIO.sqlite /app/pharmacy-backend/*.jar
+command=/bin/sh -lc "exec java -jar -Dserver.port=8082 -Dhibernate.connection.url=jdbc:sqlite:/app/databases/pharmacy/USUARIO.sqlite -Dhibernate.connection.driver_class=org.sqlite.JDBC -Dhibernate.dialect=org.hibernate.community.dialect.SQLiteDialect /app/pharmacy-backend/*.jar"
 directory=/app/pharmacy-backend
 autostart=true
 autorestart=true

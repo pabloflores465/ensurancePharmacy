@@ -261,17 +261,17 @@ steps:
     environment:
       ENVIRONMENT: main
     commands:
-      - echo "Deploy MAIN Environment (puertos 5000-5003)"
+      - echo "Deploy MAIN Environment (puertos 5175, 8089, 8081, 8082)"
       - echo main > .environment
       - docker compose -f docker-compose.main.yml down || true
       - ENVIRONMENT=main docker compose -f docker-compose.main.yml up -d --build
       - sleep 30
       - docker compose -f docker-compose.main.yml ps
       - echo "MAIN desplegado en:"
-      - 'echo "   - Ensurance Frontend: http://localhost:5000"'
-      - 'echo "   - Pharmacy Frontend: http://localhost:5001"'
-      - 'echo "   - Ensurance Backend: http://localhost:5002/api"'
-      - 'echo "   - Pharmacy Backend: http://localhost:5003/api2"'
+      - 'echo "   - Ensurance Frontend: http://localhost:5175"'
+      - 'echo "   - Pharmacy Frontend: http://localhost:8089"'
+      - 'echo "   - Ensurance Backend: http://localhost:8081/api"'
+      - 'echo "   - Pharmacy Backend: http://localhost:8082/api2"'
     volumes:
       - name: docker-sock
         path: /var/run/docker.sock
@@ -327,10 +327,10 @@ steps:
       - |
         echo 'Verificando deployment en ambiente: MAIN'
         for i in 1 2 3 4 5; do
-          if curl -fsS http://localhost:5000 > /dev/null; then echo 'Frontend MAIN OK'; break; else echo "Frontend intento $i falló"; sleep 5; fi
+          if curl -fsS http://localhost:5175 > /dev/null; then echo 'Frontend MAIN OK'; break; else echo "Frontend intento $i falló"; sleep 5; fi
         done
         for i in 1 2 3 4 5; do
-          if curl -fsS http://localhost:5002/api > /dev/null; then echo 'Backend MAIN OK'; break; else echo "Backend intento $i falló"; sleep 5; fi
+          if curl -fsS http://localhost:8081/api > /dev/null; then echo 'Backend MAIN OK'; break; else echo "Backend intento $i falló"; sleep 5; fi
         done
     when:
       event:
