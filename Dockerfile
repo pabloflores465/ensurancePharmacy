@@ -8,9 +8,19 @@
 # Stage 1: Build Ensurance Frontend
 FROM node:20-alpine AS ensurance-frontend-build
 WORKDIR /app/ensurance
+ENV NPM_CONFIG_FETCH_RETRIES=5 \
+    NPM_CONFIG_FETCH_RETRY_FACTOR=2 \
+    NPM_CONFIG_FETCH_RETRY_MINTIMEOUT=10000 \
+    NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT=120000 \
+    NPM_CONFIG_NETWORK_TIMEOUT=600000 \
+    NPM_CONFIG_AUDIT=false \
+    NPM_CONFIG_FUND=false \
+    NPM_CONFIG_PROGRESS=false
 COPY ensurance/package*.json ./
-# Install full deps (dev needed for build tools like vite)
-RUN npm ci
+# Install full deps (dev needed for build tools like vite) with retries
+RUN set -eux; \
+    npm config set registry https://registry.npmjs.org/; \
+    for i in 1 2 3; do npm ci && break || (npm cache clean --force; sleep $((i*5))); done
 COPY ensurance/ ./
 # Create .env file with localhost configuration
 RUN echo "VITE_IP=localhost" > .env && \
@@ -21,9 +31,19 @@ RUN npm run build
 # Stage 2: Build Pharmacy Frontend
 FROM node:20-alpine AS pharmacy-frontend-build
 WORKDIR /app/pharmacy
+ENV NPM_CONFIG_FETCH_RETRIES=5 \
+    NPM_CONFIG_FETCH_RETRY_FACTOR=2 \
+    NPM_CONFIG_FETCH_RETRY_MINTIMEOUT=10000 \
+    NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT=120000 \
+    NPM_CONFIG_NETWORK_TIMEOUT=600000 \
+    NPM_CONFIG_AUDIT=false \
+    NPM_CONFIG_FUND=false \
+    NPM_CONFIG_PROGRESS=false
 COPY pharmacy/package*.json ./
-# Install full deps (dev needed for build tools like vue-cli-service)
-RUN npm ci
+# Install full deps (dev needed for build tools like vue-cli-service) with retries
+RUN set -eux; \
+    npm config set registry https://registry.npmjs.org/; \
+    for i in 1 2 3; do npm ci && break || (npm cache clean --force; sleep $((i*5))); done
 COPY pharmacy/ ./
 # Create .env file with localhost configuration
 RUN echo "VUE_APP_API_HOST=localhost" > .env && \
