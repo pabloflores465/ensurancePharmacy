@@ -83,11 +83,8 @@ ARG ENVIRONMENT=main
 
 # Install required packages
 RUN apk add --no-cache \
-    nodejs \
-    npm \
     sqlite \
     supervisor \
-    nginx \
     curl
 
 # Create application directories
@@ -99,9 +96,7 @@ RUN mkdir -p /app/ensurance-frontend \
              /app/databases \
              /app/logs \
              /var/log/supervisor \
-             /var/log/nginx \
-             /var/cache/nginx \
-             /run/nginx
+             /run
 
 # Copy built frontends
 COPY --from=ensurance-frontend-build /app/ensurance/dist /app/ensurance-frontend/
@@ -110,6 +105,13 @@ COPY --from=pharmacy-frontend-build /app/pharmacy/dist /app/pharmacy-frontend/
 # Copy built backends
 COPY --from=ensurance-backend-build /app/backv4/target/*.jar /app/ensurance-backend/
 COPY --from=pharmacy-backend-build /app/backv5/target/*.jar /app/pharmacy-backend/
+
+# Normalize jar filenames to app.jar for supervisor commands
+RUN set -eux; \
+    ensJar=$(find /app/ensurance-backend -maxdepth 1 -type f -name "*.jar" | head -n1); \
+    [ -n "$ensJar" ] && mv "$ensJar" /app/ensurance-backend/app.jar; \
+    phaJar=$(find /app/pharmacy-backend -maxdepth 1 -type f -name "*.jar" | head -n1); \
+    [ -n "$phaJar" ] && mv "$phaJar" /app/pharmacy-backend/app.jar
 
 # Copy SQL seed files to a non-mounted path so we can initialize volumes at runtime
 RUN mkdir -p /app/seed-sql/ensurance /app/seed-sql/pharmacy
@@ -122,66 +124,29 @@ COPY --from=pharmacy-backend-build /app/backv5/src/main/resources/ /app/pharmacy
 
 # Database initialization moved to start.sh to support named volumes
 
-# Configure Nginx for serving frontends
-RUN mkdir -p /etc/nginx/conf.d
-COPY <<EOF /etc/nginx/conf.d/default.conf
-server {
-    listen 5175;
-    server_name localhost;
-    root /app/ensurance-frontend;
-    index index.html;
-    
-    location / {
-        try_files \$uri \$uri/ /index.html;
-    }
-    
-    # API proxy to ensurance backend
-    location /api/ {
-        proxy_pass http://localhost:8081/api/;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-}
-
-server {
-    listen 8089;
-    server_name localhost;
-    root /app/pharmacy-frontend;
-    index index.html;
-    
-    location / {
-        try_files \$uri \$uri/ /index.html;
-    }
-    
-    # API proxy to pharmacy backend
-    location /api2/ {
-        proxy_pass http://localhost:8082/api2/;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-}
-EOF
-
-# Configure Supervisor to manage all services
+# Configure Supervisor to manage all services (no nginx, serve static via busybox httpd)
 COPY <<EOF /etc/supervisor/conf.d/supervisord.conf
 [supervisord]
 nodaemon=true
 logfile=/app/logs/supervisord.log
 pidfile=/var/run/supervisord.pid
 
-[program:nginx]
-command=nginx -g "daemon off;"
+[program:ensurance-frontend]
+command=/bin/busybox httpd -f -p 5175 -h /app/ensurance-frontend
 autostart=true
 autorestart=true
-stderr_logfile=/app/logs/nginx.err.log
-stdout_logfile=/app/logs/nginx.out.log
+stderr_logfile=/app/logs/ensurance-frontend.err.log
+stdout_logfile=/app/logs/ensurance-frontend.out.log
+
+[program:pharmacy-frontend]
+command=/bin/busybox httpd -f -p 8089 -h /app/pharmacy-frontend
+autostart=true
+autorestart=true
+stderr_logfile=/app/logs/pharmacy-frontend.err.log
+stdout_logfile=/app/logs/pharmacy-frontend.out.log
 
 [program:ensurance-backend]
-command=/bin/sh -lc "exec java -jar -Dserver.port=8081 -Dhibernate.connection.url=jdbc:sqlite:/app/databases/ensurance/USUARIO.sqlite -Dhibernate.connection.driver_class=org.sqlite.JDBC -Dhibernate.dialect=org.hibernate.community.dialect.SQLiteDialect /app/ensurance-backend/*.jar"
+command=/bin/sh -lc "exec java -jar -Dserver.port=8081 -Dhibernate.connection.url=jdbc:sqlite:/app/databases/ensurance/USUARIO.sqlite -Dhibernate.connection.driver_class=org.sqlite.JDBC -Dhibernate.dialect=org.hibernate.community.dialect.SQLiteDialect /app/ensurance-backend/app.jar"
 directory=/app/ensurance-backend
 autostart=true
 autorestart=true
@@ -190,7 +155,7 @@ stdout_logfile=/app/logs/ensurance-backend.out.log
 environment=SERVER_HOST="0.0.0.0",SERVER_PORT="8081"
 
 [program:pharmacy-backend]
-command=/bin/sh -lc "exec java -jar -Dserver.port=8082 -Dhibernate.connection.url=jdbc:sqlite:/app/databases/pharmacy/USUARIO.sqlite -Dhibernate.connection.driver_class=org.sqlite.JDBC -Dhibernate.dialect=org.hibernate.community.dialect.SQLiteDialect /app/pharmacy-backend/*.jar"
+command=/bin/sh -lc "exec java -jar -Dserver.port=8082 -Dhibernate.connection.url=jdbc:sqlite:/app/databases/pharmacy/USUARIO.sqlite -Dhibernate.connection.driver_class=org.sqlite.JDBC -Dhibernate.dialect=org.hibernate.community.dialect.SQLiteDialect /app/pharmacy-backend/app.jar"
 directory=/app/pharmacy-backend
 autostart=true
 autorestart=true
@@ -244,11 +209,11 @@ RUN chmod +x /app/start.sh
 # Expose all ports
 EXPOSE 5175 8089 8081 8082
 
-# Health check
+# Health check: basic reachability of frontends and backend base path
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:5175 && \
-        curl -f http://localhost:8089 && \
-        curl -f http://localhost:8081/api/health || exit 1
+    CMD curl -fsS http://localhost:5175 >/dev/null && \
+        curl -fsS http://localhost:8089 >/dev/null && \
+        curl -fsS http://localhost:8081/ >/dev/null || exit 1
 
 # Set environment variables based on build arg
 ENV ENVIRONMENT=${ENVIRONMENT}

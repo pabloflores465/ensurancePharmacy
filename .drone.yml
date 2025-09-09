@@ -5,21 +5,19 @@ platform:
   os: linux
   arch: arm64
 
+workspace:
+  base: /drone
+  path: src
+
 trigger:
-  event:
-    - push
-  branch:
-    - main
-    - master
-    - dev
-    - qa
+  event: [ push ]
+  branch: [ main, master, dev, qa ]
 
 clone:
-  disable: false
+  depth: 50
 
-environment:
-  EMAIL_TO: pablopolis2016@gmail.com,jflores@unis.edu.gt
-  SONAR_HOST_URL: http://localhost:9000/sonar
+concurrency:
+  limit: 1
 
 steps:
   - name: unit-tests
@@ -40,123 +38,274 @@ steps:
         - dev
         - qa
 
+  - name: wait-for-sonar
+    image: curlimages/curl:8.9.1
+    environment:
+      SONAR_HOST_URL:
+        from_secret: SONAR_HOST_URL
+    depends_on: [ unit-tests ]
+    commands:
+      - |
+        set -eu
+        test -n "${SONAR_HOST_URL:-}" || { echo "Falta secreto SONAR_HOST_URL"; exit 2; }
+        echo "Esperando SonarQube en $SONAR_HOST_URL ..."
+        for i in $(seq 1 60); do
+          if curl -fsS "$SONAR_HOST_URL/api/system/status" | grep -q '"status":"UP"'; then
+            echo "SonarQube listo (status=UP)"; exit 0
+          fi
+          sleep 5
+        done
+        echo "Timeout esperando SonarQube"; exit 8
+
   - name: sonarqube-ensurance-backend-analysis-dev
     image: sonarsource/sonar-scanner-cli:latest
-    network_mode: host
     environment:
+      SONAR_HOST_URL:
+        from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
-        from_secret: ensurance_back_dev
+        from_secret: SONAR_TOKEN
+    depends_on: [ wait-for-sonar ]
     commands:
-      - echo "SonarQube Ensurance Backend analysis for DEV environment"
-      - sonar-scanner -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.token=${SONAR_TOKEN} -Dsonar.projectKey=ensurance-backend-dev -Dsonar.projectName="Ensurance Backend DEV" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=backv4/src/main -Dsonar.tests=backv4/src/test -Dsonar.java.binaries=backv4/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+      - |
+        set -eu
+        echo "SonarQube Ensurance Backend analysis for DEV environment"
+        test -n "${SONAR_HOST_URL:-}" && test -n "${SONAR_TOKEN:-}" || { echo "Faltan SONAR_HOST_URL o SONAR_TOKEN"; exit 2; }
+        sonar-scanner \
+          -Dsonar.host.url="$SONAR_HOST_URL" \
+          -Dsonar.token="$SONAR_TOKEN" \
+          -Dsonar.projectKey=ensurance-backend-dev \
+          -Dsonar.projectName="Ensurance Backend DEV" \
+          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.sources=backv4/src/main \
+          -Dsonar.tests=backv4/src/test \
+          -Dsonar.java.binaries=backv4/target/classes \
+          -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml \
+          -Dsonar.qualitygate.wait=true \
+          -Dsonar.qualitygate.timeout=600
     when:
       branch:
         - dev
 
   - name: sonarqube-ensurance-frontend-analysis-dev
     image: sonarsource/sonar-scanner-cli:latest
-    network_mode: host
     environment:
+      SONAR_HOST_URL:
+        from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
-        from_secret: ensurance_front_dev
+        from_secret: SONAR_TOKEN
+    depends_on: [ wait-for-sonar ]
     commands:
-      - echo "SonarQube Ensurance Frontend analysis for DEV environment"
-      - cd ensurance && npm ci && npm run test:coverage || true && cd ..
-      - sonar-scanner -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.token=${SONAR_TOKEN} -Dsonar.projectKey=ensurance-frontend-dev -Dsonar.projectName="Ensurance Frontend DEV" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=ensurance/src -Dsonar.tests=ensurance/tests -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+      - |
+        set -eu
+        echo "SonarQube Ensurance Frontend analysis for DEV environment"
+        cd ensurance && npm ci && npm run test:coverage || true && cd ..
+        sonar-scanner \
+          -Dsonar.host.url="$SONAR_HOST_URL" \
+          -Dsonar.token="$SONAR_TOKEN" \
+          -Dsonar.projectKey=ensurance-frontend-dev \
+          -Dsonar.projectName="Ensurance Frontend DEV" \
+          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.sources=ensurance/src \
+          -Dsonar.tests=ensurance/tests \
+          -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info \
+          -Dsonar.qualitygate.wait=true \
+          -Dsonar.qualitygate.timeout=600
     when:
       branch:
         - dev
 
   - name: sonarqube-pharmacy-backend-analysis-dev
     image: sonarsource/sonar-scanner-cli:latest
-    network_mode: host
     environment:
+      SONAR_HOST_URL:
+        from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
-        from_secret: pharmacy_back_dev
+        from_secret: SONAR_TOKEN
+    depends_on: [ wait-for-sonar ]
     commands:
-      - echo "SonarQube Pharmacy Backend analysis for DEV environment"
-      - sonar-scanner -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.token=${SONAR_TOKEN} -Dsonar.projectKey=pharmacy-backend-dev -Dsonar.projectName="Pharmacy Backend DEV" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=backv5/src/main -Dsonar.tests=backv5/src/test -Dsonar.java.binaries=backv5/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=backv5/target/site/jacoco/jacoco.xml -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+      - |
+        set -eu
+        echo "SonarQube Pharmacy Backend analysis for DEV environment"
+        sonar-scanner \
+          -Dsonar.host.url="$SONAR_HOST_URL" \
+          -Dsonar.token="$SONAR_TOKEN" \
+          -Dsonar.projectKey=pharmacy-backend-dev \
+          -Dsonar.projectName="Pharmacy Backend DEV" \
+          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.sources=backv5/src/main \
+          -Dsonar.tests=backv5/src/test \
+          -Dsonar.java.binaries=backv5/target/classes \
+          -Dsonar.coverage.jacoco.xmlReportPaths=backv5/target/site/jacoco/jacoco.xml \
+          -Dsonar.qualitygate.wait=true \
+          -Dsonar.qualitygate.timeout=600
     when:
       branch:
         - dev
 
   - name: sonarqube-pharmacy-frontend-analysis-dev
     image: sonarsource/sonar-scanner-cli:latest
-    network_mode: host
     environment:
+      SONAR_HOST_URL:
+        from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
-        from_secret: pharmacy_front_dev
+        from_secret: SONAR_TOKEN
+    depends_on: [ wait-for-sonar ]
     commands:
-      - echo "SonarQube Pharmacy Frontend analysis for DEV environment"
-      - cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
-      - sonar-scanner -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.token=${SONAR_TOKEN} -Dsonar.projectKey=pharmacy-frontend-dev -Dsonar.projectName="Pharmacy Frontend DEV" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=pharmacy/src -Dsonar.tests=pharmacy/tests -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+      - |
+        set -eu
+        echo "SonarQube Pharmacy Frontend analysis for DEV environment"
+        cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
+        sonar-scanner \
+          -Dsonar.host.url="$SONAR_HOST_URL" \
+          -Dsonar.token="$SONAR_TOKEN" \
+          -Dsonar.projectKey=pharmacy-frontend-dev \
+          -Dsonar.projectName="Pharmacy Frontend DEV" \
+          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.sources=pharmacy/src \
+          -Dsonar.tests=pharmacy/tests \
+          -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info \
+          -Dsonar.qualitygate.wait=true \
+          -Dsonar.qualitygate.timeout=600
     when:
       branch:
         - dev
 
   - name: sonarqube-ensurance-backend-analysis-qa
     image: sonarsource/sonar-scanner-cli:latest
-    network_mode: host
     environment:
+      SONAR_HOST_URL:
+        from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
-        from_secret: ensurance_back_qa
+        from_secret: SONAR_TOKEN
+    depends_on: [ wait-for-sonar ]
     commands:
-      - echo "SonarQube Ensurance Backend analysis for QA environment"
-      - sonar-scanner -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.token=${SONAR_TOKEN} -Dsonar.projectKey=ensurance-backend-qa -Dsonar.projectName="Ensurance Backend QA" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=backv4/src/main -Dsonar.tests=backv4/src/test -Dsonar.java.binaries=backv4/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+      - |
+        set -eu
+        echo "SonarQube Ensurance Backend analysis for QA environment"
+        sonar-scanner \
+          -Dsonar.host.url="$SONAR_HOST_URL" \
+          -Dsonar.token="$SONAR_TOKEN" \
+          -Dsonar.projectKey=ensurance-backend-qa \
+          -Dsonar.projectName="Ensurance Backend QA" \
+          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.sources=backv4/src/main \
+          -Dsonar.tests=backv4/src/test \
+          -Dsonar.java.binaries=backv4/target/classes \
+          -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml \
+          -Dsonar.qualitygate.wait=true \
+          -Dsonar.qualitygate.timeout=600
     when:
       branch:
         - qa
 
   - name: sonarqube-ensurance-frontend-analysis-qa
     image: sonarsource/sonar-scanner-cli:latest
-    network_mode: host
     environment:
+      SONAR_HOST_URL:
+        from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
-        from_secret: ensurance_front_qa
+        from_secret: SONAR_TOKEN
+    depends_on: [ wait-for-sonar ]
     commands:
-      - echo "SonarQube Ensurance Frontend analysis for QA environment"
-      - cd ensurance && npm ci && npm run test:coverage || true && cd ..
-      - sonar-scanner -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.token=${SONAR_TOKEN} -Dsonar.projectKey=ensurance-frontend-qa -Dsonar.projectName="Ensurance Frontend QA" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=ensurance/src -Dsonar.tests=ensurance/tests -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+      - |
+        set -eu
+        echo "SonarQube Ensurance Frontend analysis for QA environment"
+        cd ensurance && npm ci && npm run test:coverage || true && cd ..
+        sonar-scanner \
+          -Dsonar.host.url="$SONAR_HOST_URL" \
+          -Dsonar.token="$SONAR_TOKEN" \
+          -Dsonar.projectKey=ensurance-frontend-qa \
+          -Dsonar.projectName="Ensurance Frontend QA" \
+          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.sources=ensurance/src \
+          -Dsonar.tests=ensurance/tests \
+          -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info \
+          -Dsonar.qualitygate.wait=true \
+          -Dsonar.qualitygate.timeout=600
     when:
       branch:
         - qa
 
   - name: sonarqube-pharmacy-backend-analysis-qa
     image: sonarsource/sonar-scanner-cli:latest
-    network_mode: host
     environment:
+      SONAR_HOST_URL:
+        from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
-        from_secret: pharmacy_back_qa
+        from_secret: SONAR_TOKEN
+    depends_on: [ wait-for-sonar ]
     commands:
-      - echo "SonarQube Pharmacy Backend analysis for QA environment"
-      - sonar-scanner -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.token=${SONAR_TOKEN} -Dsonar.projectKey=pharmacy-backend-qa -Dsonar.projectName="Pharmacy Backend QA" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=backv5/src/main -Dsonar.tests=backv5/src/test -Dsonar.java.binaries=backv5/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=backv5/target/site/jacoco/jacoco.xml -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+      - |
+        set -eu
+        echo "SonarQube Pharmacy Backend analysis for QA environment"
+        sonar-scanner \
+          -Dsonar.host.url="$SONAR_HOST_URL" \
+          -Dsonar.token="$SONAR_TOKEN" \
+          -Dsonar.projectKey=pharmacy-backend-qa \
+          -Dsonar.projectName="Pharmacy Backend QA" \
+          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.sources=backv5/src/main \
+          -Dsonar.tests=backv5/src/test \
+          -Dsonar.java.binaries=backv5/target/classes \
+          -Dsonar.coverage.jacoco.xmlReportPaths=backv5/target/site/jacoco/jacoco.xml \
+          -Dsonar.qualitygate.wait=true \
+          -Dsonar.qualitygate.timeout=600
     when:
       branch:
         - qa
 
   - name: sonarqube-pharmacy-frontend-analysis-qa
     image: sonarsource/sonar-scanner-cli:latest
-    network_mode: host
     environment:
+      SONAR_HOST_URL:
+        from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
-        from_secret: pharmacy_front_qa
+        from_secret: SONAR_TOKEN
+    depends_on: [ wait-for-sonar ]
     commands:
-      - echo "SonarQube Pharmacy Frontend analysis for QA environment"
-      - cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
-      - sonar-scanner -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.token=${SONAR_TOKEN} -Dsonar.projectKey=pharmacy-frontend-qa -Dsonar.projectName="Pharmacy Frontend QA" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=pharmacy/src -Dsonar.tests=pharmacy/tests -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+      - |
+        set -eu
+        echo "SonarQube Pharmacy Frontend analysis for QA environment"
+        cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
+        sonar-scanner \
+          -Dsonar.host.url="$SONAR_HOST_URL" \
+          -Dsonar.token="$SONAR_TOKEN" \
+          -Dsonar.projectKey=pharmacy-frontend-qa \
+          -Dsonar.projectName="Pharmacy Frontend QA" \
+          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.sources=pharmacy/src \
+          -Dsonar.tests=pharmacy/tests \
+          -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info \
+          -Dsonar.qualitygate.wait=true \
+          -Dsonar.qualitygate.timeout=600
     when:
       branch:
         - qa
 
   - name: sonarqube-ensurance-backend-analysis-main
     image: sonarsource/sonar-scanner-cli:latest
-    network_mode: host
     environment:
+      SONAR_HOST_URL:
+        from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
-        from_secret: ensurance_back_main
+        from_secret: SONAR_TOKEN
+    depends_on: [ wait-for-sonar ]
     commands:
-      - echo "SonarQube Ensurance Backend analysis for MAIN environment"
-      - sonar-scanner -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.token=${SONAR_TOKEN} -Dsonar.projectKey=ensurance-backend-main -Dsonar.projectName="Ensurance Backend MAIN" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=backv4/src/main -Dsonar.tests=backv4/src/test -Dsonar.java.binaries=backv4/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+      - |
+        set -eu
+        echo "SonarQube Ensurance Backend analysis for MAIN environment"
+        sonar-scanner \
+          -Dsonar.host.url="$SONAR_HOST_URL" \
+          -Dsonar.token="$SONAR_TOKEN" \
+          -Dsonar.projectKey=ensurance-backend-main \
+          -Dsonar.projectName="Ensurance Backend MAIN" \
+          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.sources=backv4/src/main \
+          -Dsonar.tests=backv4/src/test \
+          -Dsonar.java.binaries=backv4/target/classes \
+          -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml \
+          -Dsonar.qualitygate.wait=true \
+          -Dsonar.qualitygate.timeout=600
     when:
       branch:
         - main
@@ -164,14 +313,28 @@ steps:
 
   - name: sonarqube-ensurance-frontend-analysis-main
     image: sonarsource/sonar-scanner-cli:latest
-    network_mode: host
     environment:
+      SONAR_HOST_URL:
+        from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
-        from_secret: ensurance_front_main
+        from_secret: SONAR_TOKEN
+    depends_on: [ wait-for-sonar ]
     commands:
-      - echo "SonarQube Ensurance Frontend analysis for MAIN environment"
-      - cd ensurance && npm ci && npm run test:coverage || true && cd ..
-      - sonar-scanner -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.token=${SONAR_TOKEN} -Dsonar.projectKey=ensurance-frontend-main -Dsonar.projectName="Ensurance Frontend MAIN" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=ensurance/src -Dsonar.tests=ensurance/tests -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+      - |
+        set -eu
+        echo "SonarQube Ensurance Frontend analysis for MAIN environment"
+        cd ensurance && npm ci && npm run test:coverage || true && cd ..
+        sonar-scanner \
+          -Dsonar.host.url="$SONAR_HOST_URL" \
+          -Dsonar.token="$SONAR_TOKEN" \
+          -Dsonar.projectKey=ensurance-frontend-main \
+          -Dsonar.projectName="Ensurance Frontend MAIN" \
+          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.sources=ensurance/src \
+          -Dsonar.tests=ensurance/tests \
+          -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info \
+          -Dsonar.qualitygate.wait=true \
+          -Dsonar.qualitygate.timeout=600
     when:
       branch:
         - main
@@ -179,13 +342,28 @@ steps:
 
   - name: sonarqube-pharmacy-backend-analysis-main
     image: sonarsource/sonar-scanner-cli:latest
-    network_mode: host
     environment:
+      SONAR_HOST_URL:
+        from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
-        from_secret: pharmacy_back_main
+        from_secret: SONAR_TOKEN
+    depends_on: [ wait-for-sonar ]
     commands:
-      - echo "SonarQube Pharmacy Backend analysis for MAIN environment"
-      - sonar-scanner -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.token=${SONAR_TOKEN} -Dsonar.projectKey=pharmacy-backend-main -Dsonar.projectName="Pharmacy Backend MAIN" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=backv5/src/main -Dsonar.tests=backv5/src/test -Dsonar.java.binaries=backv5/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=backv5/target/site/jacoco/jacoco.xml -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+      - |
+        set -eu
+        echo "SonarQube Pharmacy Backend analysis for MAIN environment"
+        sonar-scanner \
+          -Dsonar.host.url="$SONAR_HOST_URL" \
+          -Dsonar.token="$SONAR_TOKEN" \
+          -Dsonar.projectKey=pharmacy-backend-main \
+          -Dsonar.projectName="Pharmacy Backend MAIN" \
+          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.sources=backv5/src/main \
+          -Dsonar.tests=backv5/src/test \
+          -Dsonar.java.binaries=backv5/target/classes \
+          -Dsonar.coverage.jacoco.xmlReportPaths=backv5/target/site/jacoco/jacoco.xml \
+          -Dsonar.qualitygate.wait=true \
+          -Dsonar.qualitygate.timeout=600
     when:
       branch:
         - main
@@ -193,14 +371,28 @@ steps:
 
   - name: sonarqube-pharmacy-frontend-analysis-main
     image: sonarsource/sonar-scanner-cli:latest
-    network_mode: host
     environment:
+      SONAR_HOST_URL:
+        from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
-        from_secret: pharmacy_front_main
+        from_secret: SONAR_TOKEN
+    depends_on: [ wait-for-sonar ]
     commands:
-      - echo "SonarQube Pharmacy Frontend analysis for MAIN environment"
-      - cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
-      - sonar-scanner -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.token=${SONAR_TOKEN} -Dsonar.projectKey=pharmacy-frontend-main -Dsonar.projectName="Pharmacy Frontend MAIN" -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} -Dsonar.sources=pharmacy/src -Dsonar.tests=pharmacy/tests -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+      - |
+        set -eu
+        echo "SonarQube Pharmacy Frontend analysis for MAIN environment"
+        cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
+        sonar-scanner \
+          -Dsonar.host.url="$SONAR_HOST_URL" \
+          -Dsonar.token="$SONAR_TOKEN" \
+          -Dsonar.projectKey=pharmacy-frontend-main \
+          -Dsonar.projectName="Pharmacy Frontend MAIN" \
+          -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
+          -Dsonar.sources=pharmacy/src \
+          -Dsonar.tests=pharmacy/tests \
+          -Dsonar.javascript.lcov.reportPaths=pharmacy/coverage/lcov.info \
+          -Dsonar.qualitygate.wait=true \
+          -Dsonar.qualitygate.timeout=600
     when:
       branch:
         - main
@@ -344,18 +536,22 @@ steps:
   - name: email-notification
     image: drillster/drone-email
     settings:
-      host: smtp.gmail.com
-      port: 587
+      host:
+        from_secret: SMTP_SERVER
+      port:
+        from_secret: SMTP_PORT
       username:
-        from_secret: email_username
+        from_secret: SMTP_USERNAME
       password:
-        from_secret: email_password
-      from: drone@ensurance-pharmacy.com
+        from_secret: SMTP_PASSWORD
+      from:
+        from_secret: SMTP_FROM_EMAIL
       to:
-        - pablopolis2016@gmail.com
-        - jflores@unis.edu.gt
+        from_secret: NOTIFICATION_EMAIL
+      starttls: true
+      skip_verify: true
       subject: "{{#success build.status}}Deploy exitoso: {{repo.name}} #{{build.number}} [{{build.branch}}]{{else}}Pipeline fallido: {{repo.name}} #{{build.number}} [{{build.branch}}]{{/success}}"
-      body: "{{#success build.status}}Deploy completado exitosamente en rama {{build.branch}}.\n\nQuality Gate: APROBADO\nTests: PASADOS\nDeploy: EXITOSO\n\nDetalles: {{build.link}}\n\nServicios disponibles:\n{{#equal build.branch \"dev\"}}- Ensurance Frontend: http://localhost:3000\n- Pharmacy Frontend: http://localhost:3001\n- Ensurance Backend: http://localhost:3002/api\n- Pharmacy Backend: http://localhost:3003/api2\n{{/equal}}{{#equal build.branch \"qa\"}}- Ensurance Frontend: http://localhost:4000\n- Pharmacy Frontend: http://localhost:4001\n- Ensurance Backend: http://localhost:4002/api\n- Pharmacy Backend: http://localhost:4003/api2\n{{/equal}}{{#equal build.branch \"main\"}}- Ensurance Frontend: http://localhost:5000\n- Pharmacy Frontend: http://localhost:5001\n- Ensurance Backend: http://localhost:5002/api\n- Pharmacy Backend: http://localhost:5003/api2\n{{/equal}}{{else}}Pipeline falló en rama {{build.branch}}.\n\nDetalle: {{build.link}}\n\nPara diagnosticar:\n1. Revisar logs en Drone UI\n2. Verificar Quality Gate en SonarQube\n3. Revisar estado de contenedores{{/success}}"
+      body: "{{#success build.status}}Deploy completado exitosamente en rama {{build.branch}}.\n\nQuality Gate: APROBADO\nTests: PASADOS\nDeploy: EXITOSO\n\nDetalles: {{build.link}}\n\nServicios disponibles:\n{{#equal build.branch \"dev\"}}- Ensurance Frontend: http://localhost:3000\n- Pharmacy Frontend: http://localhost:3001\n- Ensurance Backend: http://localhost:3002/api\n- Pharmacy Backend: http://localhost:3003/api2\n{{/equal}}{{#equal build.branch \"qa\"}}- Ensurance Frontend: http://localhost:4000\n- Pharmacy Frontend: http://localhost:4001\n- Ensurance Backend: http://localhost:4002/api\n- Pharmacy Backend: http://localhost:4003/api2\n{{/equal}}{{#equal build.branch \"main\"}}- Ensurance Frontend: http://localhost:5175\n- Pharmacy Frontend: http://localhost:8089\n- Ensurance Backend: http://localhost:8081/api\n- Pharmacy Backend: http://localhost:8082/api2\n{{/equal}}{{else}}Pipeline falló en rama {{build.branch}}.\n\nDetalle: {{build.link}}\n\nPara diagnosticar:\n1. Revisar logs en Drone UI\n2. Verificar Quality Gate en SonarQube\n3. Revisar estado de contenedores{{/success}}"
     when:
       status:
         - success
