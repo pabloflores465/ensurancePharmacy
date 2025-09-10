@@ -98,6 +98,8 @@ RUN mkdir -p /app/ensurance-frontend \
              /app/pharmacy-frontend \
              /app/ensurance-backend \
              /app/pharmacy-backend \
+             /app/ensurance-backend/logs \
+             /app/pharmacy-backend/logs \
              /app/databases \
              /app/logs \
              /var/log/supervisor \
@@ -138,6 +140,8 @@ pidfile=/var/run/supervisord.pid
 
 [program:ensurance-frontend]
 command=/bin/busybox httpd -f -p 5175 -h /app/ensurance-frontend
+redirect_stderr=true
+stdout_logfile=/dev/stdout
 autostart=true
 autorestart=true
 stderr_logfile=/app/logs/ensurance-frontend.err.log
@@ -145,27 +149,29 @@ stdout_logfile=/app/logs/ensurance-frontend.out.log
 
 [program:pharmacy-frontend]
 command=/bin/busybox httpd -f -p 8089 -h /app/pharmacy-frontend
+redirect_stderr=true
+stdout_logfile=/dev/stdout
 autostart=true
 autorestart=true
 stderr_logfile=/app/logs/pharmacy-frontend.err.log
 stdout_logfile=/app/logs/pharmacy-frontend.out.log
 
 [program:ensurance-backend]
-command=/bin/sh -lc "exec /opt/java/openjdk/bin/java -jar -Dserver.port=8081 -Dhibernate.connection.url=jdbc:sqlite:/app/databases/ensurance/USUARIO.sqlite -Dhibernate.connection.driver_class=org.sqlite.JDBC -Dhibernate.dialect=org.hibernate.community.dialect.SQLiteDialect /app/ensurance-backend/app.jar"
+command=/bin/sh -lc "exec /opt/java/openjdk/bin/java --enable-preview -jar -Dserver.port=8081 -Dhibernate.connection.url=jdbc:sqlite:/app/databases/ensurance/USUARIO.sqlite -Dhibernate.connection.driver_class=org.sqlite.JDBC -Dhibernate.dialect=org.hibernate.community.dialect.SQLiteDialect /app/ensurance-backend/app.jar"
 directory=/app/ensurance-backend
 autostart=true
 autorestart=true
-stderr_logfile=/app/logs/ensurance-backend.err.log
-stdout_logfile=/app/logs/ensurance-backend.out.log
+redirect_stderr=true
+stdout_logfile=/dev/stdout
 environment=SERVER_HOST="0.0.0.0",SERVER_PORT="8081"
 
 [program:pharmacy-backend]
-command=/bin/sh -lc "exec /opt/java/openjdk/bin/java -jar -Dserver.port=8082 -Dhibernate.connection.url=jdbc:sqlite:/app/databases/pharmacy/USUARIO.sqlite -Dhibernate.connection.driver_class=org.sqlite.JDBC -Dhibernate.dialect=org.hibernate.community.dialect.SQLiteDialect /app/pharmacy-backend/app.jar"
+command=/bin/sh -lc "exec /opt/java/openjdk/bin/java --enable-preview -jar -Dserver.port=8082 -Dhibernate.connection.url=jdbc:sqlite:/app/databases/pharmacy/USUARIO.sqlite -Dhibernate.connection.driver_class=org.sqlite.JDBC -Dhibernate.dialect=org.hibernate.community.dialect.SQLiteDialect /app/pharmacy-backend/app.jar"
 directory=/app/pharmacy-backend
 autostart=true
 autorestart=true
-stderr_logfile=/app/logs/pharmacy-backend.err.log
-stdout_logfile=/app/logs/pharmacy-backend.out.log
+redirect_stderr=true
+stdout_logfile=/dev/stdout
 environment=SERVER_HOST="0.0.0.0",SERVER_PORT="8082"
 EOF
 
