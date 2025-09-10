@@ -9,6 +9,9 @@ workspace:
   base: /drone
   path: src
 
+environment:
+  SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
+
 trigger:
   event: [ push ]
   branch: [ main, master, dev, qa ]
