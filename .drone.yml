@@ -42,7 +42,7 @@ steps:
     commands:
       - |
         set -eu
-        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
+        SONAR_HOST_URL="${SONAR_HOST_URL:-http://localhost:9000/sonar}"
         echo "Esperando SonarQube en $SONAR_HOST_URL ..."
         for i in $(seq 1 60); do
           if curl -fsS "$SONAR_HOST_URL/api/system/status" | grep -q '"status":"UP"'; then
@@ -62,7 +62,7 @@ steps:
       - |
         set -eu
         echo "SonarQube Ensurance Backend analysis for DEV environment"
-        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
+        SONAR_HOST_URL="${SONAR_HOST_URL:-http://localhost:9000/sonar}"
         test -n "${SONAR_TOKEN:-}" || { echo "Falta SONAR_TOKEN"; exit 2; }
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
@@ -90,7 +90,7 @@ steps:
       - |
         set -eu
         echo "SonarQube Ensurance Frontend analysis for DEV environment"
-        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
+        SONAR_HOST_URL="${SONAR_HOST_URL:-http://localhost:9000/sonar}"
         cd ensurance && npm ci && npm run test:coverage || true && cd ..
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
@@ -117,7 +117,7 @@ steps:
       - |
         set -eu
         echo "SonarQube Pharmacy Backend analysis for DEV environment"
-        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
+        SONAR_HOST_URL="${SONAR_HOST_URL:-http://localhost:9000/sonar}"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -144,7 +144,7 @@ steps:
       - |
         set -eu
         echo "SonarQube Pharmacy Frontend analysis for DEV environment"
-        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
+        SONAR_HOST_URL="${SONAR_HOST_URL:-http://localhost:9000/sonar}"
         cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
@@ -171,7 +171,7 @@ steps:
       - |
         set -eu
         echo "SonarQube Ensurance Backend analysis for QA environment"
-        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
+        SONAR_HOST_URL="${SONAR_HOST_URL:-http://localhost:9000/sonar}"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -198,7 +198,7 @@ steps:
       - |
         set -eu
         echo "SonarQube Ensurance Frontend analysis for QA environment"
-        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
+        SONAR_HOST_URL="${SONAR_HOST_URL:-http://localhost:9000/sonar}"
         cd ensurance && npm ci && npm run test:coverage || true && cd ..
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
@@ -225,7 +225,7 @@ steps:
       - |
         set -eu
         echo "SonarQube Pharmacy Backend analysis for QA environment"
-        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
+        SONAR_HOST_URL="${SONAR_HOST_URL:-http://localhost:9000/sonar}"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -252,7 +252,7 @@ steps:
       - |
         set -eu
         echo "SonarQube Pharmacy Frontend analysis for QA environment"
-        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
+        SONAR_HOST_URL="${SONAR_HOST_URL:-http://localhost:9000/sonar}"
         cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
@@ -279,7 +279,7 @@ steps:
       - |
         set -eu
         echo "SonarQube Ensurance Backend analysis for MAIN environment"
-        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
+        SONAR_HOST_URL="${SONAR_HOST_URL:-http://localhost:9000/sonar}"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -307,7 +307,7 @@ steps:
       - |
         set -eu
         echo "SonarQube Ensurance Frontend analysis for MAIN environment"
-        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
+        SONAR_HOST_URL="${SONAR_HOST_URL:-http://localhost:9000/sonar}"
         cd ensurance && npm ci && npm run test:coverage || true && cd ..
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
@@ -335,7 +335,7 @@ steps:
       - |
         set -eu
         echo "SonarQube Pharmacy Backend analysis for MAIN environment"
-        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
+        SONAR_HOST_URL="${SONAR_HOST_URL:-http://localhost:9000/sonar}"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -363,7 +363,7 @@ steps:
       - |
         set -eu
         echo "SonarQube Pharmacy Frontend analysis for MAIN environment"
-        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
+        SONAR_HOST_URL="${SONAR_HOST_URL:-http://localhost:9000/sonar}"
         cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
