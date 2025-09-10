@@ -85,6 +85,7 @@ steps:
 
   - name: sonarqube-ensurance-frontend-analysis-dev
     image: sonarsource/sonar-scanner-cli:latest
+    user: root
     environment:
       SONAR_TOKEN:
         from_secret: ENSURANCE_FRONT_DEV
@@ -139,6 +140,7 @@ steps:
 
   - name: sonarqube-pharmacy-frontend-analysis-dev
     image: sonarsource/sonar-scanner-cli:latest
+    user: root
     environment:
       SONAR_TOKEN:
         from_secret: PHARMACY_FRONT_DEV
@@ -193,6 +195,7 @@ steps:
 
   - name: sonarqube-ensurance-frontend-analysis-qa
     image: sonarsource/sonar-scanner-cli:latest
+    user: root
     environment:
       SONAR_TOKEN:
         from_secret: ENSURANCE_FRONT_QA
@@ -247,6 +250,7 @@ steps:
 
   - name: sonarqube-pharmacy-frontend-analysis-qa
     image: sonarsource/sonar-scanner-cli:latest
+    user: root
     environment:
       SONAR_TOKEN:
         from_secret: PHARMACY_FRONT_QA
@@ -302,6 +306,7 @@ steps:
 
   - name: sonarqube-ensurance-frontend-analysis-main
     image: sonarsource/sonar-scanner-cli:latest
+    user: root
     environment:
       SONAR_TOKEN:
         from_secret: ENSURANCE_FRONT_MAIN
@@ -338,7 +343,7 @@ steps:
       - |
         set -eu
         echo "SonarQube Pharmacy Backend analysis for MAIN environment"
-        SONAR_HOST_URL="${SONAR_HOST_URL:-http://localhost:9000/sonar}"
+        SONAR_HOST_URL="${SONAR_HOST_URL:-https://macbook-air-de-gp.tail5d54f7.ts.net/sonar}"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -358,6 +363,7 @@ steps:
 
   - name: sonarqube-pharmacy-frontend-analysis-main
     image: sonarsource/sonar-scanner-cli:latest
+    user: root
     environment:
       SONAR_TOKEN:
         from_secret: PHARMACY_FRONT_MAIN
@@ -366,7 +372,7 @@ steps:
       - |
         set -eu
         echo "SonarQube Pharmacy Frontend analysis for MAIN environment"
-        SONAR_HOST_URL="${SONAR_HOST_URL:-http://localhost:9000/sonar}"
+        SONAR_HOST_URL="${SONAR_HOST_URL:-https://macbook-air-de-gp.tail5d54f7.ts.net/sonar}"
         cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
