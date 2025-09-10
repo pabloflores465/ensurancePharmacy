@@ -57,6 +57,7 @@ steps:
 
   - name: sonarqube-ensurance-backend-analysis-dev
     image: sonarsource/sonar-scanner-cli:latest
+    user: root
     environment:
       SONAR_TOKEN:
         from_secret: ENSURANCE_BACK_DEV
@@ -113,6 +114,7 @@ steps:
 
   - name: sonarqube-pharmacy-backend-analysis-dev
     image: sonarsource/sonar-scanner-cli:latest
+    user: root
     environment:
       SONAR_TOKEN:
         from_secret: PHARMACY_BACK_DEV
@@ -168,6 +170,7 @@ steps:
 
   - name: sonarqube-ensurance-backend-analysis-qa
     image: sonarsource/sonar-scanner-cli:latest
+    user: root
     environment:
       SONAR_TOKEN:
         from_secret: ENSURANCE_BACK_QA
@@ -223,6 +226,7 @@ steps:
 
   - name: sonarqube-pharmacy-backend-analysis-qa
     image: sonarsource/sonar-scanner-cli:latest
+    user: root
     environment:
       SONAR_TOKEN:
         from_secret: PHARMACY_BACK_QA
@@ -278,6 +282,7 @@ steps:
 
   - name: sonarqube-ensurance-backend-analysis-main
     image: sonarsource/sonar-scanner-cli:latest
+    user: root
     environment:
       SONAR_TOKEN:
         from_secret: ENSURANCE_BACK_MAIN
@@ -335,6 +340,7 @@ steps:
 
   - name: sonarqube-pharmacy-backend-analysis-main
     image: sonarsource/sonar-scanner-cli:latest
+    user: root
     environment:
       SONAR_TOKEN:
         from_secret: PHARMACY_BACK_MAIN
