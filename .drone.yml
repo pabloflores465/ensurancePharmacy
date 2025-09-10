@@ -16,8 +16,6 @@ trigger:
 clone:
   depth: 50
 
-concurrency:
-  limit: 1
 
 steps:
   - name: unit-tests
