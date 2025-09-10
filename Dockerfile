@@ -85,7 +85,12 @@ ARG ENVIRONMENT=main
 RUN apk add --no-cache \
     sqlite \
     supervisor \
+    busybox-extras \
     curl
+
+# Ensure JAVA is on PATH for supervisord-managed processes
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH="$JAVA_HOME/bin:${PATH}"
 
 # Create application directories
 WORKDIR /app
@@ -146,7 +151,7 @@ stderr_logfile=/app/logs/pharmacy-frontend.err.log
 stdout_logfile=/app/logs/pharmacy-frontend.out.log
 
 [program:ensurance-backend]
-command=/bin/sh -lc "exec java -jar -Dserver.port=8081 -Dhibernate.connection.url=jdbc:sqlite:/app/databases/ensurance/USUARIO.sqlite -Dhibernate.connection.driver_class=org.sqlite.JDBC -Dhibernate.dialect=org.hibernate.community.dialect.SQLiteDialect /app/ensurance-backend/app.jar"
+command=/bin/sh -lc "exec /opt/java/openjdk/bin/java -jar -Dserver.port=8081 -Dhibernate.connection.url=jdbc:sqlite:/app/databases/ensurance/USUARIO.sqlite -Dhibernate.connection.driver_class=org.sqlite.JDBC -Dhibernate.dialect=org.hibernate.community.dialect.SQLiteDialect /app/ensurance-backend/app.jar"
 directory=/app/ensurance-backend
 autostart=true
 autorestart=true
@@ -155,7 +160,7 @@ stdout_logfile=/app/logs/ensurance-backend.out.log
 environment=SERVER_HOST="0.0.0.0",SERVER_PORT="8081"
 
 [program:pharmacy-backend]
-command=/bin/sh -lc "exec java -jar -Dserver.port=8082 -Dhibernate.connection.url=jdbc:sqlite:/app/databases/pharmacy/USUARIO.sqlite -Dhibernate.connection.driver_class=org.sqlite.JDBC -Dhibernate.dialect=org.hibernate.community.dialect.SQLiteDialect /app/pharmacy-backend/app.jar"
+command=/bin/sh -lc "exec /opt/java/openjdk/bin/java -jar -Dserver.port=8082 -Dhibernate.connection.url=jdbc:sqlite:/app/databases/pharmacy/USUARIO.sqlite -Dhibernate.connection.driver_class=org.sqlite.JDBC -Dhibernate.dialect=org.hibernate.community.dialect.SQLiteDialect /app/pharmacy-backend/app.jar"
 directory=/app/pharmacy-backend
 autostart=true
 autorestart=true
