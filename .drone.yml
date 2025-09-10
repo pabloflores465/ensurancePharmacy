@@ -38,14 +38,11 @@ steps:
 
   - name: wait-for-sonar
     image: curlimages/curl:8.9.1
-    environment:
-      SONAR_HOST_URL:
-        from_secret: SONAR_HOST_URL
     depends_on: [ unit-tests ]
     commands:
       - |
         set -eu
-        test -n "${SONAR_HOST_URL:-}" || { echo "Falta secreto SONAR_HOST_URL"; exit 2; }
+        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
         echo "Esperando SonarQube en $SONAR_HOST_URL ..."
         for i in $(seq 1 60); do
           if curl -fsS "$SONAR_HOST_URL/api/system/status" | grep -q '"status":"UP"'; then
@@ -58,8 +55,6 @@ steps:
   - name: sonarqube-ensurance-backend-analysis-dev
     image: sonarsource/sonar-scanner-cli:latest
     environment:
-      SONAR_HOST_URL:
-        from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
         from_secret: ENSURANCE_BACK_DEV
     depends_on: [ wait-for-sonar ]
@@ -67,7 +62,8 @@ steps:
       - |
         set -eu
         echo "SonarQube Ensurance Backend analysis for DEV environment"
-        test -n "${SONAR_HOST_URL:-}" && test -n "${SONAR_TOKEN:-}" || { echo "Faltan SONAR_HOST_URL o SONAR_TOKEN"; exit 2; }
+        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
+        test -n "${SONAR_TOKEN:-}" || { echo "Falta SONAR_TOKEN"; exit 2; }
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -87,8 +83,6 @@ steps:
   - name: sonarqube-ensurance-frontend-analysis-dev
     image: sonarsource/sonar-scanner-cli:latest
     environment:
-      SONAR_HOST_URL:
-        from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
         from_secret: ENSURANCE_FRONT_DEV
     depends_on: [ wait-for-sonar ]
@@ -96,6 +90,7 @@ steps:
       - |
         set -eu
         echo "SonarQube Ensurance Frontend analysis for DEV environment"
+        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
         cd ensurance && npm ci && npm run test:coverage || true && cd ..
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
@@ -115,8 +110,6 @@ steps:
   - name: sonarqube-pharmacy-backend-analysis-dev
     image: sonarsource/sonar-scanner-cli:latest
     environment:
-      SONAR_HOST_URL:
-        from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
         from_secret: PHARMACY_BACK_DEV
     depends_on: [ wait-for-sonar ]
@@ -124,6 +117,7 @@ steps:
       - |
         set -eu
         echo "SonarQube Pharmacy Backend analysis for DEV environment"
+        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -143,8 +137,6 @@ steps:
   - name: sonarqube-pharmacy-frontend-analysis-dev
     image: sonarsource/sonar-scanner-cli:latest
     environment:
-      SONAR_HOST_URL:
-        from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
         from_secret: PHARMACY_FRONT_DEV
     depends_on: [ wait-for-sonar ]
@@ -152,6 +144,7 @@ steps:
       - |
         set -eu
         echo "SonarQube Pharmacy Frontend analysis for DEV environment"
+        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
         cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
@@ -171,8 +164,6 @@ steps:
   - name: sonarqube-ensurance-backend-analysis-qa
     image: sonarsource/sonar-scanner-cli:latest
     environment:
-      SONAR_HOST_URL:
-        from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
         from_secret: ENSURANCE_BACK_QA
     depends_on: [ wait-for-sonar ]
@@ -180,6 +171,7 @@ steps:
       - |
         set -eu
         echo "SonarQube Ensurance Backend analysis for QA environment"
+        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -199,8 +191,6 @@ steps:
   - name: sonarqube-ensurance-frontend-analysis-qa
     image: sonarsource/sonar-scanner-cli:latest
     environment:
-      SONAR_HOST_URL:
-        from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
         from_secret: ENSURANCE_FRONT_QA
     depends_on: [ wait-for-sonar ]
@@ -208,6 +198,7 @@ steps:
       - |
         set -eu
         echo "SonarQube Ensurance Frontend analysis for QA environment"
+        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
         cd ensurance && npm ci && npm run test:coverage || true && cd ..
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
@@ -227,8 +218,6 @@ steps:
   - name: sonarqube-pharmacy-backend-analysis-qa
     image: sonarsource/sonar-scanner-cli:latest
     environment:
-      SONAR_HOST_URL:
-        from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
         from_secret: PHARMACY_BACK_QA
     depends_on: [ wait-for-sonar ]
@@ -236,6 +225,7 @@ steps:
       - |
         set -eu
         echo "SonarQube Pharmacy Backend analysis for QA environment"
+        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -255,8 +245,6 @@ steps:
   - name: sonarqube-pharmacy-frontend-analysis-qa
     image: sonarsource/sonar-scanner-cli:latest
     environment:
-      SONAR_HOST_URL:
-        from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
         from_secret: PHARMACY_FRONT_QA
     depends_on: [ wait-for-sonar ]
@@ -264,6 +252,7 @@ steps:
       - |
         set -eu
         echo "SonarQube Pharmacy Frontend analysis for QA environment"
+        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
         cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
@@ -283,8 +272,6 @@ steps:
   - name: sonarqube-ensurance-backend-analysis-main
     image: sonarsource/sonar-scanner-cli:latest
     environment:
-      SONAR_HOST_URL:
-        from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
         from_secret: ENSURANCE_BACK_MAIN
     depends_on: [ wait-for-sonar ]
@@ -292,6 +279,7 @@ steps:
       - |
         set -eu
         echo "SonarQube Ensurance Backend analysis for MAIN environment"
+        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -312,8 +300,6 @@ steps:
   - name: sonarqube-ensurance-frontend-analysis-main
     image: sonarsource/sonar-scanner-cli:latest
     environment:
-      SONAR_HOST_URL:
-        from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
         from_secret: ENSURANCE_FRONT_MAIN
     depends_on: [ wait-for-sonar ]
@@ -321,6 +307,7 @@ steps:
       - |
         set -eu
         echo "SonarQube Ensurance Frontend analysis for MAIN environment"
+        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
         cd ensurance && npm ci && npm run test:coverage || true && cd ..
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
@@ -341,8 +328,6 @@ steps:
   - name: sonarqube-pharmacy-backend-analysis-main
     image: sonarsource/sonar-scanner-cli:latest
     environment:
-      SONAR_HOST_URL:
-        from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
         from_secret: PHARMACY_BACK_MAIN
     depends_on: [ wait-for-sonar ]
@@ -350,6 +335,7 @@ steps:
       - |
         set -eu
         echo "SonarQube Pharmacy Backend analysis for MAIN environment"
+        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -370,8 +356,6 @@ steps:
   - name: sonarqube-pharmacy-frontend-analysis-main
     image: sonarsource/sonar-scanner-cli:latest
     environment:
-      SONAR_HOST_URL:
-        from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
         from_secret: PHARMACY_FRONT_MAIN
     depends_on: [ wait-for-sonar ]
@@ -379,6 +363,7 @@ steps:
       - |
         set -eu
         echo "SonarQube Pharmacy Frontend analysis for MAIN environment"
+        : "${SONAR_HOST_URL:=http://localhost:9000/sonar}"
         cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
