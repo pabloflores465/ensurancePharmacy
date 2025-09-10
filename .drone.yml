@@ -548,12 +548,17 @@ steps:
       - |
         set -eu
         apk add --no-cache openssl >/dev/null
-        test -n "${SMTP_SERVER:-}" && test -n "${SMTP_PORT:-}" || { echo "SMTP_SERVER/SMTP_PORT secretos faltantes"; exit 2; }
+        if [ -z "${SMTP_SERVER:-}" ] || [ -z "${SMTP_PORT:-}" ]; then
+          echo "SMTP secrets not set; skipping smoke test"
+          exit 0
+        fi
         echo "Probing SMTP ${SMTP_SERVER}:${SMTP_PORT} ..."
         if [ "$SMTP_PORT" = "465" ]; then
-          echo QUIT | openssl s_client -connect ${SMTP_SERVER}:${SMTP_PORT} -servername ${SMTP_SERVER} -quiet || exit 9
+          echo QUIT | openssl s_client -connect ${SMTP_SERVER}:${SMTP_PORT} -servername ${SMTP_SERVER} -quiet || {
+            echo "SMTP SSL probe failed (465)"; exit 9; }
         else
-          echo QUIT | openssl s_client -starttls smtp -connect ${SMTP_SERVER}:${SMTP_PORT} -servername ${SMTP_SERVER} -quiet || exit 9
+          echo QUIT | openssl s_client -starttls smtp -connect ${SMTP_SERVER}:${SMTP_PORT} -servername ${SMTP_SERVER} -quiet || {
+            echo "SMTP STARTTLS probe failed (587)"; exit 9; }
         fi
 
   - name: email-notification
