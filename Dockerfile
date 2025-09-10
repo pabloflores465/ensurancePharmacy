@@ -85,7 +85,7 @@ ARG ENVIRONMENT=main
 RUN apk add --no-cache \
     sqlite \
     supervisor \
-    busybox-extras \
+    python3 \
     curl
 
 # Ensure JAVA is on PATH for supervisord-managed processes
@@ -113,12 +113,16 @@ COPY --from=pharmacy-frontend-build /app/pharmacy/dist /app/pharmacy-frontend/
 COPY --from=ensurance-backend-build /app/backv4/target/*.jar /app/ensurance-backend/
 COPY --from=pharmacy-backend-build /app/backv5/target/*.jar /app/pharmacy-backend/
 
-# Normalize jar filenames to app.jar for supervisor commands
+# Normalize jar filenames to app.jar preferring shaded/with-dependencies artifacts
 RUN set -eux; \
-    ensJar=$(find /app/ensurance-backend -maxdepth 1 -type f -name "*.jar" | head -n1); \
-    [ -n "$ensJar" ] && mv "$ensJar" /app/ensurance-backend/app.jar; \
-    phaJar=$(find /app/pharmacy-backend -maxdepth 1 -type f -name "*.jar" | head -n1); \
-    [ -n "$phaJar" ] && mv "$phaJar" /app/pharmacy-backend/app.jar
+  sel() { dir="$1"; \
+    for pat in "*-shaded.jar" "*-with-dependencies.jar" "*-jar-with-dependencies.jar" "*.jar"; do \
+      j=$(ls -1 $dir/$pat 2>/dev/null | head -n1 || true); [ -n "$j" ] && echo "$j" && return 0; done; \
+    return 1; }; \
+  ens=$(sel /app/ensurance-backend); \
+  pha=$(sel /app/pharmacy-backend); \
+  [ -n "${ens:-}" ] && mv "$ens" /app/ensurance-backend/app.jar || (echo "No JAR found for Ensurance" && exit 1); \
+  [ -n "${pha:-}" ] && mv "$pha" /app/pharmacy-backend/app.jar || (echo "No JAR found for Pharmacy" && exit 1)
 
 # Copy SQL seed files to a non-mounted path so we can initialize volumes at runtime
 RUN mkdir -p /app/seed-sql/ensurance /app/seed-sql/pharmacy
@@ -139,18 +143,20 @@ logfile=/app/logs/supervisord.log
 pidfile=/var/run/supervisord.pid
 
 [program:ensurance-frontend]
-command=/bin/busybox httpd -f -p 5175 -h /app/ensurance-frontend
+command=/usr/bin/python3 -m http.server 5175 --directory /app/ensurance-frontend
 redirect_stderr=true
 stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
 autostart=true
 autorestart=true
 stderr_logfile=/app/logs/ensurance-frontend.err.log
 stdout_logfile=/app/logs/ensurance-frontend.out.log
 
 [program:pharmacy-frontend]
-command=/bin/busybox httpd -f -p 8089 -h /app/pharmacy-frontend
+command=/usr/bin/python3 -m http.server 8089 --directory /app/pharmacy-frontend
 redirect_stderr=true
 stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
 autostart=true
 autorestart=true
 stderr_logfile=/app/logs/pharmacy-frontend.err.log
@@ -163,6 +169,7 @@ autostart=true
 autorestart=true
 redirect_stderr=true
 stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
 environment=SERVER_HOST="0.0.0.0",SERVER_PORT="8081"
 
 [program:pharmacy-backend]
@@ -172,6 +179,7 @@ autostart=true
 autorestart=true
 redirect_stderr=true
 stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
 environment=SERVER_HOST="0.0.0.0",SERVER_PORT="8082"
 EOF
 

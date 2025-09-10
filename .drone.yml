@@ -385,6 +385,11 @@ steps:
     image: docker:27-cli
     environment:
       ENVIRONMENT: dev
+    depends_on:
+      - sonarqube-ensurance-backend-analysis-dev
+      - sonarqube-ensurance-frontend-analysis-dev
+      - sonarqube-pharmacy-backend-analysis-dev
+      - sonarqube-pharmacy-frontend-analysis-dev
     commands:
       - echo "Deploy DEV Environment (puertos 3000-3003)"
       - echo dev > .environment
@@ -410,6 +415,11 @@ steps:
     image: docker:27-cli
     environment:
       ENVIRONMENT: qa
+    depends_on:
+      - sonarqube-ensurance-backend-analysis-qa
+      - sonarqube-ensurance-frontend-analysis-qa
+      - sonarqube-pharmacy-backend-analysis-qa
+      - sonarqube-pharmacy-frontend-analysis-qa
     commands:
       - echo "Deploy QA Environment (puertos 4000-4003)"
       - echo qa > .environment
@@ -435,6 +445,11 @@ steps:
     image: docker:27-cli
     environment:
       ENVIRONMENT: main
+    depends_on:
+      - sonarqube-ensurance-backend-analysis-main
+      - sonarqube-ensurance-frontend-analysis-main
+      - sonarqube-pharmacy-backend-analysis-main
+      - sonarqube-pharmacy-frontend-analysis-main
     commands:
       - echo "Deploy MAIN Environment (puertos 5175, 8089, 8081, 8082)"
       - echo main > .environment
