@@ -63,7 +63,7 @@ steps:
       SONAR_HOST_URL:
         from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
-        from_secret: SONAR_TOKEN
+        from_secret: ENSURANCE_BACK_DEV
     depends_on: [ wait-for-sonar ]
     commands:
       - |
@@ -92,7 +92,7 @@ steps:
       SONAR_HOST_URL:
         from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
-        from_secret: SONAR_TOKEN
+        from_secret: ENSURANCE_FRONT_DEV
     depends_on: [ wait-for-sonar ]
     commands:
       - |
@@ -120,7 +120,7 @@ steps:
       SONAR_HOST_URL:
         from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
-        from_secret: SONAR_TOKEN
+        from_secret: PHARMACY_BACK_DEV
     depends_on: [ wait-for-sonar ]
     commands:
       - |
@@ -148,7 +148,7 @@ steps:
       SONAR_HOST_URL:
         from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
-        from_secret: SONAR_TOKEN
+        from_secret: PHARMACY_FRONT_DEV
     depends_on: [ wait-for-sonar ]
     commands:
       - |
@@ -176,7 +176,7 @@ steps:
       SONAR_HOST_URL:
         from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
-        from_secret: SONAR_TOKEN
+        from_secret: ENSURANCE_BACK_QA
     depends_on: [ wait-for-sonar ]
     commands:
       - |
@@ -204,7 +204,7 @@ steps:
       SONAR_HOST_URL:
         from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
-        from_secret: SONAR_TOKEN
+        from_secret: ENSURANCE_FRONT_QA
     depends_on: [ wait-for-sonar ]
     commands:
       - |
@@ -232,7 +232,7 @@ steps:
       SONAR_HOST_URL:
         from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
-        from_secret: SONAR_TOKEN
+        from_secret: PHARMACY_BACK_QA
     depends_on: [ wait-for-sonar ]
     commands:
       - |
@@ -260,7 +260,7 @@ steps:
       SONAR_HOST_URL:
         from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
-        from_secret: SONAR_TOKEN
+        from_secret: PHARMACY_FRONT_QA
     depends_on: [ wait-for-sonar ]
     commands:
       - |
@@ -288,7 +288,7 @@ steps:
       SONAR_HOST_URL:
         from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
-        from_secret: SONAR_TOKEN
+        from_secret: ENSURANCE_BACK_MAIN
     depends_on: [ wait-for-sonar ]
     commands:
       - |
@@ -317,7 +317,7 @@ steps:
       SONAR_HOST_URL:
         from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
-        from_secret: SONAR_TOKEN
+        from_secret: ENSURANCE_FRONT_MAIN
     depends_on: [ wait-for-sonar ]
     commands:
       - |
@@ -346,7 +346,7 @@ steps:
       SONAR_HOST_URL:
         from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
-        from_secret: SONAR_TOKEN
+        from_secret: PHARMACY_BACK_MAIN
     depends_on: [ wait-for-sonar ]
     commands:
       - |
@@ -375,7 +375,7 @@ steps:
       SONAR_HOST_URL:
         from_secret: SONAR_HOST_URL
       SONAR_TOKEN:
-        from_secret: SONAR_TOKEN
+        from_secret: PHARMACY_FRONT_MAIN
     depends_on: [ wait-for-sonar ]
     commands:
       - |
@@ -533,6 +533,29 @@ steps:
     depends_on:
       - deploy-main
 
+  - name: smtp-smoke-test
+    image: alpine:3.20
+    when:
+      status:
+        - success
+        - failure
+    environment:
+      SMTP_SERVER:
+        from_secret: SMTP_SERVER
+      SMTP_PORT:
+        from_secret: SMTP_PORT
+    commands:
+      - |
+        set -eu
+        apk add --no-cache openssl >/dev/null
+        test -n "${SMTP_SERVER:-}" && test -n "${SMTP_PORT:-}" || { echo "SMTP_SERVER/SMTP_PORT secretos faltantes"; exit 2; }
+        echo "Probing SMTP ${SMTP_SERVER}:${SMTP_PORT} ..."
+        if [ "$SMTP_PORT" = "465" ]; then
+          echo QUIT | openssl s_client -connect ${SMTP_SERVER}:${SMTP_PORT} -servername ${SMTP_SERVER} -quiet || exit 9
+        else
+          echo QUIT | openssl s_client -starttls smtp -connect ${SMTP_SERVER}:${SMTP_PORT} -servername ${SMTP_SERVER} -quiet || exit 9
+        fi
+
   - name: email-notification
     image: drillster/drone-email
     settings:
@@ -540,6 +563,7 @@ steps:
         from_secret: SMTP_SERVER
       port:
         from_secret: SMTP_PORT
+      secure: true
       username:
         from_secret: SMTP_USERNAME
       password:
