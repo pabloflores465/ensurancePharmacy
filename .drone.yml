@@ -304,6 +304,9 @@ steps:
         set -eu
         echo "SonarQube Ensurance Backend analysis for MAIN environment"
         SONAR_HOST_URL="${SONAR_HOST_URL:-https://macbook-air-de-gp.tail5d54f7.ts.net/sonar}"
+        rm -rf .scannerwork || true
+        export SONAR_USER_HOME=/tmp/sonar-ensurance-back-main; mkdir -p "$SONAR_USER_HOME"
+        export SONAR_WORK=/tmp/.scannerwork-ensurance-back-main; mkdir -p "$SONAR_WORK"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -314,6 +317,7 @@ steps:
           -Dsonar.tests=backv4/src/test \
           -Dsonar.java.binaries=backv4/target/classes \
           -Dsonar.coverage.jacoco.xmlReportPaths=backv4/target/site/jacoco/jacoco.xml \
+          -Dsonar.working.directory="$SONAR_WORK" \
           -Dsonar.qualitygate.wait=true \
           -Dsonar.qualitygate.timeout=600
     when:
