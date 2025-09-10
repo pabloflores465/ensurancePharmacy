@@ -90,12 +90,14 @@ steps:
     environment:
       SONAR_TOKEN:
         from_secret: ENSURANCE_FRONT_DEV
-    depends_on: [ wait-for-sonar ]
+    depends_on: [ wait-for-sonar, sonarqube-ensurance-backend-analysis-dev ]
     commands:
       - |
         set -eu
         echo "SonarQube Ensurance Frontend analysis for DEV environment"
         SONAR_HOST_URL="${SONAR_HOST_URL:-https://macbook-air-de-gp.tail5d54f7.ts.net/sonar}"
+        rm -rf .scannerwork || true
+        export SONAR_USER_HOME=/tmp/sonar-ens-frontend-dev; mkdir -p "$SONAR_USER_HOME"
         cd ensurance && npm ci && npm run test:coverage || true && cd ..
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
@@ -118,12 +120,14 @@ steps:
     environment:
       SONAR_TOKEN:
         from_secret: PHARMACY_BACK_DEV
-    depends_on: [ wait-for-sonar ]
+    depends_on: [ sonarqube-ensurance-frontend-analysis-dev ]
     commands:
       - |
         set -eu
         echo "SonarQube Pharmacy Backend analysis for DEV environment"
         SONAR_HOST_URL="${SONAR_HOST_URL:-https://macbook-air-de-gp.tail5d54f7.ts.net/sonar}"
+        rm -rf .scannerwork || true
+        export SONAR_USER_HOME=/tmp/sonar-pharm-back-dev; mkdir -p "$SONAR_USER_HOME"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -146,12 +150,14 @@ steps:
     environment:
       SONAR_TOKEN:
         from_secret: PHARMACY_FRONT_DEV
-    depends_on: [ wait-for-sonar ]
+    depends_on: [ sonarqube-pharmacy-backend-analysis-dev ]
     commands:
       - |
         set -eu
         echo "SonarQube Pharmacy Frontend analysis for DEV environment"
         SONAR_HOST_URL="${SONAR_HOST_URL:-https://macbook-air-de-gp.tail5d54f7.ts.net/sonar}"
+        rm -rf .scannerwork || true
+        export SONAR_USER_HOME=/tmp/sonar-pharm-frontend-dev; mkdir -p "$SONAR_USER_HOME"
         cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
@@ -202,12 +208,14 @@ steps:
     environment:
       SONAR_TOKEN:
         from_secret: ENSURANCE_FRONT_QA
-    depends_on: [ wait-for-sonar ]
+    depends_on: [ wait-for-sonar, sonarqube-ensurance-backend-analysis-qa ]
     commands:
       - |
         set -eu
         echo "SonarQube Ensurance Frontend analysis for QA environment"
         SONAR_HOST_URL="${SONAR_HOST_URL:-https://macbook-air-de-gp.tail5d54f7.ts.net/sonar}"
+        rm -rf .scannerwork || true
+        export SONAR_USER_HOME=/tmp/sonar-ens-frontend-qa; mkdir -p "$SONAR_USER_HOME"
         cd ensurance && npm ci && npm run test:coverage || true && cd ..
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
@@ -230,12 +238,14 @@ steps:
     environment:
       SONAR_TOKEN:
         from_secret: PHARMACY_BACK_QA
-    depends_on: [ wait-for-sonar ]
+    depends_on: [ sonarqube-ensurance-frontend-analysis-qa ]
     commands:
       - |
         set -eu
         echo "SonarQube Pharmacy Backend analysis for QA environment"
         SONAR_HOST_URL="${SONAR_HOST_URL:-https://macbook-air-de-gp.tail5d54f7.ts.net/sonar}"
+        rm -rf .scannerwork || true
+        export SONAR_USER_HOME=/tmp/sonar-pharm-back-qa; mkdir -p "$SONAR_USER_HOME"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -258,12 +268,14 @@ steps:
     environment:
       SONAR_TOKEN:
         from_secret: PHARMACY_FRONT_QA
-    depends_on: [ wait-for-sonar ]
+    depends_on: [ sonarqube-pharmacy-backend-analysis-qa ]
     commands:
       - |
         set -eu
         echo "SonarQube Pharmacy Frontend analysis for QA environment"
         SONAR_HOST_URL="${SONAR_HOST_URL:-https://macbook-air-de-gp.tail5d54f7.ts.net/sonar}"
+        rm -rf .scannerwork || true
+        export SONAR_USER_HOME=/tmp/sonar-pharm-frontend-qa; mkdir -p "$SONAR_USER_HOME"
         cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
@@ -315,12 +327,14 @@ steps:
     environment:
       SONAR_TOKEN:
         from_secret: ENSURANCE_FRONT_MAIN
-    depends_on: [ wait-for-sonar ]
+    depends_on: [ wait-for-sonar, sonarqube-ensurance-backend-analysis-main ]
     commands:
       - |
         set -eu
         echo "SonarQube Ensurance Frontend analysis for MAIN environment"
         SONAR_HOST_URL="${SONAR_HOST_URL:-https://macbook-air-de-gp.tail5d54f7.ts.net/sonar}"
+        rm -rf .scannerwork || true
+        export SONAR_USER_HOME=/tmp/sonar-ens-frontend-main; mkdir -p "$SONAR_USER_HOME"
         cd ensurance && npm ci && npm run test:coverage || true && cd ..
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
@@ -344,12 +358,14 @@ steps:
     environment:
       SONAR_TOKEN:
         from_secret: PHARMACY_BACK_MAIN
-    depends_on: [ wait-for-sonar ]
+    depends_on: [ sonarqube-ensurance-frontend-analysis-main ]
     commands:
       - |
         set -eu
         echo "SonarQube Pharmacy Backend analysis for MAIN environment"
         SONAR_HOST_URL="${SONAR_HOST_URL:-https://macbook-air-de-gp.tail5d54f7.ts.net/sonar}"
+        rm -rf .scannerwork || true
+        export SONAR_USER_HOME=/tmp/sonar-pharm-back-main; mkdir -p "$SONAR_USER_HOME"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -373,12 +389,14 @@ steps:
     environment:
       SONAR_TOKEN:
         from_secret: PHARMACY_FRONT_MAIN
-    depends_on: [ wait-for-sonar ]
+    depends_on: [ sonarqube-pharmacy-backend-analysis-main ]
     commands:
       - |
         set -eu
         echo "SonarQube Pharmacy Frontend analysis for MAIN environment"
         SONAR_HOST_URL="${SONAR_HOST_URL:-https://macbook-air-de-gp.tail5d54f7.ts.net/sonar}"
+        rm -rf .scannerwork || true
+        export SONAR_USER_HOME=/tmp/sonar-pharm-frontend-main; mkdir -p "$SONAR_USER_HOME"
         cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
