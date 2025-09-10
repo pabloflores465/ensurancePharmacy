@@ -17,7 +17,7 @@ trigger:
   branch: [ main, master, dev, qa ]
 
 clone:
-  depth: 50
+  depth: 0
 
 
 steps:
@@ -106,8 +106,10 @@ steps:
           -Dsonar.projectName="Ensurance Frontend DEV" \
           -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
           -Dsonar.sources=ensurance/src \
-          -Dsonar.tests=ensurance/tests \
-          -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info \
+          -Dsonar.tests=ensurance/src,ensurance/tests \
+          -Dsonar.test.inclusions=**/__tests__/**,**/*.spec.*,**/*.test.* \
+          -Dsonar.cpd.exclusions=**/__tests__/**,**/*.spec.*,**/*.test.* \
+          -Dsonar.javascript.v8.coveragePaths=ensurance/coverage/coverage-final.json \
           -Dsonar.qualitygate.wait=true \
           -Dsonar.qualitygate.timeout=600
     when:
@@ -224,8 +226,10 @@ steps:
           -Dsonar.projectName="Ensurance Frontend QA" \
           -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
           -Dsonar.sources=ensurance/src \
-          -Dsonar.tests=ensurance/tests \
-          -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info \
+          -Dsonar.tests=ensurance/src,ensurance/tests \
+          -Dsonar.test.inclusions=**/__tests__/**,**/*.spec.*,**/*.test.* \
+          -Dsonar.cpd.exclusions=**/__tests__/**,**/*.spec.*,**/*.test.* \
+          -Dsonar.javascript.v8.coveragePaths=ensurance/coverage/coverage-final.json \
           -Dsonar.qualitygate.wait=true \
           -Dsonar.qualitygate.timeout=600
     when:
@@ -347,8 +351,10 @@ steps:
           -Dsonar.projectName="Ensurance Frontend MAIN" \
           -Dsonar.projectVersion=${DRONE_BUILD_NUMBER} \
           -Dsonar.sources=ensurance/src \
-          -Dsonar.tests=ensurance/tests \
-          -Dsonar.javascript.lcov.reportPaths=ensurance/coverage/lcov.info \
+          -Dsonar.tests=ensurance/src,ensurance/tests \
+          -Dsonar.test.inclusions=**/__tests__/**,**/*.spec.*,**/*.test.* \
+          -Dsonar.cpd.exclusions=**/__tests__/**,**/*.spec.*,**/*.test.* \
+          -Dsonar.javascript.v8.coveragePaths=ensurance/coverage/coverage-final.json \
           -Dsonar.qualitygate.wait=true \
           -Dsonar.qualitygate.timeout=600
     when:
