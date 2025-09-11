@@ -588,30 +588,38 @@ steps:
       SMTP_PORT:
         from_secret: SMTP_PORT
     commands:
-      - |
+      - | 
         set -eu
+        # Check for secrets and fail if not present
+        if [ -z "${SMTP_SERVER}" ] || [ -z "${SMTP_PORT}" ]; then
+          echo "ERROR: SMTP_SERVER or SMTP_PORT secrets not found."
+          echo "Please verify they are correctly configured in Drone for this repository."
+          exit 1
+        fi
+
         apk add --no-cache openssl >/dev/null
-        if [ -z "${SMTP_SERVER:-}" ] || [ -z "${SMTP_PORT:-}" ]; then
-          echo "SMTP secrets not set; skipping smoke test"
-          exit 0
-        fi
-        echo "Probing SMTP ${SMTP_SERVER}:${SMTP_PORT} ..."
+        echo "Probing SMTP server at ${SMTP_SERVER}:${SMTP_PORT}..."
+
         if [ "$SMTP_PORT" = "465" ]; then
+          # Test SSL/TLS connection
           echo QUIT | openssl s_client -connect ${SMTP_SERVER}:${SMTP_PORT} -servername ${SMTP_SERVER} -quiet || {
-            echo "SMTP SSL probe failed (465)"; exit 9; }
+            echo "ERROR: SMTP SSL probe failed for ${SMTP_SERVER}:${SMTP_PORT}"; exit 9; }
         else
+          # Test STARTTLS connection
           echo QUIT | openssl s_client -starttls smtp -connect ${SMTP_SERVER}:${SMTP_PORT} -servername ${SMTP_SERVER} -quiet || {
-            echo "SMTP STARTTLS probe failed (587)"; exit 9; }
+            echo "ERROR: SMTP STARTTLS probe failed for ${SMTP_SERVER}:${SMTP_PORT}"; exit 9; }
         fi
+        echo "SMTP probe successful."
 
   - name: email-notification
     image: drillster/drone-email
+    depends_on:
+      - smtp-smoke-test
     settings:
       host:
         from_secret: SMTP_SERVER
       port:
         from_secret: SMTP_PORT
-      secure: true
       username:
         from_secret: SMTP_USERNAME
       password:
@@ -623,7 +631,7 @@ steps:
       starttls: true
       skip_verify: true
       subject: "{{#success build.status}}Deploy exitoso: {{repo.name}} #{{build.number}} [{{build.branch}}]{{else}}Pipeline fallido: {{repo.name}} #{{build.number}} [{{build.branch}}]{{/success}}"
-      body: "{{#success build.status}}Deploy completado exitosamente en rama {{build.branch}}.\n\nQuality Gate: APROBADO\nTests: PASADOS\nDeploy: EXITOSO\n\nDetalles: {{build.link}}\n\nServicios disponibles:\n{{#equal build.branch \"dev\"}}- Ensurance Frontend: http://localhost:3000\n- Pharmacy Frontend: http://localhost:3001\n- Ensurance Backend: http://localhost:3002/api\n- Pharmacy Backend: http://localhost:3003/api2\n{{/equal}}{{#equal build.branch \"qa\"}}- Ensurance Frontend: http://localhost:4000\n- Pharmacy Frontend: http://localhost:4001\n- Ensurance Backend: http://localhost:4002/api\n- Pharmacy Backend: http://localhost:4003/api2\n{{/equal}}{{#equal build.branch \"main\"}}- Ensurance Frontend: http://localhost:5175\n- Pharmacy Frontend: http://localhost:8089\n- Ensurance Backend: http://localhost:8081/api\n- Pharmacy Backend: http://localhost:8082/api2\n{{/equal}}{{else}}Pipeline falló en rama {{build.branch}}.\n\nDetalle: {{build.link}}\n\nPara diagnosticar:\n1. Revisar logs en Drone UI\n2. Verificar Quality Gate en SonarQube\n3. Revisar estado de contenedores{{/success}}"
+      body: "{{#success build.status}}**BUILD #{{build.number}} SUCCEEDED**\n\nEl pipeline para el repositorio `{{repo.name}}` en la rama `{{build.branch}}` ha finalizado exitosamente.\n\n**Resumen:**\n- **Quality Gate:** APROBADO\n- **Unit Tests:** PASADOS\n- **Análisis de SonarQube:** COMPLETADO\n- **Deploy:** EXITOSO\n\n**Detalles del Build:**\n{{build.link}}\n\n**Servicios Desplegados:**\n{{#equal build.branch \"dev\"}}- Ensurance Frontend: http://localhost:3000\n- Pharmacy Frontend: http://localhost:3001\n- Ensurance Backend: http://localhost:3002/api\n- Pharmacy Backend: http://localhost:3003/api2\n{{/equal}}{{#equal build.branch \"qa\"}}- Ensurance Frontend: http://localhost:4000\n- Pharmacy Frontend: http://localhost:4001\n- Ensurance Backend: http://localhost:4002/api\n- Pharmacy Backend: http://localhost:4003/api2\n{{/equal}}{{#equal build.branch \"main\"}}- Ensurance Frontend: http://localhost:5175\n- Pharmacy Frontend: http://localhost:8089\n- Ensurance Backend: http://localhost:8081/api\n- Pharmacy Backend: http://localhost:8082/api2\n{{/equal}}\n{{else}}**BUILD #{{build.number}} FAILED**\n\nEl pipeline para el repositorio `{{repo.name}}` en la rama `{{build.branch}}` ha fallado.\n\n**Por favor, revise los logs en Drone para identificar el paso que falló y la causa del error.**\n\n**Detalles del Build:**\n{{build.link}}\n\n**Pasos para diagnosticar:**\n1.  **Revisar logs en Drone UI:** El link de arriba lo llevará directamente a los logs del build.\n2.  **Verificar Quality Gate en SonarQube:** Si el pipeline falló en un paso de análisis, revise el reporte en SonarQube.\n3.  **Revisar estado de los contenedores:** Si el fallo ocurrió durante el deploy, verifique los logs de los contenedores Docker.{{/success}}"
     when:
       event:
         - push
