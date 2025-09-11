@@ -576,6 +576,7 @@ steps:
 
   - name: smtp-smoke-test
     image: alpine:3.20
+    disable_substitution: true
     when:
       event:
         - push
@@ -587,11 +588,6 @@ steps:
       SMTP_PORT: 587
     commands:
       - | 
-        echo "--- Debugging environment variables ---"
-        echo "SMTP_SERVER value: [${SMTP_SERVER}]"
-        echo "SMTP_PORT value: [${SMTP_PORT}]"
-        env
-        echo "--- End of debugging ---"
         set -eu
         # Check for secrets and fail if not present
         if [ -z "${SMTP_SERVER}" ] || [ -z "${SMTP_PORT}" ]; then
