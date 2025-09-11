@@ -609,19 +609,59 @@ steps:
         fi
         echo "SMTP probe successful."
 
+  - name: smtp-auth-test
+    image: python:3.12-alpine
+    depends_on:
+      - smtp-smoke-test
+    environment:
+      SMTP_SERVER: smtp-relay.brevo.com
+      SMTP_PORT: 587
+      SMTP_USERNAME: 945b13001@smtp-brevo.com
+      SMTP_PASSWORD:
+        from_secret: SMTP_PASSWORD
+    commands:
+      - |
+        set -eu
+        apk add --no-cache ca-certificates >/dev/null
+        python - <<'PY'
+        import os, smtplib, ssl, sys
+        host = os.environ.get('SMTP_SERVER','smtp-relay.brevo.com')
+        port = int(os.environ.get('SMTP_PORT','587'))
+        user = os.environ['SMTP_USERNAME']
+        pwd = os.environ['SMTP_PASSWORD']
+        try:
+            with smtplib.SMTP(host, port, timeout=30) as server:
+                server.ehlo()
+                server.starttls(context=ssl.create_default_context())
+                server.ehlo()
+                server.login(user, pwd)
+            print('SMTP authentication OK for', user)
+        except Exception as e:
+            print('SMTP authentication FAILED:', e)
+            sys.exit(10)
+        PY
+    when:
+      event:
+        - push
+      status:
+        - success
+        - failure
+
   - name: email-notification
     image: drillster/drone-email
     depends_on:
-      - smtp-smoke-test
+      - smtp-auth-test
     settings:
       host: smtp-relay.brevo.com
       port: 587
       username: 945b13001@smtp-brevo.com
       password:
         from_secret: SMTP_PASSWORD
-      from: pablopolis2016@gmail.com
-      to: pablopolis2016@gmail.com, jflores@unis.edu.gt
-      starttls: true
+      from.address: pablopolis2016@gmail.com
+      from.name: "EnsurancePharmacy CI"
+      recipients:
+        - pablopolis2016@gmail.com
+        - jflores@unis.edu.gt
       skip_verify: true
       subject: "{{#success build.status}}Deploy exitoso: {{repo.name}} #{{build.number}} [{{build.branch}}]{{else}}Pipeline fallido: {{repo.name}} #{{build.number}} [{{build.branch}}]{{/success}}"
       body: "{{#success build.status}}**BUILD #{{build.number}} SUCCEEDED**\n\nEl pipeline para el repositorio `{{repo.name}}` en la rama `{{build.branch}}` ha finalizado exitosamente.\n\n**Resumen:**\n- **Quality Gate:** APROBADO\n- **Unit Tests:** PASADOS\n- **Análisis de SonarQube:** COMPLETADO\n- **Deploy:** EXITOSO\n\n**Detalles del Build:**\n{{build.link}}\n\n**Servicios Desplegados:**\n{{#equal build.branch \"dev\"}}- Ensurance Frontend: http://localhost:3000\n- Pharmacy Frontend: http://localhost:3001\n- Ensurance Backend: http://localhost:3002/api\n- Pharmacy Backend: http://localhost:3003/api2\n{{/equal}}{{#equal build.branch \"qa\"}}- Ensurance Frontend: http://localhost:4000\n- Pharmacy Frontend: http://localhost:4001\n- Ensurance Backend: http://localhost:4002/api\n- Pharmacy Backend: http://localhost:4003/api2\n{{/equal}}{{#equal build.branch \"main\"}}- Ensurance Frontend: http://localhost:5175\n- Pharmacy Frontend: http://localhost:8089\n- Ensurance Backend: http://localhost:8081/api\n- Pharmacy Backend: http://localhost:8082/api2\n{{/equal}}\n{{else}}**BUILD #{{build.number}} FAILED**\n\nEl pipeline para el repositorio `{{repo.name}}` en la rama `{{build.branch}}` ha fallado.\n\n**Por favor, revise los logs en Drone para identificar el paso que falló y la causa del error.**\n\n**Detalles del Build:**\n{{build.link}}\n\n**Pasos para diagnosticar:**\n1.  **Revisar logs en Drone UI:** El link de arriba lo llevará directamente a los logs del build.\n2.  **Verificar Quality Gate en SonarQube:** Si el pipeline falló en un paso de análisis, revise el reporte en SonarQube.\n3.  **Revisar estado de los contenedores:** Si el fallo ocurrió durante el deploy, verifique los logs de los contenedores Docker.{{/success}}"
