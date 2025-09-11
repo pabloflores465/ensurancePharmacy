@@ -1,6 +1,5 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  >
   <div class="login-container">
     <div class="login-image"></div>
 
