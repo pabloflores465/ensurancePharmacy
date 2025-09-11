@@ -3,7 +3,7 @@ type: docker
 name: ensurance-pharmacy-pipeline
 platform:
   os: linux
-  arch: amd64
+  arch: arm64
 
 workspace:
   base: /drone
@@ -13,12 +13,11 @@ environment:
   SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
 
 trigger:
-  event: [ push ]
-  branch: [ main, master, dev, qa ]
+  event: [push]
+  branch: [main, master, dev, qa]
 
 clone:
   depth: 0
-
 
 steps:
   - name: unit-tests
@@ -41,10 +40,7 @@ steps:
 
   - name: wait-for-sonar
     image: curlimages/curl:8.9.1
-    depends_on: [ unit-tests ]
-    environment:
-      SONAR_HOST_URL:
-        from_secret: SONAR_HOST_URL
+    depends_on: [unit-tests]
     commands:
       - |
         set -eu
@@ -57,23 +53,14 @@ steps:
           sleep 5
         done
         echo "Timeout esperando SonarQube"; exit 8
-    when:
-      branch:
-        - main
-        - master
-        - dev
-        - qa
 
   - name: sonarqube-ensurance-backend-analysis-dev
     image: sonarsource/sonar-scanner-cli:latest
-    platform:
-      os: linux
-      arch: amd64
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_SONAR
-    depends_on: [ wait-for-sonar ]
+        from_secret: ENSURANCE_BACK_DEV
+    depends_on: [wait-for-sonar]
     commands:
       - |
         set -eu
@@ -98,14 +85,11 @@ steps:
 
   - name: sonarqube-ensurance-frontend-analysis-dev
     image: sonarsource/sonar-scanner-cli:latest
-    platform:
-      os: linux
-      arch: amd64
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_SONAR
-    depends_on: [ wait-for-sonar, sonarqube-ensurance-backend-analysis-dev ]
+        from_secret: ENSURANCE_FRONT_DEV
+    depends_on: [wait-for-sonar, sonarqube-ensurance-backend-analysis-dev]
     commands:
       - |
         set -eu
@@ -133,21 +117,18 @@ steps:
 
   - name: sonarqube-pharmacy-backend-analysis-dev
     image: sonarsource/sonar-scanner-cli:latest
-    platform:
-      os: linux
-      arch: amd64
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_SONAR
-    depends_on: [ sonarqube-ensurance-frontend-analysis-dev ]
+        from_secret: PHARMACY_BACK_DEV
+    depends_on: [sonarqube-ensurance-frontend-analysis-dev]
     commands:
       - |
         set -eu
         echo "SonarQube Pharmacy Backend analysis for DEV environment"
         SONAR_HOST_URL="${SONAR_HOST_URL:-https://macbook-air-de-gp.tail5d54f7.ts.net/sonar}"
         rm -rf .scannerwork || true
-        export SONAR_USER_HOME=/tmp/sonar-pharm-backend-dev; mkdir -p "$SONAR_USER_HOME"
+        export SONAR_USER_HOME=/tmp/sonar-pharm-back-dev; mkdir -p "$SONAR_USER_HOME"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -166,14 +147,11 @@ steps:
 
   - name: sonarqube-pharmacy-frontend-analysis-dev
     image: sonarsource/sonar-scanner-cli:latest
-    platform:
-      os: linux
-      arch: amd64
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_SONAR
-    depends_on: [ sonarqube-pharmacy-backend-analysis-dev ]
+        from_secret: PHARMACY_FRONT_DEV
+    depends_on: [sonarqube-pharmacy-backend-analysis-dev]
     commands:
       - |
         set -eu
@@ -199,14 +177,11 @@ steps:
 
   - name: sonarqube-ensurance-backend-analysis-qa
     image: sonarsource/sonar-scanner-cli:latest
-    platform:
-      os: linux
-      arch: amd64
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_SONAR
-    depends_on: [ wait-for-sonar ]
+        from_secret: ENSURANCE_BACK_QA
+    depends_on: [wait-for-sonar]
     commands:
       - |
         set -eu
@@ -230,14 +205,11 @@ steps:
 
   - name: sonarqube-ensurance-frontend-analysis-qa
     image: sonarsource/sonar-scanner-cli:latest
-    platform:
-      os: linux
-      arch: amd64
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_SONAR
-    depends_on: [ wait-for-sonar, sonarqube-ensurance-backend-analysis-qa ]
+        from_secret: ENSURANCE_FRONT_QA
+    depends_on: [wait-for-sonar, sonarqube-ensurance-backend-analysis-qa]
     commands:
       - |
         set -eu
@@ -265,21 +237,18 @@ steps:
 
   - name: sonarqube-pharmacy-backend-analysis-qa
     image: sonarsource/sonar-scanner-cli:latest
-    platform:
-      os: linux
-      arch: amd64
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_SONAR
-    depends_on: [ sonarqube-ensurance-frontend-analysis-qa ]
+        from_secret: PHARMACY_BACK_QA
+    depends_on: [sonarqube-ensurance-frontend-analysis-qa]
     commands:
       - |
         set -eu
         echo "SonarQube Pharmacy Backend analysis for QA environment"
         SONAR_HOST_URL="${SONAR_HOST_URL:-https://macbook-air-de-gp.tail5d54f7.ts.net/sonar}"
         rm -rf .scannerwork || true
-        export SONAR_USER_HOME=/tmp/sonar-pharm-backend-qa; mkdir -p "$SONAR_USER_HOME"
+        export SONAR_USER_HOME=/tmp/sonar-pharm-back-qa; mkdir -p "$SONAR_USER_HOME"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -298,14 +267,11 @@ steps:
 
   - name: sonarqube-pharmacy-frontend-analysis-qa
     image: sonarsource/sonar-scanner-cli:latest
-    platform:
-      os: linux
-      arch: amd64
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_SONAR
-    depends_on: [ sonarqube-pharmacy-backend-analysis-qa ]
+        from_secret: PHARMACY_FRONT_QA
+    depends_on: [sonarqube-pharmacy-backend-analysis-qa]
     commands:
       - |
         set -eu
@@ -331,22 +297,19 @@ steps:
 
   - name: sonarqube-ensurance-backend-analysis-main
     image: sonarsource/sonar-scanner-cli:latest
-    platform:
-      os: linux
-      arch: amd64
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_SONAR
-    depends_on: [ wait-for-sonar ]
+        from_secret: ENSURANCE_BACK_MAIN
+    depends_on: [wait-for-sonar]
     commands:
       - |
         set -eu
         echo "SonarQube Ensurance Backend analysis for MAIN environment"
         SONAR_HOST_URL="${SONAR_HOST_URL:-https://macbook-air-de-gp.tail5d54f7.ts.net/sonar}"
         rm -rf .scannerwork || true
-        export SONAR_USER_HOME=/tmp/sonar-ensurance-backend-main; mkdir -p "$SONAR_USER_HOME"
-        export SONAR_WORK=/tmp/.scannerwork-ensurance-backend-main; mkdir -p "$SONAR_WORK"
+        export SONAR_USER_HOME=/tmp/sonar-ensurance-back-main; mkdir -p "$SONAR_USER_HOME"
+        export SONAR_WORK=/tmp/.scannerwork-ensurance-back-main; mkdir -p "$SONAR_WORK"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -367,14 +330,11 @@ steps:
 
   - name: sonarqube-ensurance-frontend-analysis-main
     image: sonarsource/sonar-scanner-cli:latest
-    platform:
-      os: linux
-      arch: amd64
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_SONAR
-    depends_on: [ wait-for-sonar, sonarqube-ensurance-backend-analysis-main ]
+        from_secret: ENSURANCE_FRONT_MAIN
+    depends_on: [wait-for-sonar, sonarqube-ensurance-backend-analysis-main]
     commands:
       - |
         set -eu
@@ -403,21 +363,18 @@ steps:
 
   - name: sonarqube-pharmacy-backend-analysis-main
     image: sonarsource/sonar-scanner-cli:latest
-    platform:
-      os: linux
-      arch: amd64
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_SONAR
-    depends_on: [ sonarqube-ensurance-frontend-analysis-main ]
+        from_secret: PHARMACY_BACK_MAIN
+    depends_on: [sonarqube-ensurance-frontend-analysis-main]
     commands:
       - |
         set -eu
         echo "SonarQube Pharmacy Backend analysis for MAIN environment"
         SONAR_HOST_URL="${SONAR_HOST_URL:-https://macbook-air-de-gp.tail5d54f7.ts.net/sonar}"
         rm -rf .scannerwork || true
-        export SONAR_USER_HOME=/tmp/sonar-pharm-backend-main; mkdir -p "$SONAR_USER_HOME"
+        export SONAR_USER_HOME=/tmp/sonar-pharm-back-main; mkdir -p "$SONAR_USER_HOME"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -437,14 +394,11 @@ steps:
 
   - name: sonarqube-pharmacy-frontend-analysis-main
     image: sonarsource/sonar-scanner-cli:latest
-    platform:
-      os: linux
-      arch: amd64
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_SONAR
-    depends_on: [ sonarqube-pharmacy-backend-analysis-main ]
+        from_secret: PHARMACY_FRONT_MAIN
+    depends_on: [sonarqube-pharmacy-backend-analysis-main]
     commands:
       - |
         set -eu
@@ -632,7 +586,7 @@ steps:
       SMTP_SERVER: smtp-relay.brevo.com
       SMTP_PORT: 587
     commands:
-      - | 
+      - |
         set -eu
         # Check for secrets and fail if not present
         if [ -z "$SMTP_SERVER" ] || [ -z "$SMTP_PORT" ]; then
