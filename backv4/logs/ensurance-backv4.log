@@ -1,416 +1,156 @@
-2025-09-04 17:35:31 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 17:35:31 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:35:38 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 17:35:42 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 17:35:53 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 17:35:53 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:35:58 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 17:36:02 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 17:36:08 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 17:36:08 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:36:13 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 17:36:16 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 17:36:21 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 17:36:21 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:36:27 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 17:36:29 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 17:36:39 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
-2025-09-04 17:36:39 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:36:39 [main] DEBUG org.hibernate.SQL - 
+2025-09-11 00:31:46 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
+2025-09-11 00:31:46 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 00:31:48 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-09-11 00:31:52 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
+2025-09-11 00:32:04 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
+2025-09-11 00:32:04 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 00:32:10 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-09-11 00:32:13 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
+2025-09-11 00:32:20 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
+2025-09-11 00:32:20 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 00:32:26 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-09-11 00:32:29 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
+2025-09-11 00:32:35 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
+2025-09-11 00:32:35 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 00:32:41 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-09-11 00:32:44 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
+2025-09-11 00:32:54 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
+2025-09-11 00:32:54 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 00:32:55 [main] DEBUG org.hibernate.SQL - 
     insert 
     into
         USERS
         (ADDRESS, BIRTHDATE, CREATED_AT, CUI, EMAIL, ENABLED, EXPIRATION_DATE, NAME, PAID_SERVICE, PASSWORD, PHONE, ID_POLICY, ROL) 
     values
         (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-2025-09-04 17:36:39 [main] DEBUG org.hibernate.SQL - 
+2025-09-11 00:32:55 [main] DEBUG org.hibernate.SQL - 
     select
         last_insert_rowid()
-2025-09-04 17:36:39 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
-2025-09-04 17:36:39 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:36:40 [main] DEBUG org.hibernate.SQL - 
+2025-09-11 00:32:55 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
+2025-09-11 00:32:55 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 00:32:55 [main] DEBUG org.hibernate.SQL - 
     insert 
     into
         USERS
         (ADDRESS, BIRTHDATE, CREATED_AT, CUI, EMAIL, ENABLED, EXPIRATION_DATE, NAME, PAID_SERVICE, PASSWORD, PHONE, ID_POLICY, ROL) 
     values
         (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-2025-09-04 17:36:40 [main] DEBUG org.hibernate.SQL - 
+2025-09-11 00:32:55 [main] DEBUG org.hibernate.SQL - 
     select
         last_insert_rowid()
-2025-09-04 17:36:40 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
-2025-09-04 17:36:40 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:36:40 [main] DEBUG org.hibernate.SQL - 
+2025-09-11 00:32:55 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
+2025-09-11 00:32:55 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 00:32:55 [main] DEBUG org.hibernate.SQL - 
     insert 
     into
         USERS
         (ADDRESS, BIRTHDATE, CREATED_AT, CUI, EMAIL, ENABLED, EXPIRATION_DATE, NAME, PAID_SERVICE, PASSWORD, PHONE, ID_POLICY, ROL) 
     values
         (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-2025-09-04 17:36:40 [main] DEBUG org.hibernate.SQL - 
+2025-09-11 00:32:55 [main] DEBUG org.hibernate.SQL - 
     select
         last_insert_rowid()
-2025-09-04 17:37:46 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 17:37:46 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:37:48 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 17:37:51 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 17:37:57 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 17:37:57 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:38:03 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 17:38:06 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 17:38:15 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 17:38:15 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:38:23 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 17:38:28 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 17:38:36 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 17:38:36 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:38:42 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 17:38:45 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 17:39:01 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
-2025-09-04 17:39:02 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:39:08 [main] DEBUG org.hibernate.SQL - 
+2025-09-11 00:35:06 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
+2025-09-11 00:35:06 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 00:35:07 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-09-11 00:35:11 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
+2025-09-11 00:35:17 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
+2025-09-11 00:35:17 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 00:35:23 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-09-11 00:35:26 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
+2025-09-11 00:35:32 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
+2025-09-11 00:35:32 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 00:35:38 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-09-11 00:35:40 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
+2025-09-11 00:35:46 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
+2025-09-11 00:35:46 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 00:35:52 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-09-11 00:35:55 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
+2025-09-11 00:36:04 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
+2025-09-11 00:36:04 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 00:36:05 [main] DEBUG org.hibernate.SQL - 
     insert 
     into
         USERS
         (ADDRESS, BIRTHDATE, CREATED_AT, CUI, EMAIL, ENABLED, EXPIRATION_DATE, NAME, PAID_SERVICE, PASSWORD, PHONE, ID_POLICY, ROL) 
     values
         (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-2025-09-04 17:39:08 [main] DEBUG org.hibernate.SQL - 
+2025-09-11 00:36:05 [main] DEBUG org.hibernate.SQL - 
     select
         last_insert_rowid()
-2025-09-04 17:39:08 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
-2025-09-04 17:39:08 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:39:10 [main] DEBUG org.hibernate.SQL - 
+2025-09-11 00:36:05 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
+2025-09-11 00:36:05 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 00:36:05 [main] DEBUG org.hibernate.SQL - 
     insert 
     into
         USERS
         (ADDRESS, BIRTHDATE, CREATED_AT, CUI, EMAIL, ENABLED, EXPIRATION_DATE, NAME, PAID_SERVICE, PASSWORD, PHONE, ID_POLICY, ROL) 
     values
         (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-2025-09-04 17:39:10 [main] DEBUG org.hibernate.SQL - 
+2025-09-11 00:36:05 [main] DEBUG org.hibernate.SQL - 
     select
         last_insert_rowid()
-2025-09-04 17:39:10 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
-2025-09-04 17:39:10 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:39:11 [main] DEBUG org.hibernate.SQL - 
+2025-09-11 00:36:05 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
+2025-09-11 00:36:05 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 00:36:05 [main] DEBUG org.hibernate.SQL - 
     insert 
     into
         USERS
         (ADDRESS, BIRTHDATE, CREATED_AT, CUI, EMAIL, ENABLED, EXPIRATION_DATE, NAME, PAID_SERVICE, PASSWORD, PHONE, ID_POLICY, ROL) 
     values
         (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-2025-09-04 17:39:11 [main] DEBUG org.hibernate.SQL - 
+2025-09-11 00:36:05 [main] DEBUG org.hibernate.SQL - 
     select
         last_insert_rowid()
-2025-09-04 17:40:19 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 17:40:19 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:40:21 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 17:40:24 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 17:40:29 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 17:40:29 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:40:35 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 17:40:38 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 17:40:43 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 17:40:43 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:40:49 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 17:40:52 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 17:40:57 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 17:40:57 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:41:03 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 17:41:05 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 17:41:16 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
-2025-09-04 17:41:16 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:41:17 [main] DEBUG org.hibernate.SQL - 
+2025-09-11 08:16:49 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
+2025-09-11 08:16:49 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 08:16:51 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-09-11 08:16:54 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
+2025-09-11 08:17:01 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
+2025-09-11 08:17:01 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 08:17:07 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-09-11 08:17:09 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
+2025-09-11 08:17:15 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
+2025-09-11 08:17:15 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 08:17:21 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-09-11 08:17:24 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
+2025-09-11 08:17:30 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
+2025-09-11 08:17:30 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 08:17:36 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-09-11 08:17:39 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
+2025-09-11 08:17:49 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
+2025-09-11 08:17:49 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 08:17:49 [main] DEBUG org.hibernate.SQL - 
     insert 
     into
         USERS
         (ADDRESS, BIRTHDATE, CREATED_AT, CUI, EMAIL, ENABLED, EXPIRATION_DATE, NAME, PAID_SERVICE, PASSWORD, PHONE, ID_POLICY, ROL) 
     values
         (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-2025-09-04 17:41:17 [main] DEBUG org.hibernate.SQL - 
+2025-09-11 08:17:49 [main] DEBUG org.hibernate.SQL - 
     select
         last_insert_rowid()
-2025-09-04 17:41:17 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
-2025-09-04 17:41:17 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:41:17 [main] DEBUG org.hibernate.SQL - 
+2025-09-11 08:17:49 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
+2025-09-11 08:17:49 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 08:17:50 [main] DEBUG org.hibernate.SQL - 
     insert 
     into
         USERS
         (ADDRESS, BIRTHDATE, CREATED_AT, CUI, EMAIL, ENABLED, EXPIRATION_DATE, NAME, PAID_SERVICE, PASSWORD, PHONE, ID_POLICY, ROL) 
     values
         (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-2025-09-04 17:41:17 [main] DEBUG org.hibernate.SQL - 
+2025-09-11 08:17:50 [main] DEBUG org.hibernate.SQL - 
     select
         last_insert_rowid()
-2025-09-04 17:41:17 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
-2025-09-04 17:41:17 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:41:17 [main] DEBUG org.hibernate.SQL - 
+2025-09-11 08:17:50 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
+2025-09-11 08:17:50 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 08:17:50 [main] DEBUG org.hibernate.SQL - 
     insert 
     into
         USERS
         (ADDRESS, BIRTHDATE, CREATED_AT, CUI, EMAIL, ENABLED, EXPIRATION_DATE, NAME, PAID_SERVICE, PASSWORD, PHONE, ID_POLICY, ROL) 
     values
         (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-2025-09-04 17:41:17 [main] DEBUG org.hibernate.SQL - 
-    select
-        last_insert_rowid()
-2025-09-04 17:52:12 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 17:52:12 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:52:20 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 17:52:24 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 17:52:30 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 17:52:30 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:52:36 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 17:52:40 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 17:52:49 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 17:52:49 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:52:56 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 17:52:58 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 17:53:04 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 17:53:04 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:53:09 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 17:53:14 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 17:53:33 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
-2025-09-04 17:53:33 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:53:37 [main] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        USERS
-        (ADDRESS, BIRTHDATE, CREATED_AT, CUI, EMAIL, ENABLED, EXPIRATION_DATE, NAME, PAID_SERVICE, PASSWORD, PHONE, ID_POLICY, ROL) 
-    values
-        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-2025-09-04 17:53:37 [main] DEBUG org.hibernate.SQL - 
-    select
-        last_insert_rowid()
-2025-09-04 17:53:38 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
-2025-09-04 17:53:38 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:53:38 [main] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        USERS
-        (ADDRESS, BIRTHDATE, CREATED_AT, CUI, EMAIL, ENABLED, EXPIRATION_DATE, NAME, PAID_SERVICE, PASSWORD, PHONE, ID_POLICY, ROL) 
-    values
-        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-2025-09-04 17:53:38 [main] DEBUG org.hibernate.SQL - 
-    select
-        last_insert_rowid()
-2025-09-04 17:53:38 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
-2025-09-04 17:53:38 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:53:39 [main] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        USERS
-        (ADDRESS, BIRTHDATE, CREATED_AT, CUI, EMAIL, ENABLED, EXPIRATION_DATE, NAME, PAID_SERVICE, PASSWORD, PHONE, ID_POLICY, ROL) 
-    values
-        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-2025-09-04 17:53:39 [main] DEBUG org.hibernate.SQL - 
-    select
-        last_insert_rowid()
-2025-09-04 17:54:53 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 17:54:53 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:55:00 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 17:55:05 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 17:55:10 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 17:55:10 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:55:16 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 17:55:19 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 17:55:25 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 17:55:25 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:55:31 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 17:55:33 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 17:55:39 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 17:55:39 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:55:45 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 17:55:47 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 17:55:56 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
-2025-09-04 17:55:56 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:55:57 [main] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        USERS
-        (ADDRESS, BIRTHDATE, CREATED_AT, CUI, EMAIL, ENABLED, EXPIRATION_DATE, NAME, PAID_SERVICE, PASSWORD, PHONE, ID_POLICY, ROL) 
-    values
-        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-2025-09-04 17:55:57 [main] DEBUG org.hibernate.SQL - 
-    select
-        last_insert_rowid()
-2025-09-04 17:55:57 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
-2025-09-04 17:55:57 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:55:57 [main] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        USERS
-        (ADDRESS, BIRTHDATE, CREATED_AT, CUI, EMAIL, ENABLED, EXPIRATION_DATE, NAME, PAID_SERVICE, PASSWORD, PHONE, ID_POLICY, ROL) 
-    values
-        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-2025-09-04 17:55:57 [main] DEBUG org.hibernate.SQL - 
-    select
-        last_insert_rowid()
-2025-09-04 17:55:57 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
-2025-09-04 17:55:57 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 17:55:57 [main] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        USERS
-        (ADDRESS, BIRTHDATE, CREATED_AT, CUI, EMAIL, ENABLED, EXPIRATION_DATE, NAME, PAID_SERVICE, PASSWORD, PHONE, ID_POLICY, ROL) 
-    values
-        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-2025-09-04 17:55:57 [main] DEBUG org.hibernate.SQL - 
-    select
-        last_insert_rowid()
-2025-09-04 18:09:39 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 18:09:39 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 18:09:46 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 18:09:49 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 18:09:54 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 18:09:54 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 18:10:01 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 18:10:06 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 18:10:11 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 18:10:11 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 18:10:17 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 18:10:19 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 18:10:25 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 18:10:25 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 18:10:30 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 18:10:33 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 18:10:43 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
-2025-09-04 18:10:43 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 18:10:43 [main] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        USERS
-        (ADDRESS, BIRTHDATE, CREATED_AT, CUI, EMAIL, ENABLED, EXPIRATION_DATE, NAME, PAID_SERVICE, PASSWORD, PHONE, ID_POLICY, ROL) 
-    values
-        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-2025-09-04 18:10:43 [main] DEBUG org.hibernate.SQL - 
-    select
-        last_insert_rowid()
-2025-09-04 18:10:43 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
-2025-09-04 18:10:43 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 18:10:43 [main] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        USERS
-        (ADDRESS, BIRTHDATE, CREATED_AT, CUI, EMAIL, ENABLED, EXPIRATION_DATE, NAME, PAID_SERVICE, PASSWORD, PHONE, ID_POLICY, ROL) 
-    values
-        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-2025-09-04 18:10:43 [main] DEBUG org.hibernate.SQL - 
-    select
-        last_insert_rowid()
-2025-09-04 18:10:43 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
-2025-09-04 18:10:43 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 18:10:43 [main] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        USERS
-        (ADDRESS, BIRTHDATE, CREATED_AT, CUI, EMAIL, ENABLED, EXPIRATION_DATE, NAME, PAID_SERVICE, PASSWORD, PHONE, ID_POLICY, ROL) 
-    values
-        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-2025-09-04 18:10:43 [main] DEBUG org.hibernate.SQL - 
-    select
-        last_insert_rowid()
-2025-09-04 18:20:32 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 18:20:32 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 18:20:39 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 18:20:44 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 18:20:50 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 18:20:50 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 18:20:55 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 18:20:58 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 18:21:03 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 18:21:03 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 18:21:09 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 18:21:12 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 18:21:17 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 18:21:17 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 18:21:23 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 18:21:25 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 18:21:34 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
-2025-09-04 18:21:34 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 18:21:35 [main] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        USERS
-        (ADDRESS, BIRTHDATE, CREATED_AT, CUI, EMAIL, ENABLED, EXPIRATION_DATE, NAME, PAID_SERVICE, PASSWORD, PHONE, ID_POLICY, ROL) 
-    values
-        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-2025-09-04 18:21:35 [main] DEBUG org.hibernate.SQL - 
-    select
-        last_insert_rowid()
-2025-09-04 18:21:35 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
-2025-09-04 18:21:35 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 18:21:35 [main] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        USERS
-        (ADDRESS, BIRTHDATE, CREATED_AT, CUI, EMAIL, ENABLED, EXPIRATION_DATE, NAME, PAID_SERVICE, PASSWORD, PHONE, ID_POLICY, ROL) 
-    values
-        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-2025-09-04 18:21:35 [main] DEBUG org.hibernate.SQL - 
-    select
-        last_insert_rowid()
-2025-09-04 18:21:35 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
-2025-09-04 18:21:35 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 18:21:36 [main] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        USERS
-        (ADDRESS, BIRTHDATE, CREATED_AT, CUI, EMAIL, ENABLED, EXPIRATION_DATE, NAME, PAID_SERVICE, PASSWORD, PHONE, ID_POLICY, ROL) 
-    values
-        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-2025-09-04 18:21:36 [main] DEBUG org.hibernate.SQL - 
-    select
-        last_insert_rowid()
-2025-09-04 22:34:57 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 22:34:57 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 22:34:59 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 22:35:03 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 22:35:10 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 22:35:10 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 22:35:16 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 22:35:19 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 22:35:25 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 22:35:25 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 22:35:31 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 22:35:34 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 22:35:40 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
-2025-09-04 22:35:40 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 22:35:47 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-09-04 22:35:56 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
-2025-09-04 22:36:26 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
-2025-09-04 22:36:26 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 22:36:30 [main] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        USERS
-        (ADDRESS, BIRTHDATE, CREATED_AT, CUI, EMAIL, ENABLED, EXPIRATION_DATE, NAME, PAID_SERVICE, PASSWORD, PHONE, ID_POLICY, ROL) 
-    values
-        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-2025-09-04 22:36:30 [main] DEBUG org.hibernate.SQL - 
-    select
-        last_insert_rowid()
-2025-09-04 22:36:30 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
-2025-09-04 22:36:30 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 22:36:32 [main] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        USERS
-        (ADDRESS, BIRTHDATE, CREATED_AT, CUI, EMAIL, ENABLED, EXPIRATION_DATE, NAME, PAID_SERVICE, PASSWORD, PHONE, ID_POLICY, ROL) 
-    values
-        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-2025-09-04 22:36:32 [main] DEBUG org.hibernate.SQL - 
-    select
-        last_insert_rowid()
-2025-09-04 22:36:32 [main] WARN  org.hibernate.orm.deprecation - HHH90000012: Recognized obsolete hibernate namespace http://hibernate.sourceforge.net/hibernate-configuration. Use namespace http://www.hibernate.org/dtd/hibernate-configuration instead.  Support for obsolete DTD/XSD namespaces may be removed at any time.
-2025-09-04 22:36:33 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-09-04 22:36:33 [main] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        USERS
-        (ADDRESS, BIRTHDATE, CREATED_AT, CUI, EMAIL, ENABLED, EXPIRATION_DATE, NAME, PAID_SERVICE, PASSWORD, PHONE, ID_POLICY, ROL) 
-    values
-        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-2025-09-04 22:36:33 [main] DEBUG org.hibernate.SQL - 
+2025-09-11 08:17:50 [main] DEBUG org.hibernate.SQL - 
     select
         last_insert_rowid()

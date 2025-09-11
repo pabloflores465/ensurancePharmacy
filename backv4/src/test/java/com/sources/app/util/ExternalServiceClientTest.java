@@ -265,7 +265,7 @@ class ExternalServiceClientTest {
     @Test
     void getAsync_HandlesException() throws Exception {
         ExternalServiceClient spiedClient = spy(externalServiceClient);
-        Exception testException = new Exception("GET failed");
+        IOException testException = new IOException("GET failed");
         doThrow(testException).when(spiedClient).get(anyString(), anyBoolean());
 
         CompletableFuture<String> future = spiedClient.getAsync(testEndpoint, true);
@@ -311,7 +311,7 @@ class ExternalServiceClientTest {
     @Test
     void postAsync_HandlesException() throws Exception {
         ExternalServiceClient spiedClient = spy(externalServiceClient);
-        Exception testException = new Exception("POST failed");
+        IOException testException = new IOException("POST failed");
         doThrow(testException).when(spiedClient).post(testEndpoint, testBody, true);
 
         CompletableFuture<String> future = spiedClient.postAsync(testEndpoint, testBody, true);
@@ -333,7 +333,7 @@ class ExternalServiceClientTest {
     @Test
     void putAsync_HandlesException() throws Exception {
         ExternalServiceClient spiedClient = spy(externalServiceClient);
-        Exception testException = new Exception("PUT failed");
+        IOException testException = new IOException("PUT failed");
         doThrow(testException).when(spiedClient).put(testEndpoint, testBody, false);
 
         CompletableFuture<String> future = spiedClient.putAsync(testEndpoint, testBody, false);
@@ -363,7 +363,7 @@ class ExternalServiceClientTest {
         // Input stream should not be called on error
         lenient().when(mockConnection.getInputStream()).thenThrow(new IOException("No input on error"));
 
-        assertThrows(NullPointerException.class, () -> externalServiceClient.post(testEndpoint, testBody, true));
+        assertThrows(com.sources.app.exceptions.ExternalServiceException.class, () -> externalServiceClient.post(testEndpoint, testBody, true));
         verify(mockConnection).disconnect();
     }
 

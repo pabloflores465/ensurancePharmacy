@@ -1,15 +1,19 @@
 package com.sources.app.util;
 
 import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sources.app.exceptions.ExternalServiceException;
 
 /**
  * Cliente para comunicación con servicios externos (hospitales y farmacias)
@@ -35,7 +39,7 @@ public class ExternalServiceClient {
      * Los tests pueden mockear este método estático para inyectar un
      * HttpURLConnection.
      */
-    public static HttpURLConnection open(String urlString) throws Exception {
+    public static HttpURLConnection open(String urlString) throws IOException {
         URL url = new URL(urlString);
         return (HttpURLConnection) url.openConnection();
     }
@@ -49,10 +53,10 @@ public class ExternalServiceClient {
      * de hospital (true) o farmacia (false).
      * @return La respuesta del servidor como una cadena de texto (generalmente
      * JSON).
-     * @throws Exception Si ocurre un error durante la conexión o si el servidor
-     * responde con un código de error.
+     * @throws IOException Si ocurre un error de E/S durante la conexión.
+     * @throws ExternalServiceException Si el servidor responde con un código de error.
      */
-    public String get(String endpoint, boolean isHospital) throws Exception {
+    public String get(String endpoint, boolean isHospital) throws IOException, ExternalServiceException {
         String baseUrl = isHospital ? HOSPITAL_BASE_URL : PHARMACY_BASE_URL;
         HttpURLConnection conn = open(baseUrl + endpoint);
         conn.setRequestMethod("GET");
@@ -61,18 +65,17 @@ public class ExternalServiceClient {
         int responseCode = conn.getResponseCode();
         try {
             if (responseCode == HttpURLConnection.HTTP_OK) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                String inputLine;
-                StringBuilder response = new StringBuilder();
-
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
+                try (BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+                    StringBuilder response = new StringBuilder();
+                    String inputLine;
+                    while ((inputLine = in.readLine()) != null) {
+                        response.append(inputLine);
+                    }
+                    return response.toString();
                 }
-                in.close();
-
-                return response.toString();
             } else {
-                throw new Exception("Error en la petición GET: " + responseCode);
+                String errorBody = readSafely(conn.getErrorStream());
+                throw new ExternalServiceException("Error en la petición GET: " + responseCode + (errorBody.isEmpty() ? "" : ", Respuesta: " + errorBody));
             }
         } finally {
             conn.disconnect();
@@ -91,10 +94,10 @@ public class ExternalServiceClient {
      * de hospital (true) o farmacia (false).
      * @return La respuesta del servidor como una cadena de texto (generalmente
      * JSON).
-     * @throws Exception Si ocurre un error durante la conexión, serialización,
-     * o si el servidor responde con un código de error.
+     * @throws IOException Si ocurre un error durante la conexión o serialización.
+     * @throws ExternalServiceException Si el servidor responde con un código de error.
      */
-    public String post(String endpoint, Object requestBody, boolean isHospital) throws Exception {
+    public String post(String endpoint, Object requestBody, boolean isHospital) throws IOException, ExternalServiceException {
         String baseUrl = isHospital ? HOSPITAL_BASE_URL : PHARMACY_BASE_URL;
         HttpURLConnection conn = open(baseUrl + endpoint);
         conn.setRequestMethod("POST");
@@ -104,32 +107,24 @@ public class ExternalServiceClient {
         String jsonInputString = objectMapper.writeValueAsString(requestBody);
 
         try (OutputStream os = conn.getOutputStream()) {
-            byte[] input = jsonInputString.getBytes("utf-8");
+            byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);
             os.write(input, 0, input.length);
         }
 
         int responseCode = conn.getResponseCode();
         try {
             if (responseCode >= 200 && responseCode < 300) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                String inputLine;
-                StringBuilder response = new StringBuilder();
-
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
+                try (BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+                    StringBuilder response = new StringBuilder();
+                    String inputLine;
+                    while ((inputLine = in.readLine()) != null) {
+                        response.append(inputLine);
+                    }
+                    return response.toString();
                 }
-                in.close();
-
-                return response.toString();
             } else {
-                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-                String inputLine;
-                StringBuilder response = new StringBuilder();
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
-                in.close();
-                throw new Exception("Error en la petición POST: " + responseCode + ", Respuesta: " + response.toString());
+                String errorBody = readSafely(conn.getErrorStream());
+                throw new ExternalServiceException("Error en la petición POST: " + responseCode + (errorBody.isEmpty() ? "" : ", Respuesta: " + errorBody));
             }
         } finally {
             conn.disconnect();
@@ -147,10 +142,10 @@ public class ExternalServiceClient {
      * de hospital (true) o farmacia (false).
      * @return La respuesta del servidor como una cadena de texto (generalmente
      * JSON).
-     * @throws Exception Si ocurre un error durante la conexión, serialización,
-     * o si el servidor responde con un código de error.
+     * @throws IOException Si ocurre un error durante la conexión o serialización.
+     * @throws ExternalServiceException Si el servidor responde con un código de error.
      */
-    public String put(String endpoint, Object requestBody, boolean isHospital) throws Exception {
+    public String put(String endpoint, Object requestBody, boolean isHospital) throws IOException, ExternalServiceException {
         String baseUrl = isHospital ? HOSPITAL_BASE_URL : PHARMACY_BASE_URL;
         HttpURLConnection conn = open(baseUrl + endpoint);
         conn.setRequestMethod("PUT");
@@ -160,25 +155,24 @@ public class ExternalServiceClient {
         String jsonInputString = objectMapper.writeValueAsString(requestBody);
 
         try (OutputStream os = conn.getOutputStream()) {
-            byte[] input = jsonInputString.getBytes("utf-8");
+            byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);
             os.write(input, 0, input.length);
         }
 
         int responseCode = conn.getResponseCode();
         try {
             if (responseCode >= 200 && responseCode < 300) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                String inputLine;
-                StringBuilder response = new StringBuilder();
-
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
+                try (BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+                    StringBuilder response = new StringBuilder();
+                    String inputLine;
+                    while ((inputLine = in.readLine()) != null) {
+                        response.append(inputLine);
+                    }
+                    return response.toString();
                 }
-                in.close();
-
-                return response.toString();
             } else {
-                throw new Exception("Error en la petición PUT: " + responseCode);
+                String errorBody = readSafely(conn.getErrorStream());
+                throw new ExternalServiceException("Error en la petición PUT: " + responseCode + (errorBody.isEmpty() ? "" : ", Respuesta: " + errorBody));
             }
         } finally {
             conn.disconnect();
@@ -198,7 +192,7 @@ public class ExternalServiceClient {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 return get(endpoint, isHospital);
-            } catch (Exception e) {
+            } catch (IOException | ExternalServiceException e) {
                 throw new RuntimeException(e);
             }
         }, executor);
@@ -218,7 +212,7 @@ public class ExternalServiceClient {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 return post(endpoint, requestBody, isHospital);
-            } catch (Exception e) {
+            } catch (IOException | ExternalServiceException e) {
                 throw new RuntimeException(e);
             }
         }, executor);
@@ -238,9 +232,26 @@ public class ExternalServiceClient {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 return put(endpoint, requestBody, isHospital);
-            } catch (Exception e) {
+            } catch (IOException | ExternalServiceException e) {
                 throw new RuntimeException(e);
             }
         }, executor);
+    }
+
+    /**
+     * Safely read an InputStream to String using UTF-8. Returns empty string when stream is null.
+     */
+    private static String readSafely(InputStream stream) throws IOException {
+        if (stream == null) {
+            return "";
+        }
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = in.readLine()) != null) {
+                response.append(line);
+            }
+            return response.toString();
+        }
     }
 }
