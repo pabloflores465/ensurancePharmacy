@@ -590,23 +590,23 @@ steps:
       - | 
         set -eu
         # Check for secrets and fail if not present
-        if [ -z "${SMTP_SERVER}" ] || [ -z "${SMTP_PORT}" ]; then
+        if [ -z "$SMTP_SERVER" ] || [ -z "$SMTP_PORT" ]; then
           echo "ERROR: SMTP_SERVER or SMTP_PORT secrets not found."
           echo "Please verify they are correctly configured in Drone for this repository."
           exit 1
         fi
 
         apk add --no-cache openssl >/dev/null
-        echo "Probing SMTP server at ${SMTP_SERVER}:${SMTP_PORT}..."
+        echo "Probing SMTP server at $SMTP_SERVER:$SMTP_PORT..."
 
         if [ "$SMTP_PORT" = "465" ]; then
           # Test SSL/TLS connection
-          echo QUIT | openssl s_client -connect ${SMTP_SERVER}:${SMTP_PORT} -servername ${SMTP_SERVER} -quiet || {
-            echo "ERROR: SMTP SSL probe failed for ${SMTP_SERVER}:${SMTP_PORT}"; exit 9; }
+          echo QUIT | openssl s_client -connect $SMTP_SERVER:$SMTP_PORT -servername $SMTP_SERVER -quiet || {
+            echo "ERROR: SMTP SSL probe failed for $SMTP_SERVER:$SMTP_PORT"; exit 9; }
         else
           # Test STARTTLS connection
-          echo QUIT | openssl s_client -starttls smtp -connect ${SMTP_SERVER}:${SMTP_PORT} -servername ${SMTP_SERVER} -quiet || {
-            echo "ERROR: SMTP STARTTLS probe failed for ${SMTP_SERVER}:${SMTP_PORT}"; exit 9; }
+          echo QUIT | openssl s_client -starttls smtp -connect $SMTP_SERVER:$SMTP_PORT -servername $SMTP_SERVER -quiet || {
+            echo "ERROR: SMTP STARTTLS probe failed for $SMTP_SERVER:$SMTP_PORT"; exit 9; }
         fi
         echo "SMTP probe successful."
 
