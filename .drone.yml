@@ -573,102 +573,16 @@ steps:
     depends_on:
       - deploy-main
 
-  - name: smtp-smoke-test
-    image: alpine:3.20
-    disable_substitution: true
-    when:
-      event:
-        - push
-      status:
-        - success
-        - failure
-    failure: ignore
-    environment:
-      SMTP_SERVER: smtp-relay.brevo.com
-      SMTP_PORT: 587
-    commands:
-      - |
-        set -eu
-        # Check for secrets and fail if not present
-        if [ -z "$SMTP_SERVER" ] || [ -z "$SMTP_PORT" ]; then
-          echo "ERROR: SMTP_SERVER or SMTP_PORT secrets not found."
-          echo "Please verify they are correctly configured in Drone for this repository."
-          exit 1
-        fi
+  # smtp-smoke-test step removed per request
 
-        apk add --no-cache openssl >/dev/null
-        echo "Probing SMTP server at $SMTP_SERVER:$SMTP_PORT..."
-
-        if [ "$SMTP_PORT" = "465" ]; then
-          # Test SSL/TLS connection (use SNI that matches cert presented by Brevo)
-          echo QUIT | openssl s_client -connect $SMTP_SERVER:$SMTP_PORT -servername smtp-relay.sendinblue.com -quiet || {
-            echo "ERROR: SMTP SSL probe failed for $SMTP_SERVER:$SMTP_PORT"; exit 9; }
-        else
-          # Test STARTTLS connection (use SNI that matches cert presented by Brevo)
-          echo QUIT | openssl s_client -starttls smtp -connect $SMTP_SERVER:$SMTP_PORT -servername smtp-relay.sendinblue.com -quiet || {
-            echo "ERROR: SMTP STARTTLS probe failed for $SMTP_SERVER:$SMTP_PORT"; exit 9; }
-        fi
-        echo "SMTP probe successful."
-        echo "Mostrando certificado presentado por el servidor:"
-        # Mostrar Subject, Issuer y SAN del certificado para diagnosticar hostname mismatch
-        echo QUIT | openssl s_client -starttls smtp -connect $SMTP_SERVER:$SMTP_PORT -servername smtp-relay.sendinblue.com 2>/dev/null \
-          | openssl x509 -noout -subject -issuer -ext subjectAltName || true
-
-  - name: smtp-auth-test
-    image: python:3.12-alpine
-    depends_on:
-      - smtp-smoke-test
-    environment:
-      SMTP_SERVER: smtp-relay.brevo.com
-      SMTP_PORT: 587
-      SMTP_USERNAME: 945b13001@smtp-brevo.com
-      SMTP_PASSWORD:
-        from_secret: SMTP_PASSWORD
-      SMTP_ALT_SERVER: smtp-relay.sendinblue.com
-    commands:
-      - |
-        set -eu
-        apk add --no-cache ca-certificates >/dev/null
-        python - <<'PY'
-        import os, smtplib, ssl, sys
-        host = os.environ.get('SMTP_SERVER','smtp-relay.brevo.com')
-        port = int(os.environ.get('SMTP_PORT','587'))
-        user = os.environ['SMTP_USERNAME']
-        pwd = os.environ['SMTP_PASSWORD']
-        alt = os.environ.get('SMTP_ALT_SERVER','smtp-relay.sendinblue.com')
-
-        def auth_with(server_hostname: str):
-            with smtplib.SMTP(host, port, timeout=30) as server:
-                server.ehlo()
-                ctx = ssl.create_default_context()
-                server.starttls(context=ctx, server_hostname=server_hostname)
-                server.ehlo()
-                server.login(user, pwd)
-
-        try:
-            try:
-                auth_with(host)
-                print('SMTP authentication OK for', user, 'with SNI/hostname', host)
-            except ssl.SSLCertVerificationError as e:
-                print('Hostname verification failed for', host, ':', e)
-                print('Retrying with alternate server_hostname:', alt)
-                auth_with(alt)
-                print('SMTP authentication OK for', user, 'using alternate server_hostname', alt)
-        except Exception as e:
-            print('SMTP authentication FAILED:', e)
-            sys.exit(10)
-        PY
-    when:
-      event:
-        - push
-      status:
-        - success
-        - failure
+  # smtp-auth-test step removed per request
 
   - name: email-notification
     image: drillster/drone-email
     depends_on:
-      - smtp-auth-test
+      - verify-deployment-dev
+      - verify-deployment-qa
+      - verify-deployment-main
     settings:
       host: smtp-relay.brevo.com
       port: 587
@@ -689,6 +603,7 @@ steps:
       status:
         - success
         - failure
+    failure: ignore
 
 volumes:
   - name: maven-cache
