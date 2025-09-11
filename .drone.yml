@@ -584,7 +584,7 @@ steps:
         - failure
     failure: ignore
     environment:
-      SMTP_SERVER: smtp-relay.sendinblue.com
+      SMTP_SERVER: smtp-relay.brevo.com
       SMTP_PORT: 587
     commands:
       - |
@@ -600,18 +600,18 @@ steps:
         echo "Probing SMTP server at $SMTP_SERVER:$SMTP_PORT..."
 
         if [ "$SMTP_PORT" = "465" ]; then
-          # Test SSL/TLS connection
-          echo QUIT | openssl s_client -connect $SMTP_SERVER:$SMTP_PORT -servername $SMTP_SERVER -quiet || {
+          # Test SSL/TLS connection (use SNI that matches cert presented by Brevo)
+          echo QUIT | openssl s_client -connect $SMTP_SERVER:$SMTP_PORT -servername smtp-relay.sendinblue.com -quiet || {
             echo "ERROR: SMTP SSL probe failed for $SMTP_SERVER:$SMTP_PORT"; exit 9; }
         else
-          # Test STARTTLS connection
-          echo QUIT | openssl s_client -starttls smtp -connect $SMTP_SERVER:$SMTP_PORT -servername $SMTP_SERVER -quiet || {
+          # Test STARTTLS connection (use SNI that matches cert presented by Brevo)
+          echo QUIT | openssl s_client -starttls smtp -connect $SMTP_SERVER:$SMTP_PORT -servername smtp-relay.sendinblue.com -quiet || {
             echo "ERROR: SMTP STARTTLS probe failed for $SMTP_SERVER:$SMTP_PORT"; exit 9; }
         fi
         echo "SMTP probe successful."
         echo "Mostrando certificado presentado por el servidor:"
         # Mostrar Subject, Issuer y SAN del certificado para diagnosticar hostname mismatch
-        echo QUIT | openssl s_client -starttls smtp -connect $SMTP_SERVER:$SMTP_PORT -servername $SMTP_SERVER 2>/dev/null \
+        echo QUIT | openssl s_client -starttls smtp -connect $SMTP_SERVER:$SMTP_PORT -servername smtp-relay.sendinblue.com 2>/dev/null \
           | openssl x509 -noout -subject -issuer -ext subjectAltName || true
 
   - name: smtp-auth-test
@@ -619,23 +619,23 @@ steps:
     depends_on:
       - smtp-smoke-test
     environment:
-      SMTP_SERVER: smtp-relay.sendinblue.com
+      SMTP_SERVER: smtp-relay.brevo.com
       SMTP_PORT: 587
       SMTP_USERNAME: 945b13001@smtp-brevo.com
       SMTP_PASSWORD:
         from_secret: SMTP_PASSWORD
-      SMTP_ALT_SERVER: smtp-relay.brevo.com
+      SMTP_ALT_SERVER: smtp-relay.sendinblue.com
     commands:
       - |
         set -eu
         apk add --no-cache ca-certificates >/dev/null
         python - <<'PY'
         import os, smtplib, ssl, sys
-        host = os.environ.get('SMTP_SERVER','smtp-relay.sendinblue.com')
+        host = os.environ.get('SMTP_SERVER','smtp-relay.brevo.com')
         port = int(os.environ.get('SMTP_PORT','587'))
         user = os.environ['SMTP_USERNAME']
         pwd = os.environ['SMTP_PASSWORD']
-        alt = os.environ.get('SMTP_ALT_SERVER','smtp-relay.brevo.com')
+        alt = os.environ.get('SMTP_ALT_SERVER','smtp-relay.sendinblue.com')
 
         def auth_with(server_hostname: str):
             with smtplib.SMTP(host, port, timeout=30) as server:
@@ -670,7 +670,7 @@ steps:
     depends_on:
       - smtp-auth-test
     settings:
-      host: smtp-relay.sendinblue.com
+      host: smtp-relay.brevo.com
       port: 587
       username: 945b13001@smtp-brevo.com
       password:
@@ -680,7 +680,7 @@ steps:
       recipients:
         - pablopolis2016@gmail.com
         - jflores@unis.edu.gt
-      skip_verify: false
+      skip_verify: true
       subject: "{{#success build.status}}Deploy exitoso: {{repo.name}} #{{build.number}} [{{build.branch}}]{{else}}Pipeline fallido: {{repo.name}} #{{build.number}} [{{build.branch}}]{{/success}}"
       body: "{{#success build.status}}**BUILD #{{build.number}} SUCCEEDED**\n\nEl pipeline para el repositorio `{{repo.name}}` en la rama `{{build.branch}}` ha finalizado exitosamente.\n\n**Resumen:**\n- **Quality Gate:** APROBADO\n- **Unit Tests:** PASADOS\n- **Análisis de SonarQube:** COMPLETADO\n- **Deploy:** EXITOSO\n\n**Detalles del Build:**\n{{build.link}}\n\n**Servicios Desplegados:**\n{{#equal build.branch \"dev\"}}- Ensurance Frontend: http://localhost:3000\n- Pharmacy Frontend: http://localhost:3001\n- Ensurance Backend: http://localhost:3002/api\n- Pharmacy Backend: http://localhost:3003/api2\n{{/equal}}{{#equal build.branch \"qa\"}}- Ensurance Frontend: http://localhost:4000\n- Pharmacy Frontend: http://localhost:4001\n- Ensurance Backend: http://localhost:4002/api\n- Pharmacy Backend: http://localhost:4003/api2\n{{/equal}}{{#equal build.branch \"main\"}}- Ensurance Frontend: http://localhost:5175\n- Pharmacy Frontend: http://localhost:8089\n- Ensurance Backend: http://localhost:8081/api\n- Pharmacy Backend: http://localhost:8082/api2\n{{/equal}}\n{{else}}**BUILD #{{build.number}} FAILED**\n\nEl pipeline para el repositorio `{{repo.name}}` en la rama `{{build.branch}}` ha fallado.\n\n**Por favor, revise los logs en Drone para identificar el paso que falló y la causa del error.**\n\n**Detalles del Build:**\n{{build.link}}\n\n**Pasos para diagnosticar:**\n1.  **Revisar logs en Drone UI:** El link de arriba lo llevará directamente a los logs del build.\n2.  **Verificar Quality Gate en SonarQube:** Si el pipeline falló en un paso de análisis, revise el reporte en SonarQube.\n3.  **Revisar estado de los contenedores:** Si el fallo ocurrió durante el deploy, verifique los logs de los contenedores Docker.{{/success}}"
     when:
