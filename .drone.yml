@@ -583,10 +583,8 @@ steps:
         - success
         - failure
     environment:
-      SMTP_SERVER:
-        from_secret: SMTP_SERVER
-      SMTP_PORT:
-        from_secret: SMTP_PORT
+      SMTP_SERVER: smtp-relay.brevo.com
+      SMTP_PORT: 587
     commands:
       - | 
         set -eu
@@ -646,4 +644,3 @@ volumes:
   - name: docker-sock
     host:
       path: /var/run/docker.sock
-cker.sock
