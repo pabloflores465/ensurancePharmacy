@@ -3148,3 +3148,35 @@
 2025-09-05 22:08:02 [main] DEBUG org.hibernate.SQL - update SERVICE_APPROVALS set APPROVAL_CODE=?,APPROVAL_DATE=?,COMPLETED_DATE=?,COVERED_AMOUNT=?,CREATED_AT=?,ID_HOSPITAL=?,PATIENT_AMOUNT=?,PRESCRIPTION_ID=?,PRESCRIPTION_TOTAL=?,REJECTION_REASON=?,SERVICE_COST=?,SERVICE_DESCRIPTION=?,SERVICE_ID=?,SERVICE_NAME=?,STATUS=?,ID_USER=? where ID_APPROVAL=?
 2025-09-05 22:08:02 [app-main-test-thread] INFO  com.sources.app.App - Conexión exitosa a la base de datos!
 2025-09-05 22:08:02 [app-main-test-thread] INFO  com.sources.app.App - Servidor iniciado en http://0.0.0.0:8081/api2
+2025-09-11 16:50:51 [com.sources.app.App.main()] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 16:50:52 [com.sources.app.App.main()] DEBUG org.hibernate.SQL - alter table "USERS" add column STATUS varchar(255)
+2025-09-11 16:50:52 [com.sources.app.App.main()] DEBUG org.hibernate.SQL - create table BILL (ID_BILL integer, COPAY float, COVERED_AMOUNT float, CREATED_AT timestamp, INSURANCE_APPROVAL_CODE varchar(255), PATIENT_AMOUNT float, STATUS varchar(255), SUBTOTAL float, TAXES float, TOTAL varchar(255), TOTAL_AMOUNT float, ID_PRESCRIPTION bigint, primary key (ID_BILL))
+2025-09-11 16:50:52 [com.sources.app.App.main()] DEBUG org.hibernate.SQL - create table BILL_MEDICINE (ID_BILL bigint not null, ID_MEDICINE bigint not null, COPAY float, COST float, QUANTITY integer, TOTAL varchar(255), primary key (ID_BILL, ID_MEDICINE))
+2025-09-11 16:50:52 [com.sources.app.App.main()] DEBUG org.hibernate.SQL - create table COMMENTS (ID_COMMENTS integer, COMMENT_TEXT varchar(255), ID_MEDICINE bigint, ID_PREV_COMMENT bigint, ID_USER bigint, primary key (ID_COMMENTS))
+2025-09-11 16:50:52 [com.sources.app.App.main()] DEBUG org.hibernate.SQL - create table HOSPITAL (ID_HOSPITAL integer, ADDRESS varchar(255), EMAIL varchar(255), ENABLED char(1), NAME varchar(255), PHONE varchar(255), primary key (ID_HOSPITAL))
+2025-09-11 16:50:52 [com.sources.app.App.main()] DEBUG org.hibernate.SQL - alter table MEDICINE add column ACTIVE_MEDICAMENT varchar(255)
+2025-09-11 16:50:52 [com.sources.app.App.main()] DEBUG org.hibernate.SQL - alter table MEDICINE add column CONCENTRATION varchar(255)
+2025-09-11 16:50:52 [com.sources.app.App.main()] DEBUG org.hibernate.SQL - alter table MEDICINE add column IMAGE varchar(255)
+2025-09-11 16:50:52 [com.sources.app.App.main()] DEBUG org.hibernate.SQL - alter table MEDICINE add column PRESCRIPTION boolean
+2025-09-11 16:50:52 [com.sources.app.App.main()] DEBUG org.hibernate.SQL - alter table MEDICINE add column PRESENTACION float
+2025-09-11 16:50:52 [com.sources.app.App.main()] DEBUG org.hibernate.SQL - alter table MEDICINE add column SOLD_UNITS integer
+2025-09-11 16:50:52 [com.sources.app.App.main()] DEBUG org.hibernate.SQL - create table MEDICINE_CATSUBCAT (ID_CATEGORY bigint not null, ID_MEDICINE bigint not null, ID_SUBCATEGORY bigint not null, primary key (ID_CATEGORY, ID_MEDICINE, ID_SUBCATEGORY))
+2025-09-11 16:50:52 [com.sources.app.App.main()] DEBUG org.hibernate.SQL - create table ORDERS (ID_ORDER integer, STATUS varchar(255), ID_USER bigint not null, primary key (ID_ORDER))
+2025-09-11 16:50:52 [com.sources.app.App.main()] DEBUG org.hibernate.SQL - create table ORDERS_MEDICINE (ID_MEDICINE bigint not null, ID_ORDER bigint not null, COST float, QUANTITY integer, TOTAL varchar(255), primary key (ID_MEDICINE, ID_ORDER))
+2025-09-11 16:50:52 [com.sources.app.App.main()] DEBUG org.hibernate.SQL - alter table POLICY add column EXPIRATION_DATE date
+2025-09-11 16:50:52 [com.sources.app.App.main()] DEBUG org.hibernate.SQL - alter table PRESCRIPTION add column APPROVED char(1)
+2025-09-11 16:50:52 [com.sources.app.App.main()] DEBUG org.hibernate.SQL - create table PRESCRIPTION_MEDICINE (ID_MEDICINE bigint not null, ID_PRESCRIPTION bigint not null, DOSIS float, DURACION float, FRECUENCIA float, primary key (ID_MEDICINE, ID_PRESCRIPTION))
+2025-09-11 16:50:52 [com.sources.app.App.main()] DEBUG org.hibernate.SQL - create table SUBCATEGORY (ID_SUBCATEGORY integer, NAME varchar(255), primary key (ID_SUBCATEGORY))
+2025-09-11 16:50:52 [com.sources.app.App.main()] INFO  com.sources.app.App - Conexión exitosa a la base de datos!
+2025-09-11 16:51:17 [com.sources.app.App.main()] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 16:51:18 [com.sources.app.App.main()] INFO  com.sources.app.App - Conexión exitosa a la base de datos!
+2025-09-11 16:51:57 [com.sources.app.App.main()] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 16:51:58 [com.sources.app.App.main()] INFO  com.sources.app.App - Conexión exitosa a la base de datos!
+2025-09-11 16:52:44 [com.sources.app.App.main()] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 16:52:45 [com.sources.app.App.main()] INFO  com.sources.app.App - Conexión exitosa a la base de datos!
+2025-09-11 16:52:45 [com.sources.app.App.main()] INFO  com.sources.app.App - Servidor iniciado en http://0.0.0.0:8083/api2
+2025-09-11 16:53:48 [HTTP-Dispatcher] DEBUG org.hibernate.SQL - select u1_0.ID_USER,u1_0.ADDRESS,u1_0.BIRTHDATE,u1_0.CUI,u1_0.EMAIL,u1_0.ENABLED,u1_0.NAME,u1_0.PASSWORD,u1_0.PHONE,u1_0.ID_POLICY,u1_0.ROL,u1_0.STATUS from "USERS" u1_0 where u1_0.EMAIL=? and u1_0.PASSWORD=?
+2025-09-11 16:54:08 [HTTP-Dispatcher] DEBUG org.hibernate.SQL - select u1_0.ID_USER,u1_0.ADDRESS,u1_0.BIRTHDATE,u1_0.CUI,u1_0.EMAIL,u1_0.ENABLED,u1_0.NAME,u1_0.PASSWORD,u1_0.PHONE,u1_0.ID_POLICY,u1_0.ROL,u1_0.STATUS from "USERS" u1_0 where u1_0.EMAIL=? and u1_0.PASSWORD=?
+2025-09-11 16:57:17 [com.sources.app.App.main()] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-09-11 16:57:18 [com.sources.app.App.main()] INFO  com.sources.app.App - Conexión exitosa a la base de datos!
+2025-09-11 16:57:18 [com.sources.app.App.main()] INFO  com.sources.app.App - Servidor iniciado en http://0.0.0.0:8083/api2
