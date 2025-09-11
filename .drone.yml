@@ -616,12 +616,9 @@ steps:
     depends_on:
       - smtp-smoke-test
     settings:
-      host:
-        from_secret: SMTP_SERVER
-      port:
-        from_secret: SMTP_PORT
-      username:
-        from_secret: SMTP_USERNAME
+      host: smtp-relay.brevo.com
+      port: 587
+      username: 945b13001@smtp-brevo.com
       password:
         from_secret: SMTP_PASSWORD
       from:
@@ -649,3 +646,4 @@ volumes:
   - name: docker-sock
     host:
       path: /var/run/docker.sock
+cker.sock
