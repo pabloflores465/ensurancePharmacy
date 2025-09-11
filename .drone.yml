@@ -614,18 +614,13 @@ steps:
     depends_on:
       - smtp-smoke-test
     settings:
-      host:
-        from_secret: SMTP_SERVER
-      port:
-        from_secret: SMTP_PORT
-      username:
-        from_secret: SMTP_USERNAME
+      host: smtp-relay.brevo.com
+      port: 587
+      username: 945b13001@smtp-brevo.com
       password:
         from_secret: SMTP_PASSWORD
-      from:
-        from_secret: SMTP_FROM_EMAIL
-      to:
-        from_secret: NOTIFICATION_EMAIL
+      from: pablopolis2016@gmail.com
+      to: pablopolis2016@gmail.com, jflores@unis.edu.gt
       starttls: true
       skip_verify: true
       subject: "{{#success build.status}}Deploy exitoso: {{repo.name}} #{{build.number}} [{{build.branch}}]{{else}}Pipeline fallido: {{repo.name}} #{{build.number}} [{{build.branch}}]{{/success}}"
