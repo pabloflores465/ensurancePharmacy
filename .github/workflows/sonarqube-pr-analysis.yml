@@ -55,7 +55,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          SONAR_TOKEN: ${{ secrets.ENSURANCE_BACK_DEV }}
+          SONAR_TOKEN: ${{ secrets.GLOBAL_SONAR }}
         with:
           args: >
             -Dsonar.projectKey=ensurance-backend-dev
@@ -73,7 +73,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          SONAR_TOKEN: ${{ secrets.ENSURANCE_BACK_QA }}
+          SONAR_TOKEN: ${{ secrets.GLOBAL_SONAR }}
         with:
           args: >
             -Dsonar.projectKey=ensurance-backend-qa
@@ -91,7 +91,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          SONAR_TOKEN: ${{ secrets.ENSURANCE_BACK_MAIN }}
+          SONAR_TOKEN: ${{ secrets.GLOBAL_SONAR }}
         with:
           args: >
             -Dsonar.projectKey=ensurance-backend-main
@@ -109,7 +109,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          SONAR_TOKEN: ${{ github.base_ref == 'main' && secrets.ENSURANCE_FRONT_MAIN || github.base_ref == 'qa' && secrets.ENSURANCE_FRONT_QA || secrets.ENSURANCE_FRONT_DEV }}
+          SONAR_TOKEN: ${{ secrets.GLOBAL_SONAR }}
         with:
           projectBaseDir: ./ensurance
           args: >
@@ -188,7 +188,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          SONAR_TOKEN: ${{ secrets.PHARMACY_BACK_DEV }}
+          SONAR_TOKEN: ${{ secrets.GLOBAL_SONAR }}
         with:
           projectBaseDir: ./backv5
           args: >
@@ -206,7 +206,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          SONAR_TOKEN: ${{ secrets.PHARMACY_BACK_QA }}
+          SONAR_TOKEN: ${{ secrets.GLOBAL_SONAR }}
         with:
           projectBaseDir: ./backv5
           args: >
@@ -224,7 +224,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          SONAR_TOKEN: ${{ secrets.PHARMACY_BACK_MAIN }}
+          SONAR_TOKEN: ${{ secrets.GLOBAL_SONAR }}
         with:
           projectBaseDir: ./backv5
           args: >
@@ -242,7 +242,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          SONAR_TOKEN: ${{ github.base_ref == 'main' && secrets.PHARMACY_FRONT_MAIN || github.base_ref == 'qa' && secrets.PHARMACY_FRONT_QA || secrets.PHARMACY_FRONT_DEV }}
+          SONAR_TOKEN: ${{ secrets.GLOBAL_SONAR }}
         with:
           projectBaseDir: ./pharmacy
           args: >

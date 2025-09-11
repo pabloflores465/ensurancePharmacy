@@ -144,7 +144,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          SONAR_TOKEN: ${{ github.ref == 'refs/heads/main' && secrets.ENSURANCE_BACK_MAIN || github.ref == 'refs/heads/qa' && secrets.ENSURANCE_BACK_QA || secrets.ENSURANCE_BACK_DEV }}
+          SONAR_TOKEN: ${{ secrets.GLOBAL_SONAR }}
         with:
           args: >
             -Dsonar.projectKey=${{ github.ref == 'refs/heads/main' && 'ensurance-backend-main' || github.ref == 'refs/heads/qa' && 'ensurance-backend-qa' || 'ensurance-backend-dev' }}
@@ -181,7 +181,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          SONAR_TOKEN: ${{ github.ref == 'refs/heads/main' && secrets.ENSURANCE_FRONT_MAIN || github.ref == 'refs/heads/qa' && secrets.ENSURANCE_FRONT_QA || secrets.ENSURANCE_FRONT_DEV }}
+          SONAR_TOKEN: ${{ secrets.GLOBAL_SONAR }}
         with:
           projectBaseDir: ./ensurance
           args: >
@@ -221,7 +221,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          SONAR_TOKEN: ${{ github.ref == 'refs/heads/main' && secrets.PHARMACY_BACK_MAIN || github.ref == 'refs/heads/qa' && secrets.PHARMACY_BACK_QA || secrets.PHARMACY_BACK_DEV }}
+          SONAR_TOKEN: ${{ secrets.GLOBAL_SONAR }}
         with:
           args: >
             -Dsonar.projectKey=${{ github.ref == 'refs/heads/main' && 'pharmacy-backend-main' || github.ref == 'refs/heads/qa' && 'pharmacy-backend-qa' || 'pharmacy-backend-dev' }}
@@ -258,7 +258,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          SONAR_TOKEN: ${{ github.ref == 'refs/heads/main' && secrets.PHARMACY_FRONT_MAIN || github.ref == 'refs/heads/qa' && secrets.PHARMACY_FRONT_QA || secrets.PHARMACY_FRONT_DEV }}
+          SONAR_TOKEN: ${{ secrets.GLOBAL_SONAR }}
         with:
           projectBaseDir: ./pharmacy
           args: >
