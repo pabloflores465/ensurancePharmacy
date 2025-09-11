@@ -615,9 +615,12 @@ steps:
     depends_on:
       - smtp-smoke-test
     settings:
-      host: smtp-relay.brevo.com
-      port: 587
-      username: 945b13001@smtp-brevo.com
+      host:
+        from_secret: SMTP_SERVER
+      port:
+        from_secret: SMTP_PORT
+      username:
+        from_secret: SMTP_USERNAME
       password:
         from_secret: SMTP_PASSWORD
       from:
