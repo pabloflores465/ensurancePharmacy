@@ -11,6 +11,7 @@ workspace:
 
 environment:
   SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
+  # Using GLOBAL_SONAR secret for all SonarQube analysis steps
 
 trigger:
   event: [push]
@@ -59,13 +60,17 @@ steps:
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_SONAR
+        from_secret: GLOBAL_TOKEN
+      GLOBAL_TOKEN:
+        from_secret: GLOBAL_TOKEN
     depends_on: [wait-for-sonar]
     commands:
       - |
         set -eu
         echo "SonarQube Ensurance Backend analysis for DEV environment"
         SONAR_HOST_URL="${SONAR_HOST_URL:-https://macbook-air-de-gp.tail5d54f7.ts.net/sonar}"
+        # Fallback: if SONAR_TOKEN is empty, use GLOBAL_TOKEN
+        SONAR_TOKEN="${SONAR_TOKEN:-${GLOBAL_TOKEN:-}}"
         test -n "${SONAR_TOKEN:-}" || { echo "Falta SONAR_TOKEN"; exit 2; }
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
@@ -88,7 +93,9 @@ steps:
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_SONAR
+        from_secret: GLOBAL_TOKEN
+      GLOBAL_TOKEN:
+        from_secret: GLOBAL_TOKEN
     depends_on: [wait-for-sonar, sonarqube-ensurance-backend-analysis-dev]
     commands:
       - |
@@ -98,6 +105,8 @@ steps:
         rm -rf .scannerwork || true
         export SONAR_USER_HOME=/tmp/sonar-ens-frontend-dev; mkdir -p "$SONAR_USER_HOME"
         cd ensurance && npm ci && npm run test:coverage || true && cd ..
+        # Fallback: if SONAR_TOKEN is empty, use GLOBAL_TOKEN
+        SONAR_TOKEN="${SONAR_TOKEN:-${GLOBAL_TOKEN:-}}"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -120,7 +129,9 @@ steps:
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_SONAR
+        from_secret: GLOBAL_TOKEN
+      GLOBAL_TOKEN:
+        from_secret: GLOBAL_TOKEN
     depends_on: [sonarqube-ensurance-frontend-analysis-dev]
     commands:
       - |
@@ -129,6 +140,8 @@ steps:
         SONAR_HOST_URL="${SONAR_HOST_URL:-https://macbook-air-de-gp.tail5d54f7.ts.net/sonar}"
         rm -rf .scannerwork || true
         export SONAR_USER_HOME=/tmp/sonar-pharm-back-dev; mkdir -p "$SONAR_USER_HOME"
+        # Fallback: if SONAR_TOKEN is empty, use GLOBAL_TOKEN
+        SONAR_TOKEN="${SONAR_TOKEN:-${GLOBAL_TOKEN:-}}"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -150,7 +163,9 @@ steps:
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_SONAR
+        from_secret: GLOBAL_TOKEN
+      GLOBAL_TOKEN:
+        from_secret: GLOBAL_TOKEN
     depends_on: [sonarqube-pharmacy-backend-analysis-dev]
     commands:
       - |
@@ -160,6 +175,8 @@ steps:
         rm -rf .scannerwork || true
         export SONAR_USER_HOME=/tmp/sonar-pharm-frontend-dev; mkdir -p "$SONAR_USER_HOME"
         cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
+        # Fallback: if SONAR_TOKEN is empty, use GLOBAL_TOKEN
+        SONAR_TOKEN="${SONAR_TOKEN:-${GLOBAL_TOKEN:-}}"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -180,13 +197,17 @@ steps:
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_SONAR
+        from_secret: GLOBAL_TOKEN
+      GLOBAL_TOKEN:
+        from_secret: GLOBAL_TOKEN
     depends_on: [wait-for-sonar]
     commands:
       - |
         set -eu
         echo "SonarQube Ensurance Backend analysis for QA environment"
         SONAR_HOST_URL="${SONAR_HOST_URL:-https://macbook-air-de-gp.tail5d54f7.ts.net/sonar}"
+        # Fallback: if SONAR_TOKEN is empty, use GLOBAL_TOKEN
+        SONAR_TOKEN="${SONAR_TOKEN:-${GLOBAL_TOKEN:-}}"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -208,7 +229,9 @@ steps:
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_SONAR
+        from_secret: GLOBAL_TOKEN
+      GLOBAL_TOKEN:
+        from_secret: GLOBAL_TOKEN
     depends_on: [wait-for-sonar, sonarqube-ensurance-backend-analysis-qa]
     commands:
       - |
@@ -218,6 +241,8 @@ steps:
         rm -rf .scannerwork || true
         export SONAR_USER_HOME=/tmp/sonar-ens-frontend-qa; mkdir -p "$SONAR_USER_HOME"
         cd ensurance && npm ci && npm run test:coverage || true && cd ..
+        # Fallback: if SONAR_TOKEN is empty, use GLOBAL_TOKEN
+        SONAR_TOKEN="${SONAR_TOKEN:-${GLOBAL_TOKEN:-}}"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -240,7 +265,9 @@ steps:
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_SONAR
+        from_secret: GLOBAL_TOKEN
+      GLOBAL_TOKEN:
+        from_secret: GLOBAL_TOKEN
     depends_on: [sonarqube-ensurance-frontend-analysis-qa]
     commands:
       - |
@@ -249,6 +276,8 @@ steps:
         SONAR_HOST_URL="${SONAR_HOST_URL:-https://macbook-air-de-gp.tail5d54f7.ts.net/sonar}"
         rm -rf .scannerwork || true
         export SONAR_USER_HOME=/tmp/sonar-pharm-back-qa; mkdir -p "$SONAR_USER_HOME"
+        # Fallback: if SONAR_TOKEN is empty, use GLOBAL_TOKEN
+        SONAR_TOKEN="${SONAR_TOKEN:-${GLOBAL_TOKEN:-}}"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -270,7 +299,9 @@ steps:
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_SONAR
+        from_secret: GLOBAL_TOKEN
+      GLOBAL_TOKEN:
+        from_secret: GLOBAL_TOKEN
     depends_on: [sonarqube-pharmacy-backend-analysis-qa]
     commands:
       - |
@@ -280,6 +311,8 @@ steps:
         rm -rf .scannerwork || true
         export SONAR_USER_HOME=/tmp/sonar-pharm-frontend-qa; mkdir -p "$SONAR_USER_HOME"
         cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
+        # Fallback: if SONAR_TOKEN is empty, use GLOBAL_TOKEN
+        SONAR_TOKEN="${SONAR_TOKEN:-${GLOBAL_TOKEN:-}}"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -300,7 +333,9 @@ steps:
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_SONAR
+        from_secret: GLOBAL_TOKEN
+      GLOBAL_TOKEN:
+        from_secret: GLOBAL_TOKEN
     depends_on: [wait-for-sonar]
     commands:
       - |
@@ -310,6 +345,8 @@ steps:
         rm -rf .scannerwork || true
         export SONAR_USER_HOME=/tmp/sonar-ensurance-back-main; mkdir -p "$SONAR_USER_HOME"
         export SONAR_WORK=/tmp/.scannerwork-ensurance-back-main; mkdir -p "$SONAR_WORK"
+        # Fallback: if SONAR_TOKEN is empty, use GLOBAL_TOKEN
+        SONAR_TOKEN="${SONAR_TOKEN:-${GLOBAL_TOKEN:-}}"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -333,7 +370,9 @@ steps:
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_SONAR
+        from_secret: GLOBAL_TOKEN
+      GLOBAL_TOKEN:
+        from_secret: GLOBAL_TOKEN
     depends_on: [wait-for-sonar, sonarqube-ensurance-backend-analysis-main]
     commands:
       - |
@@ -343,6 +382,8 @@ steps:
         rm -rf .scannerwork || true
         export SONAR_USER_HOME=/tmp/sonar-ens-frontend-main; mkdir -p "$SONAR_USER_HOME"
         cd ensurance && npm ci && npm run test:coverage || true && cd ..
+        # Fallback: if SONAR_TOKEN is empty, use GLOBAL_TOKEN
+        SONAR_TOKEN="${SONAR_TOKEN:-${GLOBAL_TOKEN:-}}"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -366,7 +407,9 @@ steps:
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_SONAR
+        from_secret: GLOBAL_TOKEN
+      GLOBAL_TOKEN:
+        from_secret: GLOBAL_TOKEN
     depends_on: [sonarqube-ensurance-frontend-analysis-main]
     commands:
       - |
@@ -375,6 +418,8 @@ steps:
         SONAR_HOST_URL="${SONAR_HOST_URL:-https://macbook-air-de-gp.tail5d54f7.ts.net/sonar}"
         rm -rf .scannerwork || true
         export SONAR_USER_HOME=/tmp/sonar-pharm-back-main; mkdir -p "$SONAR_USER_HOME"
+        # Fallback: if SONAR_TOKEN is empty, use GLOBAL_TOKEN
+        SONAR_TOKEN="${SONAR_TOKEN:-${GLOBAL_TOKEN:-}}"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
@@ -397,7 +442,9 @@ steps:
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_SONAR
+        from_secret: GLOBAL_TOKEN
+      GLOBAL_TOKEN:
+        from_secret: GLOBAL_TOKEN
     depends_on: [sonarqube-pharmacy-backend-analysis-main]
     commands:
       - |
@@ -407,6 +454,8 @@ steps:
         rm -rf .scannerwork || true
         export SONAR_USER_HOME=/tmp/sonar-pharm-frontend-main; mkdir -p "$SONAR_USER_HOME"
         cd pharmacy && npm ci && npm run test:unit:coverage || true && cd ..
+        # Fallback: if SONAR_TOKEN is empty, use GLOBAL_TOKEN
+        SONAR_TOKEN="${SONAR_TOKEN:-${GLOBAL_TOKEN:-}}"
         sonar-scanner \
           -Dsonar.host.url="$SONAR_HOST_URL" \
           -Dsonar.token="$SONAR_TOKEN" \
