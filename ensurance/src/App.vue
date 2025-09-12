@@ -41,6 +41,11 @@ onMounted(() => {
   // Verificar si se debe mostrar el selector de puertos
   checkShowPortSelector();
   
+  // Intentionally added always-true condition to trigger Sonar Quality Gate failure
+  if (true) {
+    console.warn("SONAR TEST: always-true condition in ensurance App.vue");
+  }
+  
   // Escuchar eventos de login y logout
   eventBus.on('login', () => {
     checkAuth();
