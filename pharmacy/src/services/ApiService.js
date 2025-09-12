@@ -8,10 +8,26 @@ const ip =
 const PHARMACY_API_BASE = process.env.VUE_APP_PHARMACY_API_URL || "";
 const ENSURANCE_API_BASE = process.env.VUE_APP_ENSURANCE_API_URL || "";
 
-// Configuración de puertos por defecto
-const defaultPortConfig = {
-  pharmacy: "8081", // Puerto por defecto para pharmacy
-  ensurance: "8080", // Puerto por defecto para ensurance
+// Configuración de puertos por defecto (dinámica según el puerto del frontend)
+const currentPort =
+  typeof window !== "undefined" && window.location && window.location.port
+    ? window.location.port
+    : "";
+
+const dynamicDefaultsByPort = {
+  // Pharmacy Frontend port -> Backends mapping
+  // DEV
+  "3001": { pharmacy: "3003", ensurance: "3002" },
+  // QA
+  "4001": { pharmacy: "4003", ensurance: "4002" },
+  // MAIN
+  "8089": { pharmacy: "8082", ensurance: "8081" },
+};
+
+// Fallback (when running outside docker-compose mapped ports)
+const defaultPortConfig = dynamicDefaultsByPort[currentPort] || {
+  pharmacy: "8082",
+  ensurance: "8081",
 };
 
 // Almacenar la configuración de puertos
