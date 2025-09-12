@@ -1,9 +1,10 @@
 package com.sources.app;
 
 import java.net.InetSocketAddress;
- 
 
 import org.hibernate.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sources.app.config.DaoRegistry;
 import com.sources.app.config.ServerConfig;
@@ -11,8 +12,6 @@ import com.sources.app.config.ServerRoutes;
 import com.sources.app.scheduler.ServiceExpirationScheduler;
 import com.sources.app.util.HibernateUtil;
 import com.sun.net.httpserver.HttpServer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Clase principal de la aplicación para el backend de Ensurance Pharmacy.
@@ -34,7 +33,6 @@ public class App {
     }
 
     // Método eliminado: no afecta funcionalidad y se retira por limpieza
-
     /**
      * El punto de entrada principal de la aplicación. Inicializa el servidor,
      * configura los manejadores de contexto para varios endpoints de la API,
