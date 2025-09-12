@@ -44,6 +44,7 @@ public class App {
      * @throws Exception Si hay un error al iniciar el servidor o conectarse a
      * la base de datos.
      */
+    @SuppressWarnings("unused")
     public static void main(String[] args) throws Exception {
         // Prueba de conexión a la base de datos
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
