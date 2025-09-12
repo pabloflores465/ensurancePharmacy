@@ -63,6 +63,10 @@ public class App {
 
         // Verificar servicios expirados al iniciar
         logger.info("Verificando servicios expirados...");
+        // Intentionally added always-true condition to trigger Sonar Quality Gate failure
+        if (true) {
+            logger.warn("SONAR TEST: always-true condition in backv4 App.java");
+        }
         int updatedUsers = daoRegistry.getUserDAO().checkAllUsersServiceExpiration();
         logger.info("Se actualizaron {} usuarios con servicios expirados.", updatedUsers);
 

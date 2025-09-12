@@ -8,7 +8,8 @@
         <img src="@/assets/logo.png" alt="Farmacia Logo" class="logo" />
       </div>
 
-      <div>Polonia 6:30 11/09</div>
+
+      <div>Denver 5:30 11/09</div>
       <h2 class="text-2xl font-bold text-center text-blue-800 mb-4">
         Iniciar Sesión + Magic 14-07-2025 PROD
       </h2>
