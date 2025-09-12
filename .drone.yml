@@ -11,6 +11,7 @@ workspace:
 
 environment:
   SONAR_HOST_URL: https://macbook-air-de-gp.tail5d54f7.ts.net/sonar
+  # Using GLOBAL_SONAR secret for all SonarQube analysis steps
 
 trigger:
   event: [push]
