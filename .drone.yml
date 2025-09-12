@@ -60,7 +60,7 @@ steps:
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_TOKEN
+        from_secret: GLOBAL_SONAR
     depends_on: [wait-for-sonar]
     commands:
       - |
@@ -89,7 +89,7 @@ steps:
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_TOKEN
+        from_secret: GLOBAL_SONAR
     depends_on: [wait-for-sonar, sonarqube-ensurance-backend-analysis-dev]
     commands:
       - |
@@ -121,7 +121,7 @@ steps:
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_TOKEN
+        from_secret: GLOBAL_SONAR
     depends_on: [sonarqube-ensurance-frontend-analysis-dev]
     commands:
       - |
@@ -151,7 +151,7 @@ steps:
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_TOKEN
+        from_secret: GLOBAL_SONAR
     depends_on: [sonarqube-pharmacy-backend-analysis-dev]
     commands:
       - |
@@ -181,7 +181,7 @@ steps:
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_TOKEN
+        from_secret: GLOBAL_SONAR
     depends_on: [wait-for-sonar]
     commands:
       - |
@@ -209,7 +209,7 @@ steps:
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_TOKEN
+        from_secret: GLOBAL_SONAR
     depends_on: [wait-for-sonar, sonarqube-ensurance-backend-analysis-qa]
     commands:
       - |
@@ -241,7 +241,7 @@ steps:
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_TOKEN
+        from_secret: GLOBAL_SONAR
     depends_on: [sonarqube-ensurance-frontend-analysis-qa]
     commands:
       - |
@@ -271,7 +271,7 @@ steps:
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_TOKEN
+        from_secret: GLOBAL_SONAR
     depends_on: [sonarqube-pharmacy-backend-analysis-qa]
     commands:
       - |
@@ -301,7 +301,7 @@ steps:
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_TOKEN
+        from_secret: GLOBAL_SONAR
     depends_on: [wait-for-sonar]
     commands:
       - |
@@ -334,7 +334,7 @@ steps:
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_TOKEN
+        from_secret: GLOBAL_SONAR
     depends_on: [wait-for-sonar, sonarqube-ensurance-backend-analysis-main]
     commands:
       - |
@@ -367,7 +367,7 @@ steps:
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_TOKEN
+        from_secret: GLOBAL_SONAR
     depends_on: [sonarqube-ensurance-frontend-analysis-main]
     commands:
       - |
@@ -398,7 +398,7 @@ steps:
     user: root
     environment:
       SONAR_TOKEN:
-        from_secret: GLOBAL_TOKEN
+        from_secret: GLOBAL_SONAR
     depends_on: [sonarqube-pharmacy-backend-analysis-main]
     commands:
       - |
