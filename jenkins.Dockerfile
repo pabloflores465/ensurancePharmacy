@@ -26,6 +26,10 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs && \
     rm -rf /var/lib/apt/lists/*
 
+# Instalar Docker Compose v2
+RUN curl -SL "https://github.com/docker/compose/releases/download/v2.29.2/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose && \
+    chmod +x /usr/local/bin/docker-compose
+
 # Dar permisos al usuario jenkins para usar Docker
 RUN usermod -aG docker jenkins || true
 
