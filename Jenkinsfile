@@ -3,7 +3,7 @@ pipeline {
 
   environment {
     SONARQUBE_SERVER = 'SonarQube'
-    EMAIL_TO = "\${EMAIL_TO}"
+    EMAIL_TO = "jflores@unis.edu.gt"
     DOCKER_HOST = 'tcp://docker:2376'
     DOCKER_CERT_PATH = '/certs/client'
     DOCKER_TLS_VERIFY = '1'
