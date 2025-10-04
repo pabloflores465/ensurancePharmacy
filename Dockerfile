@@ -53,7 +53,7 @@ RUN echo "VUE_APP_API_HOST=localhost" > .env && \
 RUN npm run build
 
 # Stage 3: Build Ensurance Backend (BackV4)
-FROM eclipse-temurin:24-jdk-alpine AS ensurance-backend-build
+FROM eclipse-temurin:21-jdk-alpine AS ensurance-backend-build
 WORKDIR /app/backv4
 RUN apk add --no-cache maven
 # Harden Maven network settings (TLS + retries)
@@ -66,7 +66,7 @@ COPY backv4/ ./
 RUN set -eux; for i in 1 2 3; do mvn -B -DskipTests clean package && break || sleep 5; done
 
 # Stage 4: Build Pharmacy Backend (BackV5)
-FROM eclipse-temurin:24-jdk-alpine AS pharmacy-backend-build
+FROM eclipse-temurin:21-jdk-alpine AS pharmacy-backend-build
 WORKDIR /app/backv5
 RUN apk add --no-cache maven
 ENV MAVEN_OPTS="-Dhttps.protocols=TLSv1.2,TLSv1.3 -Dmaven.wagon.http.retryHandler.count=5 -Dmaven.wagon.http.pool=false"
@@ -76,7 +76,7 @@ COPY backv5/ ./
 RUN set -eux; for i in 1 2 3; do mvn -B -DskipTests clean package && break || sleep 5; done
 
 # Stage 5: Runtime Environment
-FROM eclipse-temurin:24-jre-alpine AS runtime
+FROM eclipse-temurin:21-jre-alpine AS runtime
 
 # Build arguments for environment configuration
 ARG ENVIRONMENT=main
