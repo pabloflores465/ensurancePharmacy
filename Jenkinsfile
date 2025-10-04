@@ -1,9 +1,15 @@
 pipeline {
   agent any
 
+  tools {
+    maven 'Maven'
+    nodejs 'NodeJS'
+  }
+
   environment {
     SONARQUBE_SERVER = 'SonarQube'
     EMAIL_TO = "\${EMAIL_TO}"
+    DOCKER_HOST = 'unix:///var/run/docker.sock'
   }
 
   options { timestamps() }
