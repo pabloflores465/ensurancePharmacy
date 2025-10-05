@@ -1,0 +1,45 @@
+services:
+  k6:
+    image: grafana/k6:0.49.0
+    container_name: ensurance-k6
+    user: "0:0"
+    command:
+      - "run"
+      - "--out"
+      - "json=/results/k6-results.json"
+      - "--out"
+      - "web-dashboard=http://0.0.0.0:5665"
+      - "/scripts/sample-script.js"
+    environment:
+      K6_WEB_DASHBOARD_EXPORT: "/results/k6-dashboard"
+      TARGET_URL: "http://host.docker.internal:5175"
+    volumes:
+      - ./stress/k6/scripts:/scripts:ro
+      - k6_results:/results
+    ports:
+      - "5665:5665"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: "no"
+
+  jmeter:
+    image: alpine/jmeter:5.6.3
+    container_name: ensurance-jmeter
+    command:
+      - "-n"
+      - "-t"
+      - "/testplans/sample-plan.jmx"
+      - "-l"
+      - "/results/sample-results.jtl"
+    volumes:
+      - ./stress/jmeter/test-plans:/testplans:ro
+      - jmeter_results:/results
+    environment:
+      DISPLAY: ":1"
+    restart: "no"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  k6_results:
+  jmeter_results:

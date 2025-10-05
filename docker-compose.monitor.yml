@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  checkmk:
+    image: checkmk/check-mk-raw:2.4.0p12
+    container_name: ensurance-checkmk
+    ports:
+      - "5150:5000"
+    environment:
+      CMK_SITE_ID: ensurance
+      CMK_PASSWORD: changeme
+    volumes:
+      - checkmk_sites:/omd/sites
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    container_name: ensurance-prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    ports:
+      - "9095:9090"
+    volumes:
+      - prometheus_data:/prometheus
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    container_name: ensurance-grafana
+    depends_on:
+      - prometheus
+    ports:
+      - "3300:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: changeme
+    volumes:
+      - grafana_data:/var/lib/grafana
+    restart: unless-stopped
+
+volumes:
+  checkmk_sites:
+  prometheus_data:
+  grafana_data:

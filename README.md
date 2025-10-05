@@ -322,6 +322,16 @@ docker compose -f docker-compose.main.yml down
 docker compose -f docker-compose.cicd.yml up -d
 docker compose -f docker-compose.cicd.yml logs -f
 docker compose -f docker-compose.cicd.yml down
+
+# Stack de monitoreo (Checkmk, Prometheus, Grafana)
+docker compose -f docker-compose.monitor.yml up -d
+docker compose -f docker-compose.monitor.yml logs -f
+docker compose -f docker-compose.monitor.yml down
+
+# Stack de pruebas de carga (k6, JMeter, k6-operator)
+docker compose -f docker-compose.stress.yml up -d
+docker compose -f docker-compose.stress.yml logs -f
+docker compose -f docker-compose.stress.yml down
 ```
 
 Accesos rápidos del stack CI/CD levantado con `docker-compose.cicd.yml`:
@@ -335,6 +345,41 @@ Notas:
 - El servicio `docker` (dind) requiere Docker con privilegios; en Desktop suele funcionar por defecto.
 - Jenkins primera ejecución: obtener contraseña inicial con `docker exec -it jenkins cat /var/jenkins_home/secrets/initialAdminPassword`.
 - Los volúmenes declarados se crean automáticamente; para borrar datos agrega `-v` al comando `down`.
+
+### 📈 Stack de Monitoreo
+
+- **Archivo**: `docker-compose.monitor.yml`
+- **Servicios**:
+  - `checkmk/check-mk-raw:2.4.0p12` para monitoreo de infraestructura (`http://localhost:5150`)
+  - `prom/prometheus:v2.53.0` para métricas y scraping (`http://localhost:9095`)
+  - `grafana/grafana:11.3.0` para visualización (`http://localhost:3300`)
+- **Puertos externos reservados**: `5150`, `9095`, `3300`. Seleccionados para evitar solaparse con los puertos expuestos por los demás archivos `docker-compose.*.yml`.
+- **Volúmenes**:
+  - `checkmk_sites` → persistencia de configuraciones/sites de Checkmk en `/omd/sites`.
+  - `prometheus_data` → almacenamiento TSDB de Prometheus en `/prometheus`.
+  - `grafana_data` → datos y dashboards de Grafana en `/var/lib/grafana`.
+- **Configuración adicional**:
+  - Prometheus usa `monitoring/prometheus/prometheus.yml` como archivo de scrapeo inicial.
+  - Credenciales por defecto: `admin/changeme` para Grafana y `CMK_PASSWORD=changeme` para el sitio `ensurance` de Checkmk.
+  - Actualiza estas contraseñas después del primer arranque.
+
+### 🔥 Stack de Pruebas de Carga
+
+- **Archivo**: `docker-compose.stress.yml`
+- **Servicios**:
+  - `grafana/k6:0.49.0` ejecuta scripts de carga (`http://localhost:5665` expone dashboard web embebido).
+  - `alpine/jmeter:5.6.3` ejecuta planes `.jmx` en modo no interactivo.
+  - `grafana/k6-operator:0.12.1` permite gestionar ejecuciones vía API (`http://localhost:7860`).
+- **Puertos externos reservados**: `5665`, `9600`, `7860`. Se eligieron para no colisionar con otros stacks existentes.
+- **Volúmenes**:
+  - `k6_results` → guarda salidas JSON/dashboards de k6 en `/results`.
+  - `jmeter_results` → almacena archivos `.jtl` generados por JMeter en `/results`.
+- **Recursos preconfigurados**:
+  - Scripts k6 en `stress/k6/scripts/` (`sample-script.js` incluido).
+  - Planes de JMeter en `stress/jmeter/test-plans/` (`sample-plan.jmx` incluido).
+- **Notas**:
+  - Por defecto los scripts apuntan a `http://host.docker.internal` para alcanzar los servicios locales desde contenedores.
+  - Ajusta usuarios, número de hilos u otras opciones editando los archivos de ejemplo antes de ejecutar.
 
 ### 🏗️ Arquitectura del Contenedor
 
