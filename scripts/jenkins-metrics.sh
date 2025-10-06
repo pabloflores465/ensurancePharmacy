@@ -20,7 +20,10 @@
 PUSHGATEWAY_URL="${PUSHGATEWAY_URL:-http://localhost:9091}"
 JOB_NAME="${JOB_NAME:-unknown}"
 BUILD_NUMBER="${BUILD_NUMBER:-0}"
-METRICS_FILE="/tmp/jenkins_metrics_${JOB_NAME}_${BUILD_NUMBER}.tmp"
+
+# Sanitizar JOB_NAME para el nombre del archivo (reemplazar caracteres especiales)
+SAFE_JOB_NAME=$(echo "$JOB_NAME" | sed 's/[\/:]/_/g')
+METRICS_FILE="/tmp/jenkins_metrics_${SAFE_JOB_NAME}_${BUILD_NUMBER}.tmp"
 
 # Colores para output
 GREEN='\033[0;32m'
@@ -80,11 +83,18 @@ end_metrics() {
     
     # Leer tiempo de inicio
     if [ ! -f "$METRICS_FILE" ]; then
-        log_error "No se encontró archivo de métricas. ¿Ejecutaste 'start' primero?"
-        return 1
+        log_warn "No se encontró archivo de métricas. Usando valores por defecto."
+        log_warn "Archivo esperado: $METRICS_FILE"
+        log_warn "JOB_NAME: $JOB_NAME"
+        log_warn "BUILD_NUMBER: $BUILD_NUMBER"
+        log_warn "Archivos en /tmp que coinciden:"
+        ls -la /tmp/jenkins_metrics_* 2>/dev/null || log_warn "  Ninguno encontrado"
+        # Usar valores por defecto
+        START_TIME=$((end_time - 60))  # Asumir 60 segundos si no hay archivo
+        QUEUE_START_TIME=$START_TIME
+    else
+        source "$METRICS_FILE"
     fi
-    
-    source "$METRICS_FILE"
     
     # Calcular duración
     local duration=$((end_time - START_TIME))
