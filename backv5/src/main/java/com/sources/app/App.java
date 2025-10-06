@@ -57,7 +57,6 @@ public class App {
 
     private static final Logger logger = LoggerFactory.getLogger(App.class);
     private static final String DEFAULT_HOST = "0.0.0.0";
-    private static HTTPServer metricsServer;
     /**
      * DAO para operaciones relacionadas con usuarios.
      */
@@ -182,7 +181,7 @@ public class App {
         int metricsPort = parsePort(System.getenv("METRICS_PORT"), 9464);
         
         try {
-            metricsServer = new HTTPServer(
+            new HTTPServer(
                 new InetSocketAddress(metricsHost, metricsPort), 
                 CollectorRegistry.defaultRegistry, 
                 true
