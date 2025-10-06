@@ -93,19 +93,24 @@ public class InsuranceServiceHandler implements HttpHandler {
      */
     private static final String REGISTER_MEDICATION_PATH = "/api/pharmacy-medications/register";
 
+    /**
+     * Host IP address for external hospital API.
+     */
+    private static final String HOSPITAL_API_HOST = "0.0.0.0";
+    
     // TODO: Externalizar esta URL base a un archivo de configuración
     /**
      * URL base de la API externa del hospital.
      */
-    private static final String HOSPITAL_API_BASE_URL = "http://0.0.0.0:5050/api";
+    private static final String HOSPITAL_API_BASE_URL = "http://" + HOSPITAL_API_HOST + ":5050/api";
     // TODO: Externalizar lista de URLs a intentar o mejorar la lógica de descubrimiento
     /**
      * Lista de URLs candidatas para obtener los servicios de la API externa del
      * hospital.
      */
     private static final String[] HOSPITAL_SERVICE_URLS = {
-        "http://0.0.0.0:5050/api/services/",
-        "http://0.0.0.0:5050/api/services",
+        "http://" + HOSPITAL_API_HOST + ":5050/api/services/",
+        "http://" + HOSPITAL_API_HOST + ":5050/api/services",
         "http://localhost:5050/api/services/",
         "http://localhost:5050/api/services",
         "http://127.0.0.1:5050/api/services/",

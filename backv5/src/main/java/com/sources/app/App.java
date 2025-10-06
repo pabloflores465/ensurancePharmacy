@@ -180,7 +180,7 @@ public class App {
         int metricsPort = parsePort(System.getenv("METRICS_PORT"), 9464);
         
         try {
-            HTTPServer metricsServer = new HTTPServer(
+            new HTTPServer(
                 new InetSocketAddress(metricsHost, metricsPort), 
                 CollectorRegistry.defaultRegistry, 
                 true
