@@ -56,7 +56,6 @@ import io.prometheus.client.exporter.HTTPServer;
 public class App {
 
     private static final Logger logger = LoggerFactory.getLogger(App.class);
-    private static HTTPServer metricsServer;
     /**
      * DAO para operaciones relacionadas con usuarios.
      */
@@ -153,7 +152,17 @@ public class App {
      * servidor.
      */
     public static void main(String[] args) throws Exception {
-        // Prueba de conexión a la base de datos
+        testDatabaseConnection();
+        startMetricsServer();
+        HttpServer server = createAndConfigureHttpServer();
+        server.setExecutor(null); // Usa el executor por defecto
+        server.start();
+        logger.info("Servidor iniciado en http://{}:{}/api2", 
+                getEnvOrDefault("SERVER_HOST", "0.0.0.0"),
+                getServerPort());
+    }
+
+    private static void testDatabaseConnection() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             if (session.isConnected()) {
                 logger.info("Conexión exitosa a la base de datos!");
@@ -163,52 +172,60 @@ public class App {
         } catch (Exception e) {
             logger.error("Error al conectar con la base de datos (continuando sin DB)", e);
         }
+    }
 
-        // Inicializa métricas y servidor de exposición Prometheus
+    private static void startMetricsServer() {
         MetricsConfiguration.initialize();
-        String metricsHost = System.getenv("METRICS_HOST");
-        if (metricsHost == null || metricsHost.isEmpty()) {
-            metricsHost = "0.0.0.0";
-        }
-        int metricsPort = 9464;
-        String metricsPortEnv = System.getenv("METRICS_PORT");
-        if (metricsPortEnv != null && !metricsPortEnv.isEmpty()) {
-            try {
-                metricsPort = Integer.parseInt(metricsPortEnv);
-            } catch (NumberFormatException e) {
-                logger.warn("Formato de puerto de métricas inválido. Se usará 9464.");
-            }
-        }
+        String metricsHost = getEnvOrDefault("METRICS_HOST", "0.0.0.0");
+        int metricsPort = parsePort(System.getenv("METRICS_PORT"), 9464);
+        
         try {
-            metricsServer = new HTTPServer(new InetSocketAddress(metricsHost, metricsPort), CollectorRegistry.defaultRegistry, true);
+            HTTPServer metricsServer = new HTTPServer(
+                new InetSocketAddress(metricsHost, metricsPort), 
+                CollectorRegistry.defaultRegistry, 
+                true
+            );
             logger.info("Métricas disponibles en http://{}:{}/metrics", metricsHost, metricsPort);
         } catch (IOException e) {
             logger.error("No se pudo iniciar el servidor HTTP de métricas", e);
         }
+    }
 
-        // Host/puerto desde variables de entorno con valores por defecto
-        String host = System.getenv("SERVER_HOST");
-        if (host == null || host.isEmpty()) {
-            host = "0.0.0.0";
-        }
+    private static HttpServer createAndConfigureHttpServer() throws IOException {
+        String host = getEnvOrDefault("SERVER_HOST", "0.0.0.0");
+        int port = getServerPort();
+        
+        HttpServer server = HttpServer.create(new InetSocketAddress(host, port), 0);
+        configureApiRoutes(server);
+        return server;
+    }
 
+    private static int getServerPort() {
         String portEnv = System.getenv("SERVER_PORT");
         if (portEnv == null || portEnv.isEmpty()) {
             portEnv = System.getenv("PORT");
         }
+        return parsePort(portEnv, 8081);
+    }
 
-        int port = 8081; // Puerto predeterminado
-        try {
-            if (portEnv != null && !portEnv.isEmpty()) {
-                port = Integer.parseInt(portEnv);
-            }
-        } catch (NumberFormatException e) {
-            logger.warn("Formato de puerto inválido. Se usará el puerto predeterminado 8081.");
+    private static String getEnvOrDefault(String envName, String defaultValue) {
+        String value = System.getenv(envName);
+        return (value == null || value.isEmpty()) ? defaultValue : value;
+    }
+
+    private static int parsePort(String portStr, int defaultPort) {
+        if (portStr == null || portStr.isEmpty()) {
+            return defaultPort;
         }
+        try {
+            return Integer.parseInt(portStr);
+        } catch (NumberFormatException e) {
+            logger.warn("Formato de puerto inválido '{}'. Se usará {}.", portStr, defaultPort);
+            return defaultPort;
+        }
+    }
 
-        HttpServer server = HttpServer.create(new InetSocketAddress(host, port), 0);
-
-        // Asignamos cada contexto con su respectivo Handler usando el prefijo "/api2"
+    private static void configureApiRoutes(HttpServer server) {
         server.createContext("/api2/login", InstrumentedHttpHandler.of("/api2/login", new LoginHandler(userDAO)));
         server.createContext("/api2/users", InstrumentedHttpHandler.of("/api2/users", new UserHandler(userDAO)));
         server.createContext("/api2/bills", InstrumentedHttpHandler.of("/api2/bills", new BillHandler(billDAO)));
@@ -225,8 +242,5 @@ public class App {
         server.createContext("/api2/subcategories", InstrumentedHttpHandler.of("/api2/subcategories", new SubcategoryHandler(subcategoryDAO)));
         server.createContext("/api2/external_medicines", InstrumentedHttpHandler.of("/api2/external_medicines", new ExternalMedicineHandler(externalMedicineDAO)));
         server.createContext("/api2/verification", InstrumentedHttpHandler.of("/api2/verification", new VerificationHandler()));
-        server.setExecutor(null); // Usa el executor por defecto
-        server.start();
-        logger.info("Servidor iniciado en http://{}:{}/api2", host, port);
     }
 }

@@ -13,17 +13,18 @@ import io.prometheus.client.hotspot.DefaultExports;
 public final class MetricsConfiguration {
 
     private static final CollectorRegistry REGISTRY = CollectorRegistry.defaultRegistry;
+    private static final String LABEL_METHOD = "method";
 
     public static final Counter HTTP_REQUESTS_TOTAL = Counter.build()
             .name("ensurance_http_requests_total")
             .help("Total HTTP requests handled by the API")
-            .labelNames("path", "method", "status")
+            .labelNames("path", LABEL_METHOD, "status")
             .register(REGISTRY);
 
     public static final Histogram HTTP_REQUEST_DURATION_SECONDS = Histogram.build()
             .name("ensurance_http_request_duration_seconds")
             .help("Time spent processing HTTP requests")
-            .labelNames("path", "method")
+            .labelNames("path", LABEL_METHOD)
             .buckets(0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10)
             .register(REGISTRY);
 
@@ -36,7 +37,7 @@ public final class MetricsConfiguration {
     public static final Summary HTTP_REQUEST_SIZE_BYTES = Summary.build()
             .name("ensurance_http_request_size_bytes")
             .help("Size of HTTP request bodies in bytes")
-            .labelNames("path", "method")
+            .labelNames("path", LABEL_METHOD)
             .register(REGISTRY);
 
     private static volatile boolean initialized = false;

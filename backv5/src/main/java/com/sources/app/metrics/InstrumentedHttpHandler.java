@@ -40,7 +40,6 @@ public final class InstrumentedHttpHandler implements HttpHandler {
         exchange.setStreams(countingStream, exchange.getResponseBody());
         
         int statusCode = 200;
-        boolean handlerFailed = false;
         
         try {
             delegate.handle(exchange);
@@ -49,7 +48,6 @@ public final class InstrumentedHttpHandler implements HttpHandler {
                 statusCode = 200;
             }
         } catch (IOException | RuntimeException e) {
-            handlerFailed = true;
             statusCode = 500;
             throw e;
         } finally {
