@@ -13,18 +13,6 @@ pipeline {
   options { timestamps() }
 
   stages {
-    stage('Initialize Metrics') {
-      steps {
-        script {
-          echo '📊 Iniciando tracking de métricas Prometheus'
-          sh '''
-            chmod +x scripts/jenkins-metrics.sh
-            scripts/jenkins-metrics.sh start
-          '''
-        }
-      }
-    }
-
     stage('Checkout') {
       steps {
         script {
@@ -35,6 +23,15 @@ pipeline {
           sh 'git rev-parse HEAD'
           
           def duration = (System.currentTimeMillis() - stageStart) / 1000
+          
+          // Iniciar métricas después del checkout
+          echo '📊 Iniciando tracking de métricas Prometheus'
+          sh '''
+            chmod +x scripts/jenkins-metrics.sh
+            scripts/jenkins-metrics.sh start
+          '''
+          
+          // Reportar duración del checkout
           sh "scripts/jenkins-metrics.sh stage checkout ${duration}"
         }
       }

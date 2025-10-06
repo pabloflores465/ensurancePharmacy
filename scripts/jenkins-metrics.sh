@@ -58,11 +58,14 @@ start_metrics() {
     log_info "Iniciando tracking de métricas para job: $JOB_NAME #$BUILD_NUMBER"
     log_info "Tiempo de inicio: $start_time"
     
+    # Sanitizar JOB_NAME para labels (reemplazar caracteres especiales)
+    local job_label=$(echo "$JOB_NAME" | sed 's/[\/]/_/g')
+    
     # Incrementar contador de builds
-    cat <<EOF | curl -s --data-binary @- "$PUSHGATEWAY_URL/metrics/job/jenkins_pipeline/instance/${JOB_NAME}"
+    cat <<EOF | curl -s --data-binary @- "$PUSHGATEWAY_URL/metrics/job/jenkins_pipeline/instance/${job_label}"
 # HELP jenkins_builds_total Total number of Jenkins builds executed
 # TYPE jenkins_builds_total counter
-jenkins_builds_total{job_name="$JOB_NAME"} 1
+jenkins_builds_total{job_name="$job_label"} 1
 EOF
     
     log_info "Métrica jenkins_builds_total incrementada"
@@ -92,6 +95,9 @@ end_metrics() {
     log_info "Tiempo en cola: ${queue_time}s"
     log_info "Estado: $status"
     
+    # Sanitizar JOB_NAME para labels
+    local job_label=$(echo "$JOB_NAME" | sed 's/[\/]/_/g')
+    
     # Convertir status a valor numérico
     local status_value=0
     case "$status" in
@@ -111,22 +117,22 @@ end_metrics() {
     esac
     
     # Reportar todas las métricas a Pushgateway
-    cat <<EOF | curl -s --data-binary @- "$PUSHGATEWAY_URL/metrics/job/jenkins_pipeline/instance/${JOB_NAME}/build/${BUILD_NUMBER}"
+    cat <<EOF | curl -s --data-binary @- "$PUSHGATEWAY_URL/metrics/job/jenkins_pipeline/instance/${job_label}/build/${BUILD_NUMBER}"
 # HELP jenkins_job_duration_seconds Duration of Jenkins job execution in seconds
 # TYPE jenkins_job_duration_seconds gauge
-jenkins_job_duration_seconds{job_name="$JOB_NAME",build_number="$BUILD_NUMBER",status="$status"} $duration
+jenkins_job_duration_seconds{job_name="$job_label",build_number="$BUILD_NUMBER",status="$status"} $duration
 
 # HELP jenkins_job_status Status of Jenkins job (1=success, 0=failure, 0.5=unstable)
 # TYPE jenkins_job_status gauge
-jenkins_job_status{job_name="$JOB_NAME",build_number="$BUILD_NUMBER"} $status_value
+jenkins_job_status{job_name="$job_label",build_number="$BUILD_NUMBER"} $status_value
 
 # HELP jenkins_queue_time_seconds Time spent waiting in queue before execution
 # TYPE jenkins_queue_time_seconds gauge
-jenkins_queue_time_seconds{job_name="$JOB_NAME",build_number="$BUILD_NUMBER"} $queue_time
+jenkins_queue_time_seconds{job_name="$job_label",build_number="$BUILD_NUMBER"} $queue_time
 
 # HELP jenkins_build_timestamp_seconds Unix timestamp when build finished
 # TYPE jenkins_build_timestamp_seconds gauge
-jenkins_build_timestamp_seconds{job_name="$JOB_NAME",build_number="$BUILD_NUMBER"} $end_time
+jenkins_build_timestamp_seconds{job_name="$job_label",build_number="$BUILD_NUMBER"} $end_time
 EOF
     
     if [ $? -eq 0 ]; then
@@ -147,12 +153,16 @@ report_stage() {
     local stage_name="$1"
     local duration="$2"
     
+    # Sanitizar nombres para labels
+    local job_label=$(echo "$JOB_NAME" | sed 's/[\/]/_/g')
+    local stage_label=$(echo "$stage_name" | sed 's/[\/]/_/g')
+    
     log_info "Reportando stage: $stage_name (${duration}s)"
     
-    cat <<EOF | curl -s --data-binary @- "$PUSHGATEWAY_URL/metrics/job/jenkins_pipeline_stage/instance/${JOB_NAME}/stage/${stage_name}"
+    cat <<EOF | curl -s --data-binary @- "$PUSHGATEWAY_URL/metrics/job/jenkins_pipeline_stage/instance/${job_label}/stage/${stage_label}"
 # HELP jenkins_stage_duration_seconds Duration of Jenkins pipeline stage in seconds
 # TYPE jenkins_stage_duration_seconds gauge
-jenkins_stage_duration_seconds{job_name="$JOB_NAME",build_number="$BUILD_NUMBER",stage="$stage_name"} $duration
+jenkins_stage_duration_seconds{job_name="$job_label",build_number="$BUILD_NUMBER",stage="$stage_label"} $duration
 EOF
 }
 
@@ -164,12 +174,15 @@ report_custom() {
     local metric_value="$2"
     local metric_help="${3:-Custom Jenkins metric}"
     
+    # Sanitizar JOB_NAME para labels
+    local job_label=$(echo "$JOB_NAME" | sed 's/[\/]/_/g')
+    
     log_info "Reportando métrica custom: $metric_name = $metric_value"
     
-    cat <<EOF | curl -s --data-binary @- "$PUSHGATEWAY_URL/metrics/job/jenkins_pipeline/instance/${JOB_NAME}"
+    cat <<EOF | curl -s --data-binary @- "$PUSHGATEWAY_URL/metrics/job/jenkins_pipeline/instance/${job_label}"
 # HELP $metric_name $metric_help
 # TYPE $metric_name gauge
-$metric_name{job_name="$JOB_NAME",build_number="$BUILD_NUMBER"} $metric_value
+$metric_name{job_name="$job_label",build_number="$BUILD_NUMBER"} $metric_value
 EOF
 }
 
@@ -187,8 +200,11 @@ view_metrics() {
 clean_metrics() {
     local job_name="${1:-$JOB_NAME}"
     
+    # Sanitizar JOB_NAME para labels
+    local job_label=$(echo "$job_name" | sed 's/[\/]/_/g')
+    
     log_warn "Limpiando métricas del job: $job_name"
-    curl -X DELETE "$PUSHGATEWAY_URL/metrics/job/jenkins_pipeline/instance/${job_name}"
+    curl -X DELETE "$PUSHGATEWAY_URL/metrics/job/jenkins_pipeline/instance/${job_label}"
     
     log_info "Métricas limpiadas"
 }
