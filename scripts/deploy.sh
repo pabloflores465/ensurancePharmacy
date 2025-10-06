@@ -118,7 +118,10 @@ stop_containers() {
     local env="$1"
     print_status "Stopping existing containers for $env environment..."
     
-    docker-compose -f "docker-compose.$env.yml" down 2>/dev/null || true
+    SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    COMPOSE_FILE="${SCRIPT_DIR}/docker-compose.$env.yml"
+    
+    docker-compose -f "$COMPOSE_FILE" down 2>/dev/null || true
     
     # Force remove container if it exists
     local container_name="ensurance-pharmacy-$env"
@@ -149,8 +152,10 @@ show_urls() {
 # Function to show logs
 show_logs() {
     local env="$1"
+    SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    COMPOSE_FILE="${SCRIPT_DIR}/docker-compose.$env.yml"
     print_status "Showing logs for $env environment (Ctrl+C to exit)..."
-    docker-compose -f "docker-compose.$env.yml" logs -f
+    docker-compose -f "$COMPOSE_FILE" logs -f
 }
 
 # Main deployment function
@@ -166,9 +171,13 @@ deploy() {
         exit 1
     fi
     
+    # Determine script directory and docker-compose file path
+    SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    COMPOSE_FILE="${SCRIPT_DIR}/docker-compose.$env.yml"
+    
     # Check if docker-compose file exists
-    if [ ! -f "docker-compose.$env.yml" ]; then
-        print_error "docker-compose.$env.yml not found!"
+    if [ ! -f "$COMPOSE_FILE" ]; then
+        print_error "docker-compose.$env.yml not found at $COMPOSE_FILE!"
         exit 1
     fi
     
@@ -185,12 +194,12 @@ deploy() {
     print_status "Building and starting containers for $env environment..."
     
     if [ "$force_rebuild" = "true" ]; then
-        docker-compose -f "docker-compose.$env.yml" build --no-cache
+        docker-compose -f "$COMPOSE_FILE" build --no-cache
     else
-        docker-compose -f "docker-compose.$env.yml" build
+        docker-compose -f "$COMPOSE_FILE" build
     fi
     
-    docker-compose -f "docker-compose.$env.yml" up -d
+    docker-compose -f "$COMPOSE_FILE" up -d
     
     # Wait for services to be ready
     print_status "Waiting for services to start..."
@@ -291,9 +300,10 @@ case $COMMAND in
         print_warning "This will remove all containers and images. Continue? (y/N)"
         read -r response
         if [[ "$response" =~ ^[Yy]$ ]]; then
-            docker-compose -f docker-compose.dev.yml down --rmi all 2>/dev/null || true
-            docker-compose -f docker-compose.main.yml down --rmi all 2>/dev/null || true
-            docker-compose -f docker-compose.qa.yml down --rmi all 2>/dev/null || true
+            SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+            docker-compose -f "${SCRIPT_DIR}/docker-compose.dev.yml" down --rmi all 2>/dev/null || true
+            docker-compose -f "${SCRIPT_DIR}/docker-compose.main.yml" down --rmi all 2>/dev/null || true
+            docker-compose -f "${SCRIPT_DIR}/docker-compose.qa.yml" down --rmi all 2>/dev/null || true
             print_success "Cleaned up all containers and images"
         fi
         ;;
