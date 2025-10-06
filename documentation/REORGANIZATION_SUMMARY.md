@@ -31,6 +31,7 @@ Todos los scripts de automatización y Docker Compose:
 
 ```
 scripts/
+├── .drone.yml                    # Drone CI pipeline
 ├── docker-compose.cicd.yml       # CI/CD stack
 ├── docker-compose.dev.yml        # Ambiente DEV
 ├── docker-compose.main.yml       # Ambiente MAIN
@@ -38,6 +39,7 @@ scripts/
 ├── docker-compose.qa.yml         # Ambiente QA
 ├── docker-compose.stress.yml     # Pruebas de carga
 ├── deploy.sh                     # Script de despliegue
+├── jenkins.Dockerfile            # Dockerfile de Jenkins
 ├── jenkins-metrics.sh            # Métricas de Jenkins
 ├── start-all-metrics.sh          # Iniciar todo con métricas
 ├── tailscale-funnel.sh           # Tailscale configuration
@@ -60,34 +62,33 @@ scripts/deploy.sh deploy dev
 scripts/jenkins-metrics.sh start
 ```
 
----
 
 ## 📚 Carpeta `documentation/`
 
 ### Archivos Movidos
 
 Toda la documentación técnica de métricas y ejemplos:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-```
 documentation/
-├── JENKINS_METRICS_GUIDE.md        # Guía completa de métricas Jenkins
-├── JENKINS_METRICS_SUMMARY.md      # Resumen de implementación
-├── JENKINS_PROMETHEUS_QUERIES.md   # 50+ queries PromQL para Jenkins
-├── METRICS_SETUP.md                # Setup de métricas de aplicación
-├── METRICS_STATUS.md               # Estado actual del sistema
-├── PROMETHEUS_QUERIES.md           # Queries PromQL generales
-├── Jenkinsfile.metrics.example     # Ejemplo completo
-└── Jenkinsfile.simple.example      # Ejemplo simple
-```
+├── GIT_COMMANDS.md                   # ⭐ NUEVO - Comandos Git útiles
+├── JENKINS_METRICS_GUIDE.md         12 KB - Guía completa
+├── JENKINS_METRICS_SUMMARY.md       10 KB - Resumen
+├── JENKINS_PROMETHEUS_QUERIES.MD     8 KB - 50+ queries
+├── METRICS_SETUP.md                  7 KB - Setup de métricas
+├── METRICS_STATUS.md                 8 KB - Estado actual
+├── PROMETHEUS_QUERIES.md             7 KB - Queries generales
+├── REORGANIZATION_SUMMARY.md         # ⭐ NUEVO - Este archivo
+├── Jenkinsfile.metrics.example       8 KB - Ejemplo completo
+└── Jenkinsfile.simple.example        2 KB - Ejemplo simple
 
----
-
-## ✅ Archivos Actualizados
+TOTAL: 70+ KB de documentación técnica localizados
 
 ### 1. `Jenkinsfile` - Pipeline CI/CD
 
-**Cambios principales:**
+**cambios principales:**
 
+{{ ... }}
 ✅ **Agregado tracking de métricas Prometheus:**
 - Stage `Initialize Metrics` al inicio
 - Reporta duración de cada stage

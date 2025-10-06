@@ -531,7 +531,7 @@ Stage 5: Runtime (eclipse-temurin:21-jre + supervisor)
 - Artifact archiving
 - Email notifications
 
-**Drone CI** (`.drone.yml`):
+**Drone CI** (`scripts/.drone.yml`):
 - Pipeline por ambiente (dev, qa, main)
 - Tests paralelos
 - SonarQube integration

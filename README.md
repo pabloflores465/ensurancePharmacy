@@ -1525,38 +1525,46 @@ notify-pr-status    # Notificación email después del PR analysis
 ```
 ensurancePharmacy/
 ├── 📂 scripts/                      # Scripts de automatización
-│   ├── docker-compose.*.yml         # Configuraciones Docker por ambiente
+│   ├── .drone.yml                   # Drone CI pipeline
+│   ├── docker-compose.*.yml         # Configuraciones Docker (6 archivos)
 │   ├── deploy.sh                    # Script unificado de despliegue
+│   ├── jenkins.Dockerfile           # Dockerfile de Jenkins customizado
 │   ├── jenkins-metrics.sh           # Script de métricas Jenkins
 │   ├── start-all-metrics.sh         # Iniciar todos los servicios con métricas
+│   ├── tailscale-funnel.sh          # Configuración Tailscale Funnel
 │   └── test-runner.sh               # Script unificado de testing
 │
 ├── 📂 documentation/                # Documentación del proyecto
+│   ├── GIT_COMMANDS.md              # Comandos Git útiles
 │   ├── JENKINS_METRICS_GUIDE.md     # Guía completa de métricas Jenkins
 │   ├── JENKINS_METRICS_SUMMARY.md   # Resumen de métricas Jenkins
 │   ├── JENKINS_PROMETHEUS_QUERIES.md # Queries PromQL para Jenkins
 │   ├── METRICS_SETUP.md             # Configuración de métricas
 │   ├── METRICS_STATUS.md            # Estado actual de métricas
 │   ├── PROMETHEUS_QUERIES.md        # Queries PromQL generales
+│   ├── REORGANIZATION_SUMMARY.md    # Resumen de reorganización
 │   ├── Jenkinsfile.metrics.example  # Ejemplo completo de Jenkinsfile
-│   └── Jenkinsfile.simple.example   # Ejemplo simple de Jenkinsfile
+│   ├── Jenkinsfile.simple.example   # Ejemplo simple de Jenkinsfile
+│   └── ... (30+ archivos técnicos)  # Diagramas, documentos, PDFs
 │
 ├── 📂 monitoring/                   # Configuración de monitoreo
 │   └── prometheus/
 │       └── prometheus.yml           # Configuración Prometheus
 │
+├── 📂 logs/                         # Logs de aplicación y métricas
 ├── 📂 backv4/                       # Backend Ensurance (Java)
 ├── 📂 backv5/                       # Backend Pharmacy (Java)
 ├── 📂 ensurance/                    # Frontend Ensurance (Vue + Vite)
 ├── 📂 pharmacy/                     # Frontend Pharmacy (Vue CLI)
 ├── 📂 databases/                    # Configuraciones de BD
-├── 📂 logs/                         # Logs de aplicación
 ├── 📂 stress/                       # Scripts de stress testing
 │
 ├── Jenkinsfile                      # Pipeline CI/CD principal
 ├── Dockerfile                       # Dockerfile multi-stage
-├── README.md                        # Este archivo
-└── sonar-project.properties         # Configuración SonarQube
+├── pom.xml                          # POM padre para backends
+├── sonar-project.properties         # Configuración SonarQube
+├── LICENSE                          # Licencia del proyecto
+└── README.md                        # Este archivo
 ```
 
 ---

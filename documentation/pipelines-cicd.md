@@ -18,7 +18,7 @@ El sistema **Ensurance Pharmacy** implementa **3 pipelines CI/CD** paralelos par
 | Pipeline | Plataforma | Archivo | Trigger | Características Principales |
 |----------|-----------|---------|---------|----------------------------|
 | **GitHub Actions** | GitHub | `.github/workflows/ci-cd.yml` | Push/PR a main, dev, qa | Cloud-native, fácil configuración, email notifications |
-| **Drone CI** | Auto-hosted | `.drone.yml` | Push a main, dev, qa | Container-native, ARM64 support, pipeline as code |
+| **Drone CI** | Auto-hosted | `scripts/.drone.yml` | Push a main, dev, qa | Container-native, ARM64 support, pipeline as code |
 | **Jenkins** | Auto-hosted | `Jenkinsfile` | Multi-branch | Tradicional, flexible, extensible, GUI-based |
 
 ### Características Comunes
@@ -191,7 +191,7 @@ on:
 
 ## 3. Drone CI Pipeline
 
-**Archivo**: `.drone.yml`
+**Archivo**: `scripts/.drone.yml`
 
 ### 3.1 Configuración General
 
