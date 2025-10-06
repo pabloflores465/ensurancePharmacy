@@ -34,3 +34,11 @@ scrape_configs:
         labels:
           service: 'pharmacy-frontend'
           component: 'vue-app'
+  
+  - job_name: 'jenkins-pipeline'
+    honor_labels: true
+    static_configs:
+      - targets: ['pushgateway:9091']
+        labels:
+          service: 'jenkins-ci'
+          component: 'pipeline'

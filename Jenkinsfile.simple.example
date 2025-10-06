@@ -1,0 +1,73 @@
+// ============================================================================
+// Jenkinsfile Simple con Métricas Básicas
+// ============================================================================
+
+pipeline {
+    agent any
+    
+    environment {
+        PUSHGATEWAY_URL = 'http://10.128.0.2:9091'  // Ajusta según tu setup
+    }
+    
+    stages {
+        stage('Init') {
+            steps {
+                sh 'chmod +x jenkins-metrics.sh && ./jenkins-metrics.sh start'
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                script {
+                    def start = System.currentTimeMillis()
+                    
+                    // Tu código de build aquí
+                    sh 'echo "Building application..."'
+                    sh 'sleep 5'  // Simula el build
+                    
+                    def duration = (System.currentTimeMillis() - start) / 1000
+                    sh "./jenkins-metrics.sh stage build ${duration}"
+                }
+            }
+        }
+        
+        stage('Test') {
+            steps {
+                script {
+                    def start = System.currentTimeMillis()
+                    
+                    // Tu código de tests aquí
+                    sh 'echo "Running tests..."'
+                    sh 'sleep 3'  // Simula los tests
+                    
+                    def duration = (System.currentTimeMillis() - start) / 1000
+                    sh "./jenkins-metrics.sh stage test ${duration}"
+                }
+            }
+        }
+        
+        stage('Deploy') {
+            steps {
+                script {
+                    def start = System.currentTimeMillis()
+                    
+                    // Tu código de deploy aquí
+                    sh 'echo "Deploying application..."'
+                    sh 'sleep 2'  // Simula el deploy
+                    
+                    def duration = (System.currentTimeMillis() - start) / 1000
+                    sh "./jenkins-metrics.sh stage deploy ${duration}"
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            sh './jenkins-metrics.sh end success'
+        }
+        failure {
+            sh './jenkins-metrics.sh end failure'
+        }
+    }
+}

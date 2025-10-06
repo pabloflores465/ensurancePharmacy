@@ -40,6 +40,13 @@ services:
       - grafana_data:/var/lib/grafana
     restart: unless-stopped
 
+  pushgateway:
+    image: prom/pushgateway:v1.9.0
+    container_name: ensurance-pushgateway
+    ports:
+      - "9091:9091"
+    restart: unless-stopped
+
 volumes:
   checkmk_sites:
   prometheus_data:

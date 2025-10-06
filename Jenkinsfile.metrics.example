@@ -1,0 +1,223 @@
+// ============================================================================
+// Jenkinsfile con Métricas Prometheus
+// ============================================================================
+// 
+// Este es un ejemplo de Jenkinsfile instrumentado con métricas de Prometheus
+// que reporta:
+//   - Duración total del pipeline
+//   - Duración de cada stage
+//   - Estado final (success/failure)
+//   - Métricas custom (cobertura de tests, etc.)
+// ============================================================================
+
+pipeline {
+    agent any
+    
+    environment {
+        PUSHGATEWAY_URL = 'http://pushgateway:9091'
+        // Si Pushgateway está fuera de Docker, usa: http://10.128.0.2:9091
+    }
+    
+    stages {
+        stage('Initialize') {
+            steps {
+                script {
+                    // Iniciar tracking de métricas
+                    sh '''
+                        chmod +x jenkins-metrics.sh
+                        ./jenkins-metrics.sh start
+                    '''
+                    
+                    echo "🚀 Pipeline iniciado: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+                }
+            }
+        }
+        
+        stage('Checkout') {
+            steps {
+                script {
+                    def startTime = System.currentTimeMillis()
+                    
+                    // Tu código de checkout aquí
+                    checkout scm
+                    
+                    def duration = (System.currentTimeMillis() - startTime) / 1000
+                    sh "./jenkins-metrics.sh stage checkout ${duration}"
+                }
+            }
+        }
+        
+        stage('Build Backend') {
+            steps {
+                script {
+                    def startTime = System.currentTimeMillis()
+                    
+                    // Compilar backends
+                    sh '''
+                        echo "Compilando backv5..."
+                        cd backv5
+                        mvn clean package -DskipTests
+                        
+                        echo "Compilando backv4..."
+                        cd ../backv4
+                        mvn clean package -DskipTests
+                    '''
+                    
+                    def duration = (System.currentTimeMillis() - startTime) / 1000
+                    sh "./jenkins-metrics.sh stage build_backend ${duration}"
+                }
+            }
+        }
+        
+        stage('Build Frontend') {
+            steps {
+                script {
+                    def startTime = System.currentTimeMillis()
+                    
+                    // Compilar frontends
+                    sh '''
+                        echo "Compilando ensurance..."
+                        cd ensurance
+                        npm install
+                        npm run build
+                        
+                        echo "Compilando pharmacy..."
+                        cd ../pharmacy
+                        npm install
+                        npm run build
+                    '''
+                    
+                    def duration = (System.currentTimeMillis() - startTime) / 1000
+                    sh "./jenkins-metrics.sh stage build_frontend ${duration}"
+                }
+            }
+        }
+        
+        stage('Run Tests') {
+            steps {
+                script {
+                    def startTime = System.currentTimeMillis()
+                    
+                    // Ejecutar tests
+                    sh '''
+                        echo "Ejecutando tests de backend..."
+                        cd backv5
+                        mvn test
+                        
+                        cd ../backv4
+                        mvn test
+                        
+                        echo "Ejecutando tests de frontend..."
+                        cd ../ensurance
+                        npm run test:run
+                        
+                        cd ../pharmacy
+                        npm run test:unit
+                    '''
+                    
+                    def duration = (System.currentTimeMillis() - startTime) / 1000
+                    sh "./jenkins-metrics.sh stage tests ${duration}"
+                    
+                    // Reportar métrica custom: cobertura de tests
+                    // Aquí deberías extraer el valor real de tus reportes de cobertura
+                    sh "./jenkins-metrics.sh custom test_coverage 85.5 'Code coverage percentage'"
+                }
+            }
+        }
+        
+        stage('Quality Analysis') {
+            steps {
+                script {
+                    def startTime = System.currentTimeMillis()
+                    
+                    // Análisis de calidad con SonarQube
+                    sh '''
+                        echo "Ejecutando análisis SonarQube..."
+                        # mvn sonar:sonar (si tienes SonarQube configurado)
+                    '''
+                    
+                    def duration = (System.currentTimeMillis() - startTime) / 1000
+                    sh "./jenkins-metrics.sh stage quality_analysis ${duration}"
+                    
+                    // Reportar métricas custom de SonarQube
+                    sh "./jenkins-metrics.sh custom code_smells 12 'Number of code smells detected'"
+                    sh "./jenkins-metrics.sh custom bugs 3 'Number of bugs detected'"
+                    sh "./jenkins-metrics.sh custom vulnerabilities 0 'Number of vulnerabilities detected'"
+                }
+            }
+        }
+        
+        stage('Build Docker Images') {
+            steps {
+                script {
+                    def startTime = System.currentTimeMillis()
+                    
+                    // Construir imágenes Docker
+                    sh '''
+                        echo "Construyendo imágenes Docker..."
+                        docker compose -f docker-compose.main.yml build
+                    '''
+                    
+                    def duration = (System.currentTimeMillis() - startTime) / 1000
+                    sh "./jenkins-metrics.sh stage docker_build ${duration}"
+                }
+            }
+        }
+        
+        stage('Deploy') {
+            when {
+                branch 'main'
+            }
+            steps {
+                script {
+                    def startTime = System.currentTimeMillis()
+                    
+                    // Desplegar aplicación
+                    sh '''
+                        echo "Desplegando aplicación..."
+                        # docker compose -f docker-compose.main.yml up -d
+                    '''
+                    
+                    def duration = (System.currentTimeMillis() - startTime) / 1000
+                    sh "./jenkins-metrics.sh stage deploy ${duration}"
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            script {
+                echo "✅ Pipeline completado exitosamente"
+                sh './jenkins-metrics.sh end success'
+                
+                // Métricas adicionales de éxito
+                sh "./jenkins-metrics.sh custom deployment_successful 1 'Deployment success flag'"
+            }
+        }
+        
+        failure {
+            script {
+                echo "❌ Pipeline falló"
+                sh './jenkins-metrics.sh end failure'
+                
+                // Métricas adicionales de fallo
+                sh "./jenkins-metrics.sh custom deployment_successful 0 'Deployment success flag'"
+            }
+        }
+        
+        unstable {
+            script {
+                echo "⚠️ Pipeline inestable"
+                sh './jenkins-metrics.sh end unstable'
+            }
+        }
+        
+        always {
+            script {
+                // Limpiar recursos
+                echo "Limpiando recursos..."
+            }
+        }
+    }
+}
