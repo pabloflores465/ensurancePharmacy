@@ -10,9 +10,11 @@
 - [🚀 Ejecución](#-ejecución)
 - [🧪 Testing](#-testing)
 - [🐳 Docker](#-docker)
+- [📊 Métricas y Monitoreo](#-métricas-y-monitoreo)
 - [📊 Base de Datos](#-base-de-datos)
 - [🔗 Integraciones](#-integraciones)
-- [📚 Documentación por Componente](#-documentación-por-componente)
+- [📁 Estructura del Proyecto](#-estructura-del-proyecto)
+- [📚 Documentación](#-documentación)
 
 ---
 
@@ -308,29 +310,29 @@ Puedes levantar cada archivo `docker-compose` por separado según el ambiente o 
 
 ```bash
 # DEV (puertos 3000-3003)
-docker compose -f docker-compose.dev.yml up -d --build
-docker compose -f docker-compose.dev.yml logs -f
-docker compose -f docker-compose.dev.yml down
+docker compose -f scripts/docker-compose.dev.yml up -d --build
+docker compose -f scripts/docker-compose.dev.yml logs -f
+docker compose -f scripts/docker-compose.dev.yml down
 
 # QA (puertos 4000-4003)
-docker compose -f docker-compose.qa.yml up -d --build
-docker compose -f docker-compose.qa.yml logs -f
-docker compose -f docker-compose.qa.yml down
+docker compose -f scripts/docker-compose.qa.yml up -d --build
+docker compose -f scripts/docker-compose.qa.yml logs -f
+docker compose -f scripts/docker-compose.qa.yml down
 
 # MAIN/Producción local (puertos 5175, 8089, 8081, 8082)
-docker compose -f docker-compose.main.yml up -d --build
-docker compose -f docker-compose.main.yml logs -f
-docker compose -f docker-compose.main.yml down
+docker compose -f scripts/docker-compose.main.yml up -d --build
+docker compose -f scripts/docker-compose.main.yml logs -f
+docker compose -f scripts/docker-compose.main.yml down
 
 # CI/CD stack (Jenkins, SonarQube, Drone, Docker-in-Docker)
-docker compose -f docker-compose.cicd.yml up -d
-docker compose -f docker-compose.cicd.yml logs -f
-docker compose -f docker-compose.cicd.yml down
+docker compose -f scripts/docker-compose.cicd.yml up -d
+docker compose -f scripts/docker-compose.cicd.yml logs -f
+docker compose -f scripts/docker-compose.cicd.yml down
 ```
 
 ### Stack de monitoreo y métricas
 
-Para facilitar la observabilidad se provee un `docker-compose.monitor.yml` que despliega Prometheus y Grafana.
+Para facilitar la observabilidad se provee un `scripts/docker-compose.monitor.yml` que despliega Prometheus y Grafana.
 
 #### 📊 Inicio Rápido de Métricas
 
@@ -367,9 +369,9 @@ Para más detalles, consulta [METRICS_SETUP.md](METRICS_SETUP.md).
 #### 🐳 Desplegar stack de monitoreo
 
 ```bash
-docker compose -f docker-compose.monitor.yml up -d --build
-docker compose -f docker-compose.monitor.yml logs -f
-docker compose -f docker-compose.monitor.yml down
+docker compose -f scripts/docker-compose.monitor.yml up -d --build
+docker compose -f scripts/docker-compose.monitor.yml logs -f
+docker compose -f scripts/docker-compose.monitor.yml down
 ```
 
 Accesos:
@@ -379,12 +381,12 @@ Accesos:
 ### Stack de pruebas de carga (k6, JMeter, k6-operator)
 
 ```bash
-docker compose -f docker-compose.stress.yml up -d
-docker compose -f docker-compose.stress.yml logs -f
-docker compose -f docker-compose.stress.yml down
+docker compose -f scripts/docker-compose.stress.yml up -d
+docker compose -f scripts/docker-compose.stress.yml logs -f
+docker compose -f scripts/docker-compose.stress.yml down
 ```
 
-Accesos rápidos del stack CI/CD levantado con `docker-compose.cicd.yml`:
+Accesos rápidos del stack CI/CD levantado con `scripts/docker-compose.cicd.yml`:
 
 - Jenkins: `http://localhost:8080/jenkins`
 - SonarQube: `http://localhost:9000/sonnar` (contexto configurado en `SONAR_WEB_CONTEXT`)
@@ -398,7 +400,7 @@ Notas:
 
 ### 📈 Stack de Monitoreo
 
-- **Archivo**: `docker-compose.monitor.yml`
+- **Archivo**: `scripts/docker-compose.monitor.yml`
 - **Servicios**:
   - `checkmk/check-mk-raw:2.4.0p12` para monitoreo de infraestructura (`http://localhost:5150`)
   - `prom/prometheus:v2.53.0` para métricas y scraping (`http://localhost:9095`)
@@ -415,7 +417,7 @@ Notas:
 
 ### 🔥 Stack de Pruebas de Carga
 
-- **Archivo**: `docker-compose.stress.yml`
+- **Archivo**: `scripts/docker-compose.stress.yml`
 - **Servicios**:
   - `grafana/k6:0.49.0` ejecuta scripts de carga (`http://localhost:5665` expone dashboard web embebido).
   - `alpine/jmeter:5.6.3` ejecuta planes `.jmx` en modo no interactivo.
@@ -1159,7 +1161,7 @@ tailscale funnel --https=443 --set-path=/ --bg http://127.0.0.1:8000
 
 Notas:
 
-- Asegúrate de que los servicios estén corriendo localmente (ver `docker-compose.cicd.yml`).
+- Asegúrate de que los servicios estén corriendo localmente (ver `scripts/docker-compose.cicd.yml`).
 - La URL pública tendrá el formato `https://<tu-nodo>.ts.net/<path>`.
 - Para ver estado o detener: `tailscale funnel status` y `tailscale funnel stop`.
 
@@ -1518,6 +1520,97 @@ notify-pr-status    # Notificación email después del PR analysis
 
 ---
 
-_Última actualización: Agosto 2025_
+## 📁 Estructura del Proyecto
+
+```
+ensurancePharmacy/
+├── 📂 scripts/                      # Scripts de automatización
+│   ├── docker-compose.*.yml         # Configuraciones Docker por ambiente
+│   ├── deploy.sh                    # Script unificado de despliegue
+│   ├── jenkins-metrics.sh           # Script de métricas Jenkins
+│   ├── start-all-metrics.sh         # Iniciar todos los servicios con métricas
+│   └── test-runner.sh               # Script unificado de testing
+│
+├── 📂 documentation/                # Documentación del proyecto
+│   ├── JENKINS_METRICS_GUIDE.md     # Guía completa de métricas Jenkins
+│   ├── JENKINS_METRICS_SUMMARY.md   # Resumen de métricas Jenkins
+│   ├── JENKINS_PROMETHEUS_QUERIES.md # Queries PromQL para Jenkins
+│   ├── METRICS_SETUP.md             # Configuración de métricas
+│   ├── METRICS_STATUS.md            # Estado actual de métricas
+│   ├── PROMETHEUS_QUERIES.md        # Queries PromQL generales
+│   ├── Jenkinsfile.metrics.example  # Ejemplo completo de Jenkinsfile
+│   └── Jenkinsfile.simple.example   # Ejemplo simple de Jenkinsfile
+│
+├── 📂 monitoring/                   # Configuración de monitoreo
+│   └── prometheus/
+│       └── prometheus.yml           # Configuración Prometheus
+│
+├── 📂 backv4/                       # Backend Ensurance (Java)
+├── 📂 backv5/                       # Backend Pharmacy (Java)
+├── 📂 ensurance/                    # Frontend Ensurance (Vue + Vite)
+├── 📂 pharmacy/                     # Frontend Pharmacy (Vue CLI)
+├── 📂 databases/                    # Configuraciones de BD
+├── 📂 logs/                         # Logs de aplicación
+├── 📂 stress/                       # Scripts de stress testing
+│
+├── Jenkinsfile                      # Pipeline CI/CD principal
+├── Dockerfile                       # Dockerfile multi-stage
+├── README.md                        # Este archivo
+└── sonar-project.properties         # Configuración SonarQube
+```
+
+---
+
+## 📚 Documentación
+
+### 📊 Métricas y Monitoreo
+
+Toda la documentación de métricas está en la carpeta `documentation/`:
+
+- **[METRICS_SETUP.md](documentation/METRICS_SETUP.md)** - Guía de instalación de métricas
+- **[METRICS_STATUS.md](documentation/METRICS_STATUS.md)** - Estado actual del sistema de métricas
+- **[PROMETHEUS_QUERIES.md](documentation/PROMETHEUS_QUERIES.md)** - Queries para aplicaciones
+- **[JENKINS_METRICS_GUIDE.md](documentation/JENKINS_METRICS_GUIDE.md)** - Guía completa Jenkins
+- **[JENKINS_PROMETHEUS_QUERIES.md](documentation/JENKINS_PROMETHEUS_QUERIES.md)** - Queries Jenkins
+
+### 🚀 Scripts Disponibles
+
+Todos los scripts están en la carpeta `scripts/`:
+
+```bash
+# Despliegue
+scripts/deploy.sh deploy <dev|qa|main> [--rebuild]
+
+# Métricas de aplicación
+scripts/start-all-metrics.sh
+
+# Métricas de Jenkins (desde pipeline)
+scripts/jenkins-metrics.sh start
+scripts/jenkins-metrics.sh end success
+
+# Testing
+scripts/test-runner.sh
+```
+
+### 🐳 Docker Compose
+
+Archivos de configuración en `scripts/`:
+
+- `docker-compose.dev.yml` - Ambiente DEV (puertos 3000-3003)
+- `docker-compose.qa.yml` - Ambiente QA (puertos 4000-4003)
+- `docker-compose.main.yml` - Ambiente MAIN (puertos 5175, 8089, 8081, 8082)
+- `docker-compose.cicd.yml` - Jenkins CI/CD
+- `docker-compose.monitor.yml` - Prometheus + Grafana + Pushgateway
+
+### 📖 Ejemplos de Jenkinsfile
+
+En `documentation/` encontrarás ejemplos de Jenkinsfile instrumentados:
+
+- `Jenkinsfile.metrics.example` - Ejemplo completo con todas las features
+- `Jenkinsfile.simple.example` - Ejemplo mínimo para empezar
+
+---
+
+_Última actualización: Octubre 2025_
 
 **Desarrollado por el equipo de Ensurance Pharmacy**

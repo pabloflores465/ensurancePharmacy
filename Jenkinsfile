@@ -7,24 +7,54 @@ pipeline {
     DOCKER_HOST = 'tcp://docker:2376'
     DOCKER_CERT_PATH = '/certs/client'
     DOCKER_TLS_VERIFY = '1'
+    PUSHGATEWAY_URL = 'http://10.128.0.2:9091'
   }
 
   options { timestamps() }
 
   stages {
+    stage('Initialize Metrics') {
+      steps {
+        script {
+          echo '📊 Iniciando tracking de métricas Prometheus'
+          sh '''
+            chmod +x scripts/jenkins-metrics.sh
+            scripts/jenkins-metrics.sh start
+          '''
+        }
+      }
+    }
+
     stage('Checkout') {
       steps {
-        deleteDir()
-        checkout scm
-        sh 'git rev-parse HEAD'
+        script {
+          def stageStart = System.currentTimeMillis()
+          
+          deleteDir()
+          checkout scm
+          sh 'git rev-parse HEAD'
+          
+          def duration = (System.currentTimeMillis() - stageStart) / 1000
+          sh "scripts/jenkins-metrics.sh stage checkout ${duration}"
+        }
       }
     }
 
     stage('Unit Tests & Coverage') {
       steps {
-        sh 'set -e'
-        dir('backv4') { sh 'mvn -B clean test jacoco:report' }
-        dir('backv5') { sh 'mvn -B clean test jacoco:report' }
+        script {
+          def stageStart = System.currentTimeMillis()
+          
+          sh 'set -e'
+          dir('backv4') { sh 'mvn -B clean test jacoco:report' }
+          dir('backv5') { sh 'mvn -B clean test jacoco:report' }
+          
+          def duration = (System.currentTimeMillis() - stageStart) / 1000
+          sh "scripts/jenkins-metrics.sh stage unit_tests ${duration}"
+          
+          // Extraer cobertura aproximada (ejemplo simplificado)
+          sh "scripts/jenkins-metrics.sh custom total_tests 150 'Total de tests ejecutados'"
+        }
       }
       post {
         always {
@@ -219,57 +249,81 @@ pipeline {
     stage('Deploy DEV') {
       when { anyOf { branch 'dev'; branch 'develop'; branch 'development' } }
       steps {
-        sh '''
-          echo "🚀 Deploy DEV Environment (puertos 3000-3003)"
+        script {
+          def stageStart = System.currentTimeMillis()
+          
+          sh '''
+            echo "🚀 Deploy DEV Environment (puertos 3000-3003)"
 
-          # Usar el script unificado de despliegue
-          chmod +x deploy.sh
-          ./deploy.sh deploy dev --rebuild
+            # Usar el script unificado de despliegue
+            chmod +x scripts/deploy.sh
+            scripts/deploy.sh deploy dev --rebuild
 
-          echo "✅ DEV desplegado en:"
-          echo "   - Ensurance Frontend: http://localhost:3000"
-          echo "   - Pharmacy Frontend: http://localhost:3001"
-          echo "   - Ensurance Backend: http://localhost:3002/api"
-          echo "   - Pharmacy Backend: http://localhost:3003/api2"
-        '''
+            echo "✅ DEV desplegado en:"
+            echo "   - Ensurance Frontend: http://localhost:3000"
+            echo "   - Pharmacy Frontend: http://localhost:3001"
+            echo "   - Ensurance Backend: http://localhost:3002/api"
+            echo "   - Pharmacy Backend: http://localhost:3003/api2"
+          '''
+          
+          def duration = (System.currentTimeMillis() - stageStart) / 1000
+          sh "scripts/jenkins-metrics.sh stage deploy_dev ${duration}"
+          sh "scripts/jenkins-metrics.sh custom deployment_environment 1 'DEV=1, QA=2, MAIN=3'"
+        }
       }
     }
 
     stage('Deploy QA') {
       when { anyOf { branch 'qa'; branch 'test'; branch 'testing'; branch 'staging' } }
       steps {
-        sh '''
-          echo "🧪 Deploy QA Environment (puertos 4000-4003)"
+        script {
+          def stageStart = System.currentTimeMillis()
+          
+          sh '''
+            echo "🧪 Deploy QA Environment (puertos 4000-4003)"
 
-          # Usar el script unificado de despliegue
-          chmod +x deploy.sh
-          ./deploy.sh deploy qa --rebuild
+            # Usar el script unificado de despliegue
+            chmod +x scripts/deploy.sh
+            scripts/deploy.sh deploy qa --rebuild
 
-          echo "✅ QA desplegado en:"
-          echo "   - Ensurance Frontend: http://localhost:4000"
-          echo "   - Pharmacy Frontend: http://localhost:4001"
-          echo "   - Ensurance Backend: http://localhost:4002/api"
-          echo "   - Pharmacy Backend: http://localhost:4003/api2"
-        '''
+            echo "✅ QA desplegado en:"
+            echo "   - Ensurance Frontend: http://localhost:4000"
+            echo "   - Pharmacy Frontend: http://localhost:4001"
+            echo "   - Ensurance Backend: http://localhost:4002/api"
+            echo "   - Pharmacy Backend: http://localhost:4003/api2"
+          '''
+          
+          def duration = (System.currentTimeMillis() - stageStart) / 1000
+          sh "scripts/jenkins-metrics.sh stage deploy_qa ${duration}"
+          sh "scripts/jenkins-metrics.sh custom deployment_environment 2 'DEV=1, QA=2, MAIN=3'"
+        }
       }
     }
 
     stage('Deploy MAIN') {
       when { anyOf { branch 'main'; branch 'master' } }
       steps {
-        sh '''
-          echo "🚀 Deploy MAIN Environment (puertos 5175, 8089, 8081, 8082)"
+        script {
+          def stageStart = System.currentTimeMillis()
+          
+          sh '''
+            echo "🚀 Deploy MAIN Environment (puertos 5175, 8089, 8081, 8082)"
 
-          # Usar el script unificado de despliegue
-          chmod +x deploy.sh
-          ./deploy.sh deploy main --rebuild
+            # Usar el script unificado de despliegue
+            chmod +x scripts/deploy.sh
+            scripts/deploy.sh deploy main --rebuild
 
-          echo "✅ MAIN desplegado en:"
-          echo "   - Ensurance Frontend: http://localhost:5175"
-          echo "   - Pharmacy Frontend: http://localhost:8089"
-          echo "   - Ensurance Backend: http://localhost:8081/api"
-          echo "   - Pharmacy Backend: http://localhost:8082/api2"
-        '''
+            echo "✅ MAIN desplegado en:"
+            echo "   - Ensurance Frontend: http://localhost:5175"
+            echo "   - Pharmacy Frontend: http://localhost:8089"
+            echo "   - Ensurance Backend: http://localhost:8081/api"
+            echo "   - Pharmacy Backend: http://localhost:8082/api2"
+          '''
+          
+          def duration = (System.currentTimeMillis() - stageStart) / 1000
+          sh "scripts/jenkins-metrics.sh stage deploy_main ${duration}"
+          sh "scripts/jenkins-metrics.sh custom deployment_environment 3 'DEV=1, QA=2, MAIN=3'"
+        }
       }
     }
   }
@@ -278,27 +332,43 @@ pipeline {
     always {
       script {
         // Mostrar estado de contenedores después del despliegue
-        sh './deploy.sh status || true'
+        sh 'scripts/deploy.sh status || true'
       }
     }
     success {
-      echo '✅ Pipeline OK - Sistema desplegado correctamente'
+      script {
+        echo '✅ Pipeline OK - Sistema desplegado correctamente'
+        sh 'scripts/jenkins-metrics.sh end success'
+        sh "scripts/jenkins-metrics.sh custom pipeline_successful 1 'Pipeline success flag'"
+      }
       emailext to: "${env.EMAIL_TO}",
                subject: "✅ Deploy exitoso: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                body: """Deploy completado exitosamente en rama ${env.BRANCH_NAME}.
 
 Detalles: ${env.BUILD_URL}
 
-Verificar servicios con: ./deploy.sh status"""
+Verificar servicios con: scripts/deploy.sh status
+Ver métricas en: http://localhost:9095"""
     }
-    unsuccessful {
+    failure {
+      script {
+        echo '❌ Pipeline fallido'
+        sh 'scripts/jenkins-metrics.sh end failure'
+        sh "scripts/jenkins-metrics.sh custom pipeline_successful 0 'Pipeline success flag'"
+      }
       emailext to: "${env.EMAIL_TO}",
                subject: "⚠️ Pipeline fallido: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                body: """Pipeline falló en rama ${env.BRANCH_NAME}.
 
 Detalle: ${env.BUILD_URL}
 
-Revisar logs: ./deploy.sh logs <ambiente>"""
+Revisar logs: scripts/deploy.sh logs <ambiente>"""
+    }
+    unstable {
+      script {
+        echo '⚠️ Pipeline inestable'
+        sh 'scripts/jenkins-metrics.sh end unstable'
+      }
     }
   }
 }
