@@ -12,6 +12,10 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Directorio del script y directorio raíz del proyecto
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
 # Function to print colored output
 print_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
@@ -32,50 +36,42 @@ print_error() {
 # Function to run Ensurance frontend tests
 run_ensurance_tests() {
     print_info "Running Ensurance frontend tests..."
-    cd ensurance
-    npm run test:run
-    cd ..
+    (cd "$ROOT_DIR/ensurance" && npm run test:run)
     print_success "Ensurance tests completed"
 }
 
 # Function to run Ensurance frontend tests with coverage
 run_ensurance_coverage() {
     print_info "Running Ensurance frontend tests with coverage..."
-    cd ensurance
-    npm run test:run -- --coverage
-    cd ..
+    (cd "$ROOT_DIR/ensurance" && npm run test:run -- --coverage)
     print_success "Ensurance coverage completed"
 }
 
 # Function to run Pharmacy frontend tests
 run_pharmacy_tests() {
     print_info "Running Pharmacy frontend tests..."
-    cd pharmacy
-    npm run test:unit
-    cd ..
+    (cd "$ROOT_DIR/pharmacy" && npm run test:unit)
     print_success "Pharmacy tests completed"
 }
 
 # Function to run Pharmacy frontend tests with coverage
 run_pharmacy_coverage() {
     print_info "Running Pharmacy frontend tests with coverage..."
-    cd pharmacy
-    npm run test:unit -- --coverage
-    cd ..
+    (cd "$ROOT_DIR/pharmacy" && npm run test:unit -- --coverage)
     print_success "Pharmacy coverage completed"
 }
 
 # Function to run BackV5 backend tests
 run_backv5_tests() {
     print_info "Running BackV5 backend tests..."
-    mvn -f backv5/pom.xml clean test jacoco:report
+    mvn -f "$ROOT_DIR/backv5/pom.xml" clean test jacoco:report
     print_success "BackV5 tests completed"
 }
 
 # Function to run BackV4 backend tests
 run_backv4_tests() {
     print_info "Running BackV4 backend tests..."
-    mvn -f backv4/pom.xml clean test jacoco:report
+    mvn -f "$ROOT_DIR/backv4/pom.xml" clean test jacoco:report
     print_success "BackV4 tests completed"
 }
 
@@ -95,10 +91,10 @@ install_dependencies() {
     print_info "Installing dependencies for all systems..."
     
     print_info "Installing Ensurance dependencies..."
-    cd ensurance && npm install && cd ..
+    (cd "$ROOT_DIR/ensurance" && npm install)
     
     print_info "Installing Pharmacy dependencies..."
-    cd pharmacy && npm install && cd ..
+    (cd "$ROOT_DIR/pharmacy" && npm install)
     
     print_success "All dependencies installed"
 }

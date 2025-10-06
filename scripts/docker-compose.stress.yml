@@ -14,7 +14,7 @@ services:
       K6_WEB_DASHBOARD_EXPORT: "/results/k6-dashboard"
       TARGET_URL: "http://host.docker.internal:5175"
     volumes:
-      - ./stress/k6/scripts:/scripts:ro
+      - ../stress/k6/scripts:/scripts:ro
       - k6_results:/results
     ports:
       - "5665:5665"
@@ -32,7 +32,7 @@ services:
       - "-l"
       - "/results/sample-results.jtl"
     volumes:
-      - ./stress/jmeter/test-plans:/testplans:ro
+      - ../stress/jmeter/test-plans:/testplans:ro
       - jmeter_results:/results
     environment:
       DISPLAY: ":1"
