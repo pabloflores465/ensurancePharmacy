@@ -585,6 +585,74 @@ deployment_environment{
 
 ---
 
-**Commit:** 46cf65c9  
+**Commits:**
+- 46cf65c9 - Fix sanitización de labels y reordenamiento  
+- 07aa2cd7 - Fix persistencia de archivo de métricas
+
 **Fecha:** 2025-10-06  
 **Estado:** ✅ Corregido y pusheado a GitHub
+
+---
+
+## 🔧 Actualización: Segunda Corrección (07aa2cd7)
+
+### Problema Adicional Identificado
+
+**Error:** `No se encontró archivo de métricas` en el post block `failure`
+
+**Causa:** 
+El nombre del archivo temporal usaba `JOB_NAME` sin sanitizar:
+```bash
+METRICS_FILE="/tmp/jenkins_metrics_${JOB_NAME}_${BUILD_NUMBER}.tmp"
+# Con JOB_NAME=/instance/github_jenkins/main
+# Resultado: /tmp/jenkins_metrics_/instance/github_jenkins/main_45.tmp
+# ❌ Crea subdirectorios que no existen
+```
+
+### Solución Implementada
+
+1. **Sanitizar el nombre del archivo:**
+```bash
+# ANTES
+METRICS_FILE="/tmp/jenkins_metrics_${JOB_NAME}_${BUILD_NUMBER}.tmp"
+
+# AHORA
+SAFE_JOB_NAME=$(echo "$JOB_NAME" | sed 's/[\/:]/_/g')
+METRICS_FILE="/tmp/jenkins_metrics_${SAFE_JOB_NAME}_${BUILD_NUMBER}.tmp"
+# Resultado: /tmp/jenkins_metrics__instance_github_jenkins_main_45.tmp ✅
+```
+
+2. **Manejo graceful cuando falta el archivo:**
+```bash
+# ANTES
+if [ ! -f "$METRICS_FILE" ]; then
+    log_error "No se encontró archivo"
+    return 1  # ❌ Falla completamente
+fi
+
+# AHORA
+if [ ! -f "$METRICS_FILE" ]; then
+    log_warn "No se encontró archivo. Usando valores por defecto"
+    START_TIME=$((end_time - 60))  # ✅ Usa estimación
+    QUEUE_START_TIME=$START_TIME
+else
+    source "$METRICS_FILE"
+fi
+```
+
+3. **Debug mejorado:**
+```bash
+log_warn "Archivo esperado: $METRICS_FILE"
+log_warn "JOB_NAME: $JOB_NAME"
+log_warn "BUILD_NUMBER: $BUILD_NUMBER"
+log_warn "Archivos en /tmp:"
+ls -la /tmp/jenkins_metrics_*
+```
+
+### Resultado
+
+Ahora el script:
+- ✅ Crea archivos con nombres válidos
+- ✅ Continúa ejecutándose incluso sin archivo
+- ✅ Proporciona debug info útil
+- ✅ Reporta métricas básicas en cualquier caso
