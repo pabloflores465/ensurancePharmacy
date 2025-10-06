@@ -3,7 +3,7 @@
     <session-factory>
         <!-- JDBC Database connection settings -->
         <property name="hibernate.connection.driver_class">org.sqlite.JDBC</property>
-        <property name="hibernate.connection.url">jdbc:sqlite:sqlite/USUARIO.sqlite</property>
+        <property name="hibernate.connection.url">jdbc:sqlite:backv5/sqlite/USUARIO.sqlite</property>
         
         <!-- Connection pool settings (not needed for SQLite) -->
         <property name="hibernate.connection.pool_size">1</property>
