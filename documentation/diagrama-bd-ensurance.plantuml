@@ -1,0 +1,241 @@
+@startuml Esquema de Base de Datos - Ensurance (BackV4)
+
+title Esquema de Base de Datos - Ensurance System (BackV4)\nSQLite Database
+
+' Configuración de estilos
+skinparam linetype ortho
+skinparam backgroundColor #FEFEFE
+
+entity "USERS" as users {
+  **PK** ID_USER : INTEGER
+  --
+  ADDRESS : VARCHAR(255)
+  BIRTHDATE : DATE
+  CREATED_AT : TIMESTAMP
+  *CUI : BIGINT
+  *EMAIL : VARCHAR(255) UNIQUE
+  *ENABLED : INTEGER (default 1)
+  EXPIRATION_DATE : DATE
+  *NAME : VARCHAR(255)
+  PAID_SERVICE : BOOLEAN (default 0)
+  *PASSWORD : VARCHAR(255)
+  PHONE : VARCHAR(255)
+  *ROL : VARCHAR(255)
+  **FK** ID_POLICY : BIGINT
+}
+
+entity "POLICY" as policy {
+  **PK** ID_POLICY : INTEGER
+  --
+  COST : FLOAT
+  CREATION_DATE : DATE (default CURRENT_DATE)
+  ENABLED : INTEGER (default 1)
+  EXP_DATE : DATE
+  PERCENTAGE : FLOAT
+}
+
+entity "HOSPITALS" as hospitals {
+  **PK** ID_HOSPITAL : INTEGER
+  --
+  *ADDRESS : VARCHAR(255)
+  *EMAIL : VARCHAR(100)
+  *ENABLED : INTEGER (default 1)
+  *NAME : VARCHAR(100)
+  *PHONE : BIGINT
+  PORT : VARCHAR(10)
+}
+
+entity "PHARMACY" as pharmacy {
+  **PK** ID_PHARMACY : INTEGER
+  --
+  *ADDRESS : VARCHAR(255)
+  *EMAIL : VARCHAR(100)
+  *ENABLED : INTEGER (default 1)
+  *NAME : VARCHAR(100)
+  *PHONE : BIGINT
+  PORT : VARCHAR(10)
+}
+
+entity "MEDICINE" as medicine {
+  **PK** ID_MEDICINE : INTEGER
+  --
+  *BRAND : VARCHAR(255)
+  CONCENTRATION : VARCHAR(255)
+  DESCRIPTION : TEXT
+  FORMULA : TEXT
+  IMAGE_URL : VARCHAR(500)
+  *NAME : VARCHAR(255)
+  PHARMACEUTICAL_FORM : VARCHAR(255)
+  *PRICE : FLOAT
+  *QUANTITY : INTEGER
+  SALT : VARCHAR(255)
+  *STOCK : INTEGER
+}
+
+entity "PRESCRIPTION" as prescription {
+  **PK** ID_PRESCRIPTION : INTEGER
+  --
+  AMOUNT : FLOAT
+  APPROVED : BOOLEAN (default 0)
+  DATE_PRESCRIPTION : DATE (default CURRENT_DATE)
+  DOCTOR_NAME : VARCHAR(255)
+  DOSAGE : VARCHAR(255)
+  DURATION : VARCHAR(100)
+  FREQUENCY : VARCHAR(100)
+  INSTRUCTIONS : TEXT
+  **FK** ID_MEDICINE : BIGINT
+  **FK** ID_USER : BIGINT
+}
+
+entity "APPOINTMENTS" as appointments {
+  **PK** ID_APPOINTMENT : INTEGER
+  --
+  *DATE_APPOINTMENT : DATE
+  DESCRIPTION : TEXT
+  **FK** ID_HOSPITAL : BIGINT
+  **FK** ID_USER : BIGINT
+  STATUS : VARCHAR(50) (default 'PENDING')
+  TIME_APPOINTMENT : TIME
+}
+
+entity "TRANSACTIONS" as transactions {
+  **PK** ID_TRANSACTION : INTEGER
+  --
+  AMOUNT : FLOAT
+  DATE_TRANSACTION : TIMESTAMP (default CURRENT_TIMESTAMP)
+  DESCRIPTION : VARCHAR(500)
+  **FK** ID_POLICY : BIGINT
+  **FK** ID_USER : BIGINT
+  TYPE : VARCHAR(50)
+}
+
+entity "SERVICE_CATEGORY" as service_category {
+  **PK** ID_CATEGORY : INTEGER
+  --
+  DESCRIPTION : TEXT
+  *NAME : VARCHAR(255) UNIQUE
+}
+
+entity "INSURANCE_SERVICE" as insurance_service {
+  **PK** ID_SERVICE : INTEGER
+  --
+  *COST : FLOAT
+  DESCRIPTION : TEXT
+  ENABLED : INTEGER (default 1)
+  **FK** ID_CATEGORY : BIGINT
+  *NAME : VARCHAR(255) UNIQUE
+}
+
+entity "HOSPITAL_INSURANCE_SERVICE" as hospital_insurance_service {
+  **PK** ID : INTEGER
+  --
+  **FK** ID_HOSPITAL : BIGINT
+  **FK** ID_SERVICE : BIGINT
+}
+
+entity "SERVICE_APPROVALS" as service_approvals {
+  **PK** ID_APPROVAL : INTEGER
+  --
+  APPROVAL_DATE : TIMESTAMP
+  APPROVER_NAME : VARCHAR(255)
+  CREATED_AT : TIMESTAMP (default CURRENT_TIMESTAMP)
+  **FK** ID_SERVICE : BIGINT
+  **FK** ID_USER : BIGINT
+  NOTES : TEXT
+  STATUS : VARCHAR(50) (default 'PENDING')
+}
+
+entity "PRESCRIPTION_APPROVAL" as prescription_approval {
+  **PK** ID_APPROVAL : INTEGER
+  --
+  APPROVAL_DATE : TIMESTAMP
+  APPROVER_NAME : VARCHAR(255)
+  CREATED_AT : TIMESTAMP (default CURRENT_TIMESTAMP)
+  **FK** ID_PRESCRIPTION : BIGINT
+  NOTES : TEXT
+  STATUS : VARCHAR(50) (default 'PENDING')
+}
+
+entity "CATEGORY" as category {
+  **PK** ID_CATEGORY : INTEGER
+  --
+  DESCRIPTION : TEXT
+  *NAME : VARCHAR(255) UNIQUE
+}
+
+entity "SUBCATEGORY" as subcategory {
+  **PK** ID_SUBCATEGORY : INTEGER
+  --
+  DESCRIPTION : TEXT
+  **FK** ID_CATEGORY : BIGINT
+  *NAME : VARCHAR(255) UNIQUE
+}
+
+entity "SYSTEM_CONFIG" as system_config {
+  **PK** CONFIG_KEY : VARCHAR(100)
+  --
+  CONFIG_VALUE : TEXT
+  DESCRIPTION : TEXT
+  UPDATED_AT : TIMESTAMP (default CURRENT_TIMESTAMP)
+}
+
+' Relaciones
+users ||--o{ policy : "has policy"
+users ||--o{ prescription : "has prescriptions"
+users ||--o{ appointments : "schedules"
+users ||--o{ transactions : "makes"
+users ||--o{ service_approvals : "requests"
+
+policy ||--o{ transactions : "covers"
+
+hospitals ||--o{ appointments : "hosts"
+hospitals ||--o{ hospital_insurance_service : "offers"
+
+medicine ||--o{ prescription : "prescribed in"
+
+service_category ||--o{ insurance_service : "categorizes"
+
+insurance_service ||--o{ hospital_insurance_service : "available at"
+insurance_service ||--o{ service_approvals : "requested for"
+
+prescription ||--o{ prescription_approval : "needs approval"
+
+category ||--o{ subcategory : "contains"
+
+note right of users
+  **Usuario Central del Sistema**
+  - Soporta múltiples roles: admin, employee, client
+  - Gestión de habilitación (enabled)
+  - Expiración de servicios (expiration_date)
+  - Vinculación con póliza de seguro
+end note
+
+note right of policy
+  **Pólizas de Seguro**
+  - Define cobertura (percentage)
+  - Costo mensual/anual
+  - Fecha de expiración
+end note
+
+note bottom of prescription
+  **Recetas Médicas**
+  - Requiere aprobación
+  - Detalles de dosificación
+  - Vinculada a usuario y medicamento
+end note
+
+note bottom of service_approvals
+  **Workflow de Aprobación**
+  - Estados: PENDING, APPROVED, REJECTED
+  - Auditoría de aprobadores
+  - Notas de aprobación
+end note
+
+note top of system_config
+  **Configuración del Sistema**
+  - Parámetros configurables
+  - Actualización dinámica
+  - Sin reinicio requerido
+end note
+
+@enduml

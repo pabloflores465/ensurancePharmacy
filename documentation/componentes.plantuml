@@ -1,0 +1,288 @@
+@startuml Diagrama de Componentes Detallado
+
+title Diagrama de Componentes Detallado\nEnsurance Pharmacy System
+
+skinparam componentStyle rectangle
+skinparam backgroundColor #FEFEFE
+
+package "Ensurance System (BackV4 + Frontend)" {
+    
+    package "Ensurance Frontend\n(Vue 3 + TypeScript + Vite)" as ensurance_frontend {
+        component "Router\n(Vue Router)" as ens_router
+        component "State Management\n(Pinia)" as ens_store
+        
+        package "Pages (30)" {
+            component [Login/Register] as ens_auth
+            component [Admin Panel] as ens_admin
+            component [Policies Management] as ens_policies
+            component [Appointments] as ens_appointments
+            component [Catalogs] as ens_catalogs
+            component [User Services] as ens_user_services
+        }
+        
+        package "Components (8)" {
+            component [Navigation] as ens_nav
+            component [Forms] as ens_forms
+            component [Tables] as ens_tables
+        }
+        
+        package "Utils (4)" {
+            component [API Client (Axios)] as ens_api
+            component [Profile Utils] as ens_utils
+        }
+    }
+    
+    package "Ensurance Backend\n(Java 21 + HttpServer + Hibernate)" as ensurance_backend {
+        
+        component "App.java\n(Entry Point)" as ens_app
+        
+        package "Config (3)" {
+            component [ServerConfig] as ens_config
+            component [ServerRoutes] as ens_routes
+            component [DaoRegistry] as ens_registry
+        }
+        
+        package "Handlers (28)" {
+            component [LoginHandler] as ens_login_h
+            component [UserHandler] as ens_user_h
+            component [PolicyHandler] as ens_policy_h
+            component [HospitalHandler] as ens_hospital_h
+            component [AppointmentHandler] as ens_appointment_h
+            component [PrescriptionHandler] as ens_prescription_h
+            component [TransactionsHandler] as ens_transaction_h
+            component [DashboardHandler] as ens_dashboard_h
+            component [ServiceApprovalHandler] as ens_approval_h
+            component [+20 more handlers...] as ens_more_handlers
+        }
+        
+        package "DAOs (23)" {
+            component [UserDAO] as ens_user_dao
+            component [PolicyDAO] as ens_policy_dao
+            component [HospitalDAO] as ens_hospital_dao
+            component [PrescriptionDAO] as ens_prescription_dao
+            component [TransactionDAO] as ens_transaction_dao
+            component [AppointmentDAO] as ens_appointment_dao
+            component [+17 more DAOs...] as ens_more_daos
+        }
+        
+        package "Entities (25)" {
+            component [User] as ens_user_entity
+            component [Policy] as ens_policy_entity
+            component [Hospital] as ens_hospital_entity
+            component [Prescription] as ens_prescription_entity
+            component [Transaction] as ens_transaction_entity
+            component [Appointment] as ens_appointment_entity
+            component [+19 more entities...] as ens_more_entities
+        }
+        
+        package "Utilities (4)" {
+            component [HibernateUtil] as ens_hibernate
+            component [JsonUtil] as ens_json
+            component [EmailUtil] as ens_email
+            component [ValidationUtil] as ens_validation
+        }
+        
+        package "Scheduler (1)" {
+            component [ServiceExpirationScheduler] as ens_scheduler
+        }
+    }
+    
+    database "SQLite\nensurance/USUARIO" as ens_db {
+        collections "15 Tables:\nUSERS, POLICY,\nHOSPITALS, MEDICINE,\nPRESCRIPTION, etc."
+    }
+}
+
+package "Pharmacy System (BackV5 + Frontend)" {
+    
+    package "Pharmacy Frontend\n(Vue 3 + JavaScript + Vue CLI)" as pharmacy_frontend {
+        component "Router\n(Vue Router)" as pharm_router
+        component "State Management\n(Pinia)" as pharm_store
+        
+        package "Pages (15)" {
+            component [Login/Register ] as pharm_auth
+            component [Catalog] as pharm_catalog
+            component [Cart] as pharm_cart
+            component [Orders] as pharm_orders
+            component [Prescriptions ] as pharm_prescriptions
+            component [Admin Dashboard] as pharm_admin_dash
+        }
+        
+        package "Components (10)" {
+            component [Navigation ] as pharm_nav
+            component [Product Card] as pharm_product
+            component [Charts (ChartJS)] as pharm_charts
+        }
+        
+        package "Services (3)" {
+            component [Auth Service] as pharm_auth_service
+            component [API Service] as pharm_api_service
+        }
+    }
+    
+    package "Pharmacy Backend\n(Java 21 + HttpServer + Hibernate)" as pharmacy_backend {
+        
+        component "App.java \n(Entry Point)" as pharm_app
+        
+        package "Handlers (21)" {
+            component [LoginHandler ] as pharm_login_h
+            component [MedicineHandler] as pharm_medicine_h
+            component [OrdersHandler] as pharm_orders_h
+            component [BillHandler] as pharm_bill_h
+            component [PrescriptionHandler ] as pharm_prescription_h
+            component [CategoryHandler] as pharm_category_h
+            component [CommentsHandler] as pharm_comments_h
+            component [SearchMedicineHandler] as pharm_search_h
+            component [InsuranceIntegrationHandler] as pharm_insurance_h
+            component [+12 more handlers...] as pharm_more_handlers
+        }
+        
+        package "DAOs (19)" {
+            component [UserDAO ] as pharm_user_dao
+            component [MedicineDAO] as pharm_medicine_dao
+            component [OrdersDAO] as pharm_orders_dao
+            component [BillDAO] as pharm_bill_dao
+            component [PrescriptionDAO ] as pharm_prescription_dao
+            component [CategoryDAO] as pharm_category_dao
+            component [CommentsDAO] as pharm_comments_dao
+            component [+12 more DAOs...] as pharm_more_daos
+        }
+        
+        package "Entities (20)" {
+            component [User ] as pharm_user_entity
+            component [Medicine] as pharm_medicine_entity
+            component [Order] as pharm_order_entity
+            component [Bill] as pharm_bill_entity
+            component [Prescription ] as pharm_prescription_entity
+            component [Category] as pharm_category_entity
+            component [Comment] as pharm_comment_entity
+            component [+13 more entities...] as pharm_more_entities
+        }
+        
+        package "DTOs (3)" {
+            component [MedicineDTO] as pharm_medicine_dto
+            component [OrderDTO] as pharm_order_dto
+            component [BillDTO] as pharm_bill_dto
+        }
+        
+        package "Utilities (3)" {
+            component [HibernateUtil ] as pharm_hibernate
+            component [JsonUtil ] as pharm_json
+            component [XMLParser] as pharm_xml
+        }
+    }
+    
+    database "SQLite\npharmacy/USUARIO" as pharm_db {
+        collections "15 Tables:\nUSERS, MEDICINE,\nORDERS, BILL,\nPRESCRIPTION, etc."
+    }
+}
+
+' Frontend Internal Connections - Ensurance
+ens_auth --> ens_router
+ens_admin --> ens_store
+ens_policies --> ens_api
+ens_appointments --> ens_api
+ens_router --> ens_api
+
+' Backend Internal Connections - Ensurance
+ens_app --> ens_config
+ens_app --> ens_routes
+ens_app --> ens_registry
+ens_app --> ens_scheduler
+
+ens_routes --> ens_login_h
+ens_routes --> ens_user_h
+ens_routes --> ens_policy_h
+ens_routes --> ens_hospital_h
+
+ens_login_h --> ens_user_dao
+ens_user_h --> ens_user_dao
+ens_policy_h --> ens_policy_dao
+ens_hospital_h --> ens_hospital_dao
+
+ens_user_dao --> ens_hibernate
+ens_policy_dao --> ens_hibernate
+ens_hospital_dao --> ens_hibernate
+
+ens_user_dao --> ens_user_entity
+ens_policy_dao --> ens_policy_entity
+
+ens_hibernate --> ens_db
+
+' Frontend Internal Connections - Pharmacy
+pharm_auth --> pharm_router
+pharm_catalog --> pharm_store
+pharm_cart --> pharm_api_service
+pharm_orders --> pharm_api_service
+pharm_router --> pharm_api_service
+
+' Backend Internal Connections - Pharmacy
+pharm_app --> pharm_login_h
+pharm_app --> pharm_medicine_h
+pharm_app --> pharm_orders_h
+
+pharm_login_h --> pharm_user_dao
+pharm_medicine_h --> pharm_medicine_dao
+pharm_orders_h --> pharm_orders_dao
+
+pharm_user_dao --> pharm_hibernate
+pharm_medicine_dao --> pharm_hibernate
+pharm_orders_dao --> pharm_hibernate
+
+pharm_medicine_dao --> pharm_medicine_entity
+pharm_orders_dao --> pharm_order_entity
+
+pharm_medicine_h --> pharm_medicine_dto
+pharm_orders_h --> pharm_order_dto
+
+pharm_hibernate --> pharm_db
+
+' Cross-System Integration
+ens_api --> ensurance_backend : HTTP :8081/api
+pharm_api_service --> pharmacy_backend : HTTP :8082/api2
+
+ens_api ..> pharmacy_backend : Pharmacy\nIntegration
+pharm_api_service ..> ensurance_backend : Insurance\nVerification
+
+note right of ensurance_backend
+  **Ensurance Backend**
+  - 28 HTTP Handlers
+  - 23 DAOs (Repository Pattern)
+  - 25 JPA Entities
+  - Singleton: HibernateUtil, DaoRegistry
+  - Scheduler: Daily service expiration check
+  - REST API: /api/*
+end note
+
+note right of pharmacy_backend
+  **Pharmacy Backend**
+  - 21 HTTP Handlers
+  - 19 DAOs (Repository Pattern)
+  - 20 JPA Entities
+  - 3 DTOs (Adapter Pattern)
+  - XML Import functionality
+  - REST API: /api2/*
+end note
+
+note left of ensurance_frontend
+  **Ensurance Frontend**
+  - Vue 3 Composition API
+  - TypeScript
+  - Vite (Fast HMR)
+  - Tailwind CSS 4
+  - 30 Pages
+  - 8 Reusable Components
+  - Route Guards (Auth, Admin, Employee)
+end note
+
+note left of pharmacy_frontend
+  **Pharmacy Frontend**
+  - Vue 3 Options API
+  - JavaScript ES6+
+  - Vue CLI
+  - Chart.js Integration
+  - 15 Pages
+  - 10 Reusable Components
+  - Role-based routing
+end note
+
+@enduml

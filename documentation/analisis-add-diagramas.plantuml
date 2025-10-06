@@ -1,0 +1,652 @@
+@startuml Análisis ADD - Diagramas Arquitectónicos
+
+title Análisis ADD - Ensurance Pharmacy System\nRefinamiento Arquitectónico y Tácticas
+
+' ========================================
+' Diagrama 1: Drivers Arquitectónicos
+' ========================================
+
+package "Drivers Arquitectónicos" as drivers {
+  
+  rectangle "Requisitos Funcionales" as rf {
+    - Gestión de usuarios (CRUD)
+    - Gestión de pólizas
+    - Sistema de citas médicas
+    - Catálogo de medicamentos
+    - Carrito y pedidos
+    - Facturación con seguros
+    - Prescripciones
+    - Aprobaciones
+    - Dashboards
+    - Integración Ensurance-Pharmacy
+  }
+  
+  rectangle "Restricciones" as constraints {
+    - Java 21 (backend)
+    - Vue 3 (frontend)
+    - SQLite (database)
+    - Self-hosted
+    - Presupuesto limitado
+    - 1 semestre
+    - ARM64 support
+  }
+  
+  rectangle "Atributos de Calidad" as qa {
+    **CRÍTICOS:**
+    - Maintainability
+    - Testability
+    
+    **ALTOS:**
+    - Modifiability
+    - Security
+    - Performance
+    
+    **MEDIOS:**
+    - Availability
+    - Scalability
+    - Interoperability
+    - Usability
+  }
+}
+
+note right of qa
+  **Priorización basada en:**
+  - Proyecto académico evolutivo
+  - Calidad de código crítica
+  - Requisitos cambiantes
+  - Datos médicos sensibles
+end note
+
+@enduml
+
+@startuml Refinamiento Iteración 1
+
+title ADD Iteración 1: Estructura de Alto Nivel
+
+skinparam componentStyle rectangle
+
+package "Decisión: Microservices Architecture" as decision1 {
+  
+  component "Ensurance Service" as ens_service {
+    [Frontend Vue 3 + TypeScript]
+    [Backend Java 21]
+    database "SQLite\nensurance/USUARIO"
+  }
+  
+  component "Pharmacy Service" as pharm_service {
+    [Frontend Vue 3 + JavaScript]
+    [Backend Java 21 ]
+    database "SQLite\npharmacy/USUARIO"
+  }
+  
+  ens_service <--> pharm_service : REST APIs\nJSON over HTTP
+}
+
+note right of decision1
+  **Atributos Impactados:**
+  ✅ Scalability (escalar independiente)
+  ✅ Modifiability (servicios separados)
+  ✅ Maintainability (dominios claros)
+  
+  **Trade-off:**
+  + Flexibilidad y escalabilidad
+  - Complejidad operacional
+  - Overhead de comunicación
+end note
+
+@enduml
+
+@startuml Refinamiento Iteración 2
+
+title ADD Iteración 2: Arquitectura Interna (Layered)
+
+skinparam componentStyle rectangle
+
+package "Backend Service (BackV4/BackV5)" {
+  
+  package "Presentation Layer" as presentation {
+    rectangle "HttpServer\n(Java)" as httpserver
+    rectangle "HTTP Handlers (28/21)" as handlers
+  }
+  
+  package "Business Logic Layer" as business {
+    rectangle "DAOs (23/19)" as daos
+    rectangle "Business Rules" as rules
+  }
+  
+  package "Data Access Layer" as data {
+    rectangle "Hibernate ORM" as hibernate
+    rectangle "JPA Entities (25/20)" as entities
+  }
+  
+  package "Database Layer" as db {
+    database "SQLite" as sqlite
+  }
+  
+  httpserver --> handlers
+  handlers --> daos
+  handlers --> rules
+  daos --> hibernate
+  hibernate --> entities
+  entities --> sqlite
+}
+
+note right of presentation
+  **Atributos Impactados:**
+  ✅ Maintainability (separación clara)
+  ✅ Testability (capas aisladas)
+  ✅ Modifiability (cambios localizados)
+  
+  **Tácticas:**
+  - Increase Semantic Coherence
+  - Reduce Coupling
+  - Abstract Common Services
+end note
+
+@enduml
+
+@startuml Tácticas por Atributo
+
+title Tácticas Arquitectónicas Aplicadas por Atributo
+
+left to right direction
+
+package "PERFORMANCE" as perf {
+  rectangle "Stateless Services" as t_stateless
+  rectangle "Paginación" as t_pagination
+  rectangle "Concurrency (CI/CD)" as t_concurrency
+  rectangle "Query Optimization" as t_query
+}
+
+package "SECURITY" as sec {
+  rectangle "Authenticate Users" as t_auth
+  rectangle "Authorize (RBAC)" as t_authz
+  rectangle "Password Hashing" as t_hash
+  rectangle "CORS Config" as t_cors
+  rectangle "Input Validation" as t_validate
+}
+
+package "AVAILABILITY" as avail {
+  rectangle "Exception Handling" as t_exception
+  rectangle "Auto-restart (Supervisor)" as t_restart
+  rectangle "Health Checks" as t_health
+  rectangle "Multiple Environments" as t_env
+  rectangle "Logging" as t_log
+}
+
+package "SCALABILITY" as scal {
+  rectangle "Service Partitioning" as t_partition
+  rectangle "Stateless Design" as t_stateless2
+  rectangle "ORM Abstraction" as t_orm
+  rectangle "Data Separation" as t_data_sep
+}
+
+package "MAINTAINABILITY" as maint {
+  rectangle "Layered Architecture" as t_layers
+  rectangle "Repository Pattern" as t_repo
+  rectangle "Dependency Injection" as t_di
+  rectangle "Configuration Files" as t_config
+  rectangle "Documentation" as t_doc
+}
+
+package "TESTABILITY" as test {
+  rectangle "CI/CD Automation" as t_cicd
+  rectangle "Unit Tests (JUnit)" as t_junit
+  rectangle "Test Isolation" as t_isolation
+  rectangle "Mocking (Mockito)" as t_mock
+  rectangle "Code Coverage (JaCoCo)" as t_coverage
+}
+
+package "INTEROPERABILITY" as interop {
+  rectangle "REST APIs" as t_rest
+  rectangle "JSON Standard" as t_json
+  rectangle "HTTP Protocols" as t_http
+  rectangle "SonarQube Integration" as t_sonar
+}
+
+package "MODIFIABILITY" as modif {
+  rectangle "Frontend/Backend Separation" as t_separation
+  rectangle "External Config" as t_ext_config
+  rectangle "Encapsulation" as t_encaps
+  rectangle "Defer Binding" as t_defer
+}
+
+package "USABILITY" as usab {
+  rectangle "Vue Components" as t_vue
+  rectangle "Form Validation" as t_form_val
+  rectangle "Consistent Navigation" as t_nav
+  rectangle "Feedback Messages" as t_feedback
+}
+
+note bottom
+  **Total: 40+ tácticas aplicadas**
+  distribuidas entre 9 atributos de calidad
+end note
+
+@enduml
+
+@startuml Mapping Decisiones a Atributos
+
+title Mapping: Decisiones Arquitectónicas → Atributos de Calidad
+
+skinparam backgroundColor #FEFEFE
+
+rectangle "Decisión 1:\nMicroservices" as d1
+rectangle "Decisión 2:\nLayered Architecture" as d2
+rectangle "Decisión 3:\nREST APIs" as d3
+rectangle "Decisión 4:\nSQLite + Hibernate" as d4
+rectangle "Decisión 5:\nVue 3" as d5
+rectangle "Decisión 6:\nMulti-Pipeline CI/CD" as d6
+rectangle "Decisión 7:\nMulti-Ambiente" as d7
+rectangle "Decisión 8:\nDocker Compose" as d8
+rectangle "Decisión 9:\nSupervisor" as d9
+rectangle "Decisión 10:\nRBAC" as d10
+
+rectangle "Scalability" as qa_scal
+rectangle "Modifiability" as qa_modif
+rectangle "Maintainability" as qa_maint
+rectangle "Interoperability" as qa_interop
+rectangle "Usability" as qa_usab
+rectangle "Testability" as qa_test
+rectangle "Availability" as qa_avail
+rectangle "Performance" as qa_perf
+rectangle "Security" as qa_sec
+
+d1 --> qa_scal : ++
+d1 --> qa_modif : ++
+d1 --> qa_maint : +
+
+d2 --> qa_maint : +++
+d2 --> qa_test : ++
+d2 --> qa_modif : +
+
+d3 --> qa_interop : +++
+d3 --> qa_modif : ++
+
+d4 --> qa_modif : ++
+d4 --> qa_scal : +
+
+d5 --> qa_usab : +++
+d5 --> qa_maint : +
+
+d6 --> qa_test : +++
+d6 --> qa_maint : ++
+d6 --> qa_avail : +
+
+d7 --> qa_test : ++
+d7 --> qa_avail : ++
+d7 --> qa_sec : +
+
+d8 --> qa_avail : ++
+d8 --> qa_scal : +
+
+d9 --> qa_avail : +++
+
+d10 --> qa_sec : +++
+
+note bottom
+  **Leyenda:**
+  +++ = Impacto muy alto
+  ++ = Impacto alto
+  + = Impacto medio
+end note
+
+@enduml
+
+@startuml Pipeline como Driver Arquitectónico
+
+title Pipeline CI/CD como Driver de Calidad
+
+left to right direction
+
+package "3 Pipelines CI/CD" {
+  rectangle "GitHub Actions" as gh
+  rectangle "Drone CI" as drone
+  rectangle "Jenkins" as jenkins
+}
+
+rectangle "Tests Automatizados" as tests {
+  - Backend V4 (JUnit)
+  - Backend V5 (JUnit)
+  - Frontend Ensurance (Vitest)
+  - Frontend Pharmacy (Jest)
+}
+
+rectangle "SonarQube Analysis" as sonar {
+  - 4 proyectos
+  - Quality Gates
+  - Cobertura >70%
+}
+
+rectangle "Deployment" as deploy {
+  - DEV (auto)
+  - QA (auto)
+  - MAIN (auto)
+}
+
+gh --> tests
+drone --> tests
+jenkins --> tests
+
+tests --> sonar
+sonar --> deploy
+
+rectangle "Atributos Mejorados" as improved {
+  **Testability** (crítico)
+  - 100% de código testeado en CI
+  - Cobertura medida automáticamente
+  
+  **Maintainability** (crítico)
+  - Quality Gates bloquean código malo
+  - Análisis en cada push
+  
+  **Availability** (medio)
+  - Deployment automatizado
+  - Menos errores humanos
+  
+  **Security** (alto)
+  - Análisis de vulnerabilidades
+  - Dependency scanning
+}
+
+deploy --> improved
+
+note right of improved
+  **Pipeline = Enabler de Calidad**
+  
+  Sin CI/CD:
+  - Tests manuales (error-prone)
+  - Deployment manual (riesgoso)
+  - Sin métricas de calidad
+  
+  Con CI/CD:
+  - Tests automáticos (confiables)
+  - Deployment seguro (reproducible)
+  - Calidad medida (SonarQube)
+end note
+
+@enduml
+
+@startuml Trade-offs Principales
+
+title Trade-offs en Decisiones Arquitectónicas
+
+left to right direction
+
+rectangle "Microservices\nvs\nMonolito" as to1 {
+  **Elegido: Microservices**
+  
+  ✅ Ventajas:
+  - Escalabilidad independiente
+  - Despliegue por servicio
+  - Tecnologías heterogéneas
+  
+  ❌ Desventajas:
+  - Más complejidad operacional
+  - Overhead de comunicación
+  - Requiere orquestación
+  
+  **Justificación:**
+  2 dominios claramente separados
+  (Seguros vs Farmacia)
+}
+
+rectangle "SQLite\nvs\nPostgreSQL" as to2 {
+  **Elegido: SQLite**
+  
+  ✅ Ventajas:
+  - Zero configuration
+  - File-based (fácil backup)
+  - Suficiente para carga actual
+  - No requiere servidor
+  
+  ❌ Desventajas:
+  - Limitaciones de concurrencia
+  - No escalable horizontalmente
+  - Menos robusto
+  
+  **Justificación:**
+  Proyecto académico, self-hosted,
+  Hibernate permite migración futura
+}
+
+rectangle "Multi-Pipeline\nvs\nSingle Pipeline" as to3 {
+  **Elegido: 3 Pipelines**
+  
+  ✅ Ventajas:
+  - Redundancia (fallo de uno)
+  - Aprendizaje de plataformas
+  - Flexibilidad
+  
+  ❌ Desventajas:
+  - Mantenimiento 3x
+  - Configuración duplicada
+  - Más complejidad
+  
+  **Justificación:**
+  Proyecto académico (aprendizaje),
+  Cada pipeline tiene ventajas únicas
+}
+
+rectangle "Tailwind\nvs\nBootstrap" as to4 {
+  **Elegido: Tailwind (Ensurance)**
+  
+  ✅ Ventajas:
+  - Utility-first (rápido)
+  - Customizable
+  - Moderno
+  
+  ❌ Desventajas:
+  - Curva de aprendizaje
+  - HTML más verboso
+  
+  **Justificación:**
+  Desarrollo rápido,
+  Design system consistente
+}
+
+note bottom
+  **Filosofía de Trade-offs:**
+  
+  Priorizamos:
+  1. Mantenibilidad > Performance prematura
+  2. Simplicidad > Over-engineering
+  3. Aprendizaje > Solución única
+  4. Flexibilidad futura > Optimización actual
+end note
+
+@enduml
+
+@startuml Cumplimiento de Escenarios
+
+title Cumplimiento de Escenarios de Calidad
+
+left to right direction
+
+rectangle "Performance" as perf_qa {
+  **Escenarios: 2**
+  - PERF-01: Búsqueda < 1.5s ✅
+  - PERF-02: Dashboard < 3s ✅
+  
+  **Cumplimiento: 85%**
+  Falta: Cache de métricas
+}
+
+rectangle "Security" as sec_qa {
+  **Escenarios: 3**
+  - SEC-01: Autenticación ✅
+  - SEC-02: RBAC (frontend) ⚠️
+  - SEC-03: Datos sensibles ✅
+  
+  **Cumplimiento: 75%**
+  Falta: Rate limiting, RBAC backend
+}
+
+rectangle "Availability" as avail_qa {
+  **Escenarios: 2**
+  - AVAIL-01: Auto-restart ✅
+  - AVAIL-02: Error handling ✅
+  
+  **Cumplimiento: 80%**
+  Falta: Retry automático
+}
+
+rectangle "Scalability" as scal_qa {
+  **Escenarios: 2**
+  - SCAL-01: Escalado horizontal ⚠️
+  - SCAL-02: Migración BD ⚠️
+  
+  **Cumplimiento: 60%**
+  Preparado pero no implementado
+}
+
+rectangle "Maintainability" as maint_qa {
+  **Escenarios: 2**
+  - MAINT-01: Nuevo endpoint ✅
+  - MAINT-02: Refactoring seguro ✅
+  
+  **Cumplimiento: 95%**
+  Excelente estructura
+}
+
+rectangle "Testability" as test_qa {
+  **Escenarios: 2**
+  - TEST-01: Unit tests ✅
+  - TEST-02: E2E tests ⚠️
+  
+  **Cumplimiento: 90%**
+  Falta: Tests E2E automatizados
+}
+
+rectangle "Usability" as usab_qa {
+  **Escenarios: 2**
+  - USAB-01: Registro intuitivo ✅
+  - USAB-02: Navegación consistente ✅
+  
+  **Cumplimiento: 85%**
+  Falta: Métricas de UX
+}
+
+rectangle "Modifiability" as modif_qa {
+  **Escenarios: 2**
+  - MODIF-01: Cambio de lógica ✅
+  - MODIF-02: Nuevo microservicio ✅
+  
+  **Cumplimiento: 90%**
+  Arquitectura flexible
+}
+
+rectangle "Interoperability" as interop_qa {
+  **Escenarios: 2**
+  - INTEROP-01: Integración E-P ✅
+  - INTEROP-02: SonarQube ✅
+  
+  **Cumplimiento: 85%**
+  Falta: Circuit breaker
+}
+
+note bottom
+  **Cumplimiento Global: 83%**
+  
+  Fortalezas:
+  ✅ Maintainability (95%)
+  ✅ Testability (90%)
+  ✅ Modifiability (90%)
+  
+  Áreas de mejora:
+  ⚠️ Scalability (60%)
+  ⚠️ Security (75%)
+end note
+
+@enduml
+
+@startuml Arquitectura Final
+
+title Arquitectura Final - Vista Completa
+
+skinparam componentStyle rectangle
+skinparam backgroundColor #FEFEFE
+
+actor "Usuario" as user
+
+package "Ambiente DEV (3000-3003)" as dev {
+  [Ensurance Frontend :3000]
+  [Pharmacy Frontend :3001]
+  [Ensurance Backend :3002]
+  [Pharmacy Backend :3003]
+  database "SQLite DEV"
+}
+
+package "Ambiente QA (4000-4003)" as qa {
+  [Ensurance Frontend :4000]
+  [Pharmacy Frontend :4001]
+  [Ensurance Backend :4002]
+  [Pharmacy Backend :4003]
+  database "SQLite QA"
+}
+
+package "Ambiente MAIN (5175, 8089, 8081, 8082)" as main {
+  [Ensurance Frontend :5175]
+  [Pharmacy Frontend :8089]
+  [Ensurance Backend :8081]
+  [Pharmacy Backend :8082]
+  database "SQLite MAIN"
+}
+
+cloud "CI/CD" as cicd {
+  [GitHub Actions]
+  [Drone CI]
+  [Jenkins]
+  [SonarQube]
+}
+
+cloud "Monitoreo" as monitor {
+  [Prometheus]
+  [Grafana]
+  [Checkmk]
+}
+
+user --> dev
+user --> qa
+user --> main
+
+cicd --> dev : Deploy
+cicd --> qa : Deploy
+cicd --> main : Deploy
+
+monitor --> dev : Metrics
+monitor --> qa : Metrics
+monitor --> main : Metrics
+
+note right of dev
+  **Atributos Logrados:**
+  
+  ✅ Maintainability (95%)
+  - Código limpio y estructurado
+  - Patrones consistentes
+  - Documentación completa
+  
+  ✅ Testability (90%)
+  - CI/CD con tests automáticos
+  - Cobertura >70%
+  - Quality Gates
+  
+  ✅ Modifiability (90%)
+  - Arquitectura flexible
+  - Configuración externa
+  - Separación de concerns
+  
+  ✅ Performance (85%)
+  - Respuestas < 2s
+  - Stateless
+  - Paginación
+  
+  ✅ Security (75%)
+  - Autenticación + RBAC
+  - Password hashing
+  - CORS configurado
+end note
+
+@enduml
+
+' Fin de diagramas ADD

@@ -1,0 +1,203 @@
+@startuml Arquitectura General del Sistema - Ensurance Pharmacy
+
+!define RECTANGLE class
+
+title Arquitectura General del Sistema - Ensurance Pharmacy\n(Vista Completa Multi-Ambiente)
+
+skinparam componentStyle rectangle
+skinparam backgroundColor #FEFEFE
+skinparam component {
+    BackgroundColor<<frontend>> #E1F5FE
+    BackgroundColor<<backend>> #FFF9C4
+    BackgroundColor<<database>> #F1F8E9
+    BackgroundColor<<infrastructure>> #FCE4EC
+    BackgroundColor<<cicd>> #E0F2F1
+    BorderColor Black
+}
+
+package "Cliente (Browser)" as client {
+    [Navegador Web] as browser
+}
+
+package "Ambiente DEV\n(Puertos 3000-3003)" as dev_env {
+    package "Frontend Layer" {
+        component [Ensurance Frontend\nVue 3 + TypeScript\n:3000] as ensurance_front_dev <<frontend>>
+        component [Pharmacy Frontend\nVue 3 + JavaScript\n:3001] as pharmacy_front_dev <<frontend>>
+    }
+    
+    package "Backend Layer" {
+        component [Ensurance Backend\nJava 21 + HttpServer\n:3002/api] as ensurance_back_dev <<backend>>
+        component [Pharmacy Backend\nJava 21 + HttpServer\n:3003/api2] as pharmacy_back_dev <<backend>>
+    }
+    
+    package "Database Layer" {
+        database "SQLite\nensurance/USUARIO" as db_ensurance_dev <<database>>
+        database "SQLite\npharmacy/USUARIO" as db_pharmacy_dev <<database>>
+    }
+}
+
+package "Ambiente QA\n(Puertos 4000-4003)" as qa_env {
+    package "Frontend Layer " {
+        component [Ensurance Frontend\nVue 3 + TypeScript\n:4000] as ensurance_front_qa <<frontend>>
+        component [Pharmacy Frontend\nVue 3 + JavaScript\n:4001] as pharmacy_front_qa <<frontend>>
+    }
+    
+    package "Backend Layer " {
+        component [Ensurance Backend\nJava 21 + HttpServer\n:4002/api] as ensurance_back_qa <<backend>>
+        component [Pharmacy Backend\nJava 21 + HttpServer\n:4003/api2] as pharmacy_back_qa <<backend>>
+    }
+    
+    package "Database Layer " {
+        database "SQLite\nensurance/USUARIO" as db_ensurance_qa <<database>>
+        database "SQLite\npharmacy/USUARIO" as db_pharmacy_qa <<database>>
+    }
+}
+
+package "Ambiente MAIN\n(Puertos 5175, 8089, 8081, 8082)" as main_env {
+    package "Frontend Layer  " {
+        component [Ensurance Frontend\nVue 3 + TypeScript\n:5175] as ensurance_front_main <<frontend>>
+        component [Pharmacy Frontend\nVue 3 + JavaScript\n:8089] as pharmacy_front_main <<frontend>>
+    }
+    
+    package "Backend Layer  " {
+        component [Ensurance Backend\nJava 21 + HttpServer\n:8081/api] as ensurance_back_main <<backend>>
+        component [Pharmacy Backend\nJava 21 + HttpServer\n:8082/api2] as pharmacy_back_main <<backend>>
+    }
+    
+    package "Database Layer  " {
+        database "SQLite\nensurance/USUARIO" as db_ensurance_main <<database>>
+        database "SQLite\npharmacy/USUARIO" as db_pharmacy_main <<database>>
+    }
+}
+
+package "Infraestructura Docker" as docker {
+    component [Dockerfile Multi-Etapa\n5 Stages] as dockerfile <<infrastructure>>
+    component [Docker Compose\n6 Archivos] as compose <<infrastructure>>
+    component [Supervisor\nProcess Manager] as supervisor <<infrastructure>>
+}
+
+package "CI/CD Pipeline" as cicd {
+    component [GitHub Actions\nTests + SonarQube] as github_actions <<cicd>>
+    component [Jenkins\nMulti-branch Pipeline] as jenkins <<cicd>>
+    component [Drone CI\nAmbiente-based Pipeline] as drone <<cicd>>
+    component [SonarQube\nCode Quality] as sonarqube <<cicd>>
+}
+
+package "Monitoreo y Testing" as monitoring {
+    component [Prometheus\n:9095] as prometheus <<cicd>>
+    component [Grafana\n:3300] as grafana <<cicd>>
+    component [Checkmk\n:5150] as checkmk <<cicd>>
+    component [k6 Load Testing\n:5665] as k6 <<cicd>>
+    component [JMeter\n:9600] as jmeter <<cicd>>
+}
+
+' Conexiones Cliente
+browser --> ensurance_front_dev : HTTP
+browser --> pharmacy_front_dev : HTTP
+browser --> ensurance_front_qa : HTTP
+browser --> pharmacy_front_qa : HTTP
+browser --> ensurance_front_main : HTTP
+browser --> pharmacy_front_main : HTTP
+
+' Conexiones DEV
+ensurance_front_dev --> ensurance_back_dev : REST API
+ensurance_front_dev --> pharmacy_back_dev : REST API\n(Integración)
+pharmacy_front_dev --> pharmacy_back_dev : REST API
+pharmacy_front_dev --> ensurance_back_dev : REST API\n(Verificación)
+
+ensurance_back_dev --> db_ensurance_dev : Hibernate ORM
+pharmacy_back_dev --> db_pharmacy_dev : Hibernate ORM
+
+' Conexiones QA
+ensurance_front_qa --> ensurance_back_qa : REST API
+ensurance_front_qa --> pharmacy_back_qa : REST API\n(Integración)
+pharmacy_front_qa --> pharmacy_back_qa : REST API
+pharmacy_front_qa --> ensurance_back_qa : REST API\n(Verificación)
+
+ensurance_back_qa --> db_ensurance_qa : Hibernate ORM
+pharmacy_back_qa --> db_pharmacy_qa : Hibernate ORM
+
+' Conexiones MAIN
+ensurance_front_main --> ensurance_back_main : REST API
+ensurance_front_main --> pharmacy_back_main : REST API\n(Integración)
+pharmacy_front_main --> pharmacy_back_main : REST API
+pharmacy_front_main --> ensurance_back_main : REST API\n(Verificación)
+
+ensurance_back_main --> db_ensurance_main : Hibernate ORM
+pharmacy_back_main --> db_pharmacy_main : Hibernate ORM
+
+' Infraestructura
+dockerfile --> dev_env : Build & Deploy
+dockerfile --> qa_env : Build & Deploy
+dockerfile --> main_env : Build & Deploy
+
+compose --> dockerfile : Orchestration
+supervisor --> dev_env : Process Management
+supervisor --> qa_env : Process Management
+supervisor --> main_env : Process Management
+
+' CI/CD
+github_actions --> dev_env : Auto Deploy
+github_actions --> qa_env : Auto Deploy
+github_actions --> main_env : Auto Deploy
+
+jenkins --> sonarqube : Code Analysis
+drone --> sonarqube : Code Analysis
+github_actions --> sonarqube : Code Analysis
+
+' Monitoreo
+prometheus --> dev_env : Metrics Scraping
+prometheus --> qa_env : Metrics Scraping
+prometheus --> main_env : Metrics Scraping
+
+grafana --> prometheus : Visualization
+checkmk --> dev_env : Infrastructure Monitoring
+checkmk --> qa_env : Infrastructure Monitoring
+checkmk --> main_env : Infrastructure Monitoring
+
+k6 --> dev_env : Load Testing
+jmeter --> qa_env : Load Testing
+
+note right of dev_env
+  **Ambiente de Desarrollo**
+  - Branches: dev, develop, development
+  - Hot-reload habilitado
+  - Debug mode ON
+  - Verbose logging
+end note
+
+note right of qa_env
+  **Ambiente de QA/Testing**
+  - Branches: qa, test, testing, staging
+  - Datos de prueba
+  - Integration testing
+  - DEBUG logging
+end note
+
+note right of main_env
+  **Ambiente de Producción**
+  - Branches: main, master
+  - Optimizado para performance
+  - Production mode
+  - INFO logging
+end note
+
+note bottom of docker
+  **Características Docker:**
+  - Multi-stage builds (optimización)
+  - Layer caching
+  - Health checks
+  - Volume persistence
+  - Network isolation
+end note
+
+note bottom of cicd
+  **Pipelines CI/CD:**
+  - Tests automatizados (Backend + Frontend)
+  - Code coverage (JaCoCo + LCOV)
+  - SonarQube quality gates
+  - Email notifications
+  - Artifact archiving
+end note
+
+@enduml

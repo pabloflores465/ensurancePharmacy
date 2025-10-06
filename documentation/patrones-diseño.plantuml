@@ -1,0 +1,619 @@
+@startuml Patrones de Diseño
+
+title Patrones de Diseño Implementados\nEnsurance Pharmacy System
+
+skinparam backgroundColor #FEFEFE
+skinparam packageStyle rectangle
+
+' ====================================================================
+' PATRONES ARQUITECTÓNICOS
+' ====================================================================
+
+package "Patrones Arquitectónicos" as arch_patterns {
+    
+    package "Layered Architecture" as layered {
+        rectangle "Presentation Layer\n(Vue Frontend)" as presentation
+        rectangle "Application Layer\n(HTTP Handlers)" as application
+        rectangle "Business Logic Layer\n(DAOs + Services)" as business
+        rectangle "Data Access Layer\n(Hibernate ORM)" as data_access
+        rectangle "Database Layer\n(SQLite)" as database
+        
+        presentation -down-> application : HTTP/REST
+        application -down-> business : Method calls
+        business -down-> data_access : ORM
+        data_access -down-> database : SQL
+        
+        note right of layered
+            **Beneficios:**
+            - Separación de responsabilidades
+            - Mantenibilidad
+            - Testabilidad independiente
+            - Escalabilidad por capas
+            
+            **Ubicación:**
+            - Todo el sistema
+        end note
+    }
+    
+    package "Microservices Architecture" as microservices {
+        component "Ensurance Service" as ens_service {
+            rectangle "BackV4 + Frontend"
+            database "ensurance/USUARIO.sqlite"
+        }
+        
+        component "Pharmacy Service" as pharm_service {
+            rectangle "BackV5 + Frontend"
+            database "pharmacy/USUARIO.sqlite"
+        }
+        
+        ens_service <-right-> pharm_service : REST APIs
+        
+        note bottom of microservices
+            **Características:**
+            - Servicios independientes
+            - Bases de datos separadas
+            - Despliegue independiente
+            - Escalabilidad horizontal
+            
+            **Comunicación:**
+            - REST over HTTP
+            - JSON data format
+        end note
+    }
+    
+    package "Repository Pattern" as repository {
+        interface "IRepository<T>" as repo_interface {
+            + findById(id): T
+            + findAll(): List<T>
+            + save(entity): void
+            + update(entity): void
+            + delete(id): void
+        }
+        
+        class "UserDAO" as user_dao
+        class "PolicyDAO" as policy_dao
+        class "MedicineDAO" as medicine_dao
+        
+        repo_interface <|.. user_dao
+        repo_interface <|.. policy_dao
+        repo_interface <|.. medicine_dao
+        
+        note right of repository
+            **Implementación:**
+            - 23 DAOs en BackV4
+            - 19 DAOs en BackV5
+            
+            **Beneficios:**
+            - Abstracción de datos
+            - Testabilidad (mocking)
+            - Separación de concerns
+        end note
+    }
+}
+
+newpage
+
+' ====================================================================
+' PATRONES CREACIONALES
+' ====================================================================
+
+package "Patrones Creacionales" as creational_patterns {
+    
+    package "Singleton Pattern" as singleton {
+        class "HibernateUtil" as hibernate_singleton {
+            - {static} sessionFactory: SessionFactory
+            --
+            - {static} buildSessionFactory(): SessionFactory
+            + {static} getSessionFactory(): SessionFactory
+        }
+        
+        class "DaoRegistry" as registry_singleton {
+            - {static} instance: DaoRegistry
+            - userDAO: UserDAO
+            - policyDAO: PolicyDAO
+            --
+            - DaoRegistry()
+            + {static} getInstance(): DaoRegistry
+            + getUserDAO(): UserDAO
+            + getPolicyDAO(): PolicyDAO
+        }
+        
+        note right of singleton
+            **Propósito:**
+            - Una única instancia global
+            - Control de acceso concurrente
+            - Inicialización lazy/eager
+            
+            **Ubicación:**
+            - HibernateUtil (BackV4 & BackV5)
+            - DaoRegistry (BackV4)
+            
+            **Thread-Safety:**
+            - SessionFactory es thread-safe
+            - DaoRegistry con lazy init
+        end note
+    }
+    
+    package "Factory Pattern" as factory {
+        class "SessionFactory" as session_factory {
+            + openSession(): Session
+            + getCurrentSession(): Session
+        }
+        
+        class "Session" as session {
+            + beginTransaction(): Transaction
+            + save(entity): void
+            + get(Class, id): Object
+        }
+        
+        session_factory --> session : creates
+        
+        note right of factory
+            **Propósito:**
+            - Creación de objetos complejos
+            - Abstracción de construcción
+            
+            **Implementación:**
+            - Hibernate SessionFactory
+            - Crea Sessions bajo demanda
+            - Gestión de conexiones
+        end note
+    }
+    
+    package "Registry Pattern" as registry {
+        class "DaoRegistry" as dao_registry {
+            - userDAO: UserDAO
+            - policyDAO: PolicyDAO
+            - hospitalDAO: HospitalDAO
+            - appointmentDAO: AppointmentDAO
+            --
+            + getUserDAO(): UserDAO
+            + getPolicyDAO(): PolicyDAO
+            + getHospitalDAO(): HospitalDAO
+        }
+        
+        class "ServerRoutes" as server_routes {
+            + register(HttpServer, DaoRegistry)
+        }
+        
+        server_routes ..> dao_registry : uses
+        
+        note right of registry
+            **Propósito:**
+            - Registro centralizado
+            - Dependency Injection manual
+            - Acceso global a DAOs
+            
+            **Beneficios:**
+            - Single source of truth
+            - Fácil testing (mock registry)
+            - No duplicación de instancias
+        end note
+    }
+}
+
+newpage
+
+' ====================================================================
+' PATRONES ESTRUCTURALES
+' ====================================================================
+
+package "Patrones Estructurales" as structural_patterns {
+    
+    package "Adapter Pattern" as adapter {
+        class "HttpExchange" as http_exchange {
+            + getRequestMethod(): String
+            + getRequestBody(): InputStream
+            + sendResponseHeaders(int, long)
+        }
+        
+        class "LoginHandler" as login_handler {
+            + handle(HttpExchange): void
+        }
+        
+        class "UserDAO" as user_dao_adapter {
+            + findByEmail(String): User
+        }
+        
+        class "User" as user_entity_adapter {
+            + email: String
+            + password: String
+        }
+        
+        http_exchange -right-> login_handler : adapts to
+        login_handler --> user_dao_adapter : uses
+        user_dao_adapter --> user_entity_adapter : returns
+        
+        note bottom of adapter
+            **Implementación:**
+            - Handlers adaptan HTTP a Java
+            - DTOs adaptan Entities a JSON
+            - JSON parsing/serialization
+            
+            **Ubicación:**
+            - Todos los Handlers (28 en BackV4, 21 en BackV5)
+            - DTOs en BackV5 (3)
+        end note
+    }
+    
+    package "Proxy Pattern" as proxy {
+        interface "ServiceHandler" as service_interface {
+            + handle(HttpExchange): void
+        }
+        
+        class "HospitalServiceProxyHandler" as proxy_handler {
+            - targetHandler: ServiceHandler
+            --
+            + handle(HttpExchange): void
+        }
+        
+        class "RealServiceHandler" as real_handler {
+            + handle(HttpExchange): void
+        }
+        
+        service_interface <|.. proxy_handler
+        service_interface <|.. real_handler
+        proxy_handler o-right-> real_handler : delegates to
+        
+        note bottom of proxy
+            **Propósito:**
+            - Control de acceso
+            - Logging/Auditing
+            - Lazy initialization
+            - Caching
+            
+            **Ubicación:**
+            - HospitalServiceProxyHandler
+            - HospitalRedirectHandler
+        end note
+    }
+    
+    package "Facade Pattern" as facade {
+        class "ServerRoutes" as server_routes_facade {
+            + {static} register(HttpServer, DaoRegistry)
+        }
+        
+        class "ServerConfig" as server_config_facade {
+            + {static} host(): String
+            + {static} port(): int
+        }
+        
+        class "Complex Subsystem" as subsystem {
+            HttpServer
+            DaoRegistry
+            28 Handlers
+            Environment Variables
+        }
+        
+        server_routes_facade -down-> subsystem : simplifies
+        server_config_facade -down-> subsystem : simplifies
+        
+        note right of facade
+            **Propósito:**
+            - Interfaz simplificada
+            - Ocultar complejidad
+            - Punto de entrada único
+            
+            **Beneficios:**
+            - Código cliente más simple
+            - Desacoplamiento
+            - Mantenibilidad
+        end note
+    }
+}
+
+newpage
+
+' ====================================================================
+' PATRONES DE COMPORTAMIENTO
+' ====================================================================
+
+package "Patrones de Comportamiento" as behavioral_patterns {
+    
+    package "Strategy Pattern" as strategy {
+        interface "HttpHandler" as handler_interface {
+            + handle(HttpExchange): void
+        }
+        
+        class "LoginHandler" as login_strategy {
+            + handle(HttpExchange): void
+        }
+        
+        class "UserHandler" as user_strategy {
+            + handle(HttpExchange): void
+        }
+        
+        class "PolicyHandler" as policy_strategy {
+            + handle(HttpExchange): void
+        }
+        
+        handler_interface <|.. login_strategy
+        handler_interface <|.. user_strategy
+        handler_interface <|.. policy_strategy
+        
+        class "HttpServer" as server_strategy {
+            + createContext(path, handler)
+        }
+        
+        server_strategy --> handler_interface : uses
+        
+        note right of strategy
+            **Implementación:**
+            - Diferentes handlers para endpoints
+            - Estrategias de configuración (dev/qa/main)
+            - Múltiples ambientes
+            
+            **Beneficios:**
+            - Algoritmos intercambiables
+            - Open/Closed principle
+            - Extensibilidad
+        end note
+    }
+    
+    package "Observer Pattern" as observer {
+        class "Reactive State (Pinia)" as pinia_store {
+            - state: Object
+            --
+            + watch(property, callback)
+            + subscribe(listener)
+        }
+        
+        class "Vue Component" as vue_component {
+            + computed properties
+            + watch handlers
+        }
+        
+        pinia_store -down-> vue_component : notifies
+        
+        note right of observer
+            **Implementación:**
+            - Vue 3 Reactivity System
+            - Pinia Store (state management)
+            - Computed properties
+            - Watchers
+            
+            **Características:**
+            - Automatic dependency tracking
+            - Efficient re-rendering
+            - Bidirectional data flow
+        end note
+    }
+    
+    package "Template Method Pattern" as template_method {
+        abstract class "BaseDAO<T>" as base_dao {
+            # session: Session
+            --
+            + save(entity: T): void
+            + update(entity: T): void
+            + delete(id: Long): void
+            + findById(id: Long): T
+            # {abstract} getEntityClass(): Class<T>
+        }
+        
+        class "UserDAO" as user_dao_template {
+            # getEntityClass(): Class<User>
+            + findByEmail(email: String): User
+        }
+        
+        class "PolicyDAO" as policy_dao_template {
+            # getEntityClass(): Class<Policy>
+            + findByUserId(userId: Long): List<Policy>
+        }
+        
+        base_dao <|-- user_dao_template
+        base_dao <|-- policy_dao_template
+        
+        note right of template_method
+            **Propósito:**
+            - Esqueleto de algoritmo
+            - Pasos comunes reutilizables
+            - Extensión mediante herencia
+            
+            **Métodos Template:**
+            - CRUD operations (save, update, delete)
+            - Transaction management
+            - Error handling
+        end note
+    }
+    
+    package "Scheduler Pattern" as scheduler {
+        class "ServiceExpirationScheduler" as scheduler_class {
+            - timer: Timer
+            - userDAO: UserDAO
+            --
+            + startDaily(): void
+            - checkExpiredServices(): void
+        }
+        
+        class "TimerTask" as timer_task {
+            + run(): void
+        }
+        
+        scheduler_class o-down-> timer_task : schedules
+        
+        note right of scheduler
+            **Implementación:**
+            ```java
+            timer.scheduleAtFixedRate(
+                new TimerTask() {
+                    public void run() {
+                        userDAO.checkAllUsersServiceExpiration();
+                    }
+                }, 
+                0, 
+                24 * 60 * 60 * 1000 // 24 hours
+            );
+            ```
+            
+            **Propósito:**
+            - Tareas programadas
+            - Ejecución periódica
+            - Background jobs
+            
+            **Uso:**
+            - Verificación diaria de servicios expirados
+            - Actualización automática de estados
+        end note
+    }
+}
+
+newpage
+
+' ====================================================================
+' PATRONES DE INTEGRACIÓN
+' ====================================================================
+
+package "Patrones de Integración" as integration_patterns {
+    
+    package "REST API Pattern" as rest_api {
+        rectangle "Client\n(Frontend)" as client_rest
+        rectangle "Server\n(Backend)" as server_rest
+        
+        client_rest -right-> server_rest : GET /api/users
+        server_rest -left-> client_rest : 200 OK\n[{users}]
+        
+        client_rest -right-> server_rest : POST /api/users\n{user data}
+        server_rest -left-> client_rest : 201 Created\n{user}
+        
+        note bottom of rest_api
+            **Convenciones REST:**
+            - GET: Lectura (200 OK)
+            - POST: Creación (201 Created)
+            - PUT: Actualización (200 OK)
+            - DELETE: Eliminación (204 No Content)
+            
+            **Características:**
+            - Stateless
+            - JSON format
+            - HTTP methods semánticos
+            - Status codes estándar
+            
+            **Endpoints:**
+            - BackV4: /api/* (50+ endpoints)
+            - BackV5: /api2/* (40+ endpoints)
+        end note
+    }
+    
+    package "API Gateway Pattern" as api_gateway {
+        rectangle "Ensurance\nFrontend" as ens_client
+        rectangle "Pharmacy\nFrontend" as pharm_client
+        
+        rectangle "API Gateway\nEnsurance\n/api" as gateway_ens {
+            rectangle "Routes:\n/api/users\n/api/policies\n/api/hospitals\n/api/appointments"
+        }
+        
+        rectangle "API Gateway\nPharmacy\n/api2" as gateway_pharm {
+            rectangle "Routes:\n/api2/medicines\n/api2/orders\n/api2/bills\n/api2/prescriptions"
+        }
+        
+        ens_client -down-> gateway_ens
+        pharm_client -down-> gateway_pharm
+        
+        ens_client ..> gateway_pharm : cross-service\ncalls
+        pharm_client ..> gateway_ens : cross-service\ncalls
+        
+        note bottom of api_gateway
+            **Propósito:**
+            - Punto de entrada único por servicio
+            - Routing centralizado
+            - Versionado de API
+            
+            **Separación:**
+            - /api: Ensurance endpoints (BackV4)
+            - /api2: Pharmacy endpoints (BackV5)
+            
+            **Cross-Service Integration:**
+            - Pharmacy verifica pólizas en Ensurance
+            - Ensurance consulta medicamentos en Pharmacy
+        end note
+    }
+    
+    package "CORS Pattern" as cors {
+        rectangle "Browser\nOrigin: localhost:5175" as browser_cors
+        rectangle "Backend\nPort: 8081" as backend_cors
+        
+        browser_cors -right-> backend_cors : Preflight\nOPTIONS /api/users
+        backend_cors -left-> browser_cors : Access-Control-Allow-Origin: *\nAccess-Control-Allow-Methods: GET,POST
+        
+        browser_cors -right-> backend_cors : Actual Request\nGET /api/users
+        backend_cors -left-> browser_cors : 200 OK + Data
+        
+        note bottom of cors
+            **Configuración:**
+            - Allow all origins (development)
+            - Specific origins (production)
+            - Allowed methods: GET, POST, PUT, DELETE
+            - Allowed headers: Content-Type, Authorization
+            
+            **Implementación:**
+            - Handlers agregan CORS headers
+            - Respuesta a OPTIONS requests
+        end note
+    }
+}
+
+newpage
+
+' ====================================================================
+' RESUMEN DE PATRONES
+' ====================================================================
+
+package "Resumen de Patrones Implementados" as summary {
+    
+    rectangle "15+ Patrones de Diseño" as pattern_count {
+        
+        rectangle "Arquitectónicos (3)" as arch_count {
+            - Layered Architecture
+            - Microservices
+            - Repository
+        }
+        
+        rectangle "Creacionales (3)" as creational_count {
+            - Singleton
+            - Factory
+            - Registry
+        }
+        
+        rectangle "Estructurales (3)" as structural_count {
+            - Adapter
+            - Proxy
+            - Facade
+        }
+        
+        rectangle "Comportamiento (4)" as behavioral_count {
+            - Strategy
+            - Observer
+            - Template Method
+            - Scheduler
+        }
+        
+        rectangle "Integración (2)" as integration_count {
+            - REST API
+            - API Gateway
+        }
+    }
+    
+    note bottom of summary
+        **Beneficios del Uso de Patrones:**
+        
+        ✓ **Mantenibilidad**: Código organizado y bien estructurado
+        ✓ **Escalabilidad**: Fácil agregar nuevas funcionalidades
+        ✓ **Testabilidad**: Componentes desacoplados y mockables
+        ✓ **Reusabilidad**: Código DRY (Don't Repeat Yourself)
+        ✓ **Claridad**: Vocabulario común para el equipo
+        ✓ **Best Practices**: Soluciones probadas y documentadas
+        
+        **Ubicación en el Código:**
+        - BackV4: 28 Handlers, 23 DAOs, 25 Entities
+        - BackV5: 21 Handlers, 19 DAOs, 20 Entities
+        - Frontend Ensurance: Vue 3 + TypeScript (Composition API)
+        - Frontend Pharmacy: Vue 3 + JavaScript (Options API)
+        
+        **Documentación:**
+        - Cada patrón documentado en código
+        - Comentarios JavaDoc/JSDoc
+        - README.md con arquitectura
+    end note
+}
+
+@enduml

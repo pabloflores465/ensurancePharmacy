@@ -1,0 +1,234 @@
+@startuml Jenkins Pipeline
+
+title Jenkins Multi-Branch Pipeline\nEnsurance Pharmacy System
+
+skinparam backgroundColor #FEFEFE
+skinparam activity {
+  BackgroundColor<<setup>> #E3F2FD
+  BackgroundColor<<test>> #FFF9C4
+  BackgroundColor<<sonar>> #C8E6C9
+  BackgroundColor<<gate>> #FFCCBC
+  BackgroundColor<<build>> #F3E5F5
+  BackgroundColor<<deploy>> #FFE0B2
+  BorderColor Black
+}
+
+start
+
+:Pipeline Trigger\nMulti-Branch;
+
+note right
+  **Configuration:**
+  - Agent: any
+  - Options: timestamps()
+  - Environment:
+    * SONARQUBE_SERVER='SonarQube'
+    * EMAIL_TO='jflores@unis.edu.gt'
+    * DOCKER_HOST='tcp://docker:2376'
+end note
+
+:Stage: Checkout] <<setup>>
+:deleteDir();
+:checkout scm;
+:git rev-parse HEAD;
+
+note right
+  **Stage 1: Checkout**
+  - Clean workspace
+  - Checkout from SCM
+  - Get commit hash
+end note
+
+:Stage: Unit Tests & Coverage] <<test>>
+partition "Testing" {
+  :backv4: mvn clean test jacoco:report;
+  :backv5: mvn clean test jacoco:report;
+}
+
+:Post Action: Always;
+:junit testResults\n**/target/surefire-reports/*.xml;
+:archiveArtifacts\n**/target/site/jacoco/jacoco.xml;
+
+note right
+  **Stage 2: Tests**
+  - Both backends tested
+  - JUnit reports published
+  - JaCoCo artifacts archived
+  - Time: ~8-12 min
+end note
+
+partition "SonarQube Analysis" <<sonar>> {
+  
+  :Stage: Ensurance Backend Analysis;
+  if (BRANCH_NAME?) then (main/master)
+    :projectKey = ENSURANCE_BACK_MAIN;
+  elseif (qa)
+    :projectKey = ENSURANCE_BACK_QA;
+  else (dev/other)
+    :projectKey = ENSURANCE_BACK_DEV;
+  endif
+  :withSonarQubeEnv('SonarQube')\nsonar-scanner;
+  :Sources: backv4/src/main\nTests: backv4/src/test\nCoverage: jacoco.xml;
+  
+  :Stage: Ensurance Frontend Analysis;
+  if (BRANCH_NAME?) then (main/master)
+    :projectKey = ENSURANCE_FRONT_MAIN;
+  elseif (qa)
+    :projectKey = ENSURANCE_FRONT_QA;
+  else (dev/other)
+    :projectKey = ENSURANCE_FRONT_DEV;
+  endif
+  :npm ci && npm run test:coverage\n(ensurance);
+  :withSonarQubeEnv('SonarQube')\nsonar-scanner;
+  :Coverage: lcov.info;
+  
+  :Stage: Pharmacy Backend Analysis;
+  if (BRANCH_NAME?) then (main/master)
+    :projectKey = PHARMACY_BACK_MAIN;
+  elseif (qa)
+    :projectKey = PHARMACY_BACK_QA;
+  else (dev/other)
+    :projectKey = PHARMACY_BACK_DEV;
+  endif
+  :withSonarQubeEnv('SonarQube')\nsonar-scanner;
+  :Sources: backv5/src/main\nCoverage: jacoco.xml;
+  
+  :Stage: Pharmacy Frontend Analysis;
+  if (BRANCH_NAME?) then (main/master)
+    :projectKey = PHARMACY_FRONT_MAIN;
+  elseif (qa)
+    :projectKey = PHARMACY_FRONT_QA;
+  else (dev/other)
+    :projectKey = PHARMACY_FRONT_DEV;
+  endif
+  :npm ci && npm run test:unit:coverage\n(pharmacy);
+  :withSonarQubeEnv('SonarQube')\nsonar-scanner;
+  :Coverage: lcov.info;
+}
+
+note right
+  **Stage 3-6: SonarQube**
+  - 4 analysis stages
+  - Dynamic project key selection
+  - Frontend: coverage generation
+  - Time: ~10-15 min
+end note
+
+:Stage: Quality Gate] <<gate>>
+:timeout(10 minutes);
+:waitForQualityGate\nabortPipeline: true;
+
+if (Quality Gate?) then (PASS)
+  note right
+    **Stage 7: Quality Gate**
+    - Native Jenkins integration
+    - Timeout: 10 minutes
+    - Aborts on failure
+  end note
+else (FAIL)
+  :Abort Pipeline;
+  stop
+endif
+
+if (Branch == main/master/qa/dev?) then (yes)
+  
+  :Stage: Build Docker Images] <<build>>
+  :docker build\n-t ensurance-pharmacy:${BRANCH_NAME}-${BUILD_NUMBER};
+  :docker tag\nensurance-pharmacy:${BRANCH_NAME}-latest;
+  
+  note right
+    **Stage 8: Docker Build**
+    - Conditional: main, master, qa, dev
+    - Tagged with branch + build number
+    - Latest tag per branch
+    - Uses Docker-in-Docker
+  end note
+  
+  :Stage: Deploy] <<deploy>>
+  if (BRANCH_NAME?) then (dev)
+    :./deploy.sh deploy dev;
+    :Ports: 3000-3003;
+  elseif (qa)
+    :./deploy.sh deploy qa;
+    :Ports: 4000-4003;
+  elseif (main/master)
+    :./deploy.sh deploy main;
+    :Ports: 5175, 8089, 8081, 8082;
+  endif
+  
+  note right
+    **Stage 9: Deployment**
+    - Environment-specific script
+    - Automated port configuration
+    - Container orchestration
+  end note
+  
+else (other branch)
+  :Skip build & deploy;
+endif
+
+partition "Post Pipeline Actions" {
+  :Post: Always;
+  :Publish JUnit results;
+  
+  if (Pipeline result?) then (SUCCESS)
+    :emailext:
+    Subject: ✅ SUCCESS - ${BRANCH_NAME}
+    Body: Build ${BUILD_NUMBER}
+    To: ${EMAIL_TO};
+    :Exit: SUCCESS;
+    stop
+  else (FAILURE)
+    :emailext:
+    Subject: ❌ FAILED - ${BRANCH_NAME}
+    Body: Check ${BUILD_URL}console
+    To: ${EMAIL_TO};
+    :Exit: FAILURE;
+    stop
+  endif
+}
+
+note bottom
+  **Pipeline Summary:**
+  
+  **Total Stages:** 9
+  1. Checkout
+  2. Unit Tests & Coverage
+  3. SonarQube Ensurance Backend
+  4. SonarQube Ensurance Frontend
+  5. SonarQube Pharmacy Backend
+  6. SonarQube Pharmacy Frontend
+  7. Quality Gate
+  8. Build Docker Images (conditional)
+  9. Deploy (conditional)
+  
+  **Execution Time:** ~25-35 min
+  
+  **Post Actions:**
+  - Always: Publish JUnit results
+  - Success: Email notification
+  - Failure: Email notification
+  
+  **Tools Required:**
+  - Scanner: SonarQube Scanner CLI
+  - SonarQube: Server configuration
+  - Maven: 3.9+
+  - Node.js: 18+
+  - Docker: For build stage
+  
+  **Environment Detection:**
+  - Uses BRANCH_NAME variable
+  - Dynamic project key selection
+  - Conditional deployment
+  
+  **Features:**
+  ✓ Multi-branch automation
+  ✓ Quality Gate blocking
+  ✓ Artifact archiving
+  ✓ Docker-in-Docker
+  ✓ Email notifications
+  ✓ JUnit integration
+  ✓ Rich UI with Blue Ocean
+end note
+
+@enduml

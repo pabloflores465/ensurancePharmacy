@@ -1,0 +1,358 @@
+@startuml Diagramas de Secuencia
+
+title Diagramas de Secuencia - Flujos Principales del Sistema
+
+!define ACTOR participant
+!define COMPONENT participant
+!define DATABASE participant
+
+skinparam backgroundColor #FEFEFE
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+
+' ====================================================================
+' Diagrama 1: Flujo de Autenticación
+' ====================================================================
+
+group Flujo de Autenticación (Login)
+    ACTOR "Usuario" as user1
+    COMPONENT "Frontend\n(Vue)" as frontend1
+    COMPONENT "Backend\n(Java)" as backend1
+    COMPONENT "LoginHandler" as handler1
+    COMPONENT "UserDAO" as dao1
+    DATABASE "SQLite\nUSERS" as db1
+    
+    user1 -> frontend1: Ingresa credenciales\n(email, password)
+    activate frontend1
+    
+    frontend1 -> frontend1: Validación de formulario
+    frontend1 -> backend1: POST /api/login\n{email, password}
+    activate backend1
+    
+    backend1 -> handler1: handle(HttpExchange)
+    activate handler1
+    
+    handler1 -> handler1: Parse JSON body
+    handler1 -> dao1: findByEmail(email)
+    activate dao1
+    
+    dao1 -> db1: SELECT * FROM USERS\nWHERE EMAIL = ?
+    activate db1
+    db1 --> dao1: User record
+    deactivate db1
+    
+    dao1 --> handler1: User object
+    deactivate dao1
+    
+    handler1 -> handler1: Validate password
+    
+    alt Password válido
+        handler1 -> handler1: Check user.enabled
+        
+        alt Usuario habilitado
+            handler1 --> backend1: 200 OK\n{user: {...}, token: "..."}
+            backend1 --> frontend1: Success response
+            frontend1 -> frontend1: Store user in localStorage
+            frontend1 -> frontend1: Store token
+            frontend1 --> user1: Redirect to /home
+        else Usuario deshabilitado
+            handler1 --> backend1: 403 Forbidden\n{error: "Account disabled"}
+            backend1 --> frontend1: Error response
+            frontend1 --> user1: Show error message
+        end
+    else Password inválido
+        handler1 --> backend1: 401 Unauthorized\n{error: "Invalid credentials"}
+        backend1 --> frontend1: Error response
+        frontend1 --> user1: Show error message
+    end
+    
+    deactivate handler1
+    deactivate backend1
+    deactivate frontend1
+end
+
+newpage
+
+' ====================================================================
+' Diagrama 2: Flujo de Compra en Farmacia
+' ====================================================================
+
+group Flujo de Compra en Farmacia
+    ACTOR "Cliente" as user2
+    COMPONENT "Pharmacy\nFrontend" as frontend2
+    COMPONENT "Pharmacy\nBackend" as backend2
+    COMPONENT "MedicineHandler" as medicine_handler
+    COMPONENT "OrdersHandler" as orders_handler
+    COMPONENT "BillHandler" as bill_handler
+    COMPONENT "Ensurance\nBackend" as insurance_backend
+    DATABASE "SQLite\nPharmacy" as db2
+    
+    user2 -> frontend2: Navega catálogo
+    activate frontend2
+    
+    frontend2 -> backend2: GET /api2/medicines
+    activate backend2
+    backend2 -> medicine_handler: getMedicines()
+    activate medicine_handler
+    medicine_handler -> db2: SELECT * FROM MEDICINE
+    activate db2
+    db2 --> medicine_handler: Medicine list
+    deactivate db2
+    medicine_handler --> backend2: JSON response
+    deactivate medicine_handler
+    backend2 --> frontend2: Medicines data
+    deactivate backend2
+    
+    frontend2 --> user2: Muestra productos
+    
+    user2 -> frontend2: Agrega productos al carrito
+    frontend2 -> frontend2: Store in Pinia (cart store)
+    
+    user2 -> frontend2: Procede al checkout
+    frontend2 -> frontend2: Validate cart items
+    
+    frontend2 -> backend2: POST /api2/orders\n{userId, items[], total}
+    activate backend2
+    
+    backend2 -> orders_handler: createOrder()
+    activate orders_handler
+    
+    orders_handler -> db2: BEGIN TRANSACTION
+    activate db2
+    
+    orders_handler -> db2: INSERT INTO ORDERS\n(ID_USER, TOTAL, STATUS)
+    db2 --> orders_handler: orderId
+    
+    loop For each item in cart
+        orders_handler -> db2: INSERT INTO ORDER_MEDICINE\n(ID_ORDER, ID_MEDICINE, QUANTITY)
+        orders_handler -> db2: UPDATE MEDICINE\nSET STOCK = STOCK - quantity
+    end
+    
+    orders_handler -> db2: COMMIT TRANSACTION
+    deactivate db2
+    
+    orders_handler --> backend2: Order created
+    deactivate orders_handler
+    backend2 --> frontend2: {orderId, status: "PENDING"}
+    deactivate backend2
+    
+    frontend2 --> user2: Muestra confirmación\nde orden
+    
+    user2 -> frontend2: Confirma método de pago
+    
+    alt Usuario tiene seguro
+        frontend2 -> insurance_backend: GET /api/policy/{userId}
+        activate insurance_backend
+        insurance_backend --> frontend2: {percentage: 70}
+        deactivate insurance_backend
+        
+        frontend2 -> frontend2: Calculate coverage\n(total * 0.70)
+    end
+    
+    frontend2 -> backend2: POST /api2/bills\n{orderId, userId, insuranceCoverage}
+    activate backend2
+    
+    backend2 -> bill_handler: createBill()
+    activate bill_handler
+    
+    bill_handler -> db2: INSERT INTO BILL\n(ID_ORDER, TOTAL, INSURANCE_COVERAGE)
+    activate db2
+    db2 --> bill_handler: billId
+    deactivate db2
+    
+    bill_handler -> db2: UPDATE ORDERS\nSET STATUS = 'COMPLETED'
+    
+    bill_handler --> backend2: Bill created
+    deactivate bill_handler
+    backend2 --> frontend2: {billId, total, insuranceCoverage}
+    deactivate backend2
+    
+    frontend2 --> user2: Factura generada\nTotal a pagar: $X
+    
+    deactivate frontend2
+end
+
+newpage
+
+' ====================================================================
+' Diagrama 3: Flujo de Aprobación de Receta
+' ====================================================================
+
+group Flujo de Aprobación de Receta Médica
+    ACTOR "Usuario" as user3
+    ACTOR "Empleado/Admin" as admin3
+    COMPONENT "Ensurance\nFrontend" as ens_frontend
+    COMPONENT "Ensurance\nBackend" as ens_backend
+    COMPONENT "PrescriptionHandler" as presc_handler
+    COMPONENT "PrescriptionApprovalHandler" as approval_handler
+    DATABASE "SQLite\nEnsurance" as db3
+    
+    user3 -> ens_frontend: Sube receta médica
+    activate ens_frontend
+    
+    ens_frontend -> ens_backend: POST /api/prescriptions\n{userId, medicineId, doctorName, dosage}
+    activate ens_backend
+    
+    ens_backend -> presc_handler: createPrescription()
+    activate presc_handler
+    
+    presc_handler -> db3: INSERT INTO PRESCRIPTION\n(ID_USER, ID_MEDICINE, APPROVED=0)
+    activate db3
+    db3 --> presc_handler: prescriptionId
+    deactivate db3
+    
+    presc_handler --> ens_backend: Prescription created
+    deactivate presc_handler
+    ens_backend --> ens_frontend: {prescriptionId, status: "PENDING"}
+    deactivate ens_backend
+    
+    ens_frontend --> user3: Receta enviada\nEn espera de aprobación
+    deactivate ens_frontend
+    
+    ...Usuario espera...
+    
+    admin3 -> ens_frontend: Accede a /admin/prescription-approvals
+    activate ens_frontend
+    
+    ens_frontend -> ens_backend: GET /api/prescription_approvals?status=PENDING
+    activate ens_backend
+    
+    ens_backend -> approval_handler: getPendingApprovals()
+    activate approval_handler
+    
+    approval_handler -> db3: SELECT * FROM PRESCRIPTION\nWHERE APPROVED = 0
+    activate db3
+    db3 --> approval_handler: Pending prescriptions
+    deactivate db3
+    
+    approval_handler --> ens_backend: Prescriptions list
+    deactivate approval_handler
+    ens_backend --> ens_frontend: Pending approvals data
+    deactivate ens_backend
+    
+    ens_frontend --> admin3: Lista de recetas pendientes
+    
+    admin3 -> ens_frontend: Revisa receta y aprueba/rechaza
+    
+    alt Aprobar receta
+        ens_frontend -> ens_backend: POST /api/prescription_approvals\n{prescriptionId, status: "APPROVED"}
+        activate ens_backend
+        
+        ens_backend -> approval_handler: approvePrescription()
+        activate approval_handler
+        
+        approval_handler -> db3: BEGIN TRANSACTION
+        activate db3
+        
+        approval_handler -> db3: UPDATE PRESCRIPTION\nSET APPROVED = 1
+        
+        approval_handler -> db3: INSERT INTO PRESCRIPTION_APPROVAL\n(ID_PRESCRIPTION, STATUS, APPROVER)
+        
+        approval_handler -> db3: COMMIT TRANSACTION
+        deactivate db3
+        
+        approval_handler --> ens_backend: Approved
+        deactivate approval_handler
+        ens_backend --> ens_frontend: Success
+        deactivate ens_backend
+        
+        ens_frontend --> admin3: Receta aprobada
+        
+        ens_frontend -> ens_frontend: Send notification to user\n(email/in-app)
+        
+    else Rechazar receta
+        ens_frontend -> ens_backend: POST /api/prescription_approvals\n{prescriptionId, status: "REJECTED", notes}
+        activate ens_backend
+        
+        ens_backend -> approval_handler: rejectPrescription()
+        activate approval_handler
+        
+        approval_handler -> db3: INSERT INTO PRESCRIPTION_APPROVAL\n(ID_PRESCRIPTION, STATUS, NOTES)
+        activate db3
+        deactivate db3
+        
+        approval_handler --> ens_backend: Rejected
+        deactivate approval_handler
+        ens_backend --> ens_frontend: Success
+        deactivate ens_backend
+        
+        ens_frontend --> admin3: Receta rechazada
+    end
+    
+    deactivate ens_frontend
+end
+
+newpage
+
+' ====================================================================
+' Diagrama 4: Flujo de Creación de Cita Médica
+' ====================================================================
+
+group Flujo de Creación de Cita Médica
+    ACTOR "Paciente" as patient
+    COMPONENT "Ensurance\nFrontend" as frontend4
+    COMPONENT "Ensurance\nBackend" as backend4
+    COMPONENT "HospitalHandler" as hospital_handler
+    COMPONENT "AppointmentHandler" as appointment_handler
+    DATABASE "SQLite\nEnsurance" as db4
+    
+    patient -> frontend4: Accede a /appointments
+    activate frontend4
+    
+    frontend4 -> backend4: GET /api/hospitals?enabled=1
+    activate backend4
+    
+    backend4 -> hospital_handler: getActiveHospitals()
+    activate hospital_handler
+    
+    hospital_handler -> db4: SELECT * FROM HOSPITALS\nWHERE ENABLED = 1
+    activate db4
+    db4 --> hospital_handler: Hospitals list
+    deactivate db4
+    
+    hospital_handler --> backend4: JSON response
+    deactivate hospital_handler
+    backend4 --> frontend4: Hospitals data
+    deactivate backend4
+    
+    frontend4 --> patient: Lista de hospitales disponibles
+    
+    patient -> frontend4: Selecciona hospital y fecha
+    
+    frontend4 -> frontend4: Validate future date
+    frontend4 -> frontend4: Check user has active policy
+    
+    alt Usuario tiene póliza activa
+        frontend4 -> backend4: POST /api/appointments\n{userId, hospitalId, date, time}
+        activate backend4
+        
+        backend4 -> appointment_handler: createAppointment()
+        activate appointment_handler
+        
+        appointment_handler -> appointment_handler: Validate user policy
+        
+        appointment_handler -> db4: SELECT * FROM USERS\nWHERE ID_USER = ? AND ID_POLICY IS NOT NULL
+        activate db4
+        db4 --> appointment_handler: User with policy
+        deactivate db4
+        
+        appointment_handler -> db4: INSERT INTO APPOINTMENTS\n(ID_USER, ID_HOSPITAL, DATE, STATUS='PENDING')
+        activate db4
+        db4 --> appointment_handler: appointmentId
+        deactivate db4
+        
+        appointment_handler --> backend4: Appointment created
+        deactivate appointment_handler
+        backend4 --> frontend4: {appointmentId, status: "PENDING"}
+        deactivate backend4
+        
+        frontend4 --> patient: Cita creada exitosamente\nFecha: {date} - Hospital: {name}
+        
+    else Usuario sin póliza
+        frontend4 --> patient: Error: Debe tener una póliza\nactiva para agendar citas
+    end
+    
+    deactivate frontend4
+end
+
+@enduml

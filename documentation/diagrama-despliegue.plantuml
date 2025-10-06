@@ -1,0 +1,284 @@
+@startuml Diagrama de Despliegue
+
+title Diagrama de Despliegue - Ensurance Pharmacy\nDocker Multi-Environment Architecture
+
+skinparam componentStyle rectangle
+skinparam backgroundColor #FEFEFE
+
+node "Host Machine" {
+    
+    node "Docker Engine" {
+        
+        package "DEV Environment\n(docker-compose.dev.yml)" as dev_container {
+            artifact "Supervisor" as supervisor_dev
+            
+            component "Ensurance Frontend\n:3000" as ens_front_dev {
+                artifact "Vite Dev Server\nNode.js 20"
+            }
+            
+            component "Pharmacy Frontend\n:3001" as pharm_front_dev {
+                artifact "Vue CLI Server\nNode.js 20"
+            }
+            
+            component "Ensurance Backend\n:3002" as ens_back_dev {
+                artifact "Java 21 JRE\nHttpServer"
+            }
+            
+            component "Pharmacy Backend\n:3003" as pharm_back_dev {
+                artifact "Java 21 JRE\nHttpServer"
+            }
+            
+            folder "databases/dev/" as db_dev {
+                database "ensurance/\nUSUARIO.sqlite" as db_ens_dev
+                database "pharmacy/\nUSUARIO.sqlite" as db_pharm_dev
+            }
+            
+            folder "logs/dev/" as logs_dev
+        }
+        
+        package "QA Environment\n(docker-compose.qa.yml)" as qa_container {
+            artifact "Supervisor " as supervisor_qa
+            
+            component "Ensurance Frontend\n:4000" as ens_front_qa {
+                artifact "Vite Build\nNginx/Serve"
+            }
+            
+            component "Pharmacy Frontend\n:4001" as pharm_front_qa {
+                artifact "Vue Build\nNginx/Serve"
+            }
+            
+            component "Ensurance Backend\n:4002" as ens_back_qa {
+                artifact "Java 21 JRE\nHttpServer "
+            }
+            
+            component "Pharmacy Backend\n:4003" as pharm_back_qa {
+                artifact "Java 21 JRE\nHttpServer "
+            }
+            
+            folder "databases/qa/" as db_qa {
+                database "ensurance/\nUSUARIO.sqlite" as db_ens_qa
+                database "pharmacy/\nUSUARIO.sqlite" as db_pharm_qa
+            }
+            
+            folder "logs/qa/" as logs_qa
+        }
+        
+        package "MAIN Environment\n(docker-compose.main.yml)" as main_container {
+            artifact "Supervisor  " as supervisor_main
+            
+            component "Ensurance Frontend\n:5175" as ens_front_main {
+                artifact "Vite Build\nNginx/Serve "
+            }
+            
+            component "Pharmacy Frontend\n:8089" as pharm_front_main {
+                artifact "Vue Build\nNginx/Serve "
+            }
+            
+            component "Ensurance Backend\n:8081" as ens_back_main {
+                artifact "Java 21 JRE\nHttpServer  "
+            }
+            
+            component "Pharmacy Backend\n:8082" as pharm_back_main {
+                artifact "Java 21 JRE\nHttpServer  "
+            }
+            
+            folder "databases/main/" as db_main {
+                database "ensurance/\nUSUARIO.sqlite" as db_ens_main
+                database "pharmacy/\nUSUARIO.sqlite" as db_pharm_main
+            }
+            
+            folder "logs/main/" as logs_main
+        }
+        
+        package "CI/CD Stack\n(docker-compose.cicd.yml)" as cicd_stack {
+            component "Jenkins\n:8080" as jenkins {
+                folder "jenkins_home" as jenkins_data
+            }
+            
+            component "SonarQube\n:9000" as sonarqube {
+                database "PostgreSQL\n:5432" as sonar_db
+                folder "sonarqube_data" as sonar_data
+            }
+            
+            component "Drone CI\n:8000/:8443" as drone {
+                database "SQLite\ndrone.db" as drone_db
+            }
+            
+            component "Docker-in-Docker\n:2376" as dind {
+                folder "docker_certs" as dind_certs
+            }
+        }
+        
+        package "Monitoring Stack\n(docker-compose.monitor.yml)" as monitor_stack {
+            component "Checkmk\n:5150" as checkmk {
+                folder "checkmk_sites" as checkmk_data
+            }
+            
+            component "Prometheus\n:9095" as prometheus {
+                folder "prometheus_data" as prom_data
+                file "prometheus.yml" as prom_config
+            }
+            
+            component "Grafana\n:3300" as grafana {
+                folder "grafana_data" as grafana_data
+            }
+        }
+        
+        package "Load Testing Stack\n(docker-compose.stress.yml)" as stress_stack {
+            component "k6\n:5665" as k6 {
+                folder "k6_results" as k6_results
+            }
+            
+            component "JMeter\n:9600" as jmeter {
+                folder "jmeter_results" as jmeter_results
+            }
+            
+            component "k6-operator\n:7860" as k6_operator
+        }
+    }
+    
+    cloud "GitHub" as github {
+        artifact "GitHub Actions\nCI/CD Workflows"
+    }
+    
+    actor "Developer" as dev
+    actor "QA Tester" as qa
+    actor "Admin" as admin
+    actor "End User" as user
+}
+
+' Supervisor connections
+supervisor_dev --> ens_front_dev
+supervisor_dev --> pharm_front_dev
+supervisor_dev --> ens_back_dev
+supervisor_dev --> pharm_back_dev
+
+supervisor_qa --> ens_front_qa
+supervisor_qa --> pharm_front_qa
+supervisor_qa --> ens_back_qa
+supervisor_qa --> pharm_back_qa
+
+supervisor_main --> ens_front_main
+supervisor_main --> pharm_front_main
+supervisor_main --> ens_back_main
+supervisor_main --> pharm_back_main
+
+' Database connections
+ens_back_dev --> db_ens_dev
+pharm_back_dev --> db_pharm_dev
+ens_back_qa --> db_ens_qa
+pharm_back_qa --> db_pharm_qa
+ens_back_main --> db_ens_main
+pharm_back_main --> db_pharm_main
+
+' CI/CD connections
+jenkins --> dind : Build Images
+sonarqube --> sonar_db
+drone --> drone_db
+github --> jenkins : Webhook
+github --> drone : Webhook
+
+' Monitoring connections
+prometheus --> ens_back_dev : Scrape Metrics
+prometheus --> pharm_back_dev : Scrape Metrics
+prometheus --> ens_back_qa : Scrape Metrics
+prometheus --> pharm_back_qa : Scrape Metrics
+prometheus --> ens_back_main : Scrape Metrics
+prometheus --> pharm_back_main : Scrape Metrics
+
+grafana --> prometheus : Query Metrics
+
+checkmk --> dev_container : Monitor
+checkmk --> qa_container : Monitor
+checkmk --> main_container : Monitor
+
+' Load testing connections
+k6 --> ens_front_dev : HTTP Load
+k6 --> pharm_front_dev : HTTP Load
+jmeter --> ens_back_qa : API Load
+jmeter --> pharm_back_qa : API Load
+
+' User connections
+dev --> ens_front_dev : http://localhost:3000
+dev --> pharm_front_dev : http://localhost:3001
+
+qa --> ens_front_qa : http://localhost:4000
+qa --> pharm_front_qa : http://localhost:4001
+
+admin --> jenkins : http://localhost:8080
+admin --> sonarqube : http://localhost:9000
+admin --> grafana : http://localhost:3300
+
+user --> ens_front_main : http://localhost:5175
+user --> pharm_front_main : http://localhost:8089
+
+note right of dev_container
+  **DEV Environment**
+  - Hot-reload enabled
+  - Debug mode ON
+  - Verbose logging
+  - Source code mounted
+  - Fast iteration
+  
+  **Deploy**: git branch dev/develop
+  **Command**: ./deploy.sh auto
+end note
+
+note right of qa_container
+  **QA Environment**
+  - Production-like build
+  - Integration testing
+  - Test data isolated
+  - DEBUG logging
+  
+  **Deploy**: git branch qa/test
+  **Command**: ./deploy.sh deploy qa
+end note
+
+note right of main_container
+  **MAIN/Production Environment**
+  - Optimized builds
+  - Production mode
+  - INFO logging
+  - Performance tuned
+  
+  **Deploy**: git branch main/master
+  **Command**: ./deploy.sh deploy main
+end note
+
+note bottom of cicd_stack
+  **CI/CD Tools**
+  - Jenkins: Multi-branch pipelines
+  - SonarQube: Code quality analysis
+  - Drone: Container-native CI
+  - Docker-in-Docker: Build isolation
+  
+  **Access**:
+  - Jenkins: :8080/jenkins
+  - SonarQube: :9000/sonar
+  - Drone: :8000 (HTTP), :8443 (HTTPS)
+end note
+
+note bottom of monitor_stack
+  **Monitoring & Observability**
+  - Checkmk: Infrastructure monitoring
+  - Prometheus: Metrics collection
+  - Grafana: Visualization dashboards
+  
+  **Retention**:
+  - Prometheus: 15 days
+  - Grafana: Persistent dashboards
+end note
+
+note bottom of stress_stack
+  **Load Testing**
+  - k6: Modern load testing (JavaScript)
+  - JMeter: Traditional load testing (JMX)
+  - k6-operator: Kubernetes-style testing
+  
+  **Usage**:
+  - Run against DEV for functional tests
+  - Run against QA for performance tests
+end note
+
+@enduml

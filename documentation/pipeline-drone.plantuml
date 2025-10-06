@@ -1,0 +1,176 @@
+@startuml Drone CI Pipeline
+
+title Drone CI Pipeline\nEnsurance Pharmacy System
+
+skinparam backgroundColor #FEFEFE
+skinparam activity {
+  BackgroundColor<<test>> #E3F2FD
+  BackgroundColor<<health>> #FFE0B2
+  BackgroundColor<<sonar_dev>> #C8E6C9
+  BackgroundColor<<sonar_qa>> #FFF9C4
+  BackgroundColor<<sonar_main>> #FFCCBC
+  BackgroundColor<<notify>> #F3E5F5
+  BorderColor Black
+}
+
+start
+
+:Trigger: Push to\n[main, master, dev, qa];
+
+note right
+  **Platform:**
+  - OS: linux
+  - Arch: ARM64
+  - Type: Docker
+  - Clone depth: 0 (full)
+end note
+
+:unit-tests\nmaven:3.9-eclipse-temurin-23] <<test>>
+:mvn test jacoco:report\n- backv4\n- backv5;
+:Volumes: maven-cache → /tmp/.m2;
+
+note right
+  **Step 1: Unit Tests**
+  - Image: maven:3.9-eclipse-temurin-23
+  - Maven cache persisted
+  - Both backends tested
+  - Time: ~6-10 min
+end note
+
+:wait-for-sonar\ncurlimages/curl:8.9.1] <<health>>
+repeat
+  :curl SonarQube API\n/api/system/status;
+  :Sleep 5 seconds;
+repeat while (Status != UP AND\nAttempts < 60) is (retry)
+-> Success;
+
+note right
+  **Step 2: Health Check**
+  - Waits for SonarQube availability
+  - Max 60 attempts (5 min)
+  - Exits 8 on timeout
+end note
+
+if (Branch == dev?) then (yes)
+
+  partition "DEV Environment Analysis" <<sonar_dev>> {
+    :sonarqube-ensurance-backend-dev\nsonarsource/sonar-scanner-cli];
+    :Project: ensurance-backend-dev\nVersion: ${DRONE_BUILD_NUMBER};
+    :Sources: backv4/src/main\nTests: backv4/src/test;
+    :Coverage: jacoco.xml;
+    :Quality Gate: wait=true, timeout=600s;
+    
+    :sonarqube-ensurance-frontend-dev\n[depends: backend-dev]];
+    :npm ci && test:coverage\n(ensurance);
+    :Project: ensurance-frontend-dev;
+    :Coverage: coverage-final.json;
+    :Quality Gate: wait=true, timeout=600s;
+    
+    :sonarqube-pharmacy-backend-dev\n[depends: frontend-dev]];
+    :Project: pharmacy-backend-dev;
+    :Sources: backv5/src/main;
+    :Coverage: jacoco.xml;
+    :Quality Gate: wait=true, timeout=600s;
+    
+    :sonarqube-pharmacy-frontend-dev\n[depends: backend-dev]];
+    :npm ci && test:unit:coverage\n(pharmacy);
+    :Project: pharmacy-frontend-dev;
+    :Coverage: lcov.info;
+    :Quality Gate: wait=true, timeout=600s;
+    
+    :notify-success-dev\ndrillster/drone-email] <<notify>>
+    :Subject: ✅ Pipeline SUCCESS - DEV;
+    :Send to configured recipients;
+  }
+  
+  stop
+  
+elseif (Branch == qa?) then (yes)
+
+  partition "QA Environment Analysis" <<sonar_qa>> {
+    :sonarqube-ensurance-backend-qa;
+    :Project: ensurance-backend-qa;
+    :Quality Gate: wait=true;
+    
+    :sonarqube-ensurance-frontend-qa\n[depends: backend-qa]];
+    :Project: ensurance-frontend-qa;
+    :Quality Gate: wait=true;
+    
+    :sonarqube-pharmacy-backend-qa\n[depends: frontend-qa]];
+    :Project: pharmacy-backend-qa;
+    :Quality Gate: wait=true;
+    
+    :sonarqube-pharmacy-frontend-qa\n[depends: backend-qa]];
+    :Project: pharmacy-frontend-qa;
+    :Quality Gate: wait=true;
+    
+    :notify-success-qa] <<notify>>
+    :Subject: ✅ Pipeline SUCCESS - QA;
+    :Send email;
+  }
+  
+  stop
+  
+elseif (Branch == main OR master?) then (yes)
+
+  partition "MAIN Environment Analysis" <<sonar_main>> {
+    :sonarqube-ensurance-backend-main;
+    :Project: ensurance-backend-main;
+    :Quality Gate: wait=true;
+    
+    :sonarqube-ensurance-frontend-main\n[depends: backend-main]];
+    :Project: ensurance-frontend-main;
+    :Quality Gate: wait=true;
+    
+    :sonarqube-pharmacy-backend-main\n[depends: frontend-main]];
+    :Project: pharmacy-backend-main;
+    :Quality Gate: wait=true;
+    
+    :sonarqube-pharmacy-frontend-main\n[depends: backend-main]];
+    :Project: pharmacy-frontend-main;
+    :Quality Gate: wait=true;
+    
+    :notify-success-main] <<notify>>
+    :Subject: ✅ Pipeline SUCCESS - MAIN;
+    :Send email;
+  }
+  
+  stop
+  
+else (other branch)
+  :Skip SonarQube analysis;
+  stop
+endif
+
+note bottom
+  **Pipeline Characteristics:**
+  
+  **Total Steps:** 15+ (1 test + 1 health + 12 sonar + email)
+  **Execution:** Sequential with dependencies
+  **Time:** ~20-30 min (depends on environment)
+  **Container-Native:** Each step runs in isolated container
+  
+  **Conditional Execution:**
+  - DEV: 4 SonarQube steps + email
+  - QA: 4 SonarQube steps + email
+  - MAIN: 4 SonarQube steps + email
+  
+  **Secrets (from Drone):**
+  - GLOBAL_TOKEN: SonarQube authentication
+  - email_username: SMTP username
+  - email_password: SMTP password
+  
+  **Volumes:**
+  - maven-cache: /tmp/drone-maven-cache (host)
+  
+  **Features:**
+  ✓ ARM64 native support
+  ✓ Docker-based isolation
+  ✓ Persistent Maven cache
+  ✓ Quality Gate blocking
+  ✓ Health checks before analysis
+  ✓ SONAR_USER_HOME isolation per step
+  ✓ Email notifications per environment
+end note
+
+@enduml

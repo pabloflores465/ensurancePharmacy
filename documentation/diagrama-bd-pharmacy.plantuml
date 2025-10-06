@@ -1,0 +1,264 @@
+@startuml Esquema de Base de Datos - Pharmacy (BackV5)
+
+title Esquema de Base de Datos - Pharmacy System (BackV5)\nSQLite Database
+
+' Configuración de estilos
+skinparam linetype ortho
+skinparam backgroundColor #FEFEFE
+
+entity "USERS" as users {
+  **PK** ID_USER : INTEGER
+  --
+  ADDRESS : VARCHAR(255)
+  BIRTHDATE : DATE
+  CREATED_AT : TIMESTAMP (default CURRENT_TIMESTAMP)
+  *CUI : BIGINT
+  *EMAIL : VARCHAR(255) UNIQUE
+  *ENABLED : INTEGER (default 1)
+  *NAME : VARCHAR(255)
+  *PASSWORD : VARCHAR(255)
+  PHONE : VARCHAR(255)
+  *ROLE : VARCHAR(50)
+}
+
+entity "MEDICINE" as medicine {
+  **PK** ID_MEDICINE : INTEGER
+  --
+  *BRAND : VARCHAR(255)
+  CONCENTRATION : VARCHAR(255)
+  DESCRIPTION : TEXT
+  FORMULA : TEXT
+  **FK** ID_CATEGORY : BIGINT
+  **FK** ID_SUBCATEGORY : BIGINT
+  IMAGE_URL : VARCHAR(500)
+  *NAME : VARCHAR(255)
+  PHARMACEUTICAL_FORM : VARCHAR(255)
+  *PRICE : FLOAT
+  REQUIRES_PRESCRIPTION : BOOLEAN (default 0)
+  SALT : VARCHAR(255)
+  *STOCK : INTEGER
+}
+
+entity "CATEGORY" as category {
+  **PK** ID_CATEGORY : INTEGER
+  --
+  DESCRIPTION : TEXT
+  IMAGE_URL : VARCHAR(500)
+  *NAME : VARCHAR(255) UNIQUE
+}
+
+entity "SUBCATEGORY" as subcategory {
+  **PK** ID_SUBCATEGORY : INTEGER
+  --
+  DESCRIPTION : TEXT
+  **FK** ID_CATEGORY : BIGINT
+  *NAME : VARCHAR(255)
+}
+
+entity "PRESCRIPTION" as prescription {
+  **PK** ID_PRESCRIPTION : INTEGER
+  --
+  APPROVED : BOOLEAN (default 0)
+  CREATED_AT : TIMESTAMP (default CURRENT_TIMESTAMP)
+  DOCTOR_NAME : VARCHAR(255)
+  HOSPITAL_NAME : VARCHAR(255)
+  **FK** ID_USER : BIGINT
+  NOTES : TEXT
+  PRESCRIPTION_DATE : DATE
+  STATUS : VARCHAR(50) (default 'PENDING')
+}
+
+entity "PRESCRIPTION_MEDICINE" as prescription_medicine {
+  **PK** ID : INTEGER
+  --
+  DOSAGE : VARCHAR(255)
+  DURATION : VARCHAR(100)
+  FREQUENCY : VARCHAR(100)
+  **FK** ID_MEDICINE : BIGINT
+  **FK** ID_PRESCRIPTION : BIGINT
+  INSTRUCTIONS : TEXT
+  QUANTITY : INTEGER
+}
+
+entity "ORDERS" as orders {
+  **PK** ID_ORDER : INTEGER
+  --
+  CREATED_AT : TIMESTAMP (default CURRENT_TIMESTAMP)
+  DELIVERY_ADDRESS : VARCHAR(500)
+  **FK** ID_USER : BIGINT
+  NOTES : TEXT
+  STATUS : VARCHAR(50) (default 'PENDING')
+  TOTAL : FLOAT
+  UPDATED_AT : TIMESTAMP
+}
+
+entity "ORDER_MEDICINE" as order_medicine {
+  **PK** ID : INTEGER
+  --
+  **FK** ID_MEDICINE : BIGINT
+  **FK** ID_ORDER : BIGINT
+  PRICE : FLOAT
+  QUANTITY : INTEGER
+  SUBTOTAL : FLOAT
+}
+
+entity "BILL" as bill {
+  **PK** ID_BILL : INTEGER
+  --
+  BILLING_ADDRESS : VARCHAR(500)
+  CREATED_AT : TIMESTAMP (default CURRENT_TIMESTAMP)
+  CUSTOMER_EMAIL : VARCHAR(255)
+  CUSTOMER_NAME : VARCHAR(255)
+  DISCOUNT : FLOAT (default 0)
+  **FK** ID_ORDER : BIGINT
+  **FK** ID_USER : BIGINT
+  INSURANCE_COVERAGE : FLOAT (default 0)
+  NIT : VARCHAR(50)
+  PAYMENT_METHOD : VARCHAR(50)
+  STATUS : VARCHAR(50) (default 'PENDING')
+  SUBTOTAL : FLOAT
+  TAX : FLOAT
+  TOTAL : FLOAT
+}
+
+entity "BILL_MEDICINE" as bill_medicine {
+  **PK** ID : INTEGER
+  --
+  **FK** ID_BILL : BIGINT
+  **FK** ID_MEDICINE : BIGINT
+  PRICE : FLOAT
+  QUANTITY : INTEGER
+  SUBTOTAL : FLOAT
+}
+
+entity "COMMENTS" as comments {
+  **PK** ID_COMMENT : INTEGER
+  --
+  COMMENT_TEXT : TEXT
+  CREATED_AT : TIMESTAMP (default CURRENT_TIMESTAMP)
+  **FK** ID_MEDICINE : BIGINT
+  **FK** ID_USER : BIGINT
+  RATING : INTEGER
+}
+
+entity "SERVICE_APPROVALS" as service_approvals {
+  **PK** ID_APPROVAL : INTEGER
+  --
+  APPROVAL_DATE : TIMESTAMP
+  APPROVER_NAME : VARCHAR(255)
+  CREATED_AT : TIMESTAMP (default CURRENT_TIMESTAMP)
+  **FK** ID_USER : BIGINT
+  NOTES : TEXT
+  SERVICE_TYPE : VARCHAR(100)
+  STATUS : VARCHAR(50) (default 'PENDING')
+}
+
+entity "SYSTEM_CONFIG" as system_config {
+  **PK** CONFIG_KEY : VARCHAR(100)
+  --
+  CONFIG_VALUE : TEXT
+  DESCRIPTION : TEXT
+  UPDATED_AT : TIMESTAMP (default CURRENT_TIMESTAMP)
+}
+
+entity "HOSPITALS" as hospitals {
+  **PK** ID_HOSPITAL : INTEGER
+  --
+  *ADDRESS : VARCHAR(255)
+  *EMAIL : VARCHAR(100)
+  *ENABLED : INTEGER (default 1)
+  *NAME : VARCHAR(100)
+  *PHONE : BIGINT
+  PORT : VARCHAR(10)
+}
+
+entity "POLICY" as policy {
+  **PK** ID_POLICY : INTEGER
+  --
+  COST : FLOAT
+  CREATION_DATE : DATE (default CURRENT_DATE)
+  ENABLED : INTEGER (default 1)
+  EXP_DATE : DATE
+  PERCENTAGE : FLOAT
+}
+
+' Relaciones Principales
+users ||--o{ prescription : "creates"
+users ||--o{ orders : "places"
+users ||--o{ bill : "receives"
+users ||--o{ comments : "writes"
+users ||--o{ service_approvals : "requests"
+
+category ||--o{ subcategory : "contains"
+category ||--o{ medicine : "categorizes"
+subcategory ||--o{ medicine : "sub-categorizes"
+
+medicine ||--o{ prescription_medicine : "prescribed in"
+medicine ||--o{ order_medicine : "ordered in"
+medicine ||--o{ bill_medicine : "billed in"
+medicine ||--o{ comments : "commented on"
+
+prescription ||--o{ prescription_medicine : "contains"
+
+orders ||--o{ order_medicine : "contains"
+orders ||--o| bill : "generates"
+
+bill ||--o{ bill_medicine : "details"
+
+note right of users
+  **Usuario del Sistema**
+  - Roles: admin, employee, client
+  - Gestión de habilitación
+  - Perfil completo con CUI
+end note
+
+note right of medicine
+  **Catálogo de Medicamentos**
+  - Categorización jerárquica (category > subcategory)
+  - Control de stock en tiempo real
+  - Precios dinámicos
+  - Requires_prescription flag
+  - Imágenes de productos
+end note
+
+note bottom of prescription
+  **Recetas Médicas**
+  - Múltiples medicamentos por receta
+  - Detalles de dosificación individual
+  - Workflow de aprobación
+  - Estados: PENDING, APPROVED, REJECTED
+end note
+
+note bottom of orders
+  **Flujo de Órdenes**
+  Orders → Bill → Payment
+  - Estados: PENDING, PROCESSING, COMPLETED, CANCELLED
+  - Tracking de actualización
+  - Dirección de entrega
+end note
+
+note bottom of bill
+  **Facturación Completa**
+  - Integración con seguros (insurance_coverage)
+  - Cálculo de impuestos y descuentos
+  - Múltiples métodos de pago
+  - NIT para factura fiscal
+  - Email automático al cliente
+end note
+
+note top of comments
+  **Sistema de Comentarios**
+  - Rating de 1-5 estrellas
+  - Feedback de productos
+  - Timestamp de creación
+  - Vinculado a usuario y medicamento
+end note
+
+note top of system_config
+  **Configuración Dinámica**
+  - Parámetros del sistema
+  - Sin reinicio requerido
+  - Auditoría de cambios
+end note
+
+@enduml

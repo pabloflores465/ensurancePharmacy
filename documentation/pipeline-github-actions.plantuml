@@ -1,0 +1,164 @@
+@startuml GitHub Actions Pipeline
+
+title GitHub Actions CI/CD Pipeline\nEnsurance Pharmacy System
+
+skinparam backgroundColor #FEFEFE
+skinparam activity {
+  BackgroundColor<<test>> #E3F2FD
+  BackgroundColor<<sonar>> #FFF9C4
+  BackgroundColor<<deploy>> #C8E6C9
+  BackgroundColor<<notify>> #F3E5F5
+  BorderColor Black
+}
+
+start
+
+:Trigger: Push/PR to\n[main, develop, qa, dev];
+
+fork
+  :test-backend-v4\nUbuntu Runner] <<test>>
+  :Setup JDK 23;
+  :Cache Maven;
+  :mvn clean test jacoco:report\n(backv4);
+  :Upload to Codecov;
+  
+fork again
+  :test-backend-v5\nUbuntu Runner] <<test>>
+  :Setup JDK 23;
+  :Cache Maven;
+  :mvn clean test jacoco:report\n(backv5);
+  :Upload to Codecov;
+  
+fork again
+  :test-ensurance-frontend\nUbuntu Runner] <<test>>
+  :Setup Node.js 18;
+  :npm ci;
+  :npm run test:coverage\n(ensurance);
+  :Upload to Codecov;
+  
+fork again
+  :test-pharmacy-frontend\nUbuntu Runner] <<test>>
+  :Setup Node.js 18;
+  :npm ci;
+  :npm run test:unit:coverage\n(pharmacy);
+  :Upload to Codecov;
+end fork
+
+note right
+  **Stage 1: Testing**
+  - 4 jobs paralelos
+  - Tiempo: ~8-12 min
+  - Runners: ubuntu-latest
+  - Cache: Maven + npm
+end note
+
+if (Event == push?) then (yes)
+  
+  fork
+    :sonarqube-ensurance-backend\n[depends: test-backend-v4]] <<sonar>>
+    :Setup JDK 23;
+    :Generate JaCoCo Reports;
+    :SonarQube Scan;
+    :Project Key =\n${branch}-backend-main/qa/dev;
+    :Quality Gate Wait (5 min);
+    
+  fork again
+    :sonarqube-ensurance-frontend\n[depends: test-ensurance-frontend]] <<sonar>>
+    :Setup Node.js 18;
+    :Generate Coverage;
+    :SonarQube Scan;
+    :Project Key =\n${branch}-frontend-main/qa/dev;
+    :Quality Gate Wait (5 min);
+    
+  fork again
+    :sonarqube-pharmacy-backend\n[depends: test-backend-v5]] <<sonar>>
+    :Setup JDK 23;
+    :Generate JaCoCo Reports;
+    :SonarQube Scan;
+    :Project Key =\n${branch}-backend-main/qa/dev;
+    :Quality Gate Wait (5 min);
+    
+  fork again
+    :sonarqube-pharmacy-frontend\n[depends: test-pharmacy-frontend]] <<sonar>>
+    :Setup Node.js 18;
+    :Generate Coverage;
+    :SonarQube Scan;
+    :Project Key =\n${branch}-frontend-main/qa/dev;
+    :Quality Gate Wait (5 min);
+  end fork
+  
+  note right
+    **Stage 2: SonarQube Analysis**
+    - 4 jobs secuenciales
+    - Tiempo: ~10-15 min
+    - Condición: Solo en push
+    - Quality Gates activos
+  end note
+  
+  if (Branch == dev?) then (yes)
+    :deploy-dev\n[depends: all sonar jobs]] <<deploy>>
+    :Deploy to Development;
+    :Ports: 3000-3003;
+    stop
+  elseif (Branch == qa?) then (yes)
+    :deploy-qa\n[depends: all sonar jobs]] <<deploy>>
+    :Deploy to QA;
+    :Ports: 4000-4003;
+    stop
+  elseif (Branch == main?) then (yes)
+    :deploy-main\n[depends: all sonar jobs]] <<deploy>>
+    :Deploy to Production;
+    :Ports: 5175, 8089, 8081, 8082;
+    stop
+  else (other)
+    :Skip deployment;
+  endif
+  
+else (no - PR)
+  :Skip SonarQube & Deploy;
+endif
+
+:notify-status\n[always, depends: all jobs]] <<notify>>
+partition "Email Notification" {
+  :Determine Overall Status;
+  if (All jobs success?) then (yes)
+    :Status = ✅ SUCCESS;
+    :Color = green;
+  else (no)
+    :Status = ❌ FAILED;
+    :Color = red;
+  endif
+  
+  :Detect Environment\n(MAIN/QA/DEV/FEATURE);
+  
+  :Build HTML Email:
+  - Status & Environment
+  - Branch & Commit info
+  - Job Results (8 jobs)
+  - Link to workflow run;
+  
+  :Send via SMTP\nto: NOTIFICATION_EMAIL;
+}
+
+stop
+
+note bottom
+  **Pipeline Summary:**
+  - Total Jobs: 11 (4 test + 4 sonar + 3 deploy + 1 notify)
+  - Execution Time: ~20-30 min
+  - Cloud-based: GitHub-hosted runners
+  - Email: HTML formatted notifications
+  
+  **Secrets Required:**
+  - SONAR_HOST_URL, GLOBAL_SONAR
+  - SMTP_SERVER, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD
+  - SMTP_FROM_EMAIL, NOTIFICATION_EMAIL
+  - Deployment tokens (per environment)
+  
+  **Artifacts:**
+  - JaCoCo reports (backv4, backv5)
+  - LCOV coverage (ensurance, pharmacy)
+  - Codecov uploads
+end note
+
+@enduml
