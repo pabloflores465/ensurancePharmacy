@@ -56,6 +56,8 @@ import io.prometheus.client.exporter.HTTPServer;
 public class App {
 
     private static final Logger logger = LoggerFactory.getLogger(App.class);
+    private static final String DEFAULT_HOST = "0.0.0.0";
+    private static HTTPServer metricsServer;
     /**
      * DAO para operaciones relacionadas con usuarios.
      */
@@ -158,7 +160,7 @@ public class App {
         server.setExecutor(null); // Usa el executor por defecto
         server.start();
         logger.info("Servidor iniciado en http://{}:{}/api2", 
-                getEnvOrDefault("SERVER_HOST", "0.0.0.0"),
+                getEnvOrDefault("SERVER_HOST", DEFAULT_HOST),
                 getServerPort());
     }
 
@@ -176,11 +178,11 @@ public class App {
 
     private static void startMetricsServer() {
         MetricsConfiguration.initialize();
-        String metricsHost = getEnvOrDefault("METRICS_HOST", "0.0.0.0");
+        String metricsHost = getEnvOrDefault("METRICS_HOST", DEFAULT_HOST);
         int metricsPort = parsePort(System.getenv("METRICS_PORT"), 9464);
         
         try {
-            new HTTPServer(
+            metricsServer = new HTTPServer(
                 new InetSocketAddress(metricsHost, metricsPort), 
                 CollectorRegistry.defaultRegistry, 
                 true
@@ -192,7 +194,7 @@ public class App {
     }
 
     private static HttpServer createAndConfigureHttpServer() throws IOException {
-        String host = getEnvOrDefault("SERVER_HOST", "0.0.0.0");
+        String host = getEnvOrDefault("SERVER_HOST", DEFAULT_HOST);
         int port = getServerPort();
         
         HttpServer server = HttpServer.create(new InetSocketAddress(host, port), 0);
