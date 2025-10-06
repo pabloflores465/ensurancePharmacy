@@ -1,7 +1,7 @@
 services:
   ensurance-pharmacy-system:
     build:
-      context: .
+      context: ..
       dockerfile: Dockerfile
       args:
         - ENVIRONMENT=main
