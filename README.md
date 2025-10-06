@@ -100,6 +100,10 @@ SERVER_HOST=0.0.0.0
 ENVIRONMENT=dev
 NODE_ENV=development
 JAVA_OPTS="-Xmx256m -Xms128m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+
+# Metrics Variables
+METRICS_HOST=0.0.0.0
+METRICS_PORT=9464  # backv5: 9464, backv4: 9465, ensurance: 9466, pharmacy: 9467
 ```
 
 #### QA Environment
@@ -322,13 +326,59 @@ docker compose -f docker-compose.main.yml down
 docker compose -f docker-compose.cicd.yml up -d
 docker compose -f docker-compose.cicd.yml logs -f
 docker compose -f docker-compose.cicd.yml down
+```
 
-# Stack de monitoreo (Checkmk, Prometheus, Grafana)
-docker compose -f docker-compose.monitor.yml up -d
+### Stack de monitoreo y métricas
+
+Para facilitar la observabilidad se provee un `docker-compose.monitor.yml` que despliega Prometheus y Grafana.
+
+#### 📊 Inicio Rápido de Métricas
+
+Ejecutar todos los componentes con métricas habilitadas:
+
+```bash
+# Compilar, instalar dependencias e iniciar todos los servicios con métricas
+./start-all-metrics.sh
+```
+
+Endpoints de métricas expuestos:
+- **backv5** (Pharmacy Backend): `http://localhost:9464/metrics`
+- **backv4** (Ensurance Backend): `http://localhost:9465/metrics`
+- **ensurance** (Frontend): `http://localhost:9466/metrics`
+- **pharmacy** (Frontend): `http://localhost:9467/metrics`
+
+Para más detalles, consulta [METRICS_SETUP.md](METRICS_SETUP.md).
+
+#### 📈 Métricas Disponibles
+
+**Backends (backv4 y backv5):**
+- `ensurance_http_requests_total` (Counter) - Total de peticiones HTTP por `path`, `method`, `status`
+- `ensurance_http_request_duration_seconds` (Histogram) - Latencias por `path`, `method`
+- `ensurance_http_inflight_requests` (Gauge) - Peticiones en curso por `path`
+- `ensurance_http_request_size_bytes` (Summary) - Tamaño de payloads por `path`, `method`
+- `ensurance_db_queries_total` (Counter, solo backv4) - Consultas DB por `operation`, `entity`, `status`
+- Métricas JVM automáticas (memoria, CPU, threads, GC)
+
+**Frontends (ensurance y pharmacy):**
+- `ensurance_frontend_page_views_total` (Counter) - Vistas de página
+- `pharmacy_frontend_medicine_searches_total` (Counter) - Búsquedas de medicamentos
+- Métricas de proceso Node.js
+
+#### 🐳 Desplegar stack de monitoreo
+
+```bash
+docker compose -f docker-compose.monitor.yml up -d --build
 docker compose -f docker-compose.monitor.yml logs -f
 docker compose -f docker-compose.monitor.yml down
+```
 
-# Stack de pruebas de carga (k6, JMeter, k6-operator)
+Accesos:
+- **Prometheus**: http://localhost:9095
+- **Grafana**: http://localhost:3300 (admin/changeme)
+
+### Stack de pruebas de carga (k6, JMeter, k6-operator)
+
+```bash
 docker compose -f docker-compose.stress.yml up -d
 docker compose -f docker-compose.stress.yml logs -f
 docker compose -f docker-compose.stress.yml down

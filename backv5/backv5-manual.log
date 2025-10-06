@@ -1,0 +1,46 @@
+03:23:47,617 |-INFO in ch.qos.logback.classic.LoggerContext[default] - This is logback-classic version ?
+03:23:47,619 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - No custom configurators were discovered as a service.
+03:23:47,619 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - Trying to configure with ch.qos.logback.classic.joran.SerializedModelConfigurator
+03:23:47,619 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - Constructed configurator of type class ch.qos.logback.classic.joran.SerializedModelConfigurator
+03:23:47,626 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback-test.scmo]
+03:23:47,626 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback.scmo]
+03:23:47,636 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - ch.qos.logback.classic.joran.SerializedModelConfigurator.configure() call lasted 7 milliseconds. ExecutionStatus=INVOKE_NEXT_IF_ANY
+03:23:47,636 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - Trying to configure with ch.qos.logback.classic.util.DefaultJoranConfigurator
+03:23:47,637 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - Constructed configurator of type class ch.qos.logback.classic.util.DefaultJoranConfigurator
+03:23:47,637 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback-test.xml]
+03:23:47,641 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Found resource [logback.xml] at [jar:file:/home/pablopolis2016/Documents/ensurancePharmacy/backv5/target/backv5-1.0-SNAPSHOT.jar!/logback.xml]
+03:23:47,646 |-INFO in ch.qos.logback.core.joran.spi.ConfigurationWatchList@2890c451 - URL [jar:file:/home/pablopolis2016/Documents/ensurancePharmacy/backv5/target/backv5-1.0-SNAPSHOT.jar!/logback.xml] is not of type file
+03:23:47,739 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [CONSOLE]
+03:23:47,739 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [ch.qos.logback.core.ConsoleAppender]
+03:23:47,746 |-INFO in ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+03:23:47,776 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [FILE]
+03:23:47,776 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [ch.qos.logback.core.rolling.RollingFileAppender]
+03:23:47,789 |-INFO in c.q.l.core.rolling.TimeBasedRollingPolicy@1088872417 - No compression will be used
+03:23:47,790 |-INFO in c.q.l.core.rolling.TimeBasedRollingPolicy@1088872417 - Will use the pattern logs/ensurance-backv5.%d{yyyy-MM-dd}.%i.log for the active file
+03:23:47,813 |-INFO in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@1b083826 - The date pattern is 'yyyy-MM-dd' from file name pattern 'logs/ensurance-backv5.%d{yyyy-MM-dd}.%i.log'.
+03:23:47,813 |-INFO in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@1b083826 - Roll-over at midnight.
+03:23:47,819 |-INFO in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@1b083826 - Setting initial period to 2025-10-02T21:39:38.927Z
+03:23:47,819 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@1b083826 - SizeAndTimeBasedFNATP is deprecated. Use SizeAndTimeBasedRollingPolicy instead
+03:23:47,819 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@1b083826 - For more information see http://logback.qos.ch/manual/appenders.html#SizeAndTimeBasedRollingPolicy
+03:23:47,822 |-INFO in ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+03:23:47,826 |-INFO in ch.qos.logback.core.rolling.RollingFileAppender[FILE] - Active log file name: logs/ensurance-backv5.log
+03:23:47,826 |-INFO in ch.qos.logback.core.rolling.RollingFileAppender[FILE] - File property is set to [logs/ensurance-backv5.log]
+03:23:47,827 |-INFO in ch.qos.logback.classic.model.processor.RootLoggerModelHandler - Setting level of ROOT logger to INFO
+03:23:47,827 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [CONSOLE] to Logger[ROOT]
+03:23:47,827 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [FILE] to Logger[ROOT]
+03:23:47,828 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [com.sources.app] to INFO
+03:23:47,831 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [com.sources.app] to false
+03:23:47,831 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [CONSOLE] to Logger[com.sources.app]
+03:23:47,831 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [FILE] to Logger[com.sources.app]
+03:23:47,831 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [org.hibernate] to WARN
+03:23:47,831 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [org.hibernate.SQL] to DEBUG
+03:23:47,831 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@105fece7 - End of configuration.
+03:23:47,832 |-INFO in ch.qos.logback.classic.joran.JoranConfigurator@3ec300f1 - Registering current configuration as safe fallback point
+03:23:47,832 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - ch.qos.logback.classic.util.DefaultJoranConfigurator.configure() call lasted 195 milliseconds. ExecutionStatus=DO_NOT_INVOKE_NEXT_IF_ANY
+
+Oct 06, 2025 3:23:48 AM com.sources.app.util.HibernateUtil buildSessionFactory
+WARNING: Variable DB_SCHEMA_PHARMACY no definida, usando esquema por defecto
+2025-10-06 03:23:48 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-10-06 03:23:49 [main] INFO  com.sources.app.App - Conexión exitosa a la base de datos!
+2025-10-06 03:23:49 [main] INFO  com.sources.app.App - Métricas disponibles en http://0.0.0.0:9464/metrics
+2025-10-06 03:23:49 [main] INFO  com.sources.app.App - Servidor iniciado en http://0.0.0.0:8082/api2

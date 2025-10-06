@@ -10,14 +10,17 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "metrics": "node metrics-server.js"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.0.17",
     "axios": "^1.8.4",
     "caniuse-lite": "^1.0.30001737",
     "date-fns": "^4.1.0",
+    "express": "^4.18.2",
     "pinia": "^3.0.1",
+    "prom-client": "^15.1.0",
     "tailwindcss": "^4.0.17",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"

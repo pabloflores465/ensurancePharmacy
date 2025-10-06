@@ -1,0 +1,30 @@
+2025-10-06 03:19:15 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
+2025-10-06 03:19:15 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-10-06 03:19:16 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-10-06 03:19:19 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
+2025-10-06 03:19:29 [main] INFO  com.sources.app.App - Conexión exitosa a la base de datos!
+2025-10-06 03:19:29 [main] INFO  com.sources.app.App - Métricas Ensurance disponibles en http://0.0.0.0:9465/metrics
+2025-10-06 03:19:29 [main] INFO  com.sources.app.App - Verificando servicios expirados...
+2025-10-06 03:19:29 [main] DEBUG org.hibernate.SQL - select u1_0.ID_USER,u1_0.ADDRESS,u1_0.BIRTHDATE,u1_0.CREATED_AT,u1_0.CUI,u1_0.EMAIL,u1_0.ENABLED,u1_0.EXPIRATION_DATE,u1_0.NAME,u1_0.PAID_SERVICE,u1_0.PASSWORD,u1_0.PHONE,u1_0.ID_POLICY,u1_0.ROL from USERS u1_0 where u1_0.PAID_SERVICE=1 and u1_0.EXPIRATION_DATE<?
+2025-10-06 03:19:29 [main] INFO  com.sources.app.App - Se actualizaron 0 usuarios con servicios expirados.
+2025-10-06 03:43:27 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
+2025-10-06 03:43:27 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-10-06 03:43:28 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-10-06 03:43:31 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
+2025-10-06 03:43:34 [main] INFO  com.sources.app.App - Conexión exitosa a la base de datos!
+2025-10-06 03:43:34 [main] ERROR com.sources.app.App - No se pudo iniciar el servidor HTTP de métricas
+java.net.BindException: Address already in use
+	at java.base/sun.nio.ch.Net.bind0(Native Method)
+	at java.base/sun.nio.ch.Net.bind(Net.java:565)
+	at java.base/sun.nio.ch.ServerSocketChannelImpl.netBind(ServerSocketChannelImpl.java:344)
+	at java.base/sun.nio.ch.ServerSocketChannelImpl.bind(ServerSocketChannelImpl.java:301)
+	at java.base/sun.nio.ch.ServerSocketAdaptor.bind(ServerSocketAdaptor.java:89)
+	at jdk.httpserver/sun.net.httpserver.ServerImpl.<init>(ServerImpl.java:144)
+	at jdk.httpserver/sun.net.httpserver.HttpServerImpl.<init>(HttpServerImpl.java:50)
+	at jdk.httpserver/sun.net.httpserver.DefaultHttpServerProvider.createHttpServer(DefaultHttpServerProvider.java:35)
+	at jdk.httpserver/com.sun.net.httpserver.HttpServer.create(HttpServer.java:152)
+	at io.prometheus.client.exporter.HTTPServer.<init>(HTTPServer.java:396)
+	at com.sources.app.App.main(App.java:81)
+2025-10-06 03:43:34 [main] INFO  com.sources.app.App - Verificando servicios expirados...
+2025-10-06 03:43:35 [main] DEBUG org.hibernate.SQL - select u1_0.ID_USER,u1_0.ADDRESS,u1_0.BIRTHDATE,u1_0.CREATED_AT,u1_0.CUI,u1_0.EMAIL,u1_0.ENABLED,u1_0.EXPIRATION_DATE,u1_0.NAME,u1_0.PAID_SERVICE,u1_0.PASSWORD,u1_0.PHONE,u1_0.ID_POLICY,u1_0.ROL from USERS u1_0 where u1_0.PAID_SERVICE=1 and u1_0.EXPIRATION_DATE<?
+2025-10-06 03:43:35 [main] INFO  com.sources.app.App - Se actualizaron 0 usuarios con servicios expirados.

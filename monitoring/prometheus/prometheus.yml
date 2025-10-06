@@ -6,3 +6,31 @@ scrape_configs:
   - job_name: 'prometheus'
     static_configs:
       - targets: ['prometheus:9090']
+  
+  - job_name: 'backv5-pharmacy'
+    static_configs:
+      - targets: ['10.128.0.2:9464']
+        labels:
+          service: 'pharmacy-backend'
+          component: 'backv5'
+  
+  - job_name: 'backv4-ensurance'
+    static_configs:
+      - targets: ['10.128.0.2:9465']
+        labels:
+          service: 'ensurance-backend'
+          component: 'backv4'
+  
+  - job_name: 'ensurance-frontend'
+    static_configs:
+      - targets: ['10.128.0.2:9466']
+        labels:
+          service: 'ensurance-frontend'
+          component: 'vue-app'
+  
+  - job_name: 'pharmacy-frontend'
+    static_configs:
+      - targets: ['10.128.0.2:9467']
+        labels:
+          service: 'pharmacy-frontend'
+          component: 'vue-app'

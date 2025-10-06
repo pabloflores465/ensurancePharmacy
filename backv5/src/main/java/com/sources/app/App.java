@@ -1,5 +1,6 @@
 package com.sources.app;
 
+import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -38,10 +39,14 @@ import com.sources.app.handlers.SearchMedicineHandler;
 import com.sources.app.handlers.SubcategoryHandler;
 import com.sources.app.handlers.UserHandler;
 import com.sources.app.handlers.VerificationHandler;
+import com.sources.app.metrics.InstrumentedHttpHandler;
+import com.sources.app.metrics.MetricsConfiguration;
 import com.sources.app.util.HibernateUtil;
 import com.sun.net.httpserver.HttpServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.exporter.HTTPServer;
 
 /**
  * Clase principal de la aplicación que inicializa y configura el servidor HTTP
@@ -51,6 +56,7 @@ import org.slf4j.LoggerFactory;
 public class App {
 
     private static final Logger logger = LoggerFactory.getLogger(App.class);
+    private static HTTPServer metricsServer;
     /**
      * DAO para operaciones relacionadas con usuarios.
      */
@@ -158,6 +164,28 @@ public class App {
             logger.error("Error al conectar con la base de datos (continuando sin DB)", e);
         }
 
+        // Inicializa métricas y servidor de exposición Prometheus
+        MetricsConfiguration.initialize();
+        String metricsHost = System.getenv("METRICS_HOST");
+        if (metricsHost == null || metricsHost.isEmpty()) {
+            metricsHost = "0.0.0.0";
+        }
+        int metricsPort = 9464;
+        String metricsPortEnv = System.getenv("METRICS_PORT");
+        if (metricsPortEnv != null && !metricsPortEnv.isEmpty()) {
+            try {
+                metricsPort = Integer.parseInt(metricsPortEnv);
+            } catch (NumberFormatException e) {
+                logger.warn("Formato de puerto de métricas inválido. Se usará 9464.");
+            }
+        }
+        try {
+            metricsServer = new HTTPServer(new InetSocketAddress(metricsHost, metricsPort), CollectorRegistry.defaultRegistry, true);
+            logger.info("Métricas disponibles en http://{}:{}/metrics", metricsHost, metricsPort);
+        } catch (IOException e) {
+            logger.error("No se pudo iniciar el servidor HTTP de métricas", e);
+        }
+
         // Host/puerto desde variables de entorno con valores por defecto
         String host = System.getenv("SERVER_HOST");
         if (host == null || host.isEmpty()) {
@@ -181,22 +209,22 @@ public class App {
         HttpServer server = HttpServer.create(new InetSocketAddress(host, port), 0);
 
         // Asignamos cada contexto con su respectivo Handler usando el prefijo "/api2"
-        server.createContext("/api2/login", new LoginHandler(userDAO));
-        server.createContext("/api2/users", new UserHandler(userDAO));
-        server.createContext("/api2/bills", new BillHandler(billDAO));
-        server.createContext("/api2/bill_medicines", new BillMedicineHandler(billMedicineDAO));
-        server.createContext("/api2/categories", new CategoryHandler(categoryDAO));
-        server.createContext("/api2/comments", new CommentsHandler(commentsDAO));
-        server.createContext("/api2/hospitals", new HospitalHandler(hospitalDAO));
-        server.createContext("/api2/medicines", new MedicineHandler(medicineDAO));
-        server.createContext("/api2/medicines/search", new SearchMedicineHandler(medicineDAO));
-        server.createContext("/api2/order_medicines", new OrderMedicineHandler(orderMedicineDAO));
-        server.createContext("/api2/orders", new OrdersHandler(ordersDAO));
-        server.createContext("/api2/prescription_medicines", new PrescriptionMedicineHandler(prescriptionMedicineDAO));
-        server.createContext("/api2/prescriptions", new PrescriptionHandler(prescriptionDAO));
-        server.createContext("/api2/subcategories", new SubcategoryHandler(subcategoryDAO));
-        server.createContext("/api2/external_medicines", new ExternalMedicineHandler(externalMedicineDAO));
-        server.createContext("/api2/verification", new VerificationHandler());
+        server.createContext("/api2/login", InstrumentedHttpHandler.of("/api2/login", new LoginHandler(userDAO)));
+        server.createContext("/api2/users", InstrumentedHttpHandler.of("/api2/users", new UserHandler(userDAO)));
+        server.createContext("/api2/bills", InstrumentedHttpHandler.of("/api2/bills", new BillHandler(billDAO)));
+        server.createContext("/api2/bill_medicines", InstrumentedHttpHandler.of("/api2/bill_medicines", new BillMedicineHandler(billMedicineDAO)));
+        server.createContext("/api2/categories", InstrumentedHttpHandler.of("/api2/categories", new CategoryHandler(categoryDAO)));
+        server.createContext("/api2/comments", InstrumentedHttpHandler.of("/api2/comments", new CommentsHandler(commentsDAO)));
+        server.createContext("/api2/hospitals", InstrumentedHttpHandler.of("/api2/hospitals", new HospitalHandler(hospitalDAO)));
+        server.createContext("/api2/medicines", InstrumentedHttpHandler.of("/api2/medicines", new MedicineHandler(medicineDAO)));
+        server.createContext("/api2/medicines/search", InstrumentedHttpHandler.of("/api2/medicines/search", new SearchMedicineHandler(medicineDAO)));
+        server.createContext("/api2/order_medicines", InstrumentedHttpHandler.of("/api2/order_medicines", new OrderMedicineHandler(orderMedicineDAO)));
+        server.createContext("/api2/orders", InstrumentedHttpHandler.of("/api2/orders", new OrdersHandler(ordersDAO)));
+        server.createContext("/api2/prescription_medicines", InstrumentedHttpHandler.of("/api2/prescription_medicines", new PrescriptionMedicineHandler(prescriptionMedicineDAO)));
+        server.createContext("/api2/prescriptions", InstrumentedHttpHandler.of("/api2/prescriptions", new PrescriptionHandler(prescriptionDAO)));
+        server.createContext("/api2/subcategories", InstrumentedHttpHandler.of("/api2/subcategories", new SubcategoryHandler(subcategoryDAO)));
+        server.createContext("/api2/external_medicines", InstrumentedHttpHandler.of("/api2/external_medicines", new ExternalMedicineHandler(externalMedicineDAO)));
+        server.createContext("/api2/verification", InstrumentedHttpHandler.of("/api2/verification", new VerificationHandler()));
         server.setExecutor(null); // Usa el executor por defecto
         server.start();
         logger.info("Servidor iniciado en http://{}:{}/api2", host, port);

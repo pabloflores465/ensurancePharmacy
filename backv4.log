@@ -1,0 +1,76 @@
+03:43:26,413 |-INFO in ch.qos.logback.classic.LoggerContext[default] - This is logback-classic version ?
+03:43:26,414 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - No custom configurators were discovered as a service.
+03:43:26,414 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - Trying to configure with ch.qos.logback.classic.joran.SerializedModelConfigurator
+03:43:26,415 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - Constructed configurator of type class ch.qos.logback.classic.joran.SerializedModelConfigurator
+03:43:26,425 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback-test.scmo]
+03:43:26,425 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback.scmo]
+03:43:26,436 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - ch.qos.logback.classic.joran.SerializedModelConfigurator.configure() call lasted 11 milliseconds. ExecutionStatus=INVOKE_NEXT_IF_ANY
+03:43:26,436 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - Trying to configure with ch.qos.logback.classic.util.DefaultJoranConfigurator
+03:43:26,437 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - Constructed configurator of type class ch.qos.logback.classic.util.DefaultJoranConfigurator
+03:43:26,438 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback-test.xml]
+03:43:26,443 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Found resource [logback.xml] at [jar:file:/home/pablopolis2016/Documents/ensurancePharmacy/backv4/target/backv4-1.0-SNAPSHOT.jar!/logback.xml]
+03:43:26,448 |-INFO in ch.qos.logback.core.joran.spi.ConfigurationWatchList@2890c451 - URL [jar:file:/home/pablopolis2016/Documents/ensurancePharmacy/backv4/target/backv4-1.0-SNAPSHOT.jar!/logback.xml] is not of type file
+03:43:26,555 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [CONSOLE]
+03:43:26,555 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [ch.qos.logback.core.ConsoleAppender]
+03:43:26,564 |-INFO in ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+03:43:26,601 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [FILE]
+03:43:26,601 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [ch.qos.logback.core.rolling.RollingFileAppender]
+03:43:26,617 |-INFO in c.q.l.core.rolling.TimeBasedRollingPolicy@1088872417 - No compression will be used
+03:43:26,619 |-INFO in c.q.l.core.rolling.TimeBasedRollingPolicy@1088872417 - Will use the pattern logs/ensurance-backv4.%d{yyyy-MM-dd}.%i.log for the active file
+03:43:26,644 |-INFO in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@1b083826 - The date pattern is 'yyyy-MM-dd' from file name pattern 'logs/ensurance-backv4.%d{yyyy-MM-dd}.%i.log'.
+03:43:26,644 |-INFO in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@1b083826 - Roll-over at midnight.
+03:43:26,651 |-INFO in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@1b083826 - Setting initial period to 2025-10-06T03:19:29.788Z
+03:43:26,651 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@1b083826 - SizeAndTimeBasedFNATP is deprecated. Use SizeAndTimeBasedRollingPolicy instead
+03:43:26,651 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@1b083826 - For more information see http://logback.qos.ch/manual/appenders.html#SizeAndTimeBasedRollingPolicy
+03:43:26,654 |-INFO in ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+03:43:26,658 |-INFO in ch.qos.logback.core.rolling.RollingFileAppender[FILE] - Active log file name: logs/ensurance-backv4.log
+03:43:26,658 |-INFO in ch.qos.logback.core.rolling.RollingFileAppender[FILE] - File property is set to [logs/ensurance-backv4.log]
+03:43:26,659 |-INFO in ch.qos.logback.classic.model.processor.RootLoggerModelHandler - Setting level of ROOT logger to INFO
+03:43:26,659 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [CONSOLE] to Logger[ROOT]
+03:43:26,659 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [FILE] to Logger[ROOT]
+03:43:26,660 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [com.sources.app] to INFO
+03:43:26,664 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [com.sources.app] to false
+03:43:26,664 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [CONSOLE] to Logger[com.sources.app]
+03:43:26,664 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [FILE] to Logger[com.sources.app]
+03:43:26,665 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [org.hibernate] to WARN
+03:43:26,665 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [org.hibernate.SQL] to DEBUG
+03:43:26,665 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@105fece7 - End of configuration.
+03:43:26,665 |-INFO in ch.qos.logback.classic.joran.JoranConfigurator@3ec300f1 - Registering current configuration as safe fallback point
+03:43:26,665 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - ch.qos.logback.classic.util.DefaultJoranConfigurator.configure() call lasted 228 milliseconds. ExecutionStatus=DO_NOT_INVOKE_NEXT_IF_ANY
+
+⚠️ Variable DB_SCHEMA_ENSURANCE no definida, usando esquema por defecto
+2025-10-06 03:43:27 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
+2025-10-06 03:43:27 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-10-06 03:43:28 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-10-06 03:43:31 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
+Hibernate: alter table MEDICINE modify COVERAGE number(10,0)
+2025-10-06 03:43:34 [main] INFO  com.sources.app.App - Conexión exitosa a la base de datos!
+2025-10-06 03:43:34 [main] ERROR com.sources.app.App - No se pudo iniciar el servidor HTTP de métricas
+java.net.BindException: Address already in use
+	at java.base/sun.nio.ch.Net.bind0(Native Method)
+	at java.base/sun.nio.ch.Net.bind(Net.java:565)
+	at java.base/sun.nio.ch.ServerSocketChannelImpl.netBind(ServerSocketChannelImpl.java:344)
+	at java.base/sun.nio.ch.ServerSocketChannelImpl.bind(ServerSocketChannelImpl.java:301)
+	at java.base/sun.nio.ch.ServerSocketAdaptor.bind(ServerSocketAdaptor.java:89)
+	at jdk.httpserver/sun.net.httpserver.ServerImpl.<init>(ServerImpl.java:144)
+	at jdk.httpserver/sun.net.httpserver.HttpServerImpl.<init>(HttpServerImpl.java:50)
+	at jdk.httpserver/sun.net.httpserver.DefaultHttpServerProvider.createHttpServer(DefaultHttpServerProvider.java:35)
+	at jdk.httpserver/com.sun.net.httpserver.HttpServer.create(HttpServer.java:152)
+	at io.prometheus.client.exporter.HTTPServer.<init>(HTTPServer.java:396)
+	at com.sources.app.App.main(App.java:81)
+2025-10-06 03:43:34 [main] INFO  com.sources.app.App - Verificando servicios expirados...
+2025-10-06 03:43:35 [main] DEBUG org.hibernate.SQL - select u1_0.ID_USER,u1_0.ADDRESS,u1_0.BIRTHDATE,u1_0.CREATED_AT,u1_0.CUI,u1_0.EMAIL,u1_0.ENABLED,u1_0.EXPIRATION_DATE,u1_0.NAME,u1_0.PAID_SERVICE,u1_0.PASSWORD,u1_0.PHONE,u1_0.ID_POLICY,u1_0.ROL from USERS u1_0 where u1_0.PAID_SERVICE=1 and u1_0.EXPIRATION_DATE<?
+Hibernate: select u1_0.ID_USER,u1_0.ADDRESS,u1_0.BIRTHDATE,u1_0.CREATED_AT,u1_0.CUI,u1_0.EMAIL,u1_0.ENABLED,u1_0.EXPIRATION_DATE,u1_0.NAME,u1_0.PAID_SERVICE,u1_0.PASSWORD,u1_0.PHONE,u1_0.ID_POLICY,u1_0.ROL from USERS u1_0 where u1_0.PAID_SERVICE=1 and u1_0.EXPIRATION_DATE<?
+Servicios expirados actualizados: 0
+2025-10-06 03:43:35 [main] INFO  com.sources.app.App - Se actualizaron 0 usuarios con servicios expirados.
+Exception in thread "main" java.net.BindException: Address already in use
+	at java.base/sun.nio.ch.Net.bind0(Native Method)
+	at java.base/sun.nio.ch.Net.bind(Net.java:565)
+	at java.base/sun.nio.ch.ServerSocketChannelImpl.netBind(ServerSocketChannelImpl.java:344)
+	at java.base/sun.nio.ch.ServerSocketChannelImpl.bind(ServerSocketChannelImpl.java:301)
+	at java.base/sun.nio.ch.ServerSocketAdaptor.bind(ServerSocketAdaptor.java:89)
+	at jdk.httpserver/sun.net.httpserver.ServerImpl.<init>(ServerImpl.java:144)
+	at jdk.httpserver/sun.net.httpserver.HttpServerImpl.<init>(HttpServerImpl.java:50)
+	at jdk.httpserver/sun.net.httpserver.DefaultHttpServerProvider.createHttpServer(DefaultHttpServerProvider.java:35)
+	at jdk.httpserver/com.sun.net.httpserver.HttpServer.create(HttpServer.java:152)
+	at com.sources.app.App.main(App.java:100)
