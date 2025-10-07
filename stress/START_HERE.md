@@ -26,28 +26,34 @@ cd stress
 ---
 
 ## 🎯 Lo que tienes disponible
-
 ### ✅ Apache JMeter 5.6.3
 - Plan simple de verificación
 - Plan completo multi-escenario
 - Reportes HTML automáticos
 
-### ✅ K6 (Grafana) 0.49.0
-- Load Test (carga progresiva)
-- Stress Test (hasta 300 usuarios)
-- Spike Test (picos repentinos)
-- Soak Test (resistencia 30 min)
+### 🎯 Tests Disponibles
 
-### ✅ Grafana + Prometheus
-- Dashboard K6 pre-configurado
-- 8+ gráficas de performance
-- Visualización en tiempo real
+### K6 Tests
+1. **load-test.js** - Carga progresiva con múltiples escenarios (5 min)
+2. **stress-test.js** - Push hasta 300 usuarios para encontrar límites (8 min)
+3. **spike-test.js** - Picos repentinos de 500 usuarios (2.5 min)
+4. **soak-test.js** - 50 usuarios constantes por 30 minutos
+
+### JMeter Tests
+5. **sample-plan.jmx** - Test simple de verificación
+6. **ensurance-full-test.jmx** - Test completo con BackV4 y BackV5
+
+### Utilidades
+7. Iniciar Grafana + Prometheus
+8. Verificar Backends
+9. Ver reportes JMeter
+10. **Levantar Backends DEV** (nuevo)
+11. **Detener Backends DEV** (nuevo)
 
 ### ✅ Scripts de Utilidad
 - Menu interactivo
 - Validación de setup
 - Visualizador de reportes
-- Limpieza de resultados
 
 ---
 

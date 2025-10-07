@@ -37,17 +37,83 @@ check_backends() {
     BACKV4_URL=${BACKV4_URL:-http://localhost:3002}
     BACKV5_URL=${BACKV5_URL:-http://localhost:3003}
     
-    if curl -sf "${BACKV4_URL}/api/users" > /dev/null; then
+    local backv4_ok=false
+    local backv5_ok=false
+    
+    if curl -sf "${BACKV4_URL}/api/users" > /dev/null 2>&1; then
         print_success "BackV4 está corriendo en ${BACKV4_URL}"
+        backv4_ok=true
     else
         print_warning "BackV4 no responde en ${BACKV4_URL}"
     fi
     
-    if curl -sf "${BACKV5_URL}/api2/users" > /dev/null; then
+    if curl -sf "${BACKV5_URL}/api2/users" > /dev/null 2>&1; then
         print_success "BackV5 está corriendo en ${BACKV5_URL}"
+        backv5_ok=true
     else
         print_warning "BackV5 no responde en ${BACKV5_URL}"
     fi
+    
+    if [ "$backv4_ok" = false ] || [ "$backv5_ok" = false ]; then
+        return 1
+    fi
+    return 0
+}
+
+# Función para levantar backends automáticamente
+start_backends() {
+    print_info "Levantando backends DEV (BackV4:3002, BackV5:3003)..."
+    
+    # Verificar si el contenedor ya existe
+    if docker ps -a --format '{{.Names}}' | grep -q "ensurance-pharmacy-dev"; then
+        if docker ps --format '{{.Names}}' | grep -q "ensurance-pharmacy-dev"; then
+            print_success "Contenedor ensurance-pharmacy-dev ya está corriendo"
+        else
+            print_info "Iniciando contenedor existente..."
+            docker start ensurance-pharmacy-dev
+        fi
+    else
+        print_info "Creando y levantando contenedor..."
+        docker compose -f docker-compose.dev.yml up -d
+    fi
+    
+    # Esperar a que los backends estén listos
+    print_info "Esperando a que los backends estén listos (máximo 60s)..."
+    local max_attempts=30
+    local attempt=0
+    
+    while [ $attempt -lt $max_attempts ]; do
+        if check_backends > /dev/null 2>&1; then
+            print_success "¡Backends listos!"
+            return 0
+        fi
+        attempt=$((attempt + 1))
+        echo -n "."
+        sleep 2
+    done
+    
+    echo ""
+    print_error "Timeout esperando backends. Verifica los logs:"
+    print_info "  docker logs ensurance-pharmacy-dev"
+    return 1
+}
+
+# Función para verificar y levantar backends si es necesario
+ensure_backends() {
+    if ! check_backends; then
+        print_warning "Backends no están disponibles"
+        read -p "¿Deseas levantarlos automáticamente? (y/n): " response
+        if [[ "$response" == "y" ]]; then
+            if ! start_backends; then
+                print_error "No se pudieron levantar los backends"
+                return 1
+            fi
+        else
+            print_error "No se puede continuar sin backends"
+            return 1
+        fi
+    fi
+    return 0
 }
 
 # Función para ejecutar K6
@@ -105,7 +171,6 @@ show_menu() {
     echo "  2) Stress Test (hasta límite)"
     echo "  3) Spike Test (picos repentinos)"
     echo "  4) Soak Test (30 min sostenido)"
-    echo ""
     echo "JMeter Tests:"
     echo "  5) JMeter Simple Test"
     echo "  6) JMeter Full Test"
@@ -114,6 +179,8 @@ show_menu() {
     echo "  7) Iniciar Grafana + Prometheus"
     echo "  8) Verificar Backends"
     echo "  9) Ver reportes JMeter"
+    echo " 10) Levantar Backends DEV"
+    echo " 11) Detener Backends DEV"
     echo "  0) Salir"
     echo ""
 }
@@ -126,19 +193,16 @@ main() {
         
         case $choice in
             1)
-                check_backends
-                run_k6 "load-test.js"
+                ensure_backends && run_k6 "load-test.js"
                 ;;
             2)
-                check_backends
-                run_k6 "stress-test.js"
+                ensure_backends && run_k6 "stress-test.js"
                 ;;
             3)
-                check_backends
-                run_k6 "spike-test.js"
+                ensure_backends && run_k6 "spike-test.js"
                 ;;
             4)
-                check_backends
+                ensure_backends
                 print_warning "Este test dura 30 minutos"
                 read -p "¿Continuar? (y/n): " confirm
                 if [[ $confirm == "y" ]]; then
@@ -146,12 +210,10 @@ main() {
                 fi
                 ;;
             5)
-                check_backends
-                run_jmeter "sample-plan.jmx"
+                ensure_backends && run_jmeter "sample-plan.jmx"
                 ;;
             6)
-                check_backends
-                run_jmeter "ensurance-full-test.jmx"
+                ensure_backends && run_jmeter "ensurance-full-test.jmx"
                 ;;
             7)
                 start_grafana
@@ -163,6 +225,14 @@ main() {
                 print_info "Iniciando servidor HTTP con reportes JMeter..."
                 docker run --rm -v scripts_jmeter_results:/results -p 8085:8085 \
                     -w /results/report python:3.9 python -m http.server 8085
+                ;;
+            10)
+                start_backends
+                ;;
+            11)
+                print_info "Deteniendo backends DEV..."
+                docker stop ensurance-pharmacy-dev 2>/dev/null || print_warning "Contenedor no está corriendo"
+                print_success "Backends detenidos"
                 ;;
             0)
                 print_info "Saliendo..."

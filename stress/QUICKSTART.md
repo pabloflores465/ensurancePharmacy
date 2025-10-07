@@ -2,17 +2,14 @@
 
 ## 🚀 Inicio Rápido (5 minutos)
 
-### 1. Verificar que las apps estén corriendo
+### ✅ Prerequisitos
 
 ```bash
-curl http://localhost:3002/api/users  # BackV4
-curl http://localhost:3003/api2/users  # BackV5
+# El script ahora levanta los backends automáticamente si no están corriendo
+# Puedes verificar manualmente:
+curl http://localhost:3002/api/health  # BackV4
+curl http://localhost:3003/api/health  # BackV5
 ```
-
-### 2. Iniciar Grafana (Opcional pero recomendado)
-
-```bash
-cd scripts
 docker compose -f docker-compose.monitor.yml up -d
 ```
 

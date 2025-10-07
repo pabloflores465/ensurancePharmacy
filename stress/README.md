@@ -30,19 +30,15 @@ stress/
 
 ## 🚀 Inicio Rápido
 
-### Paso 1: Verificar backends
-```bash
-curl http://localhost:8081/api/health  # BackV4
-curl http://localhost:8082/api/health  # BackV5
-```
-
-### Paso 2: Usar el menú interactivo
+### Paso 1: Usar el menú interactivo (levanta backends automáticamente)
 ```bash
 cd stress
 ./run-tests.sh
 ```
 
-### Paso 3: Ver resultados
+**Nota:** El script detecta si los backends (BackV4:3002, BackV5:3003) están corriendo. Si no lo están, te preguntará si deseas levantarlos automáticamente.
+
+### Paso 2: Ver resultados
 - **K6 Real-time**: http://localhost:5665
 - **Grafana**: http://localhost:3300 (admin/changeme)
 - **JMeter**: Ejecutar `./view-jmeter-report.sh` → http://localhost:8085
