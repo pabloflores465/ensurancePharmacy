@@ -1,147 +1,47 @@
-03:43:26,430 |-INFO in ch.qos.logback.classic.LoggerContext[default] - This is logback-classic version ?
-03:43:26,432 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - No custom configurators were discovered as a service.
-03:43:26,432 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - Trying to configure with ch.qos.logback.classic.joran.SerializedModelConfigurator
-03:43:26,434 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - Constructed configurator of type class ch.qos.logback.classic.joran.SerializedModelConfigurator
-03:43:26,443 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback-test.scmo]
-03:43:26,443 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback.scmo]
-03:43:26,454 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - ch.qos.logback.classic.joran.SerializedModelConfigurator.configure() call lasted 10 milliseconds. ExecutionStatus=INVOKE_NEXT_IF_ANY
-03:43:26,454 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - Trying to configure with ch.qos.logback.classic.util.DefaultJoranConfigurator
-03:43:26,455 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - Constructed configurator of type class ch.qos.logback.classic.util.DefaultJoranConfigurator
-03:43:26,456 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback-test.xml]
-03:43:26,460 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Found resource [logback.xml] at [jar:file:/home/pablopolis2016/Documents/ensurancePharmacy/backv5/target/backv5-1.0-SNAPSHOT.jar!/logback.xml]
-03:43:26,465 |-INFO in ch.qos.logback.core.joran.spi.ConfigurationWatchList@2890c451 - URL [jar:file:/home/pablopolis2016/Documents/ensurancePharmacy/backv5/target/backv5-1.0-SNAPSHOT.jar!/logback.xml] is not of type file
-03:43:26,570 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [CONSOLE]
-03:43:26,570 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [ch.qos.logback.core.ConsoleAppender]
-03:43:26,578 |-INFO in ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
-03:43:26,609 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [FILE]
-03:43:26,609 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [ch.qos.logback.core.rolling.RollingFileAppender]
-03:43:26,623 |-INFO in c.q.l.core.rolling.TimeBasedRollingPolicy@1088872417 - No compression will be used
-03:43:26,624 |-INFO in c.q.l.core.rolling.TimeBasedRollingPolicy@1088872417 - Will use the pattern logs/ensurance-backv5.%d{yyyy-MM-dd}.%i.log for the active file
-03:43:26,650 |-INFO in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@1b083826 - The date pattern is 'yyyy-MM-dd' from file name pattern 'logs/ensurance-backv5.%d{yyyy-MM-dd}.%i.log'.
-03:43:26,650 |-INFO in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@1b083826 - Roll-over at midnight.
-03:43:26,656 |-INFO in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@1b083826 - Setting initial period to 2025-10-06T03:19:15.477Z
-03:43:26,656 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@1b083826 - SizeAndTimeBasedFNATP is deprecated. Use SizeAndTimeBasedRollingPolicy instead
-03:43:26,656 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@1b083826 - For more information see http://logback.qos.ch/manual/appenders.html#SizeAndTimeBasedRollingPolicy
-03:43:26,659 |-INFO in ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
-03:43:26,663 |-INFO in ch.qos.logback.core.rolling.RollingFileAppender[FILE] - Active log file name: logs/ensurance-backv5.log
-03:43:26,663 |-INFO in ch.qos.logback.core.rolling.RollingFileAppender[FILE] - File property is set to [logs/ensurance-backv5.log]
-03:43:26,664 |-INFO in ch.qos.logback.classic.model.processor.RootLoggerModelHandler - Setting level of ROOT logger to INFO
-03:43:26,664 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [CONSOLE] to Logger[ROOT]
-03:43:26,665 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [FILE] to Logger[ROOT]
-03:43:26,665 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [com.sources.app] to INFO
-03:43:26,668 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [com.sources.app] to false
-03:43:26,668 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [CONSOLE] to Logger[com.sources.app]
-03:43:26,668 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [FILE] to Logger[com.sources.app]
-03:43:26,669 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [org.hibernate] to WARN
-03:43:26,669 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [org.hibernate.SQL] to DEBUG
-03:43:26,669 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@105fece7 - End of configuration.
-03:43:26,669 |-INFO in ch.qos.logback.classic.joran.JoranConfigurator@3ec300f1 - Registering current configuration as safe fallback point
-03:43:26,669 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - ch.qos.logback.classic.util.DefaultJoranConfigurator.configure() call lasted 214 milliseconds. ExecutionStatus=DO_NOT_INVOKE_NEXT_IF_ANY
+nohup: ignoring input
+22:41:59,929 |-INFO in ch.qos.logback.classic.LoggerContext[default] - This is logback-classic version ?
+22:41:59,931 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - No custom configurators were discovered as a service.
+22:41:59,931 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - Trying to configure with ch.qos.logback.classic.joran.SerializedModelConfigurator
+22:41:59,932 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - Constructed configurator of type class ch.qos.logback.classic.joran.SerializedModelConfigurator
+22:41:59,939 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback-test.scmo]
+22:41:59,939 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback.scmo]
+22:41:59,949 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - ch.qos.logback.classic.joran.SerializedModelConfigurator.configure() call lasted 8 milliseconds. ExecutionStatus=INVOKE_NEXT_IF_ANY
+22:41:59,949 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - Trying to configure with ch.qos.logback.classic.util.DefaultJoranConfigurator
+22:41:59,950 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - Constructed configurator of type class ch.qos.logback.classic.util.DefaultJoranConfigurator
+22:41:59,951 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback-test.xml]
+22:41:59,955 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Found resource [logback.xml] at [jar:file:/home/pablopolis2016/Documents/ensurancePharmacy/backv5/target/backv5-1.0-SNAPSHOT.jar!/logback.xml]
+22:41:59,960 |-INFO in ch.qos.logback.core.joran.spi.ConfigurationWatchList@2890c451 - URL [jar:file:/home/pablopolis2016/Documents/ensurancePharmacy/backv5/target/backv5-1.0-SNAPSHOT.jar!/logback.xml] is not of type file
+22:42:00,061 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [CONSOLE]
+22:42:00,061 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [ch.qos.logback.core.ConsoleAppender]
+22:42:00,069 |-INFO in ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+22:42:00,100 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [FILE]
+22:42:00,100 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [ch.qos.logback.core.rolling.RollingFileAppender]
+22:42:00,116 |-INFO in c.q.l.core.rolling.TimeBasedRollingPolicy@1088872417 - No compression will be used
+22:42:00,117 |-INFO in c.q.l.core.rolling.TimeBasedRollingPolicy@1088872417 - Will use the pattern logs/ensurance-backv5.%d{yyyy-MM-dd}.%i.log for the active file
+22:42:00,143 |-INFO in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@1b083826 - The date pattern is 'yyyy-MM-dd' from file name pattern 'logs/ensurance-backv5.%d{yyyy-MM-dd}.%i.log'.
+22:42:00,143 |-INFO in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@1b083826 - Roll-over at midnight.
+22:42:00,149 |-INFO in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@1b083826 - Setting initial period to 2025-10-06T22:30:49.533Z
+22:42:00,150 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@1b083826 - SizeAndTimeBasedFNATP is deprecated. Use SizeAndTimeBasedRollingPolicy instead
+22:42:00,150 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@1b083826 - For more information see http://logback.qos.ch/manual/appenders.html#SizeAndTimeBasedRollingPolicy
+22:42:00,153 |-INFO in ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+22:42:00,157 |-INFO in ch.qos.logback.core.rolling.RollingFileAppender[FILE] - Active log file name: logs/ensurance-backv5.log
+22:42:00,157 |-INFO in ch.qos.logback.core.rolling.RollingFileAppender[FILE] - File property is set to [logs/ensurance-backv5.log]
+22:42:00,158 |-INFO in ch.qos.logback.classic.model.processor.RootLoggerModelHandler - Setting level of ROOT logger to INFO
+22:42:00,159 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [CONSOLE] to Logger[ROOT]
+22:42:00,159 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [FILE] to Logger[ROOT]
+22:42:00,160 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [com.sources.app] to INFO
+22:42:00,163 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [com.sources.app] to false
+22:42:00,164 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [CONSOLE] to Logger[com.sources.app]
+22:42:00,164 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [FILE] to Logger[com.sources.app]
+22:42:00,164 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [org.hibernate] to WARN
+22:42:00,164 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [org.hibernate.SQL] to DEBUG
+22:42:00,164 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@105fece7 - End of configuration.
+22:42:00,164 |-INFO in ch.qos.logback.classic.joran.JoranConfigurator@3ec300f1 - Registering current configuration as safe fallback point
+22:42:00,165 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2145433b - ch.qos.logback.classic.util.DefaultJoranConfigurator.configure() call lasted 214 milliseconds. ExecutionStatus=DO_NOT_INVOKE_NEXT_IF_ANY
 
-Oct 06, 2025 3:43:27 AM com.sources.app.util.HibernateUtil buildSessionFactory
+Oct 06, 2025 10:42:00 PM com.sources.app.util.HibernateUtil buildSessionFactory
 WARNING: Variable DB_SCHEMA_PHARMACY no definida, usando esquema por defecto
-2025-10-06 03:43:27 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
-2025-10-06 03:43:27 [main] WARN  o.h.e.j.e.i.JdbcEnvironmentInitiator - HHH000342: Could not obtain connection to query metadata
-java.lang.IllegalStateException: Cannot get a connection as the driver manager is not properly initialized
-	at org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.getConnection(DriverManagerConnectionProviderImpl.java:255)
-	at org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess.obtainConnection(JdbcEnvironmentInitiator.java:467)
-	at org.hibernate.resource.transaction.backend.jdbc.internal.JdbcIsolationDelegate.delegateWork(JdbcIsolationDelegate.java:61)
-	at org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator.getJdbcEnvironmentUsingJdbcMetadata(JdbcEnvironmentInitiator.java:320)
-	at org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator.initiateService(JdbcEnvironmentInitiator.java:129)
-	at org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator.initiateService(JdbcEnvironmentInitiator.java:81)
-	at org.hibernate.boot.registry.internal.StandardServiceRegistryImpl.initiateService(StandardServiceRegistryImpl.java:130)
-	at org.hibernate.service.internal.AbstractServiceRegistryImpl.createService(AbstractServiceRegistryImpl.java:263)
-	at org.hibernate.service.internal.AbstractServiceRegistryImpl.initializeService(AbstractServiceRegistryImpl.java:238)
-	at org.hibernate.service.internal.AbstractServiceRegistryImpl.getService(AbstractServiceRegistryImpl.java:215)
-	at org.hibernate.service.ServiceRegistry.requireService(ServiceRegistry.java:68)
-	at org.hibernate.engine.jdbc.internal.JdbcServicesImpl.configure(JdbcServicesImpl.java:52)
-	at org.hibernate.boot.registry.internal.StandardServiceRegistryImpl.configureService(StandardServiceRegistryImpl.java:136)
-	at org.hibernate.service.internal.AbstractServiceRegistryImpl.initializeService(AbstractServiceRegistryImpl.java:247)
-	at org.hibernate.service.internal.AbstractServiceRegistryImpl.getService(AbstractServiceRegistryImpl.java:215)
-	at org.hibernate.engine.jdbc.connections.internal.BasicConnectionCreator.convertSqlException(BasicConnectionCreator.java:133)
-	at org.hibernate.engine.jdbc.connections.internal.DriverConnectionCreator.makeConnection(DriverConnectionCreator.java:43)
-	at org.hibernate.engine.jdbc.connections.internal.BasicConnectionCreator.createConnection(BasicConnectionCreator.java:61)
-	at org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl$PooledConnections.addConnections(DriverManagerConnectionProviderImpl.java:507)
-	at org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl$PooledConnections.<init>(DriverManagerConnectionProviderImpl.java:380)
-	at org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl$PooledConnections$Builder.build(DriverManagerConnectionProviderImpl.java:558)
-	at org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.buildPool(DriverManagerConnectionProviderImpl.java:107)
-	at org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.configure(DriverManagerConnectionProviderImpl.java:87)
-	at org.hibernate.boot.registry.internal.StandardServiceRegistryImpl.configureService(StandardServiceRegistryImpl.java:136)
-	at org.hibernate.service.internal.AbstractServiceRegistryImpl.initializeService(AbstractServiceRegistryImpl.java:247)
-	at org.hibernate.service.internal.AbstractServiceRegistryImpl.getService(AbstractServiceRegistryImpl.java:215)
-	at org.hibernate.service.ServiceRegistry.requireService(ServiceRegistry.java:68)
-	at org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator.buildJdbcConnectionAccess(JdbcEnvironmentInitiator.java:434)
-	at org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator.getJdbcEnvironmentUsingJdbcMetadata(JdbcEnvironmentInitiator.java:305)
-	at org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator.initiateService(JdbcEnvironmentInitiator.java:129)
-	at org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator.initiateService(JdbcEnvironmentInitiator.java:81)
-	at org.hibernate.boot.registry.internal.StandardServiceRegistryImpl.initiateService(StandardServiceRegistryImpl.java:130)
-	at org.hibernate.service.internal.AbstractServiceRegistryImpl.createService(AbstractServiceRegistryImpl.java:263)
-	at org.hibernate.service.internal.AbstractServiceRegistryImpl.initializeService(AbstractServiceRegistryImpl.java:238)
-	at org.hibernate.service.internal.AbstractServiceRegistryImpl.getService(AbstractServiceRegistryImpl.java:215)
-	at org.hibernate.boot.model.relational.Database.<init>(Database.java:45)
-	at org.hibernate.boot.internal.InFlightMetadataCollectorImpl.getDatabase(InFlightMetadataCollectorImpl.java:226)
-	at org.hibernate.boot.internal.InFlightMetadataCollectorImpl.<init>(InFlightMetadataCollectorImpl.java:194)
-	at org.hibernate.boot.model.process.spi.MetadataBuildingProcess.complete(MetadataBuildingProcess.java:171)
-	at org.hibernate.boot.model.process.spi.MetadataBuildingProcess.build(MetadataBuildingProcess.java:129)
-	at org.hibernate.boot.internal.MetadataBuilderImpl.build(MetadataBuilderImpl.java:449)
-	at org.hibernate.boot.internal.MetadataBuilderImpl.build(MetadataBuilderImpl.java:101)
-	at org.hibernate.cfg.Configuration.buildSessionFactory(Configuration.java:949)
-	at org.hibernate.cfg.Configuration.buildSessionFactory(Configuration.java:999)
-	at com.sources.app.util.HibernateUtil.buildSessionFactory(HibernateUtil.java:52)
-	at com.sources.app.util.HibernateUtil.<clinit>(HibernateUtil.java:14)
-	at com.sources.app.App.main(App.java:157)
-2025-10-06 03:43:27 [main] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - SQL Error: 0, SQLState: null
-2025-10-06 03:43:27 [main] ERROR o.h.e.jdbc.spi.SqlExceptionHelper - path to 'sqlite/USUARIO.sqlite': '/home/pablopolis2016/Documents/ensurancePharmacy/sqlite' does not exist
-Oct 06, 2025 3:43:27 AM com.sources.app.util.HibernateUtil buildSessionFactory
-SEVERE: Error building SessionFactory: Unable to create requested service [org.hibernate.engine.jdbc.env.spi.JdbcEnvironment] due to: Error calling Driver.connect() [path to 'sqlite/USUARIO.sqlite': '/home/pablopolis2016/Documents/ensurancePharmacy/sqlite' does not exist] [path to 'sqlite/USUARIO.sqlite': '/home/pablopolis2016/Documents/ensurancePharmacy/sqlite' does not exist] [n/a]
-Exception in thread "main" java.lang.ExceptionInInitializerError
-	at com.sources.app.util.HibernateUtil.buildSessionFactory(HibernateUtil.java:55)
-	at com.sources.app.util.HibernateUtil.<clinit>(HibernateUtil.java:14)
-	at com.sources.app.App.main(App.java:157)
-Caused by: org.hibernate.service.spi.ServiceException: Unable to create requested service [org.hibernate.engine.jdbc.env.spi.JdbcEnvironment] due to: Error calling Driver.connect() [path to 'sqlite/USUARIO.sqlite': '/home/pablopolis2016/Documents/ensurancePharmacy/sqlite' does not exist] [path to 'sqlite/USUARIO.sqlite': '/home/pablopolis2016/Documents/ensurancePharmacy/sqlite' does not exist] [n/a]
-	at org.hibernate.service.internal.AbstractServiceRegistryImpl.createService(AbstractServiceRegistryImpl.java:276)
-	at org.hibernate.service.internal.AbstractServiceRegistryImpl.initializeService(AbstractServiceRegistryImpl.java:238)
-	at org.hibernate.service.internal.AbstractServiceRegistryImpl.getService(AbstractServiceRegistryImpl.java:215)
-	at org.hibernate.boot.model.relational.Database.<init>(Database.java:45)
-	at org.hibernate.boot.internal.InFlightMetadataCollectorImpl.getDatabase(InFlightMetadataCollectorImpl.java:226)
-	at org.hibernate.boot.internal.InFlightMetadataCollectorImpl.<init>(InFlightMetadataCollectorImpl.java:194)
-	at org.hibernate.boot.model.process.spi.MetadataBuildingProcess.complete(MetadataBuildingProcess.java:171)
-	at org.hibernate.boot.model.process.spi.MetadataBuildingProcess.build(MetadataBuildingProcess.java:129)
-	at org.hibernate.boot.internal.MetadataBuilderImpl.build(MetadataBuilderImpl.java:449)
-	at org.hibernate.boot.internal.MetadataBuilderImpl.build(MetadataBuilderImpl.java:101)
-	at org.hibernate.cfg.Configuration.buildSessionFactory(Configuration.java:949)
-	at org.hibernate.cfg.Configuration.buildSessionFactory(Configuration.java:999)
-	at com.sources.app.util.HibernateUtil.buildSessionFactory(HibernateUtil.java:52)
-	... 2 more
-Caused by: org.hibernate.exception.GenericJDBCException: Error calling Driver.connect() [path to 'sqlite/USUARIO.sqlite': '/home/pablopolis2016/Documents/ensurancePharmacy/sqlite' does not exist] [path to 'sqlite/USUARIO.sqlite': '/home/pablopolis2016/Documents/ensurancePharmacy/sqlite' does not exist] [n/a]
-	at org.hibernate.exception.internal.StandardSQLExceptionConverter.convert(StandardSQLExceptionConverter.java:63)
-	at org.hibernate.engine.jdbc.spi.SqlExceptionHelper.convert(SqlExceptionHelper.java:108)
-	at org.hibernate.engine.jdbc.spi.SqlExceptionHelper.convert(SqlExceptionHelper.java:94)
-	at org.hibernate.engine.jdbc.connections.internal.BasicConnectionCreator.convertSqlException(BasicConnectionCreator.java:135)
-	at org.hibernate.engine.jdbc.connections.internal.DriverConnectionCreator.makeConnection(DriverConnectionCreator.java:43)
-	at org.hibernate.engine.jdbc.connections.internal.BasicConnectionCreator.createConnection(BasicConnectionCreator.java:61)
-	at org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl$PooledConnections.addConnections(DriverManagerConnectionProviderImpl.java:507)
-	at org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl$PooledConnections.<init>(DriverManagerConnectionProviderImpl.java:380)
-	at org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl$PooledConnections$Builder.build(DriverManagerConnectionProviderImpl.java:558)
-	at org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.buildPool(DriverManagerConnectionProviderImpl.java:107)
-	at org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.configure(DriverManagerConnectionProviderImpl.java:87)
-	at org.hibernate.boot.registry.internal.StandardServiceRegistryImpl.configureService(StandardServiceRegistryImpl.java:136)
-	at org.hibernate.service.internal.AbstractServiceRegistryImpl.initializeService(AbstractServiceRegistryImpl.java:247)
-	at org.hibernate.service.internal.AbstractServiceRegistryImpl.getService(AbstractServiceRegistryImpl.java:215)
-	at org.hibernate.service.ServiceRegistry.requireService(ServiceRegistry.java:68)
-	at org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator.buildJdbcConnectionAccess(JdbcEnvironmentInitiator.java:434)
-	at org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator.getJdbcEnvironmentUsingJdbcMetadata(JdbcEnvironmentInitiator.java:305)
-	at org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator.initiateService(JdbcEnvironmentInitiator.java:129)
-	at org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator.initiateService(JdbcEnvironmentInitiator.java:81)
-	at org.hibernate.boot.registry.internal.StandardServiceRegistryImpl.initiateService(StandardServiceRegistryImpl.java:130)
-	at org.hibernate.service.internal.AbstractServiceRegistryImpl.createService(AbstractServiceRegistryImpl.java:263)
-	... 14 more
-Caused by: java.sql.SQLException: path to 'sqlite/USUARIO.sqlite': '/home/pablopolis2016/Documents/ensurancePharmacy/sqlite' does not exist
-	at org.sqlite.SQLiteConnection.open(SQLiteConnection.java:261)
-	at org.sqlite.SQLiteConnection.<init>(SQLiteConnection.java:67)
-	at org.sqlite.jdbc3.JDBC3Connection.<init>(JDBC3Connection.java:28)
-	at org.sqlite.jdbc4.JDBC4Connection.<init>(JDBC4Connection.java:19)
-	at org.sqlite.JDBC.createConnection(JDBC.java:106)
-	at org.sqlite.JDBC.connect(JDBC.java:79)
-	at org.hibernate.engine.jdbc.connections.internal.DriverConnectionCreator.makeConnection(DriverConnectionCreator.java:40)
-	... 30 more
+2025-10-06 22:42:00 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-10-06 22:42:02 [main] INFO  com.sources.app.App - Conexión exitosa a la base de datos!
+2025-10-06 22:42:02 [main] INFO  com.sources.app.App - Métricas disponibles en http://0.0.0.0:9464/metrics
+2025-10-06 22:42:02 [main] INFO  com.sources.app.App - Servidor iniciado en http://0.0.0.0:8082/api2

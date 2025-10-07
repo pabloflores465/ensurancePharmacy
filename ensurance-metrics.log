@@ -1,0 +1,5 @@
+
+> ensurance@0.0.0 metrics
+> node metrics-server.js
+
+Ensurance metrics server running on http://0.0.0.0:9466/metrics

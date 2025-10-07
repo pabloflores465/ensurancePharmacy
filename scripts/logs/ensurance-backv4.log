@@ -1,0 +1,28 @@
+2025-10-06 22:09:46 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
+2025-10-06 22:09:46 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-10-06 22:09:47 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-10-06 22:09:49 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
+2025-10-06 22:09:53 [main] INFO  com.sources.app.App - Conexión exitosa a la base de datos!
+2025-10-06 22:09:53 [main] INFO  com.sources.app.App - Métricas Ensurance disponibles en http://0.0.0.0:9465/metrics
+2025-10-06 22:09:53 [main] INFO  com.sources.app.App - Verificando servicios expirados...
+2025-10-06 22:09:53 [main] DEBUG org.hibernate.SQL - select u1_0.ID_USER,u1_0.ADDRESS,u1_0.BIRTHDATE,u1_0.CREATED_AT,u1_0.CUI,u1_0.EMAIL,u1_0.ENABLED,u1_0.EXPIRATION_DATE,u1_0.NAME,u1_0.PAID_SERVICE,u1_0.PASSWORD,u1_0.PHONE,u1_0.ID_POLICY,u1_0.ROL from USERS u1_0 where u1_0.PAID_SERVICE=1 and u1_0.EXPIRATION_DATE<?
+2025-10-06 22:09:53 [main] INFO  com.sources.app.App - Se actualizaron 0 usuarios con servicios expirados.
+2025-10-06 22:09:53 [main] INFO  com.sources.app.App - Servidor iniciado en http://0.0.0.0:8081/api
+2025-10-06 22:34:48 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
+2025-10-06 22:34:48 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-10-06 22:34:49 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-10-06 22:34:53 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
+2025-10-06 22:34:56 [main] INFO  com.sources.app.App - Conexión exitosa a la base de datos!
+2025-10-06 22:34:56 [main] INFO  com.sources.app.App - Métricas Ensurance disponibles en http://0.0.0.0:9465/metrics
+2025-10-06 22:34:56 [main] INFO  com.sources.app.App - Verificando servicios expirados...
+2025-10-06 22:34:56 [main] DEBUG org.hibernate.SQL - select u1_0.ID_USER,u1_0.ADDRESS,u1_0.BIRTHDATE,u1_0.CREATED_AT,u1_0.CUI,u1_0.EMAIL,u1_0.ENABLED,u1_0.EXPIRATION_DATE,u1_0.NAME,u1_0.PAID_SERVICE,u1_0.PASSWORD,u1_0.PHONE,u1_0.ID_POLICY,u1_0.ROL from USERS u1_0 where u1_0.PAID_SERVICE=1 and u1_0.EXPIRATION_DATE<?
+2025-10-06 22:34:56 [main] INFO  com.sources.app.App - Se actualizaron 0 usuarios con servicios expirados.
+2025-10-06 22:43:45 [main] WARN  o.h.e.j.c.i.ConnectionProviderInitiator - HHH000022: c3p0 properties were encountered, but the c3p0 provider class was not found on the classpath; these properties are going to be ignored.
+2025-10-06 22:43:45 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-10-06 22:43:46 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-10-06 22:43:49 [main] DEBUG org.hibernate.SQL - alter table MEDICINE modify COVERAGE number(10,0)
+2025-10-06 22:43:52 [main] INFO  com.sources.app.App - Conexión exitosa a la base de datos!
+2025-10-06 22:43:52 [main] INFO  com.sources.app.App - Métricas Ensurance disponibles en http://0.0.0.0:9465/metrics
+2025-10-06 22:43:52 [main] INFO  com.sources.app.App - Verificando servicios expirados...
+2025-10-06 22:43:52 [main] DEBUG org.hibernate.SQL - select u1_0.ID_USER,u1_0.ADDRESS,u1_0.BIRTHDATE,u1_0.CREATED_AT,u1_0.CUI,u1_0.EMAIL,u1_0.ENABLED,u1_0.EXPIRATION_DATE,u1_0.NAME,u1_0.PAID_SERVICE,u1_0.PASSWORD,u1_0.PHONE,u1_0.ID_POLICY,u1_0.ROL from USERS u1_0 where u1_0.PAID_SERVICE=1 and u1_0.EXPIRATION_DATE<?
+2025-10-06 22:43:53 [main] INFO  com.sources.app.App - Se actualizaron 0 usuarios con servicios expirados.

@@ -1,0 +1,12 @@
+
+> ensurance@0.0.0 dev
+> vite --host
+
+
+  VITE v6.2.4  ready in 466 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: http://10.128.0.2:5173/
+  ➜  Network: http://100.109.144.41:5173/
+  ➜  Network: http://172.18.0.1:5173/
+  ➜  Network: http://172.19.0.1:5173/

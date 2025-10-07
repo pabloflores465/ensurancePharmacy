@@ -1,0 +1,5 @@
+
+> pharmacy@0.1.0 metrics
+> node metrics-server.js
+
+Pharmacy metrics server running on http://0.0.0.0:9467/metrics

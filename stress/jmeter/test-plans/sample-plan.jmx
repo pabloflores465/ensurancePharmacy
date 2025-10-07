@@ -8,9 +8,14 @@
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
         <collectionProp name="Arguments.arguments">
-          <elementProp name="BASE_URL" elementType="Argument">
-            <stringProp name="Argument.name">BASE_URL</stringProp>
-            <stringProp name="Argument.value">http://host.docker.internal:8081</stringProp>
+          <elementProp name="BACKV4_URL" elementType="Argument">
+            <stringProp name="Argument.name">BACKV4_URL</stringProp>
+            <stringProp name="Argument.value">http://host.docker.internal:3002</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="BACKV5_URL" elementType="Argument">
+            <stringProp name="Argument.name">BACKV5_URL</stringProp>
+            <stringProp name="Argument.value">http://host.docker.internal:3003</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
         </collectionProp>
@@ -33,15 +38,34 @@
         <stringProp name="ThreadGroup.delay">0</stringProp>
       </ThreadGroup>
       <hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/health" enabled="true">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET BackV4 /api/users" enabled="true">
           <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
             <collectionProp name="Arguments.arguments" />
           </elementProp>
-          <stringProp name="HTTPSampler.domain">${__BeanShell(${BASE_URL}.split('://')[1].split(':')[0])}</stringProp>
-          <stringProp name="HTTPSampler.port">${__BeanShell(${BASE_URL}.contains(':') ? ${BASE_URL}.split(':')[2] : 80)}</stringProp>
-          <stringProp name="HTTPSampler.protocol">${__BeanShell(${BASE_URL}.split('://')[0])}</stringProp>
-          <stringProp name="HTTPSampler.path">/api/health</stringProp>
+          <stringProp name="HTTPSampler.domain">host.docker.internal</stringProp>
+          <stringProp name="HTTPSampler.port">3002</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/api/users</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree />
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET BackV5 /api2/users" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments" />
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">host.docker.internal</stringProp>
+          <stringProp name="HTTPSampler.port">3003</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/api2/users</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>

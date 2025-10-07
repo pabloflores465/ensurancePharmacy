@@ -42,3 +42,11 @@ scrape_configs:
         labels:
           service: 'jenkins-ci'
           component: 'pipeline'
+  
+  - job_name: 'k6-stress-test'
+    honor_labels: true
+    static_configs:
+      - targets: ['pushgateway:9091']
+        labels:
+          service: 'k6-stress-testing'
+          component: 'load-test'
