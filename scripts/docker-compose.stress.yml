@@ -56,6 +56,22 @@ services:
     networks:
       - stress-test-network
 
+  k6-report:
+    image: python:3.9-alpine
+    container_name: ensurance-k6-report
+    working_dir: /results
+    command: python -m http.server 5666
+    volumes:
+      - k6_results:/results
+    ports:
+      - "5666:5666"
+    restart: unless-stopped
+    networks:
+      - stress-test-network
+    labels:
+      - "com.ensurance.service=k6-report"
+      - "com.ensurance.description=K6 HTML Dashboard Server"
+
   jmeter-report:
     image: python:3.9-alpine
     container_name: ensurance-jmeter-report
