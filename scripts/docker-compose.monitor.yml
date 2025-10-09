@@ -1,6 +1,42 @@
 version: "3.9"
 
 services:
+  # Aplicaciones (opcional - solo si no están corriendo externamente)
+  ensurance-pharmacy-apps:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      args:
+        - ENVIRONMENT=dev
+    container_name: ensurance-pharmacy-monitoring
+    ports:
+      - "3000:5175"   # Ensurance Frontend
+      - "3001:8089"   # Pharmacy Frontend
+      - "3002:8081"   # Ensurance Backend (backv4)
+      - "3003:8082"   # Pharmacy Backend (backv5)
+      - "9464:9464"   # Métricas backv5
+      - "9465:9465"   # Métricas backv4
+      - "9466:9466"   # Métricas ensurance frontend
+      - "9467:9467"   # Métricas pharmacy frontend
+    volumes:
+      - databases_monitoring:/app/databases
+      - logs_monitoring:/app/logs
+    environment:
+      - NODE_ENV=production
+      - METRICS_HOST=0.0.0.0
+      - ENVIRONMENT=dev
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5175", "&&", "curl", "-f", "http://localhost:8089"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    networks:
+      - monitoring-network
+    profiles:
+      - with-apps
+
   checkmk:
     image: checkmk/check-mk-raw:2.4.0p12
     container_name: ensurance-checkmk
@@ -12,6 +48,8 @@ services:
     volumes:
       - checkmk_sites:/omd/sites
     restart: unless-stopped
+    networks:
+      - monitoring-network
 
   prometheus:
     image: prom/prometheus:v2.53.0
@@ -19,12 +57,18 @@ services:
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-remote-write-receiver"
+      - "--enable-feature=native-histograms"
     ports:
       - "9095:9090"
     volumes:
       - prometheus_data:/prometheus
       - ../monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
+    networks:
+      - monitoring-network
 
   grafana:
     image: grafana/grafana:11.3.0
@@ -42,6 +86,8 @@ services:
       - ../monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
       - ../monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
     restart: unless-stopped
+    networks:
+      - monitoring-network
 
   pushgateway:
     image: prom/pushgateway:v1.9.0
@@ -49,8 +95,16 @@ services:
     ports:
       - "9091:9091"
     restart: unless-stopped
+    networks:
+      - monitoring-network
+
+networks:
+  monitoring-network:
+    driver: bridge
 
 volumes:
   checkmk_sites:
   prometheus_data:
   grafana_data:
+  databases_monitoring:
+  logs_monitoring:
