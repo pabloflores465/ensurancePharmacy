@@ -91,17 +91,17 @@ docker compose -f docker-compose.stress.yml up -d jmeter-report
 # Detener servidor de reportes
 docker compose -f docker-compose.stress.yml stop jmeter-report
 
-# Levantar K6
-TEST_SCRIPT=load-test.js docker compose -f docker-compose.stress.yml run --rm k6
+# Levantar K6 (con --service-ports para exponer dashboard en puerto 5665)
+TEST_SCRIPT=load-test.js docker compose -f docker-compose.stress.yml run --rm --service-ports k6
 
 # K6 - Stress Test
-TEST_SCRIPT=stress-test.js docker compose -f docker-compose.stress.yml run --rm k6
+TEST_SCRIPT=stress-test.js docker compose -f docker-compose.stress.yml run --rm --service-ports k6
 
 # K6 - Spike Test
-TEST_SCRIPT=spike-test.js docker compose -f docker-compose.stress.yml run --rm k6
+TEST_SCRIPT=spike-test.js docker compose -f docker-compose.stress.yml run --rm --service-ports k6
 
 # K6 - Soak Test (30 min)
-TEST_SCRIPT=soak-test.js docker compose -f docker-compose.stress.yml run --rm k6
+TEST_SCRIPT=soak-test.js docker compose -f docker-compose.stress.yml run --rm --service-ports k6
 
 # Ver dashboard K6 (después del test)
 # Opción 1: Script helper

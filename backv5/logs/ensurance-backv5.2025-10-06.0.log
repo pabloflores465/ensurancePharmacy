@@ -1,0 +1,4 @@
+2025-10-06 03:23:48 [main] WARN  o.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2025-10-06 03:23:49 [main] INFO  com.sources.app.App - Conexión exitosa a la base de datos!
+2025-10-06 03:23:49 [main] INFO  com.sources.app.App - Métricas disponibles en http://0.0.0.0:9464/metrics
+2025-10-06 03:23:49 [main] INFO  com.sources.app.App - Servidor iniciado en http://0.0.0.0:8082/api2

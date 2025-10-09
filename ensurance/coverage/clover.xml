@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1757030928113" clover="3.2.0">
-  <project timestamp="1757030928114" name="All files">
-    <metrics statements="2021" coveredstatements="1983" conditionals="467" coveredconditionals="427" methods="61" coveredmethods="59" elements="2549" coveredelements="2469" complexity="0" loc="2021" ncloc="2021" packages="3" files="12" classes="12"/>
+<coverage generated="1759987290364" clover="3.2.0">
+  <project timestamp="1759987290365" name="All files">
+    <metrics statements="2021" coveredstatements="1983" conditionals="460" coveredconditionals="427" methods="61" coveredmethods="59" elements="2542" coveredelements="2469" complexity="0" loc="2021" ncloc="2021" packages="3" files="12" classes="12"/>
     <package name="components">
-      <metrics statements="424" coveredstatements="419" conditionals="109" coveredconditionals="101" methods="11" coveredmethods="11"/>
-      <file name="ApiDiagnostics.vue" path="/Users/gp/Documents/ensurancePharmacy/ensurance/src/components/ApiDiagnostics.vue">
-        <metrics statements="225" coveredstatements="220" conditionals="61" coveredconditionals="56" methods="4" coveredmethods="4"/>
+      <metrics statements="424" coveredstatements="419" conditionals="104" coveredconditionals="101" methods="11" coveredmethods="11"/>
+      <file name="ApiDiagnostics.vue" path="/home/pablopolis2016/Documents/ensurancePharmacy/ensurance/src/components/ApiDiagnostics.vue">
+        <metrics statements="225" coveredstatements="220" conditionals="58" coveredconditionals="56" methods="4" coveredmethods="4"/>
         <line num="1" count="9" type="cond" truecount="1" falsecount="0"/>
         <line num="2" count="1" type="stmt"/>
         <line num="3" count="1" type="stmt"/>
@@ -106,9 +106,9 @@
         <line num="190" count="1" type="stmt"/>
         <line num="191" count="1" type="stmt"/>
         <line num="192" count="1" type="stmt"/>
-        <line num="195" count="1" type="cond" truecount="0" falsecount="1"/>
-        <line num="196" count="1" type="cond" truecount="0" falsecount="1"/>
-        <line num="197" count="1" type="cond" truecount="0" falsecount="1"/>
+        <line num="195" count="1" type="stmt"/>
+        <line num="196" count="1" type="stmt"/>
+        <line num="197" count="1" type="stmt"/>
         <line num="200" count="1" type="stmt"/>
         <line num="201" count="1" type="stmt"/>
         <line num="202" count="1" type="stmt"/>
@@ -232,8 +232,8 @@
         <line num="343" count="1" type="cond" truecount="1" falsecount="0"/>
         <line num="346" count="1" type="stmt"/>
       </file>
-      <file name="CorsTest.vue" path="/Users/gp/Documents/ensurancePharmacy/ensurance/src/components/CorsTest.vue">
-        <metrics statements="98" coveredstatements="98" conditionals="24" coveredconditionals="22" methods="2" coveredmethods="2"/>
+      <file name="CorsTest.vue" path="/home/pablopolis2016/Documents/ensurancePharmacy/ensurance/src/components/CorsTest.vue">
+        <metrics statements="98" coveredstatements="98" conditionals="23" coveredconditionals="22" methods="2" coveredmethods="2"/>
         <line num="1" count="5" type="cond" truecount="2" falsecount="0"/>
         <line num="2" count="5" type="stmt"/>
         <line num="3" count="5" type="stmt"/>
@@ -302,7 +302,7 @@
         <line num="84" count="1" type="stmt"/>
         <line num="86" count="1" type="stmt"/>
         <line num="87" count="1" type="stmt"/>
-        <line num="88" count="1" type="cond" truecount="0" falsecount="1"/>
+        <line num="88" count="1" type="stmt"/>
         <line num="90" count="1" type="cond" truecount="1" falsecount="0"/>
         <line num="91" count="2" type="stmt"/>
         <line num="92" count="2" type="stmt"/>
@@ -333,8 +333,8 @@
         <line num="121" count="5" type="stmt"/>
         <line num="122" count="1" type="stmt"/>
       </file>
-      <file name="PortSelector.vue" path="/Users/gp/Documents/ensurancePharmacy/ensurance/src/components/PortSelector.vue">
-        <metrics statements="101" coveredstatements="101" conditionals="24" coveredconditionals="23" methods="5" coveredmethods="5"/>
+      <file name="PortSelector.vue" path="/home/pablopolis2016/Documents/ensurancePharmacy/ensurance/src/components/PortSelector.vue">
+        <metrics statements="101" coveredstatements="101" conditionals="23" coveredconditionals="23" methods="5" coveredmethods="5"/>
         <line num="1" count="2" type="cond" truecount="1" falsecount="0"/>
         <line num="2" count="1" type="stmt"/>
         <line num="3" count="1" type="stmt"/>
@@ -342,7 +342,7 @@
         <line num="7" count="1" type="stmt"/>
         <line num="8" count="1" type="stmt"/>
         <line num="9" count="1" type="stmt"/>
-        <line num="10" count="1" type="cond" truecount="0" falsecount="1"/>
+        <line num="10" count="1" type="stmt"/>
         <line num="13" count="1" type="cond" truecount="1" falsecount="0"/>
         <line num="15" count="6" type="stmt"/>
         <line num="16" count="6" type="cond" truecount="1" falsecount="0"/>
@@ -439,8 +439,8 @@
       </file>
     </package>
     <package name="components.__tests__">
-      <metrics statements="516" coveredstatements="516" conditionals="72" coveredconditionals="69" methods="3" coveredmethods="3"/>
-      <file name="ApiDiagnostics.spec.ts" path="/Users/gp/Documents/ensurancePharmacy/ensurance/src/components/__tests__/ApiDiagnostics.spec.ts">
+      <metrics statements="516" coveredstatements="516" conditionals="71" coveredconditionals="69" methods="3" coveredmethods="3"/>
+      <file name="ApiDiagnostics.spec.ts" path="/home/pablopolis2016/Documents/ensurancePharmacy/ensurance/src/components/__tests__/ApiDiagnostics.spec.ts">
         <metrics statements="143" coveredstatements="143" conditionals="19" coveredconditionals="17" methods="2" coveredmethods="2"/>
         <line num="1" count="1" type="stmt"/>
         <line num="24" count="1" type="cond" truecount="1" falsecount="0"/>
@@ -586,8 +586,8 @@
         <line num="220" count="1" type="stmt"/>
         <line num="221" count="1" type="stmt"/>
       </file>
-      <file name="CorsTest.spec.ts" path="/Users/gp/Documents/ensurancePharmacy/ensurance/src/components/__tests__/CorsTest.spec.ts">
-        <metrics statements="78" coveredstatements="78" conditionals="20" coveredconditionals="19" methods="0" coveredmethods="0"/>
+      <file name="CorsTest.spec.ts" path="/home/pablopolis2016/Documents/ensurancePharmacy/ensurance/src/components/__tests__/CorsTest.spec.ts">
+        <metrics statements="78" coveredstatements="78" conditionals="19" coveredconditionals="19" methods="0" coveredmethods="0"/>
         <line num="1" count="1" type="stmt"/>
         <line num="22" count="1" type="cond" truecount="1" falsecount="0"/>
         <line num="23" count="1" type="cond" truecount="1" falsecount="0"/>
@@ -596,7 +596,7 @@
         <line num="27" count="1" type="cond" truecount="1" falsecount="0"/>
         <line num="28" count="1" type="stmt"/>
         <line num="31" count="1" type="stmt"/>
-        <line num="32" count="1" type="cond" truecount="0" falsecount="1"/>
+        <line num="32" count="1" type="stmt"/>
         <line num="33" count="1" type="stmt"/>
         <line num="36" count="1" type="stmt"/>
         <line num="37" count="1" type="stmt"/>
@@ -667,7 +667,7 @@
         <line num="133" count="1" type="stmt"/>
         <line num="134" count="1" type="stmt"/>
       </file>
-      <file name="PortSelector.spec.ts" path="/Users/gp/Documents/ensurancePharmacy/ensurance/src/components/__tests__/PortSelector.spec.ts">
+      <file name="PortSelector.spec.ts" path="/home/pablopolis2016/Documents/ensurancePharmacy/ensurance/src/components/__tests__/PortSelector.spec.ts">
         <metrics statements="74" coveredstatements="74" conditionals="10" coveredconditionals="10" methods="1" coveredmethods="1"/>
         <line num="1" count="1" type="stmt"/>
         <line num="2" count="1" type="stmt"/>
@@ -744,7 +744,7 @@
         <line num="113" count="1" type="stmt"/>
         <line num="115" count="1" type="stmt"/>
       </file>
-      <file name="ServiceIntegration.spec.ts" path="/Users/gp/Documents/ensurancePharmacy/ensurance/src/components/__tests__/ServiceIntegration.spec.ts">
+      <file name="ServiceIntegration.spec.ts" path="/home/pablopolis2016/Documents/ensurancePharmacy/ensurance/src/components/__tests__/ServiceIntegration.spec.ts">
         <metrics statements="221" coveredstatements="221" conditionals="23" coveredconditionals="23" methods="0" coveredmethods="0"/>
         <line num="1" count="1" type="stmt"/>
         <line num="31" count="1" type="cond" truecount="1" falsecount="0"/>
@@ -970,9 +970,9 @@
       </file>
     </package>
     <package name="pages">
-      <metrics statements="1081" coveredstatements="1048" conditionals="286" coveredconditionals="257" methods="47" coveredmethods="45"/>
-      <file name="appointments.vue" path="/Users/gp/Documents/ensurancePharmacy/ensurance/src/pages/appointments.vue">
-        <metrics statements="404" coveredstatements="375" conditionals="105" coveredconditionals="86" methods="19" coveredmethods="17"/>
+      <metrics statements="1081" coveredstatements="1048" conditionals="285" coveredconditionals="257" methods="47" coveredmethods="45"/>
+      <file name="appointments.vue" path="/home/pablopolis2016/Documents/ensurancePharmacy/ensurance/src/pages/appointments.vue">
+        <metrics statements="404" coveredstatements="375" conditionals="104" coveredconditionals="86" methods="19" coveredmethods="17"/>
         <line num="1" count="123" type="cond" truecount="2" falsecount="0"/>
         <line num="2" count="1" type="stmt"/>
         <line num="3" count="1" type="stmt"/>
@@ -1098,7 +1098,7 @@
         <line num="144" count="0" type="stmt"/>
         <line num="145" count="22" type="stmt"/>
         <line num="148" count="1" type="stmt"/>
-        <line num="149" count="1" type="cond" truecount="0" falsecount="1"/>
+        <line num="149" count="1" type="stmt"/>
         <line num="151" count="1" type="cond" truecount="0" falsecount="1"/>
         <line num="153" count="1" type="stmt"/>
         <line num="155" count="1" type="stmt"/>
@@ -1378,7 +1378,7 @@
         <line num="524" count="8" type="cond" truecount="0" falsecount="1"/>
         <line num="525" count="8" type="stmt"/>
       </file>
-      <file name="home.vue" path="/Users/gp/Documents/ensurancePharmacy/ensurance/src/pages/home.vue">
+      <file name="home.vue" path="/home/pablopolis2016/Documents/ensurancePharmacy/ensurance/src/pages/home.vue">
         <metrics statements="174" coveredstatements="174" conditionals="44" coveredconditionals="42" methods="10" coveredmethods="10"/>
         <line num="1" count="22" type="cond" truecount="3" falsecount="0"/>
         <line num="2" count="1" type="stmt"/>
@@ -1555,7 +1555,7 @@
         <line num="217" count="1" type="stmt"/>
         <line num="218" count="1" type="stmt"/>
       </file>
-      <file name="inactive-account.vue" path="/Users/gp/Documents/ensurancePharmacy/ensurance/src/pages/inactive-account.vue">
+      <file name="inactive-account.vue" path="/home/pablopolis2016/Documents/ensurancePharmacy/ensurance/src/pages/inactive-account.vue">
         <metrics statements="81" coveredstatements="77" conditionals="17" coveredconditionals="16" methods="3" coveredmethods="3"/>
         <line num="1" count="1" type="stmt"/>
         <line num="2" count="1" type="stmt"/>
@@ -1639,7 +1639,7 @@
         <line num="102" count="1" type="stmt"/>
         <line num="103" count="1" type="stmt"/>
       </file>
-      <file name="login.vue" path="/Users/gp/Documents/ensurancePharmacy/ensurance/src/pages/login.vue">
+      <file name="login.vue" path="/home/pablopolis2016/Documents/ensurancePharmacy/ensurance/src/pages/login.vue">
         <metrics statements="151" coveredstatements="151" conditionals="41" coveredconditionals="40" methods="4" coveredmethods="4"/>
         <line num="1" count="11" type="cond" truecount="1" falsecount="0"/>
         <line num="2" count="11" type="stmt"/>
@@ -1793,7 +1793,7 @@
         <line num="197" count="1" type="cond" truecount="1" falsecount="0"/>
         <line num="198" count="1" type="stmt"/>
       </file>
-      <file name="profile-completion.vue" path="/Users/gp/Documents/ensurancePharmacy/ensurance/src/pages/profile-completion.vue">
+      <file name="profile-completion.vue" path="/home/pablopolis2016/Documents/ensurancePharmacy/ensurance/src/pages/profile-completion.vue">
         <metrics statements="271" coveredstatements="271" conditionals="79" coveredconditionals="73" methods="11" coveredmethods="11"/>
         <line num="1" count="24" type="cond" truecount="11" falsecount="0"/>
         <line num="2" count="1" type="stmt"/>
