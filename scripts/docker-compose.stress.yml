@@ -29,6 +29,7 @@ services:
   jmeter:
     image: alpine/jmeter:5.6.3
     container_name: ensurance-jmeter
+    entrypoint: ["/custom-entrypoint.sh"]
     command:
       - "-n"
       - "-t"
@@ -46,11 +47,30 @@ services:
     volumes:
       - ../stress/jmeter/test-plans:/testplans:ro
       - jmeter_results:/results
+      - ./jmeter-entrypoint.sh:/custom-entrypoint.sh:ro
+    ports:
+      - "8085:8085"
     restart: "no"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
       - stress-test-network
+
+  jmeter-report:
+    image: python:3.9-alpine
+    container_name: ensurance-jmeter-report
+    working_dir: /results/report
+    command: python -m http.server 8085
+    volumes:
+      - jmeter_results:/results
+    ports:
+      - "8085:8085"
+    restart: unless-stopped
+    networks:
+      - stress-test-network
+    labels:
+      - "com.ensurance.service=jmeter-report"
+      - "com.ensurance.description=JMeter HTML Report Server"
 
 networks:
   stress-test-network:

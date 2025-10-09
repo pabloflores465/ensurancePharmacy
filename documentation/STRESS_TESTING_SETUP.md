@@ -73,19 +73,26 @@ cd stress
 cd stress
 ./run-tests.sh
 ```
-
 ### 3️⃣ Comandos Directos
 
 **JMeter:**
 ```bash
 cd scripts
-JMETER_PLAN=ensurance-full-test.jmx docker-compose -f docker-compose.stress.yml run --rm jmeter
+# Ejecutar test
+JMETER_PLAN=ensurance-full-test.jmx docker compose -f docker-compose.stress.yml run --rm jmeter
+
+# Levantar servidor de reportes (se hace automáticamente con run-tests.sh)
+docker compose -f docker-compose.stress.yml up -d jmeter-report
+
+# Acceder a: http://localhost:8085
+# El contenedor es visible en Portainer como "ensurance-jmeter-report"
 ```
 
 **K6:**
 ```bash
 cd scripts
-TEST_SCRIPT=load-test.js docker-compose -f docker-compose.stress.yml run --rm k6
+# Ejecutar test
+TEST_SCRIPT=load-test.js docker compose -f docker-compose.stress.yml run --rm k6
 ```
 
 ### 4️⃣ Iniciar Grafana
@@ -93,7 +100,6 @@ TEST_SCRIPT=load-test.js docker-compose -f docker-compose.stress.yml run --rm k6
 cd scripts
 docker-compose -f docker-compose.monitor.yml up -d
 ```
-
 ---
 
 ## 📊 Dashboards y Visualización
@@ -103,13 +109,13 @@ docker-compose -f docker-compose.monitor.yml up -d
 | **Grafana** | http://localhost:3300 | admin / changeme |
 | **K6 Dashboard** | http://localhost:5665 | - (solo mientras corre K6) |
 | **Prometheus** | http://localhost:9095 | - |
-| **JMeter Report** | http://localhost:8080 | - (ejecutar view-jmeter-report.sh) |
+| **JMeter Report** | http://localhost:8085 | - (se levanta automáticamente después del test) |
 
 ---
 
 ## 📈 Gráficas Implementadas
 
-### Grafana Dashboard (8+ gráficas)
+{{ ... }}
 1. ✅ Virtual Users (VUs)
 2. ✅ Request Rate (req/sec)
 3. ✅ Response Time Percentiles (p50, p95, p99)
@@ -184,10 +190,11 @@ docker-compose -f docker-compose.monitor.yml up -d
 - [ ] Revisar logs: `docker logs -f ensurance-k6`
 
 ### Después del Test
-- [ ] Ver reportes JMeter: `./view-jmeter-report.sh`
+- [ ] Ver reportes JMeter: http://localhost:8085 (se abre automáticamente)
 - [ ] Analizar métricas en Grafana
 - [ ] Exportar resultados si necesario
 - [ ] Documentar hallazgos
+- [ ] Detener servidor JMeter: Presiona Ctrl+C en la terminal
 
 ---
 
@@ -231,6 +238,11 @@ docker logs ensurance-jmeter
 # Verificar volumen
 docker volume ls | grep jmeter
 ```
+
+**❌ No puedo acceder al reporte JMeter**
+- El servidor HTTP se levanta automáticamente después del test en http://localhost:8085
+- Si necesitas levantarlo manualmente: `./view-jmeter-report.sh`
+- Verifica que el test haya completado exitosamente
 
 ---
 

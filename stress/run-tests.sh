@@ -137,16 +137,24 @@ run_jmeter() {
     local test_plan=$1
     print_info "Ejecutando JMeter test: ${test_plan}"
     
+    # Detener servidor de reportes si está corriendo
+    docker compose -f docker-compose.stress.yml stop jmeter-report 2>/dev/null || true
+    
     # Limpiar resultados anteriores
     print_info "Limpiando resultados anteriores..."
     docker run --rm -v scripts_jmeter_results:/results alpine sh -c "rm -rf /results/*" 2>/dev/null || true
     
+    # Ejecutar test
     JMETER_PLAN="${test_plan}" docker compose -f docker-compose.stress.yml run --rm jmeter
     
+    # Levantar servidor de reportes
+    print_info "Levantando servidor de reportes..."
+    docker compose -f docker-compose.stress.yml up -d jmeter-report
+    
     print_success "JMeter test completado!"
-    print_info "Para ver el reporte HTML, ejecuta:"
-    print_info "  cd ../stress && ./view-jmeter-report.sh"
-    print_info "  Luego abre: http://localhost:8085"
+    print_info "Reporte disponible en: http://localhost:8085"
+    print_info "El servidor está corriendo en segundo plano (visible en Portainer)"
+    print_info "Para detener: docker compose -f docker-compose.stress.yml stop jmeter-report"
 }
 
 # Función para iniciar Grafana
@@ -222,9 +230,13 @@ main() {
                 check_backends
                 ;;
             9)
-                print_info "Iniciando servidor HTTP con reportes JMeter..."
-                docker run --rm -v scripts_jmeter_results:/results -p 8085:8085 \
-                    -w /results/report python:3.9 python -m http.server 8085
+                print_info "Iniciando servidor de reportes JMeter..."
+                cd ../scripts
+                docker compose -f docker-compose.stress.yml up -d jmeter-report
+                cd ../stress
+                print_success "Servidor levantado!"
+                print_info "Reporte disponible en: http://localhost:8085"
+                print_info "Para detener: docker compose -f docker-compose.stress.yml stop jmeter-report"
                 ;;
             10)
                 start_backends
