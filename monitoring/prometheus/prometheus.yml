@@ -7,34 +7,62 @@ scrape_configs:
     static_configs:
       - targets: ['prometheus:9090']
   
+  # Backends - Monitorea las mismas instancias que los stress tests
+  # Primero intenta el contenedor interno, luego host.docker.internal
   - job_name: 'backv5-pharmacy'
     static_configs:
-      - targets: ['10.128.0.2:9464']
+      - targets: ['ensurance-pharmacy-monitoring:9464']
         labels:
           service: 'pharmacy-backend'
           component: 'backv5'
+          instance_type: 'container'
+      - targets: ['host.docker.internal:9464']
+        labels:
+          service: 'pharmacy-backend'
+          component: 'backv5'
+          instance_type: 'host'
   
   - job_name: 'backv4-ensurance'
     static_configs:
-      - targets: ['10.128.0.2:9465']
+      - targets: ['ensurance-pharmacy-monitoring:9465']
         labels:
           service: 'ensurance-backend'
           component: 'backv4'
+          instance_type: 'container'
+      - targets: ['host.docker.internal:9465']
+        labels:
+          service: 'ensurance-backend'
+          component: 'backv4'
+          instance_type: 'host'
   
+  # Frontends - Monitorea las mismas instancias que los stress tests
   - job_name: 'ensurance-frontend'
     static_configs:
-      - targets: ['10.128.0.2:9466']
+      - targets: ['ensurance-pharmacy-monitoring:9466']
         labels:
           service: 'ensurance-frontend'
           component: 'vue-app'
+          instance_type: 'container'
+      - targets: ['host.docker.internal:9466']
+        labels:
+          service: 'ensurance-frontend'
+          component: 'vue-app'
+          instance_type: 'host'
   
   - job_name: 'pharmacy-frontend'
     static_configs:
-      - targets: ['10.128.0.2:9467']
+      - targets: ['ensurance-pharmacy-monitoring:9467']
         labels:
           service: 'pharmacy-frontend'
           component: 'vue-app'
+          instance_type: 'container'
+      - targets: ['host.docker.internal:9467']
+        labels:
+          service: 'pharmacy-frontend'
+          component: 'vue-app'
+          instance_type: 'host'
   
+  # CI/CD y Stress Testing
   - job_name: 'jenkins-pipeline'
     honor_labels: true
     static_configs:
@@ -50,3 +78,11 @@ scrape_configs:
         labels:
           service: 'k6-stress-testing'
           component: 'load-test'
+  
+  # System Metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+        labels:
+          service: 'system-metrics'
+          component: 'node-exporter'

@@ -81,12 +81,14 @@ FROM eclipse-temurin:21-jre-alpine AS runtime
 # Build arguments for environment configuration
 ARG ENVIRONMENT=main
 
-# Install required packages
+# Install required packages including Node.js for metrics servers
 RUN apk add --no-cache \
     sqlite \
     supervisor \
     python3 \
-    curl
+    curl \
+    nodejs \
+    npm
 
 # Ensure JAVA is on PATH for supervisord-managed processes
 ENV JAVA_HOME=/opt/java/openjdk
@@ -103,11 +105,22 @@ RUN mkdir -p /app/ensurance-frontend \
              /app/databases \
              /app/logs \
              /var/log/supervisor \
-             /run
+             /run \
+             /app/ensurance \
+             /app/pharmacy
 
 # Copy built frontends
 COPY --from=ensurance-frontend-build /app/ensurance/dist /app/ensurance-frontend/
 COPY --from=pharmacy-frontend-build /app/pharmacy/dist /app/pharmacy-frontend/
+
+# Copy metrics server files and their dependencies
+COPY --from=ensurance-frontend-build /app/ensurance/metrics-server.js /app/ensurance/
+COPY --from=ensurance-frontend-build /app/ensurance/package*.json /app/ensurance/
+COPY --from=ensurance-frontend-build /app/ensurance/node_modules /app/ensurance/node_modules
+
+COPY --from=pharmacy-frontend-build /app/pharmacy/metrics-server.js /app/pharmacy/
+COPY --from=pharmacy-frontend-build /app/pharmacy/package*.json /app/pharmacy/
+COPY --from=pharmacy-frontend-build /app/pharmacy/node_modules /app/pharmacy/node_modules
 
 # Copy built backends
 COPY --from=ensurance-backend-build /app/backv4/target/*.jar /app/ensurance-backend/
@@ -170,7 +183,7 @@ autorestart=true
 redirect_stderr=true
 stdout_logfile=/dev/stdout
 stdout_logfile_maxbytes=0
-environment=SERVER_HOST="0.0.0.0",SERVER_PORT="8081"
+environment=SERVER_HOST="0.0.0.0",SERVER_PORT="8081",METRICS_HOST="%(ENV_METRICS_HOST)s",METRICS_PORT="9465"
 
 [program:pharmacy-backend]
 command=/bin/sh -lc "exec /opt/java/openjdk/bin/java --enable-preview -jar -Dserver.port=8082 -Dhibernate.connection.url=jdbc:sqlite:/app/databases/pharmacy/USUARIO.sqlite -Dhibernate.connection.driver_class=org.sqlite.JDBC -Dhibernate.dialect=org.hibernate.community.dialect.SQLiteDialect /app/pharmacy-backend/app.jar"
@@ -180,7 +193,27 @@ autorestart=true
 redirect_stderr=true
 stdout_logfile=/dev/stdout
 stdout_logfile_maxbytes=0
-environment=SERVER_HOST="0.0.0.0",SERVER_PORT="8082"
+environment=SERVER_HOST="0.0.0.0",SERVER_PORT="8082",METRICS_HOST="%(ENV_METRICS_HOST)s",METRICS_PORT="9464"
+
+[program:ensurance-metrics]
+command=/usr/bin/node metrics-server.js
+directory=/app/ensurance
+autostart=true
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+environment=METRICS_HOST="%(ENV_METRICS_HOST)s",METRICS_PORT="9466"
+
+[program:pharmacy-metrics]
+command=/usr/bin/node metrics-server.js
+directory=/app/pharmacy
+autostart=true
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+environment=METRICS_HOST="%(ENV_METRICS_HOST)s",METRICS_PORT="9467"
 EOF
 
 # Create startup script
@@ -188,11 +221,19 @@ COPY <<'EOF' /app/start.sh
 #!/bin/sh
 set -e
 
+# Set default METRICS_HOST if not provided
+export METRICS_HOST="${METRICS_HOST:-0.0.0.0}"
+
 echo "Starting Ensurance Pharmacy System..."
 echo "Ensurance Frontend: http://localhost:5175"
 echo "Pharmacy Frontend: http://localhost:8089"
 echo "Ensurance Backend: http://localhost:8081"
 echo "Pharmacy Backend: http://localhost:8082"
+echo "Metrics endpoints:"
+echo "  - Backend v5: http://localhost:9464/metrics"
+echo "  - Backend v4: http://localhost:9465/metrics"
+echo "  - Ensurance Frontend: http://localhost:9466/metrics"
+echo "  - Pharmacy Frontend: http://localhost:9467/metrics"
 
 # Ensure database directories exist
 mkdir -p /app/databases/ensurance /app/databases/pharmacy || true
@@ -225,8 +266,8 @@ EOF
 
 RUN chmod +x /app/start.sh
 
-# Expose all ports
-EXPOSE 5175 8089 8081 8082
+# Expose all ports (apps + metrics)
+EXPOSE 5175 8089 8081 8082 9464 9465 9466 9467
 
 # Health check: basic reachability of frontends and backend base path
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \

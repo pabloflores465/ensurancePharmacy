@@ -1573,13 +1573,18 @@ ensurancePharmacy/
 
 ### 📊 Métricas y Monitoreo
 
-Toda la documentación de métricas está en la carpeta `documentation/`:
+Toda la documentación de métricas está en las carpetas `documentation/` y `monitoring/`:
 
+#### Métricas de Aplicación
 - **[METRICS_SETUP.md](documentation/METRICS_SETUP.md)** - Guía de instalación de métricas
 - **[METRICS_STATUS.md](documentation/METRICS_STATUS.md)** - Estado actual del sistema de métricas
 - **[PROMETHEUS_QUERIES.md](documentation/PROMETHEUS_QUERIES.md)** - Queries para aplicaciones
 - **[JENKINS_METRICS_GUIDE.md](documentation/JENKINS_METRICS_GUIDE.md)** - Guía completa Jenkins
 - **[JENKINS_PROMETHEUS_QUERIES.md](documentation/JENKINS_PROMETHEUS_QUERIES.md)** - Queries Jenkins
+
+#### Métricas del Sistema
+- **[SYSTEM_METRICS.md](monitoring/SYSTEM_METRICS.md)** - Guía completa de métricas del sistema (CPU, RAM, Disco, Red)
+- **Verificación:** `scripts/verify-system-metrics.sh` - Script de verificación de métricas del sistema
 
 ### 🚀 Scripts Disponibles
 

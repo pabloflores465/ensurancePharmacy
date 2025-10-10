@@ -1,10 +1,15 @@
 import http from 'k6/http';
 import { check, group, sleep } from 'k6';
-import { Rate, Trend } from 'k6/metrics';
+import { Rate, Trend, Counter, Gauge } from 'k6/metrics';
 
-// Custom metrics
+// Custom metrics para Prometheus
 const errorRate = new Rate('errors');
 const customResponseTime = new Trend('custom_response_time');
+const backv4ResponseTime = new Trend('backv4_response_time');
+const backv5ResponseTime = new Trend('backv5_response_time');
+const successfulRequests = new Counter('successful_requests');
+const failedRequests = new Counter('failed_requests');
+const stressLevel = new Gauge('stress_level');
 
 // Configuration
 const BACKV4_URL = __ENV.BACKV4_URL || 'http://host.docker.internal:8081';
@@ -27,15 +32,22 @@ export const options = {
 };
 
 export default function () {
+  // Track stress level based on VU count
+  stressLevel.add(__VU);
+  
   // Test BackV4
   group('BackV4 - Stress Test', () => {
     const res = http.get(`${BACKV4_URL}/api/users`);
+    backv4ResponseTime.add(res.timings.duration);
+    customResponseTime.add(res.timings.duration);
+    
     const passed = check(res, {
       'status is 200': (r) => r.status === 200,
       'response time < 1s': (r) => r.timings.duration < 1000,
     });
+    
+    if (passed) successfulRequests.add(1); else failedRequests.add(1);
     errorRate.add(!passed);
-    customResponseTime.add(res.timings.duration);
   });
 
   sleep(0.5);
@@ -50,11 +62,15 @@ export default function () {
     ]);
 
     batch.forEach((res, index) => {
+      backv5ResponseTime.add(res.timings.duration);
+      customResponseTime.add(res.timings.duration);
+      
       const passed = check(res, {
         [`Batch request ${index} status is 200`]: (r) => r.status === 200,
       });
+      
+      if (passed) successfulRequests.add(1); else failedRequests.add(1);
       errorRate.add(!passed);
-      customResponseTime.add(res.timings.duration);
     });
   });
 

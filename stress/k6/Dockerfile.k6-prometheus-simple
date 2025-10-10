@@ -1,0 +1,8 @@
+# Solución alternativa: usar imagen oficial de k6 con extensión Prometheus
+# Esta es más rápida porque no requiere compilar
+FROM grafana/k6:latest-with-browser
+
+# La imagen grafana/k6:latest ya incluye xk6-output-prometheus-remote
+# No necesitamos compilar nada adicional
+
+ENTRYPOINT ["k6"]

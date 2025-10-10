@@ -1,0 +1,28 @@
+FROM golang:1.23-alpine AS builder
+
+WORKDIR /build
+
+# Install build dependencies
+RUN apk add --no-cache git
+
+# Set GOTOOLCHAIN to auto to allow Go to download newer versions if needed
+ENV GOTOOLCHAIN=auto
+
+# Install xk6
+RUN go install go.k6.io/xk6/cmd/xk6@latest
+
+# Build k6 with Prometheus remote write extension
+RUN xk6 build \
+    --with github.com/grafana/xk6-output-prometheus-remote@latest \
+    --output /build/k6
+
+# Final stage
+FROM alpine:3.19
+
+# Install ca-certificates for HTTPS
+RUN apk --no-cache add ca-certificates
+
+# Copy the custom k6 binary
+COPY --from=builder /build/k6 /usr/bin/k6
+
+ENTRYPOINT ["k6"]

@@ -1,0 +1,160 @@
+═══════════════════════════════════════════════════════════════════════════════
+  K6 + PROMETHEUS - NOMBRES DE MÉTRICAS
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ CONFIGURACIÓN COMPLETA - Todo mediante Docker Compose
+
+📊 MÉTRICAS HTTP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• k6_http_reqs                  - Total de requests HTTP
+• k6_http_req_duration          - Duración completa de requests (ms)
+• k6_http_req_waiting           - Tiempo esperando respuesta (TTFB)
+• k6_http_req_connecting        - Tiempo estableciendo conexión TCP
+• k6_http_req_tls_handshaking   - Tiempo en TLS handshake
+• k6_http_req_sending           - Tiempo enviando datos
+• k6_http_req_receiving         - Tiempo recibiendo datos
+• k6_http_req_blocked           - Tiempo bloqueado antes del request
+• k6_http_req_failed            - Ratio de requests fallidos
+
+📈 MÉTRICAS DE VUs (USUARIOS VIRTUALES)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• k6_vus                        - Número actual de VUs activos
+• k6_vus_max                    - Número máximo de VUs en el test
+
+🔄 MÉTRICAS DE ITERACIONES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• k6_iterations                 - Total de iteraciones completadas
+• k6_iteration_duration         - Duración de cada iteración
+
+📦 MÉTRICAS DE DATOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• k6_data_sent                  - Total de bytes enviados
+• k6_data_received              - Total de bytes recibidos
+
+✓ MÉTRICAS DE CHECKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• k6_checks                     - Ratio de checks exitosos
+
+🎯 MÉTRICAS PERSONALIZADAS (ejemplo en prometheus-test.js)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• k6_custom_test_counter        - Contador personalizado
+• k6_custom_test_duration       - Duración personalizada
+• k6_custom_test_success_rate   - Tasa de éxito personalizada
+• k6_custom_test_gauge          - Gauge personalizado
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📝 ESTADÍSTICAS DE MÉTRICAS TREND (Histograms/Summary)
+
+Las métricas como k6_http_req_duration incluyen múltiples estadísticas:
+  • min       - Valor mínimo
+  • max       - Valor máximo
+  • avg       - Promedio
+  • med       - Mediana (p50)
+  • p95       - Percentil 95
+  • p99       - Percentil 99
+
+Ejemplo de uso:
+  k6_http_req_duration{stat="p95"}
+  k6_http_req_duration{stat="avg"}
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🔎 QUERIES PROMQL ÚTILES
+
+# Requests por segundo
+rate(k6_http_reqs[1m])
+
+# Latencia P95
+k6_http_req_duration{stat="p95"}
+
+# Latencia P99
+k6_http_req_duration{stat="p99"}
+
+# Tasa de errores
+rate(k6_http_req_failed[1m])
+
+# VUs activos
+k6_vus
+
+# Requests por método HTTP
+sum by (method) (rate(k6_http_reqs[1m]))
+
+# Requests por status code
+sum by (status) (rate(k6_http_reqs[1m]))
+
+# Throughput (bytes recibidos/seg)
+rate(k6_data_received[1m])
+
+# Latencia por endpoint
+k6_http_req_duration{stat="p95"} by (name)
+
+# Ver todas las métricas de K6
+{__name__=~"k6_.*"}
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🚀 INICIO RÁPIDO
+
+# Verificación automatizada (TODO EN UNO)
+cd stress/k6
+./verify-prometheus-integration.sh
+
+# Ver solo nombres de métricas
+./verify-prometheus-integration.sh --metrics-only
+
+# Verificar métricas existentes
+./verify-prometheus-integration.sh --verify-only
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🔧 CONFIGURACIÓN TÉCNICA
+
+Archivo: scripts/docker-compose.stress.yml
+  • K6 con extensión xk6-output-prometheus-remote
+  • Remote Write a Prometheus cada 5 segundos
+  • Estadísticas: p95, p99, min, max, avg, med
+  • Conectado a monitoring-network
+
+Archivo: scripts/docker-compose.monitor.yml
+  • Prometheus con --web.enable-remote-write-receiver
+  • Soporte para histogramas nativos
+  • Puerto 9095 expuesto
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🌐 ACCESO
+
+• Prometheus:    http://localhost:9095
+  Query: {__name__=~"k6_.*"}
+
+• Grafana:       http://localhost:3300
+  Usuario: admin / Password: changeme
+
+• K6 Dashboard:  http://localhost:5666
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📚 DOCUMENTACIÓN COMPLETA
+
+stress/k6/K6_PROMETHEUS_METRICS.md           - Guía completa de métricas
+K6_PROMETHEUS_SETUP_COMPLETE.md              - Setup detallado
+stress/README.md                             - README actualizado
+COMANDOS_RAPIDOS.md                          - Comandos actualizados
+
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ VERIFICACIÓN DE MÉTRICAS
+
+# Via curl
+curl 'http://localhost:9095/api/v1/query?query=k6_http_reqs'
+curl 'http://localhost:9095/api/v1/query?query=k6_vus'
+
+# Via Prometheus UI
+1. Abre http://localhost:9095
+2. Query: {__name__=~"k6_.*"}
+3. Verifica que aparezcan las métricas listadas arriba
+
+═══════════════════════════════════════════════════════════════════════════════
+Fecha: 2025-10-09 | Estado: ✅ COMPLETADO Y VERIFICADO
+═══════════════════════════════════════════════════════════════════════════════
