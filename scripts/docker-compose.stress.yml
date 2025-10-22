@@ -12,10 +12,11 @@ services:
       - "json=/results/k6-results.json"
       - "--out"
       - "experimental-prometheus-rw"
+      - "--out"
+      - "web-dashboard=export=/results/k6-report.html"
       - "--summary-export=/results/summary.json"
       - "/scripts/${TEST_SCRIPT:-sample-script.js}"
     environment:
-      K6_WEB_DASHBOARD_EXPORT: "/results/k6-dashboard"
       K6_PROMETHEUS_RW_SERVER_URL: "http://prometheus:9090/api/v1/write"
       K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM: "false"
       K6_PROMETHEUS_RW_PUSH_INTERVAL: "5s"
@@ -72,23 +73,34 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        # Rename k6-dashboard to .html extension if it exists
-        if [ -f /results/k6-dashboard ]; then
-          cp /results/k6-dashboard /results/k6-dashboard.html
-        fi
-        
-        # Create index.html with redirect
+        # Create index.html with links to all reports
         cat > /results/index.html << 'EOF'
         <!DOCTYPE html>
         <html>
         <head>
           <meta charset="utf-8">
-          <meta http-equiv="refresh" content="0; url=/k6-dashboard.html">
+          <meta http-equiv="refresh" content="0; url=/k6-report.html">
           <title>K6 Dashboard</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+            .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            h1 { color: #7d64ff; }
+            a { color: #7d64ff; text-decoration: none; font-weight: bold; }
+            a:hover { text-decoration: underline; }
+            .links { margin-top: 20px; }
+            .links div { margin: 10px 0; }
+          </style>
         </head>
         <body>
-          <p>Redirecting to K6 Dashboard...</p>
-          <p>If not redirected, <a href="/k6-dashboard.html">click here</a></p>
+          <div class="container">
+            <h1>📊 K6 Test Reports</h1>
+            <p>Redirecting to K6 Dashboard...</p>
+            <div class="links">
+              <div>🎨 <a href="/k6-report.html">Interactive Dashboard (Recommended)</a></div>
+              <div>📄 <a href="/k6-results.json">Raw JSON Results</a></div>
+              <div>📊 <a href="/summary.json">Summary JSON</a></div>
+            </div>
+          </div>
         </body>
         </html>
         EOF

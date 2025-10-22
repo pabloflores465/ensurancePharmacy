@@ -11,9 +11,10 @@ ENV GOTOOLCHAIN=auto
 # Install xk6
 RUN go install go.k6.io/xk6/cmd/xk6@latest
 
-# Build k6 with Prometheus remote write extension
+# Build k6 with Prometheus remote write extension and web dashboard
 RUN xk6 build \
     --with github.com/grafana/xk6-output-prometheus-remote@latest \
+    --with github.com/grafana/xk6-dashboard@latest \
     --output /build/k6
 
 # Final stage
