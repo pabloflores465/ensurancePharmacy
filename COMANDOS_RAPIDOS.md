@@ -4,6 +4,38 @@ Referencia rápida de todos los comandos disponibles en el proyecto.
 
 ---
 
+## 🐳 Docker Compose - Sistema Completo
+
+### ⭐ NUEVO: Scripts Todo-en-Uno
+
+```bash
+# Levantar TODO el sistema (Apps + Métricas + Monitoreo + CI/CD + Herramientas)
+./start-docker-full.sh
+
+# Levantar SOLO apps con métricas (Ligero, ideal para desarrollo)
+./start-docker-metrics.sh
+
+# Manual: Levantar todo con compose
+docker compose -f docker-compose.full.yml up -d
+
+# Manual: Levantar solo apps
+docker compose -f docker-compose.full.yml up -d ensurance-pharmacy-apps
+
+# Ver documentación completa
+cat DOCKER_COMPOSE_FULL.md
+
+# Referencia rápida
+cat DOCKER_QUICK_REFERENCE.md
+```
+
+**URLs principales:**
+- Apps: http://localhost:3100-3103
+- Métricas: http://localhost:9470-9473
+- Prometheus: http://localhost:9090
+- Grafana: http://localhost:3302 (admin/changeme)
+
+---
+
 ## 📦 Docker Compose - Entornos
 
 ### 🔵 Desarrollo (DEV)

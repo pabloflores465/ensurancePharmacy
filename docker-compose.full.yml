@@ -1,0 +1,385 @@
+version: "3.9"
+
+# ============================================
+# DOCKER COMPOSE COMPLETO - ENSURANCE PHARMACY
+# Levanta todos los servicios del sistema
+# ============================================
+
+services:
+  # ==========================================
+  # APLICACIÓN PRINCIPAL
+  # ==========================================
+  ensurance-pharmacy-apps:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - ENVIRONMENT=dev
+    container_name: ensurance-pharmacy-full
+    ports:
+      # Frontend ports
+      - "3100:5175"   # Ensurance Frontend
+      - "3101:8089"   # Pharmacy Frontend
+      # Backend ports
+      - "3102:8081"   # Ensurance Backend (backv4)
+      - "3103:8082"   # Pharmacy Backend (backv5)
+      # Metrics ports
+      - "9470:9464"   # Métricas backv5
+      - "9471:9465"   # Métricas backv4
+      - "9472:9466"   # Métricas ensurance frontend
+      - "9473:9467"   # Métricas pharmacy frontend
+    volumes:
+      - databases_full:/app/databases
+      - logs_full:/app/logs
+    environment:
+      - NODE_ENV=production
+      - METRICS_HOST=0.0.0.0
+      - METRICS_PORT_BACKV5=9464
+      - METRICS_PORT_BACKV4=9465
+      - METRICS_PORT_ENSURANCE=9466
+      - METRICS_PORT_PHARMACY=9467
+      - ENVIRONMENT=dev
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5175", "&&", "curl", "-f", "http://localhost:8089"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    networks:
+      - ensurance-full-network
+
+  # ==========================================
+  # MONITOREO - PROMETHEUS
+  # ==========================================
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    container_name: ensurance-prometheus-full
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-remote-write-receiver"
+      - "--enable-feature=native-histograms"
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus_data_full:/prometheus
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    networks:
+      - ensurance-full-network
+
+  # ==========================================
+  # MONITOREO - GRAFANA
+  # ==========================================
+  grafana:
+    image: grafana/grafana:11.3.0
+    container_name: ensurance-grafana-full
+    depends_on:
+      - prometheus
+    ports:
+      - "3302:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: changeme
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/provisioning/dashboards/k6-dashboard.json
+    volumes:
+      - grafana_data_full:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+    restart: unless-stopped
+    networks:
+      - ensurance-full-network
+
+  # ==========================================
+  # MONITOREO - CHECKMK
+  # ==========================================
+  checkmk:
+    image: checkmk/check-mk-raw:2.4.0p12
+    container_name: ensurance-checkmk-full
+    ports:
+      - "5152:5000"
+    environment:
+      CMK_SITE_ID: ensurance
+      CMK_PASSWORD: changeme
+    volumes:
+      - checkmk_sites_full:/omd/sites
+    restart: unless-stopped
+    networks:
+      - ensurance-full-network
+
+  # ==========================================
+  # MONITOREO - PUSHGATEWAY
+  # ==========================================
+  pushgateway:
+    image: prom/pushgateway:v1.9.0
+    container_name: ensurance-pushgateway-full
+    ports:
+      - "9093:9091"
+    restart: unless-stopped
+    networks:
+      - ensurance-full-network
+
+  # ==========================================
+  # MONITOREO - NODE EXPORTER
+  # ==========================================
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    container_name: ensurance-node-exporter-full
+    command:
+      - '--path.rootfs=/host'
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    ports:
+      - "9102:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/host:ro,rslave
+    restart: unless-stopped
+    networks:
+      - ensurance-full-network
+    privileged: true
+
+  # ==========================================
+  # CI/CD - SONARQUBE
+  # ==========================================
+  sonarqube:
+    image: sonarqube:community
+    container_name: ensurance-sonarqube-full
+    ports:
+      - "9000:9000"
+    environment:
+      SONAR_WEB_CONTEXT: "/sonar"
+    volumes:
+      - sonarqube_data_full:/opt/sonarqube/data
+      - sonarqube_logs_full:/opt/sonarqube/logs
+      - sonarqube_extensions_full:/opt/sonarqube/extensions
+    restart: unless-stopped
+    networks:
+      - ensurance-full-network
+
+  # ==========================================
+  # CI/CD - JENKINS DOCKER
+  # ==========================================
+  jenkins-docker:
+    image: docker:dind
+    container_name: jenkins-docker-full
+    privileged: true
+    environment:
+      DOCKER_TLS_CERTDIR: "/certs"
+    volumes:
+      - jenkins-docker-certs-full:/certs/client
+      - jenkins-docker-certs-ca-full:/certs/ca
+      - docker_data_full:/var/lib/docker
+    ports:
+      - "2378:2376"
+    command: ["--storage-driver=overlay2"]
+    restart: unless-stopped
+    networks:
+      ensurance-full-network:
+        aliases:
+          - docker
+
+  # ==========================================
+  # CI/CD - JENKINS
+  # ==========================================
+  jenkins:
+    build:
+      context: .
+      dockerfile: scripts/jenkins.Dockerfile
+    container_name: ensurance-jenkins-full
+    user: root
+    environment:
+      - DOCKER_HOST=tcp://docker:2376
+      - DOCKER_CERT_PATH=/certs/client
+      - DOCKER_TLS_VERIFY=1
+      - JENKINS_OPTS=--prefix=/jenkins
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home_full:/var/jenkins_home
+      - jenkins-docker-certs-full:/certs/client:ro
+    depends_on:
+      - jenkins-docker
+    restart: unless-stopped
+    networks:
+      - ensurance-full-network
+
+  # ==========================================
+  # CI/CD - DRONE SERVER
+  # ==========================================
+  drone:
+    image: drone/drone:2
+    container_name: ensurance-drone-full
+    environment:
+      - DRONE_GITHUB_CLIENT_ID=${DRONE_GITHUB_CLIENT_ID:-Ov23liNIJRRkAhUbSDpo}
+      - DRONE_GITHUB_CLIENT_SECRET=${DRONE_GITHUB_CLIENT_SECRET:-a047db54abd738416570645c9356c9ebe4ae518b}
+      - DRONE_RPC_SECRET=${DRONE_RPC_SECRET:-22dab8c8b09eda98581f60c07344ec32}
+      - DRONE_SERVER_HOST=${DRONE_SERVER_HOST:-localhost:8000}
+      - DRONE_SERVER_PROTO=http
+      - DRONE_USER_CREATE=username:pabloflores465,admin:true
+      - DRONE_USER_FILTER=pabloflores465
+    ports:
+      - "8002:80"
+    volumes:
+      - drone_data_full:/data
+    restart: unless-stopped
+    networks:
+      - ensurance-full-network
+
+  # ==========================================
+  # CI/CD - DRONE RUNNER
+  # ==========================================
+  drone-runner:
+    image: drone/drone-runner-docker:1
+    container_name: ensurance-drone-runner-full
+    environment:
+      - DRONE_RPC_HOST=drone
+      - DRONE_RPC_PROTO=http
+      - DRONE_RPC_SECRET=${DRONE_RPC_SECRET:-22dab8c8b09eda98581f60c07344ec32}
+      - DRONE_RUNNER_NAME=docker-runner-1
+      - DRONE_RUNNER_CAPACITY=2
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - drone_runner_data_full:/data
+    depends_on:
+      - drone
+    restart: unless-stopped
+    networks:
+      - ensurance-full-network
+
+  # ==========================================
+  # PORTAINER
+  # ==========================================
+  portainer:
+    image: portainer/portainer-ce:lts
+    container_name: ensurance-portainer-full
+    ports:
+      - "60002:9443"
+      - "60003:8000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data_full:/data
+    restart: unless-stopped
+    networks:
+      - ensurance-full-network
+
+  # ==========================================
+  # STRESS TESTING - K6 REPORT SERVER
+  # ==========================================
+  k6-report:
+    image: python:3.9-alpine
+    container_name: ensurance-k6-report-full
+    working_dir: /results
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        cat > /results/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta http-equiv="refresh" content="0; url=/k6-report.html">
+          <title>K6 Dashboard</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+            .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            h1 { color: #7d64ff; }
+            a { color: #7d64ff; text-decoration: none; font-weight: bold; }
+            a:hover { text-decoration: underline; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>📊 K6 Test Reports</h1>
+            <p>Redirecting to K6 Dashboard...</p>
+            <div><a href="/k6-report.html">Interactive Dashboard</a></div>
+          </div>
+        </body>
+        </html>
+        EOF
+        python -m http.server 5666
+    volumes:
+      - k6_results_full:/results
+    ports:
+      - "5668:5666"
+    restart: unless-stopped
+    networks:
+      - ensurance-full-network
+
+  # ==========================================
+  # STRESS TESTING - JMETER REPORT SERVER
+  # ==========================================
+  jmeter-report:
+    image: python:3.9-alpine
+    container_name: ensurance-jmeter-report-full
+    working_dir: /results/report
+    command: python -m http.server 8086
+    volumes:
+      - jmeter_results_full:/results
+    ports:
+      - "8086:8086"
+    restart: unless-stopped
+    networks:
+      - ensurance-full-network
+
+# ==========================================
+# NETWORKS
+# ==========================================
+networks:
+  ensurance-full-network:
+    driver: bridge
+    name: ensurance-full-network
+
+# ==========================================
+# VOLUMES
+# ==========================================
+volumes:
+  # Aplicación
+  databases_full:
+    name: ensurance-databases-full
+  logs_full:
+    name: ensurance-logs-full
+  
+  # Monitoreo
+  prometheus_data_full:
+    name: ensurance-prometheus-data-full
+  grafana_data_full:
+    name: ensurance-grafana-data-full
+  checkmk_sites_full:
+    name: ensurance-checkmk-sites-full
+  
+  # CI/CD
+  sonarqube_data_full:
+    name: ensurance-sonarqube-data-full
+  sonarqube_logs_full:
+    name: ensurance-sonarqube-logs-full
+  sonarqube_extensions_full:
+    name: ensurance-sonarqube-extensions-full
+  jenkins_home_full:
+    name: ensurance-jenkins-home-full
+  jenkins-docker-certs-full:
+    name: ensurance-jenkins-docker-certs-full
+  jenkins-docker-certs-ca-full:
+    name: ensurance-jenkins-docker-certs-ca-full
+  docker_data_full:
+    name: ensurance-docker-data-full
+  drone_data_full:
+    name: ensurance-drone-data-full
+  drone_runner_data_full:
+    name: ensurance-drone-runner-data-full
+  
+  # Portainer
+  portainer_data_full:
+    name: ensurance-portainer-data-full
+  
+  # Stress Testing
+  k6_results_full:
+    name: ensurance-k6-results-full
+  jmeter_results_full:
+    name: ensurance-jmeter-results-full
