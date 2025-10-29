@@ -11,4 +11,7 @@
 monitoring/alertmanager/alertmanager.yml.local
 monitoring/alertmanager/alertmanager.yml
 test-smtp.py
+test-smtp-gmail.py
+test-all-alerts.sh
+test-alerts.sh
 .env.alertmanager
