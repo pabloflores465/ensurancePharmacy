@@ -13,7 +13,13 @@ if [ ! -f ".env.alertmanager" ]; then
     echo "❌ Error: Archivo .env.alertmanager no encontrado"
     echo ""
     echo "Crea el archivo .env.alertmanager con:"
+    echo "SMTP_SMARTHOST=smtp-relay.brevo.com:587"
+    echo "SMTP_FROM=tu_email_verificado@gmail.com"
+    echo "SMTP_USERNAME=tu_usuario@smtp-brevo.com"
     echo "SMTP_PASSWORD=tu_token_smtp_aqui"
+    echo "SMTP_REQUIRE_TLS=true"
+    echo "ALERT_EMAIL_TO=destino1@example.com,destino2@example.com"
+    echo "SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
     exit 1
 fi
 
@@ -48,7 +54,7 @@ route:
         severity: critical
       receiver: 'critical-notifications'
       group_wait: 0s
-      repeat_interval: 5m
+      repeat_interval: 1m
       
     - match:
         severity: warning
@@ -73,7 +79,7 @@ receivers:
           <p><strong>Alerta:</strong> {{ .CommonLabels.alertname }}</p>
           <p><strong>Descripción:</strong> {{ .CommonAnnotations.description }}</p>
           <p><strong>Resumen:</strong> {{ .CommonAnnotations.summary }}</p>
-          <p><strong>Tiempo:</strong> {{ .StartsAt }}</p>
+          {{ range .Alerts }}<p><strong>Tiempo:</strong> {{ .StartsAt }}</p>{{ end }}
           <hr>
           <p><em>Sistema de Monitoreo Automático - Ensurance Pharmacy</em></p>
   
@@ -91,12 +97,22 @@ receivers:
           <p><strong>📛 Alerta:</strong> {{ .CommonLabels.alertname }}</p>
           <p><strong>📝 Descripción:</strong> {{ .CommonAnnotations.description }}</p>
           <p><strong>💡 Resumen:</strong> {{ .CommonAnnotations.summary }}</p>
-          <p><strong>🕐 Inicio:</strong> {{ .StartsAt }}</p>
+          {{ range .Alerts }}<p><strong>🕐 Inicio:</strong> {{ .StartsAt }}</p>{{ end }}
           <p><strong>🎯 Servicio:</strong> {{ .CommonLabels.service }}</p>
           <p><strong>🖥️ Instancia:</strong> {{ .CommonLabels.instance }}</p>
           <hr>
           <p style="color: red;"><strong>⚡ ACCIÓN REQUERIDA INMEDIATAMENTE</strong></p>
           <p><em>Sistema de Monitoreo Crítico - Ensurance Pharmacy</em></p>
+    slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#ensurance-alerts'
+        title: '🔴 ALERTA CRÍTICA - Ensurance Pharmacy'
+        text: |
+          *Alerta:* {{ .CommonLabels.alertname }}
+          *Severidad:* CRITICAL
+          *Descripción:* {{ .CommonAnnotations.description }}
+          *Resumen:* {{ .CommonAnnotations.summary }}
+          {{ range .Alerts }}*Inicio:* {{ .StartsAt }}{{ end }}
   
   - name: 'warning-notifications'
     email_configs:
@@ -112,10 +128,20 @@ receivers:
           <p><strong>📛 Alerta:</strong> {{ .CommonLabels.alertname }}</p>
           <p><strong>📝 Descripción:</strong> {{ .CommonAnnotations.description }}</p>
           <p><strong>💡 Resumen:</strong> {{ .CommonAnnotations.summary }}</p>
-          <p><strong>🕐 Inicio:</strong> {{ .StartsAt }}</p>
+          {{ range .Alerts }}<p><strong>🕐 Inicio:</strong> {{ .StartsAt }}</p>{{ end }}
           <p><strong>🎯 Servicio:</strong> {{ .CommonLabels.service }}</p>
           <hr>
           <p><em>Sistema de Monitoreo - Ensurance Pharmacy</em></p>
+    slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#ensurance-alerts'
+        title: '⚠️ ADVERTENCIA - Ensurance Pharmacy'
+        text: |
+          *Alerta:* {{ .CommonLabels.alertname }}
+          *Severidad:* WARNING
+          *Descripción:* {{ .CommonAnnotations.description }}
+          *Resumen:* {{ .CommonAnnotations.summary }}
+          {{ range .Alerts }}*Inicio:* {{ .StartsAt }}{{ end }}
   
   - name: 'info-notifications'
     email_configs:
@@ -127,9 +153,18 @@ receivers:
           <p><strong>ℹ️ Severidad:</strong> INFO</p>
           <p><strong>📛 Alerta:</strong> {{ .CommonLabels.alertname }}</p>
           <p><strong>📝 Descripción:</strong> {{ .CommonAnnotations.description }}</p>
-          <p><strong>🕐 Tiempo:</strong> {{ .StartsAt }}</p>
+          {{ range .Alerts }}<p><strong>🕐 Tiempo:</strong> {{ .StartsAt }}</p>{{ end }}
           <hr>
           <p><em>Sistema de Monitoreo - Ensurance Pharmacy</em></p>
+    slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#ensurance-alerts'
+        title: 'ℹ️ INFORMACIÓN - Ensurance Pharmacy'
+        text: |
+          *Alerta:* {{ .CommonLabels.alertname }}
+          *Severidad:* INFO
+          *Descripción:* {{ .CommonAnnotations.description }}
+          {{ range .Alerts }}*Inicio:* {{ .StartsAt }}{{ end }}
 
 inhibit_rules:
   - source_match:

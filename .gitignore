@@ -10,3 +10,5 @@
 *.local
 monitoring/alertmanager/alertmanager.yml.local
 monitoring/alertmanager/alertmanager.yml
+test-smtp.py
+.env.alertmanager

@@ -84,6 +84,7 @@ services:
       - "--config.file=/etc/alertmanager/alertmanager.yml"
       - "--storage.path=/alertmanager"
       - "--web.external-url=http://localhost:9094"
+      - "--log.level=debug"
     ports:
       - "9094:9093"
     volumes:
