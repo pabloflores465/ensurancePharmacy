@@ -6,4 +6,7 @@
 /.idea/
 /.idea
 /pharmacy/.env
-.env
+.env.env.alertmanager
+*.local
+monitoring/alertmanager/alertmanager.yml.local
+monitoring/alertmanager/alertmanager.yml

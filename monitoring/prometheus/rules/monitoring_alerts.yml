@@ -1,0 +1,186 @@
+# ALERTAS DEL SISTEMA DE MONITOREO
+# Monitorea Prometheus, Grafana, Netdata, Alertmanager
+
+groups:
+  - name: prometheus_alerts
+    interval: 30s
+    rules:
+      # ALERTA 53: Prometheus Down (auto-monitoreo)
+      - alert: PrometheusDown
+        expr: up{job="prometheus"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: prometheus
+          component: monitoring
+        annotations:
+          summary: "⚠️ Prometheus CAÍDO"
+          description: "Prometheus no puede monitorearse a sí mismo"
+          dashboard: "http://localhost:9090"
+          action: "URGENTE: Reiniciar contenedor ensurance-prometheus-full"
+      
+      # ALERTA 54: Target Down (cualquier servicio caído)
+      - alert: TargetDown
+        expr: up == 0
+        for: 2m
+        labels:
+          severity: warning
+          service: monitoring
+          component: scraping
+        annotations:
+          summary: "Target caído: {{ $labels.job }}"
+          description: "El target {{ $labels.instance }} no responde"
+          dashboard: "http://localhost:9090/targets"
+          action: "Revisar servicio {{ $labels.job }} en {{ $labels.instance }}"
+      
+      # ALERTA 55: Prometheus con alto uso de memoria
+      - alert: PrometheusHighMemory
+        expr: process_resident_memory_bytes{job="prometheus"} / 1024 / 1024 / 1024 > 2
+        for: 5m
+        labels:
+          severity: warning
+          service: prometheus
+          component: memory
+        annotations:
+          summary: "Alto uso de memoria en Prometheus"
+          description: "Prometheus usando {{ $value | humanize }}GB (umbral: 2GB)"
+          dashboard: "http://localhost:9090"
+          action: "Reducir retención o aumentar recursos"
+      
+      # ALERTA 56: Prometheus perdiendo samples
+      - alert: PrometheusDroppingSamples
+        expr: rate(prometheus_target_scrapes_exceeded_sample_limit_total[5m]) > 0
+        for: 2m
+        labels:
+          severity: warning
+          service: prometheus
+          component: scraping
+        annotations:
+          summary: "Prometheus descartando samples"
+          description: "{{ $value }} samples/s siendo descartados"
+          dashboard: "http://localhost:9090"
+          action: "Aumentar sample_limit o reducir métricas"
+      
+      # ALERTA 57: Prometheus con muchas series activas
+      - alert: PrometheusTooManyTimeSeries
+        expr: prometheus_tsdb_head_series > 100000
+        for: 5m
+        labels:
+          severity: warning
+          service: prometheus
+          component: tsdb
+        annotations:
+          summary: "Muchas time series en Prometheus"
+          description: "{{ $value }} series activas (umbral: 100k)"
+          dashboard: "http://localhost:9090"
+          action: "Reducir cardinalidad o aumentar recursos"
+      
+      # ALERTA 58: Scrape duration alto
+      - alert: PrometheusSlowScrapes
+        expr: prometheus_target_interval_length_seconds{quantile="0.99"} > 10
+        for: 5m
+        labels:
+          severity: warning
+          service: prometheus
+          component: scraping
+        annotations:
+          summary: "Scrapes lentos en Prometheus"
+          description: "P99 de scrape duration: {{ $value }}s (umbral: 10s)"
+          dashboard: "http://localhost:9090"
+          action: "Optimizar targets o aumentar scrape_interval"
+
+  - name: grafana_alerts
+    interval: 30s
+    rules:
+      # ALERTA 59: Grafana Down
+      - alert: GrafanaDown
+        expr: up{job="grafana"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          service: grafana
+          component: visualization
+        annotations:
+          summary: "Grafana caído"
+          description: "Grafana no responde desde hace 2 minutos"
+          dashboard: "http://localhost:3302"
+          action: "Reiniciar contenedor ensurance-grafana-full"
+
+  - name: netdata_alerts
+    interval: 30s
+    rules:
+      # ALERTA 60: Netdata Down
+      - alert: NetdataDown
+        expr: up{job="netdata"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          service: netdata
+          component: monitoring
+        annotations:
+          summary: "Netdata caído"
+          description: "Netdata no responde desde hace 2 minutos"
+          dashboard: "http://localhost:19999"
+          action: "Reiniciar contenedor ensurance-netdata-full"
+
+  - name: alertmanager_alerts
+    interval: 30s
+    rules:
+      # ALERTA 61: Alertmanager Down
+      - alert: AlertmanagerDown
+        expr: up{job="alertmanager"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: alertmanager
+          component: notifications
+        annotations:
+          summary: "⚠️ Alertmanager CAÍDO"
+          description: "Alertmanager no responde, las notificaciones no se enviarán"
+          dashboard: "http://localhost:9093"
+          action: "URGENTE: Reiniciar contenedor ensurance-alertmanager-full"
+      
+      # ALERTA 62: Alertmanager con muchas notificaciones fallidas
+      - alert: AlertmanagerFailedNotifications
+        expr: rate(alertmanager_notifications_failed_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: alertmanager
+          component: notifications
+        annotations:
+          summary: "Alertmanager fallando en enviar notificaciones"
+          description: "{{ $value }} notificaciones/s están fallando"
+          dashboard: "http://localhost:9093"
+          action: "Revisar configuración de SMTP y Slack"
+      
+      # ALERTA 63: Alertmanager con cluster desincronizado (si hay cluster)
+      - alert: AlertmanagerClusterUnsynchronized
+        expr: alertmanager_cluster_members != on (job) alertmanager_cluster_peers
+        for: 5m
+        labels:
+          severity: warning
+          service: alertmanager
+          component: cluster
+        annotations:
+          summary: "Cluster de Alertmanager desincronizado"
+          description: "El cluster tiene miembros desincronizados"
+          dashboard: "http://localhost:9093"
+          action: "Revisar conectividad entre nodos del cluster"
+
+  - name: portainer_alerts
+    interval: 30s
+    rules:
+      # ALERTA 64: Portainer Down
+      - alert: PortainerDown
+        expr: up{job="portainer"} == 0
+        for: 2m
+        labels:
+          severity: info
+          service: portainer
+          component: management
+        annotations:
+          summary: "Portainer caído"
+          description: "Portainer no responde desde hace 2 minutos"
+          dashboard: "http://localhost:60002"
+          action: "Reiniciar contenedor ensurance-portainer-full"

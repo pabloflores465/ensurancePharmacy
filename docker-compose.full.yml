@@ -65,8 +65,30 @@ services:
     volumes:
       - prometheus_data_full:/prometheus
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/rules:/etc/prometheus/rules:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    networks:
+      - ensurance-full-network
+    depends_on:
+      - alertmanager
+
+  # ==========================================
+  # MONITOREO - ALERTMANAGER
+  # ==========================================
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: ensurance-alertmanager-full
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--storage.path=/alertmanager"
+      - "--web.external-url=http://localhost:9094"
+    ports:
+      - "9094:9093"
+    volumes:
+      - alertmanager_data_full:/alertmanager
+      - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
     restart: unless-stopped
     networks:
       - ensurance-full-network
@@ -143,6 +165,48 @@ services:
     networks:
       - ensurance-full-network
     privileged: true
+
+  # ==========================================
+  # MONITOREO - NETDATA
+  # ==========================================
+  netdata:
+    image: netdata/netdata:latest
+    container_name: ensurance-netdata-full
+    hostname: ensurance-netdata
+    cap_add:
+      - SYS_PTRACE
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    ports:
+      - "19999:19999"
+    environment:
+      - NETDATA_CLAIM_TOKEN=${NETDATA_CLAIM_TOKEN:-}
+      - NETDATA_CLAIM_URL=${NETDATA_CLAIM_URL:-}
+      - NETDATA_CLAIM_ROOMS=${NETDATA_CLAIM_ROOMS:-}
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      # Volúmenes persistentes
+      - netdata_config_full:/etc/netdata
+      - netdata_cache_full:/var/cache/netdata
+      - netdata_lib_full:/var/lib/netdata
+      # Configuración personalizada (se copiarán en el volumen)
+      - ./monitoring/netdata/go.d/prometheus.conf:/etc/netdata/go.d/prometheus.conf:rw
+      - ./monitoring/netdata/health.d/k6_alerts.conf:/etc/netdata/health.d/k6_alerts.conf:rw
+      # Acceso al host para métricas del sistema
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/passwd:/host/etc/passwd:ro
+      - /etc/group:/host/etc/group:ro
+      - /etc/os-release:/host/etc/os-release:ro
+    restart: unless-stopped
+    networks:
+      - ensurance-full-network
+    depends_on:
+      - prometheus
+      - node-exporter
+      - pushgateway
 
   # ==========================================
   # CI/CD - SONARQUBE
@@ -279,6 +343,7 @@ services:
     ports:
       - "5674:5672"   # AMQP protocol
       - "15674:15672" # Management UI
+      - "15692:15692" # Prometheus metrics
     environment:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: changeme
@@ -375,10 +440,18 @@ volumes:
   # Monitoreo
   prometheus_data_full:
     name: ensurance-prometheus-data-full
+  alertmanager_data_full:
+    name: ensurance-alertmanager-data-full
   grafana_data_full:
     name: ensurance-grafana-data-full
   checkmk_sites_full:
     name: ensurance-checkmk-sites-full
+  netdata_config_full:
+    name: ensurance-netdata-config-full
+  netdata_cache_full:
+    name: ensurance-netdata-cache-full
+  netdata_lib_full:
+    name: ensurance-netdata-lib-full
   
   # CI/CD
   sonarqube_data_full:

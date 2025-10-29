@@ -1,0 +1,172 @@
+# ALERTAS DE SISTEMA - Node Exporter
+# Monitorea métricas del sistema: CPU, Memoria, Disco, Red
+
+groups:
+  - name: system_cpu_alerts
+    interval: 30s
+    rules:
+      # ALERTA 1: CPU Usage > 70%
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 70
+        for: 2m
+        labels:
+          severity: warning
+          service: system
+          component: cpu
+        annotations:
+          summary: "Alto uso de CPU en {{ $labels.instance }}"
+          description: "El uso de CPU está en {{ $value | humanize }}% (umbral: 70%)"
+          dashboard: "http://localhost:19999"
+          action: "Revisar procesos con alto consumo de CPU"
+      
+      # ALERTA 2: CPU Usage > 90% - CRÍTICO
+      - alert: CriticalCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+        for: 1m
+        labels:
+          severity: critical
+          service: system
+          component: cpu
+        annotations:
+          summary: "⚠️ CPU CRÍTICO en {{ $labels.instance }}"
+          description: "El uso de CPU está en {{ $value | humanize }}% (umbral crítico: 90%)"
+          dashboard: "http://localhost:19999"
+          action: "URGENTE: Escalar recursos o detener procesos"
+
+  - name: system_memory_alerts
+    interval: 30s
+    rules:
+      # ALERTA 3: Memory Usage > 80%
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 80
+        for: 2m
+        labels:
+          severity: warning
+          service: system
+          component: memory
+        annotations:
+          summary: "Alto uso de memoria en {{ $labels.instance }}"
+          description: "El uso de memoria está en {{ $value | humanize }}% (umbral: 80%)"
+          dashboard: "http://localhost:19999"
+          action: "Revisar procesos con alto consumo de memoria"
+      
+      # ALERTA 4: Memory Usage > 95% - CRÍTICO
+      - alert: CriticalMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 95
+        for: 1m
+        labels:
+          severity: critical
+          service: system
+          component: memory
+        annotations:
+          summary: "⚠️ MEMORIA CRÍTICA en {{ $labels.instance }}"
+          description: "El uso de memoria está en {{ $value | humanize }}% (umbral crítico: 95%)"
+          dashboard: "http://localhost:19999"
+          action: "URGENTE: Riesgo de OOM killer, reiniciar servicios"
+
+  - name: system_disk_alerts
+    interval: 30s
+    rules:
+      # ALERTA 5: Disk Usage > 75%
+      - alert: HighDiskUsage
+        expr: (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|vfat"} / node_filesystem_size_bytes)) * 100 > 75
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+          component: disk
+        annotations:
+          summary: "Alto uso de disco en {{ $labels.instance }}:{{ $labels.mountpoint }}"
+          description: "El uso de disco está en {{ $value | humanize }}% (umbral: 75%)"
+          dashboard: "http://localhost:19999"
+          action: "Limpiar archivos temporales o logs antiguos"
+      
+      # ALERTA 6: Disk Usage > 90% - CRÍTICO
+      - alert: CriticalDiskUsage
+        expr: (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|vfat"} / node_filesystem_size_bytes)) * 100 > 90
+        for: 2m
+        labels:
+          severity: critical
+          service: system
+          component: disk
+        annotations:
+          summary: "⚠️ DISCO CRÍTICO en {{ $labels.instance }}:{{ $labels.mountpoint }}"
+          description: "El uso de disco está en {{ $value | humanize }}% (umbral crítico: 90%)"
+          dashboard: "http://localhost:19999"
+          action: "URGENTE: Expandir disco o eliminar datos inmediatamente"
+      
+      # ALERTA 7: Disk casi lleno (< 5GB libre)
+      - alert: DiskAlmostFull
+        expr: node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|vfat"} / 1024 / 1024 / 1024 < 5
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+          component: disk
+        annotations:
+          summary: "Disco con poco espacio en {{ $labels.instance }}:{{ $labels.mountpoint }}"
+          description: "Solo quedan {{ $value | humanize }}GB disponibles"
+          dashboard: "http://localhost:19999"
+          action: "Liberar espacio en disco"
+
+  - name: system_network_alerts
+    interval: 30s
+    rules:
+      # ALERTA 8: Alto tráfico de red entrante
+      - alert: HighNetworkReceive
+        expr: rate(node_network_receive_bytes_total[5m]) / 1024 / 1024 > 100
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+          component: network
+        annotations:
+          summary: "Alto tráfico de red entrante en {{ $labels.instance }}"
+          description: "Tráfico entrante: {{ $value | humanize }}MB/s (umbral: 100MB/s)"
+          dashboard: "http://localhost:19999"
+          action: "Verificar conexiones activas y posibles ataques DDoS"
+      
+      # ALERTA 9: Alto tráfico de red saliente
+      - alert: HighNetworkTransmit
+        expr: rate(node_network_transmit_bytes_total[5m]) / 1024 / 1024 > 100
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+          component: network
+        annotations:
+          summary: "Alto tráfico de red saliente en {{ $labels.instance }}"
+          description: "Tráfico saliente: {{ $value | humanize }}MB/s (umbral: 100MB/s)"
+          dashboard: "http://localhost:19999"
+          action: "Verificar conexiones activas y posible exfiltración de datos"
+
+  - name: system_availability_alerts
+    interval: 30s
+    rules:
+      # ALERTA 10: Node Exporter Down
+      - alert: NodeExporterDown
+        expr: up{job="node-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: system
+          component: node-exporter
+        annotations:
+          summary: "⚠️ Node Exporter caído en {{ $labels.instance }}"
+          description: "Node Exporter no responde desde hace 1 minuto"
+          dashboard: "http://localhost:19999"
+          action: "URGENTE: Reiniciar contenedor node-exporter"
+      
+      # ALERTA 11: Sistema con alta carga (Load Average)
+      - alert: HighSystemLoad
+        expr: node_load5 / count(node_cpu_seconds_total{mode="idle"}) without(cpu, mode) > 2
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+          component: load
+        annotations:
+          summary: "Alta carga del sistema en {{ $labels.instance }}"
+          description: "Load average (5m): {{ $value | humanize }} (umbral: 2x CPUs)"
+          dashboard: "http://localhost:19999"
+          action: "Revisar procesos que consumen recursos"

@@ -1,0 +1,138 @@
+# ALERTAS DE APLICACIONES - Backends y Frontends
+# Monitorea métricas de las aplicaciones Node.js y Vue.js
+
+groups:
+  - name: application_availability_alerts
+    interval: 30s
+    rules:
+      # ALERTA 12: Backend v5 (Pharmacy) Down
+      - alert: PharmacyBackendDown
+        expr: up{job="backv5-pharmacy"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: pharmacy-backend
+          component: backv5
+        annotations:
+          summary: "⚠️ Backend Pharmacy (v5) CAÍDO"
+          description: "El backend de Pharmacy no responde desde hace 1 minuto"
+          dashboard: "http://localhost:3103"
+          action: "URGENTE: Reiniciar contenedor ensurance-pharmacy-full"
+      
+      # ALERTA 13: Backend v4 (Ensurance) Down
+      - alert: EnsuranceBackendDown
+        expr: up{job="backv4-ensurance"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: ensurance-backend
+          component: backv4
+        annotations:
+          summary: "⚠️ Backend Ensurance (v4) CAÍDO"
+          description: "El backend de Ensurance no responde desde hace 1 minuto"
+          dashboard: "http://localhost:3102"
+          action: "URGENTE: Reiniciar contenedor ensurance-pharmacy-full"
+      
+      # ALERTA 14: Frontend Ensurance Down
+      - alert: EnsuranceFrontendDown
+        expr: up{job="ensurance-frontend"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: ensurance-frontend
+          component: vue-app
+        annotations:
+          summary: "⚠️ Frontend Ensurance CAÍDO"
+          description: "El frontend de Ensurance no responde desde hace 2 minutos"
+          dashboard: "http://localhost:3100"
+          action: "URGENTE: Reiniciar contenedor ensurance-pharmacy-full"
+      
+      # ALERTA 15: Frontend Pharmacy Down
+      - alert: PharmacyFrontendDown
+        expr: up{job="pharmacy-frontend"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: pharmacy-frontend
+          component: vue-app
+        annotations:
+          summary: "⚠️ Frontend Pharmacy CAÍDO"
+          description: "El frontend de Pharmacy no responde desde hace 2 minutos"
+          dashboard: "http://localhost:3101"
+          action: "URGENTE: Reiniciar contenedor ensurance-pharmacy-full"
+
+  - name: application_performance_alerts
+    interval: 30s
+    rules:
+      # ALERTA 16: Alta memoria en Node.js (Backend v5)
+      - alert: HighNodeMemoryBackendV5
+        expr: nodejs_heap_size_used_bytes{job="backv5-pharmacy"} / nodejs_heap_size_total_bytes > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          service: pharmacy-backend
+          component: nodejs
+        annotations:
+          summary: "Alto uso de memoria heap en Backend Pharmacy"
+          description: "Uso de heap: {{ $value | humanizePercentage }} (umbral: 85%)"
+          dashboard: "http://localhost:9470"
+          action: "Revisar memory leaks o aumentar heap size"
+      
+      # ALERTA 17: Alta memoria en Node.js (Backend v4)
+      - alert: HighNodeMemoryBackendV4
+        expr: nodejs_heap_size_used_bytes{job="backv4-ensurance"} / nodejs_heap_size_total_bytes > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          service: ensurance-backend
+          component: nodejs
+        annotations:
+          summary: "Alto uso de memoria heap en Backend Ensurance"
+          description: "Uso de heap: {{ $value | humanizePercentage }} (umbral: 85%)"
+          dashboard: "http://localhost:9471"
+          action: "Revisar memory leaks o aumentar heap size"
+      
+      # ALERTA 18: Event Loop Lag alto
+      - alert: HighEventLoopLag
+        expr: nodejs_eventloop_lag_seconds > 0.5
+        for: 3m
+        labels:
+          severity: warning
+          service: backend
+          component: nodejs
+        annotations:
+          summary: "Event Loop Lag alto en {{ $labels.job }}"
+          description: "Event loop lag: {{ $value | humanize }}s (umbral: 0.5s)"
+          dashboard: "http://localhost:9090"
+          action: "Revisar operaciones bloqueantes en el código"
+      
+      # ALERTA 19: Garbage Collection frecuente
+      - alert: FrequentGarbageCollection
+        expr: rate(nodejs_gc_duration_seconds_count[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          service: backend
+          component: nodejs
+        annotations:
+          summary: "GC frecuente en {{ $labels.job }}"
+          description: "GC ejecutándose {{ $value | humanize }} veces/s (umbral: 10/s)"
+          dashboard: "http://localhost:9090"
+          action: "Optimizar uso de memoria o aumentar heap"
+
+  - name: application_errors_alerts
+    interval: 30s
+    rules:
+      # ALERTA 20: Tasa de errores HTTP alta (si las apps exponen esta métrica)
+      - alert: HighHTTPErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+          service: application
+          component: http
+        annotations:
+          summary: "Alta tasa de errores HTTP 5xx en {{ $labels.job }}"
+          description: "Tasa de errores: {{ $value | humanizePercentage }} (umbral: 5%)"
+          dashboard: "http://localhost:9090"
+          action: "Revisar logs de aplicación y errores recientes"

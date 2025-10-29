@@ -1,0 +1,186 @@
+# ALERTAS DE RABBITMQ
+# Monitorea colas, conexiones, memoria y disponibilidad
+
+groups:
+  - name: rabbitmq_availability_alerts
+    interval: 30s
+    rules:
+      # ALERTA 21: RabbitMQ Down
+      - alert: RabbitMQDown
+        expr: up{job="rabbitmq"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: rabbitmq
+          component: message-broker
+        annotations:
+          summary: "⚠️ RabbitMQ CAÍDO"
+          description: "RabbitMQ no responde desde hace 1 minuto"
+          dashboard: "http://localhost:15674"
+          action: "URGENTE: Reiniciar contenedor ensurance-rabbitmq-full"
+      
+      # ALERTA 22: RabbitMQ Node Down
+      - alert: RabbitMQNodeDown
+        expr: rabbitmq_node_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: rabbitmq
+          component: node
+        annotations:
+          summary: "⚠️ Nodo RabbitMQ caído: {{ $labels.node }}"
+          description: "El nodo de RabbitMQ no está disponible"
+          dashboard: "http://localhost:15674"
+          action: "URGENTE: Verificar cluster de RabbitMQ"
+
+  - name: rabbitmq_queue_alerts
+    interval: 30s
+    rules:
+      # ALERTA 23: Cola con muchos mensajes acumulados
+      - alert: RabbitMQQueueMessagesHigh
+        expr: rabbitmq_queue_messages > 1000
+        for: 5m
+        labels:
+          severity: warning
+          service: rabbitmq
+          component: queue
+        annotations:
+          summary: "Cola con muchos mensajes: {{ $labels.queue }}"
+          description: "La cola tiene {{ $value }} mensajes (umbral: 1000)"
+          dashboard: "http://localhost:15674/#/queues"
+          action: "Revisar consumers y procesamiento de mensajes"
+      
+      # ALERTA 24: Cola con mensajes sin procesar (ready)
+      - alert: RabbitMQQueueMessagesReady
+        expr: rabbitmq_queue_messages_ready > 500
+        for: 5m
+        labels:
+          severity: warning
+          service: rabbitmq
+          component: queue
+        annotations:
+          summary: "Mensajes sin procesar en cola: {{ $labels.queue }}"
+          description: "{{ $value }} mensajes listos sin consumers (umbral: 500)"
+          dashboard: "http://localhost:15674/#/queues"
+          action: "Aumentar consumers o verificar procesamiento"
+      
+      # ALERTA 25: Mensajes sin ACK (unacknowledged)
+      - alert: RabbitMQUnacknowledgedMessages
+        expr: rabbitmq_queue_messages_unacked > 100
+        for: 5m
+        labels:
+          severity: warning
+          service: rabbitmq
+          component: queue
+        annotations:
+          summary: "Mensajes sin ACK en cola: {{ $labels.queue }}"
+          description: "{{ $value }} mensajes sin acknowledgement (umbral: 100)"
+          dashboard: "http://localhost:15674/#/queues"
+          action: "Revisar consumers que no están haciendo ACK"
+      
+      # ALERTA 26: Cola sin consumers
+      - alert: RabbitMQQueueNoConsumers
+        expr: rabbitmq_queue_consumers == 0 and rabbitmq_queue_messages > 0
+        for: 5m
+        labels:
+          severity: warning
+          service: rabbitmq
+          component: queue
+        annotations:
+          summary: "Cola sin consumers: {{ $labels.queue }}"
+          description: "La cola tiene mensajes pero no tiene consumers"
+          dashboard: "http://localhost:15674/#/queues"
+          action: "Iniciar consumers para procesar mensajes"
+
+  - name: rabbitmq_memory_alerts
+    interval: 30s
+    rules:
+      # ALERTA 27: Alto uso de memoria en RabbitMQ
+      - alert: RabbitMQHighMemory
+        expr: rabbitmq_process_resident_memory_bytes / rabbitmq_resident_memory_limit_bytes > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: rabbitmq
+          component: memory
+        annotations:
+          summary: "Alto uso de memoria en RabbitMQ"
+          description: "Uso de memoria: {{ $value | humanizePercentage }} (umbral: 80%)"
+          dashboard: "http://localhost:15674/#/nodes"
+          action: "Purgar colas o aumentar límite de memoria"
+      
+      # ALERTA 28: Memoria crítica en RabbitMQ
+      - alert: RabbitMQCriticalMemory
+        expr: rabbitmq_process_resident_memory_bytes / rabbitmq_resident_memory_limit_bytes > 0.95
+        for: 2m
+        labels:
+          severity: critical
+          service: rabbitmq
+          component: memory
+        annotations:
+          summary: "⚠️ MEMORIA CRÍTICA en RabbitMQ"
+          description: "Uso de memoria: {{ $value | humanizePercentage }} (umbral crítico: 95%)"
+          dashboard: "http://localhost:15674/#/nodes"
+          action: "URGENTE: RabbitMQ bloqueará publishers, purgar colas inmediatamente"
+      
+      # ALERTA 29: Alarm de memoria activada
+      - alert: RabbitMQMemoryAlarm
+        expr: rabbitmq_alarms_memory_used_watermark > 0
+        for: 1m
+        labels:
+          severity: critical
+          service: rabbitmq
+          component: alarm
+        annotations:
+          summary: "⚠️ Alarma de memoria activada en RabbitMQ"
+          description: "RabbitMQ ha activado la alarma de memoria"
+          dashboard: "http://localhost:15674/#/nodes"
+          action: "URGENTE: Liberar memoria, publishers están bloqueados"
+
+  - name: rabbitmq_connection_alerts
+    interval: 30s
+    rules:
+      # ALERTA 30: Muchas conexiones abiertas
+      - alert: RabbitMQTooManyConnections
+        expr: rabbitmq_connections > 100
+        for: 5m
+        labels:
+          severity: warning
+          service: rabbitmq
+          component: connections
+        annotations:
+          summary: "Muchas conexiones a RabbitMQ"
+          description: "{{ $value }} conexiones activas (umbral: 100)"
+          dashboard: "http://localhost:15674/#/connections"
+          action: "Revisar clients y cerrar conexiones inactivas"
+      
+      # ALERTA 31: Muchos channels abiertos
+      - alert: RabbitMQTooManyChannels
+        expr: rabbitmq_channels > 500
+        for: 5m
+        labels:
+          severity: warning
+          service: rabbitmq
+          component: channels
+        annotations:
+          summary: "Muchos channels en RabbitMQ"
+          description: "{{ $value }} channels activos (umbral: 500)"
+          dashboard: "http://localhost:15674/#/channels"
+          action: "Revisar uso de channels en aplicaciones"
+
+  - name: rabbitmq_disk_alerts
+    interval: 30s
+    rules:
+      # ALERTA 32: Alarm de disco activada
+      - alert: RabbitMQDiskAlarm
+        expr: rabbitmq_alarms_free_disk_space_watermark > 0
+        for: 1m
+        labels:
+          severity: critical
+          service: rabbitmq
+          component: alarm
+        annotations:
+          summary: "⚠️ Alarma de disco activada en RabbitMQ"
+          description: "RabbitMQ ha activado la alarma de espacio en disco"
+          dashboard: "http://localhost:15674/#/nodes"
+          action: "URGENTE: Liberar espacio en disco, publishers bloqueados"
