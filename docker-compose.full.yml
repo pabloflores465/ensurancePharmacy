@@ -270,6 +270,32 @@ services:
       - ensurance-full-network
 
   # ==========================================
+  # MESSAGE BROKER - RABBITMQ
+  # ==========================================
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: ensurance-rabbitmq-full
+    hostname: rabbitmq-ensurance
+    ports:
+      - "5674:5672"   # AMQP protocol
+      - "15674:15672" # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: changeme
+      RABBITMQ_DEFAULT_VHOST: /
+    volumes:
+      - rabbitmq_data_full:/var/lib/rabbitmq
+      - rabbitmq_logs_full:/var/log/rabbitmq
+    restart: unless-stopped
+    networks:
+      - ensurance-full-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ==========================================
   # STRESS TESTING - K6 REPORT SERVER
   # ==========================================
   k6-report:
@@ -377,6 +403,12 @@ volumes:
   # Portainer
   portainer_data_full:
     name: ensurance-portainer-data-full
+  
+  # Message Broker
+  rabbitmq_data_full:
+    name: ensurance-rabbitmq-data-full
+  rabbitmq_logs_full:
+    name: ensurance-rabbitmq-logs-full
   
   # Stress Testing
   k6_results_full:

@@ -2,7 +2,7 @@
 
 ## 🎯 Lo que se ha creado
 
-Se han creado **7 archivos nuevos** para facilitar el inicio de todos los servicios:
+Se han creado **8 archivos nuevos** para facilitar el inicio de todos los servicios:
 
 ---
 
@@ -46,6 +46,24 @@ Se han creado **7 archivos nuevos** para facilitar el inicio de todos los servic
 - ✅ Opción de ver logs
 
 **Resultado:** Apps con métricas en 1-2 minutos
+
+### 3.5 `copy-volumes-data.sh` 🆕
+**Script para copiar datos de volúmenes antiguos**
+```bash
+./copy-volumes-data.sh
+```
+- ✅ Copia datos de Prometheus, Grafana, CheckMK
+- ✅ Copia configuraciones de Jenkins, SonarQube, Drone
+- ✅ Copia datos de Portainer
+- ✅ Restaura resultados de K6 y JMeter
+- ✅ Detiene y reinicia servicios automáticamente
+
+**Cuándo usar:**
+- Después de ejecutar `start-docker-full.sh` por primera vez
+- Cuando se recrean los volúmenes
+- Para migrar de volúmenes antiguos a nuevos
+
+**Resultado:** Todos los datos y configuraciones restaurados
 
 ---
 
@@ -147,7 +165,8 @@ http://localhost:8002   → Drone
 
 ### Herramientas (Solo con start-docker-full.sh)
 ```
-https://localhost:60002 → Portainer
+https://localhost:60002  → Portainer
+http://localhost:15674  → RabbitMQ Management (admin/changeme)
 http://localhost:5668   → K6 Reports
 http://localhost:8086   → JMeter Reports
 ```

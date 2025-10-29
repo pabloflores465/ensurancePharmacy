@@ -41,7 +41,8 @@ http://localhost:9000  → SonarQube (admin/admin)
 http://localhost:8002  → Drone
 
 Herramientas:
-https://localhost:60002 → Portainer
+https://localhost:60002  → Portainer
+http://localhost:15674  → RabbitMQ Management (admin/changeme)
 http://localhost:5668   → K6 Reports
 http://localhost:8086   → JMeter Reports
 ```

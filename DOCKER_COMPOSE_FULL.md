@@ -77,6 +77,8 @@ docker compose -f docker-compose.full.yml down
 ### Herramientas
 - **60002** - Portainer (HTTPS)
 - **60003** - Portainer Web UI
+- **5674** - RabbitMQ AMQP
+- **15674** - RabbitMQ Management UI (admin/changeme)
 - **5668** - K6 Reports
 - **8086** - JMeter Reports
 
