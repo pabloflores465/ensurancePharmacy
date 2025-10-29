@@ -14,4 +14,7 @@ test-smtp.py
 test-smtp-gmail.py
 test-all-alerts.sh
 test-alerts.sh
+test-multiple-alerts.sh
+test-all-alerts-complete.sh
+alert-test-results-*.log
 .env.alertmanager
