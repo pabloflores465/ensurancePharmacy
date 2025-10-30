@@ -122,16 +122,32 @@ services:
   checkmk:
     image: checkmk/check-mk-raw:2.4.0p12
     container_name: ensurance-checkmk-full
+    hostname: ensurance-checkmk
     ports:
-      - "5152:5000"
+      - "5152:5000"    # CheckMK Web UI
+      - "6557:6557"    # Agent receiver
+      - "9999:9999"    # Prometheus exporter
     environment:
       CMK_SITE_ID: ensurance
-      CMK_PASSWORD: changeme
+      CMK_PASSWORD: admin123
+      CMK_LIVESTATUS_TCP: "on"
     volumes:
       - checkmk_sites_full:/omd/sites
+    tmpfs:
+      - /opt/omd/sites/ensurance/tmp:uid=1000,gid=1000
     restart: unless-stopped
     networks:
       - ensurance-full-network
+    depends_on:
+      - prometheus
+      - node-exporter
+      - netdata
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/ensurance/check_mk/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
 
   # ==========================================
   # MONITOREO - PUSHGATEWAY

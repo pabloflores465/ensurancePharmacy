@@ -107,3 +107,12 @@ scrape_configs:
         labels:
           service: 'rabbitmq'
           component: 'message-broker'
+  
+  # CheckMK Metrics (replicando Netdata)
+  - job_name: 'checkmk-exporter'
+    static_configs:
+      - targets: ['ensurance-checkmk-full:9999']
+        labels:
+          service: 'checkmk'
+          component: 'monitoring'
+          type: 'system-metrics'
