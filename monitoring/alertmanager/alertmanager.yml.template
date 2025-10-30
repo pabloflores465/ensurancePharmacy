@@ -50,6 +50,19 @@ receivers:
           <p><strong>Tiempo:</strong> {{ .StartsAt }}</p>
           <hr>
           <p><em>Sistema de Monitoreo Automático - Ensurance Pharmacy</em></p>
+    slack_configs:
+      - api_url: 'SLACK_WEBHOOK_URL_AQUI'
+        channel: '#ensurance-alerts'
+        title: 'Alerta de Monitoreo - Ensurance Pharmacy'
+        text: |
+          *Estado:* {{ .Status }}
+          *Severidad:* {{ .CommonLabels.severity }}
+          *Alerta:* {{ .CommonLabels.alertname }}
+          *Descripción:* {{ .CommonAnnotations.description }}
+          *Resumen:* {{ .CommonAnnotations.summary }}
+          *Tiempo:* {{ .StartsAt }}
+          *Servicio:* {{ .CommonLabels.service }}
+        send_resolved: true
   
   - name: 'critical-notifications'
     email_configs:
@@ -71,6 +84,28 @@ receivers:
           <hr>
           <p style="color: red;"><strong>⚡ ACCIÓN REQUERIDA INMEDIATAMENTE</strong></p>
           <p><em>Sistema de Monitoreo Crítico - Ensurance Pharmacy</em></p>
+    slack_configs:
+      - api_url: 'SLACK_WEBHOOK_URL_AQUI'
+        channel: '#ensurance-alerts'
+        username: 'Alertmanager'
+        icon_emoji: ':rotating_light:'
+        title: '🔴 ALERTA CRÍTICA - Ensurance Pharmacy'
+        text: |
+          <!channel>
+          *⚠️ ALERTA CRÍTICA - ACCIÓN INMEDIATA REQUERIDA ⚠️*
+          
+          *Alerta:* {{ .CommonLabels.alertname }}
+          *Severidad:* CRÍTICO
+          *Descripción:* {{ .CommonAnnotations.description }}
+          *Resumen:* {{ .CommonAnnotations.summary }}
+          *Inicio:* {{ .StartsAt }}
+          *Servicio:* {{ .CommonLabels.service }}
+          *Instancia:* {{ .CommonLabels.instance }}
+          
+          *Dashboard:* {{ .CommonAnnotations.dashboard }}
+          *Acción:* {{ .CommonAnnotations.action }}
+        send_resolved: true
+        color: 'danger'
   
   - name: 'warning-notifications'
     email_configs:
@@ -90,6 +125,26 @@ receivers:
           <p><strong>🎯 Servicio:</strong> {{ .CommonLabels.service }}</p>
           <hr>
           <p><em>Sistema de Monitoreo - Ensurance Pharmacy</em></p>
+    slack_configs:
+      - api_url: 'SLACK_WEBHOOK_URL_AQUI'
+        channel: '#ensurance-alerts'
+        username: 'Alertmanager'
+        icon_emoji: ':warning:'
+        title: '⚠️ WARNING - Ensurance Pharmacy'
+        text: |
+          *⚠️ Advertencia de Monitoreo*
+          
+          *Alerta:* {{ .CommonLabels.alertname }}
+          *Severidad:* WARNING
+          *Descripción:* {{ .CommonAnnotations.description }}
+          *Resumen:* {{ .CommonAnnotations.summary }}
+          *Inicio:* {{ .StartsAt }}
+          *Servicio:* {{ .CommonLabels.service }}
+          
+          *Dashboard:* {{ .CommonAnnotations.dashboard }}
+          *Acción:* {{ .CommonAnnotations.action }}
+        send_resolved: true
+        color: 'warning'
   
   - name: 'info-notifications'
     email_configs:
@@ -104,6 +159,22 @@ receivers:
           <p><strong>🕐 Tiempo:</strong> {{ .StartsAt }}</p>
           <hr>
           <p><em>Sistema de Monitoreo - Ensurance Pharmacy</em></p>
+    slack_configs:
+      - api_url: 'SLACK_WEBHOOK_URL_AQUI'
+        channel: '#ensurance-alerts'
+        username: 'Alertmanager'
+        icon_emoji: ':information_source:'
+        title: 'ℹ️ INFO - Ensurance Pharmacy'
+        text: |
+          *ℹ️ Notificación Informativa*
+          
+          *Alerta:* {{ .CommonLabels.alertname }}
+          *Severidad:* INFO
+          *Descripción:* {{ .CommonAnnotations.description }}
+          *Tiempo:* {{ .StartsAt }}
+          *Servicio:* {{ .CommonLabels.service }}
+        send_resolved: true
+        color: 'good'
 
 inhibit_rules:
   - source_match:

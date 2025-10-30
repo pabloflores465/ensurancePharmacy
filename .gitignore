@@ -18,3 +18,15 @@ test-multiple-alerts.sh
 test-all-alerts-complete.sh
 alert-test-results-*.log
 .env.alertmanager
+
+# Archivos con credenciales expuestas (Slack webhook)
+ESTADO-ALERTAS-FUNCIONANDO.md
+RESUMEN-FINAL-ALERTAS.md
+LEER-PRIMERO.md
+
+# Logs de pruebas
+alert-testing-*.log
+test-exhaustivo-*.log
+
+# Backups de alertmanager
+monitoring/alertmanager/*.backup.*
