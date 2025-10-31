@@ -1,0 +1,175 @@
+# ALERTAS DE NETDATA
+# Monitorea métricas avanzadas del sistema y servicios
+# Reemplaza alertas de RabbitMQ con monitoreo más completo
+
+groups:
+  - name: netdata_system_health
+    interval: 30s
+    rules:
+      # ALERTA 21: Netdata Down
+      - alert: NetdataDown
+        expr: up{job="netdata"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: netdata
+          component: monitoring
+        annotations:
+          summary: "🔴 Netdata CAÍDO - Sin métricas de sistema en tiempo real"
+          description: "¡CRÍTICO! Netdata no responde. Sin Netdata, perdemos visibilidad en tiempo real de: CPU por core, RAM detallada, I/O de disco, red por interfaz, procesos individuales, logs del sistema. Es nuestra herramienta principal de diagnóstico en tiempo real."
+          dashboard: "http://localhost:19999"
+          action: "🚨 URGENTE: 1) Ver contenedor: 'docker ps | grep netdata'. 2) Ver logs: 'docker logs ensurance-netdata-full --tail 50'. 3) Reiniciar: 'docker restart ensurance-netdata-full'. 4) Verificar acceso: 'curl http://localhost:19999/api/v1/info'. 5) Revisar permisos de /proc y /sys."
+
+      # ALERTA 22: Temperatura CPU alta
+      - alert: HighCPUTemperature
+        expr: netdata_sensors_temperature_celsius_average > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+          component: hardware
+        annotations:
+          summary: "⚠️ Temperatura CPU alta - Riesgo de throttling"
+          description: "La temperatura de la CPU está en {{ $value }}°C (umbral: 80°C). Temperaturas altas causan: throttling de CPU (reducción de frecuencia), degradación de rendimiento, riesgo de daño de hardware, reinicios inesperados. El servidor puede estar en ambiente caliente o con ventilación bloqueada."
+          dashboard: "http://localhost:19999/#menu_sensors"
+          action: "🔍 Verificar: 1) Ver temperatura: 'sensors' o revisar Netdata. 2) Limpiar ventiladores. 3) Verificar flujo de aire. 4) Reducir carga si es posible. 5) Considerar mejor enfriamiento o migrar carga."
+
+      # ALERTA 23: Procesos en estado Zombie
+      - alert: ZombieProcesses
+        expr: netdata_system_processes_state_zombies_processes > 10
+        for: 10m
+        labels:
+          severity: warning
+          service: system
+          component: processes
+        annotations:
+          summary: "⚠️ Procesos Zombie detectados - Posible fuga de recursos"
+          description: "Hay {{ $value }} procesos zombie en el sistema (umbral: 10). Los zombies son procesos terminados que no fueron limpiados por su proceso padre. Aunque no consumen CPU/RAM, indican bugs en aplicaciones. Demasiados zombies pueden agotar PIDs disponibles y prevenir creación de nuevos procesos."
+          dashboard: "http://localhost:19999/#menu_system_submenu_processes"
+          action: "🔍 Investigar: 1) Ver zombies: 'ps aux | grep defunct'. 2) Identificar proceso padre: 'ps -eo pid,ppid,stat,cmd | grep Z'. 3) Reiniciar proceso padre problemático. 4) Si es recurrente, reportar bug a desarrollo. 5) Como último recurso: reiniciar sistema."
+
+      # ALERTA 24: Demasiados procesos corriendo
+      - alert: TooManyProcesses
+        expr: netdata_system_processes_running_processes > 500
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+          component: processes
+        annotations:
+          summary: "⚠️ Cantidad excesiva de procesos - Posible fork bomb o leak"
+          description: "El sistema tiene {{ $value }} procesos corriendo (umbral: 500). Esto puede indicar: fork bomb (ataque o bug), memory leak en aplicación que crea threads, mal manejo de workers/pools. Demasiados procesos degradan el scheduler y consumen recursos."
+          dashboard: "http://localhost:19999/#menu_system_submenu_processes"
+          action: "🚨 Investigar urgente: 1) Ver procesos: 'ps aux --sort=-%cpu | head -20'. 2) Contar por usuario: 'ps hax -o user | sort | uniq -c | sort -rn'. 3) Si es fork bomb, matar proceso padre. 4) Limitar con ulimit si es necesario. 5) Revisar aplicaciones que crean múltiples procesos."
+
+      # ALERTA 25: Swap en uso (sin RAM disponible)
+      - alert: SwapUsage
+        expr: (netdata_mem_swap_MiB_average / netdata_system_ram_MiB_average) * 100 > 25
+        for: 10m
+        labels:
+          severity: warning
+          service: system
+          component: memory
+        annotations:
+          summary: "⚠️ Sistema usando Swap - RAM insuficiente, rendimiento degradado"
+          description: "El sistema está usando {{ $value }}% de swap (umbral: 25%). El swap es disco usado como memoria - extremadamente lento. Cuando se usa swap, el sistema se vuelve lento porque cada acceso a memoria es en realidad I/O de disco. Indica que la RAM física se agotó completamente."
+          dashboard: "http://localhost:19999/#menu_mem"
+          action: "🔍 Reducir uso de RAM: 1) Ver swap: 'free -h' y 'swapon -s'. 2) Identificar procesos usando swap: 'for file in /proc/*/status; do awk '/VmSwap|Name/{printf $2 \" \" $3}END{ print \"\"}' $file; done | sort -k 2 -n -r | head'. 3) Reiniciar procesos pesados. 4) Agregar más RAM. 5) Deshabilitar swap si no es necesario."
+
+      # ALERTA 26: I/O de disco muy alto
+      - alert: HighDiskIO
+        expr: rate(netdata_disk_io_time_percentage_average[5m]) > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+          component: disk
+        annotations:
+          summary: "⚠️ I/O de disco saturado - Cuello de botella de rendimiento"
+          description: "El disco {{ $labels.family }} está al {{ $value }}% de utilización I/O (umbral: 80%). El disco está saturado procesando lecturas/escrituras. Esto causa: lentitud en todas las aplicaciones, queries de DB lentas, writes bloqueados, load average alto. El disco no puede procesar más operaciones simultáneas."
+          dashboard: "http://localhost:19999/#menu_disk"
+          action: "🔍 Optimizar I/O: 1) Ver qué escribe: 'iotop -o'. 2) Ver procesos con I/O: 'pidstat -d 1'. 3) Identificar: logs excesivos, DB sin índices, backups en progreso. 4) Usar caché si es posible. 5) Migrar a SSD o disco más rápido. 6) Mover cargas pesadas a otros horarios."
+
+      # ALERTA 27: Alta fragmentación de memoria
+      - alert: MemoryFragmentation
+        expr: netdata_mem_fragmentation_index_ratio > 0.7
+        for: 15m
+        labels:
+          severity: warning
+          service: system
+          component: memory
+        annotations:
+          summary: "⚠️ Memoria fragmentada - Asignaciones grandes pueden fallar"
+          description: "La memoria tiene un índice de fragmentación de {{ $value }} (umbral: 0.7, donde 1.0 es completamente fragmentado). Alta fragmentación significa que aunque haya RAM libre, está en pedazos pequeños. Aplicaciones que requieren bloques grandes contiguos pueden fallar con 'out of memory' aunque el sistema reporte RAM disponible."
+          dashboard: "http://localhost:19999/#menu_mem"
+          action: "🔍 Desfragmentar: 1) Ver fragmentación: 'cat /proc/buddyinfo'. 2) Compactar: 'echo 1 > /proc/sys/vm/compact_memory'. 3) Liberar caches: 'sync; echo 3 > /proc/sys/vm/drop_caches'. 4) Reiniciar servicios si es crítico. 5) Considerar reinicio del sistema en mantenimiento."
+
+      # ALERTA 28: Errores de lectura en disco
+      - alert: DiskReadErrors
+        expr: increase(netdata_disk_io_errors_read_errors[10m]) > 5
+        for: 5m
+        labels:
+          severity: critical
+          service: system
+          component: disk
+        annotations:
+          summary: "🔴 Errores de lectura en disco {{ $labels.family }} - Fallo de hardware inminente"
+          description: "¡CRÍTICO! El disco {{ $labels.family }} ha tenido {{ $value }} errores de lectura en los últimos 10 minutos. Errores de lectura indican: sectores dañados, fallo inminente del disco, controladora fallando, cables sueltos. ALTO RIESGO DE PÉRDIDA DE DATOS. El disco puede fallar completamente en cualquier momento."
+          dashboard: "http://localhost:19999/#menu_disk"
+          action: "🚨 ACCIÓN INMEDIATA: 1) Ver SMART: 'smartctl -a /dev/sda'. 2) BACKUP URGENTE de datos críticos. 3) Ver dmesg: 'dmesg | grep -i error'. 4) Revisar conexiones físicas. 5) REEMPLAZAR DISCO urgentemente. 6) Migrar servicios a otro servidor si es posible."
+
+      # ALERTA 29: Conexiones de red sospechosas
+      - alert: SuspiciousNetworkConnections
+        expr: netdata_ipv4_tcp_connections_active_connections > 1000
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+          component: network
+        annotations:
+          summary: "⚠️ Número inusual de conexiones TCP - Posible ataque o fuga"
+          description: "El sistema tiene {{ $value }} conexiones TCP activas (umbral: 1000). Esto puede indicar: ataque DDoS, port scanning, botnet, fuga de conexiones en aplicación, muchos usuarios legítimos. Revisar para determinar si es tráfico legítimo o malicioso."
+          dashboard: "http://localhost:19999/#menu_ipv4"
+          action: "🔍 Investigar conexiones: 1) Contar por IP: 'netstat -tn | awk '{print $5}' | cut -d: -f1 | sort | uniq -c | sort -rn | head -20'. 2) Ver estados: 'netstat -tan | awk '{print $6}' | sort | uniq -c'. 3) Bloquear IPs sospechosas con iptables. 4) Implementar rate limiting. 5) Contactar proveedor si es ataque DDoS."
+
+      # ALERTA 30: Reinicios frecuentes de servicio
+      - alert: FrequentServiceRestarts
+        expr: increase(netdata_systemd_service_unit_failed_state_activations_activations[30m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+          service: systemd
+          component: service-management
+        annotations:
+          summary: "⚠️ Servicio {{ $labels.service }} reiniciando frecuentemente - Inestabilidad"
+          description: "El servicio {{ $labels.service }} ha fallado y reiniciado {{ $value }} veces en 30 minutos. Reinicios frecuentes indican: crashes constantes, bug en el código, recursos insuficientes, configuración incorrecta, dependencias faltantes. El servicio está inestable."
+          dashboard: "http://localhost:19999/#menu_systemd"
+          action: "🔍 Estabilizar servicio: 1) Ver logs: 'journalctl -u {{ $labels.service }} -n 100'. 2) Ver status: 'systemctl status {{ $labels.service }}'. 3) Revisar recursos. 4) Verificar configuración. 5) Deshabilitar auto-restart temporalmente para investigar. 6) Reportar a desarrollo si es bug."
+
+      # ALERTA 31: Logs del sistema creciendo rápidamente
+      - alert: RapidLogGrowth
+        expr: rate(netdata_disk_space_MiB_average{family="/var/log"}[5m]) * 3600 > 1000
+        for: 10m
+        labels:
+          severity: warning
+          service: system
+          component: logs
+        annotations:
+          summary: "⚠️ Logs creciendo rápidamente - Riesgo de llenar disco"
+          description: "Los logs en /var/log están creciendo a {{ $value }} MB/hora. Crecimiento rápido indica: errores en loop, logging excesivo (debug level), ataque generando logs, aplicación mal configurada. Si continúa, puede llenar el disco y causar fallo del sistema."
+          dashboard: "http://localhost:19999/#menu_disk_space"
+          action: "🔍 Controlar logs: 1) Ver archivos grandes: 'du -sh /var/log/* | sort -rh | head -10'. 2) Ver logs activos: 'lsof | grep /var/log'. 3) Rotar logs: 'logrotate -f /etc/logrotate.conf'. 4) Reducir nivel de logging. 5) Implementar log rotation agresivo. 6) Investigar qué genera tantos logs."
+
+      # ALERTA 32: Latencia de red alta
+      - alert: HighNetworkLatency
+        expr: netdata_ping_latency_ms_average > 100
+        for: 5m
+        labels:
+          severity: warning
+          service: network
+          component: connectivity
+        annotations:
+          summary: "⚠️ Latencia de red alta hacia {{ $labels.dimension }} - Conectividad degradada"
+          description: "La latencia de ping hacia {{ $labels.dimension }} es {{ $value }}ms (umbral: 100ms). Alta latencia causa: timeouts en APIs, lentitud en cargas de página, operaciones de BD remotas lentas, experiencia de usuario degradada. Puede indicar: congestión de red, ISP con problemas, saturación de ancho de banda."
+          dashboard: "http://localhost:19999/#menu_ping"
+          action: "🔍 Diagnosticar red: 1) Ping manual: 'ping -c 10 {{ $labels.dimension }}'. 2) Traceroute: 'traceroute {{ $labels.dimension }}'. 3) Ver uso de ancho de banda: 'iftop'. 4) Verificar QoS. 5) Contactar ISP si persiste. 6) Considerar CDN o caché si es servicio externo."

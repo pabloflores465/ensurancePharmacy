@@ -30,3 +30,42 @@ test-exhaustivo-*.log
 
 # Backups de alertmanager
 monitoring/alertmanager/*.backup.*
+
+# Logs
+*.log
+logs/
+backv4/logs/
+backv5/logs/
+
+# SQLite databases
+*.sqlite
+*.db
+
+# Temporary test files
+/tmp/
+
+# Coverage
+coverage/
+*.coverage
+
+# Python
+__pycache__/
+*.pyc
+
+# Node modules
+node_modules/
+
+
+# Archivos con secretos
+scripts/generados/configurar-alertmanager-completo.sh
+scripts/generados/test-rapido-notificacion.sh
+scripts/generados/resumen-notificaciones.md
+scripts/generados/GUIA-PRUEBA-ALERTAS.md
+RESUMEN-SLACK-GMAIL-CONFIGURADO.md
+
+# Archivos de configuración con secretos
+**/alertmanager-personalizado.yml
+**/alertmanager-simple.yml
+
+scripts/generados/actualizar-webhook-slack.sh
+scripts/generados/test-notificaciones-final.sh

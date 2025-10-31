@@ -13,10 +13,10 @@ if [ ! -f ".env.alertmanager" ]; then
     echo "❌ Error: Archivo .env.alertmanager no encontrado"
     echo ""
     echo "Crea el archivo .env.alertmanager con:"
-    echo "SMTP_SMARTHOST=smtp-relay.brevo.com:587"
-    echo "SMTP_FROM=tu_email_verificado@gmail.com"
-    echo "SMTP_USERNAME=tu_usuario@smtp-brevo.com"
-    echo "SMTP_PASSWORD=tu_token_smtp_aqui"
+    echo "SMTP_SMARTHOST=smtp.gmail.com:587"
+    echo "SMTP_FROM=tu_email@gmail.com"
+    echo "SMTP_USERNAME=tu_email@gmail.com"
+    echo "SMTP_PASSWORD=tu_gmail_app_password_aqui"
     echo "SMTP_REQUIRE_TLS=true"
     echo "ALERT_EMAIL_TO=destino1@example.com,destino2@example.com"
     echo "SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
@@ -50,11 +50,20 @@ route:
   group_by: ['alertname', 'cluster', 'service']
   
   routes:
+    # Alertas de aplicaciones caídas - Cada 2 horas para evitar spam
+    - match_re:
+        alertname: '(PharmacyBackendDown|EnsuranceBackendDown|EnsuranceFrontendDown|PharmacyFrontendDown)'
+      receiver: 'critical-notifications'
+      group_wait: 0s
+      repeat_interval: 2h
+      continue: false
+    
+    # Otras alertas críticas - Cada 5 minutos
     - match:
         severity: critical
       receiver: 'critical-notifications'
       group_wait: 0s
-      repeat_interval: 1m
+      repeat_interval: 5m
       
     - match:
         severity: warning

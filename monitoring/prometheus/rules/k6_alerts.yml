@@ -14,10 +14,10 @@ groups:
           service: k6-stress-testing
           component: load-test
         annotations:
-          summary: "⚠️ Alta tasa de errores en test K6"
-          description: "Tasa de errores: {{ $value | humanizePercentage }} (umbral: 5%)"
+          summary: "🔴 K6 Test: Alta tasa de errores - Aplicación fallando bajo carga"
+          description: "El test de carga K6 está detectando {{ $value | humanizePercentage }} de errores (umbral crítico: 5%). Más del 5% de requests están fallando. Esto indica que la aplicación NO soporta la carga actual - puede estar: crasheando, con timeouts, retornando 500s, o DB saturada. El sistema FALLARÍA en producción con esta carga."
           dashboard: "http://localhost:3302/d/k6-stress-test"
-          action: "Revisar aplicación bajo test, posible fallo"
+          action: "🚨 NO DESPLEGAR: 1) Ver logs de aplicación durante test. 2) Reducir carga de K6 para encontrar límite. 3) Identificar endpoint que falla. 4) Optimizar código/queries. 5) Escalar recursos antes de produccion. 6) Repetir test hasta lograr <1% errores."
       
       # ALERTA 34: Response time p95 alto
       - alert: K6HighResponseTimeP95
@@ -28,10 +28,10 @@ groups:
           service: k6-stress-testing
           component: performance
         annotations:
-          summary: "Response time p95 alto en test K6"
-          description: "P95: {{ $value | humanize }}ms (umbral: 1000ms)"
+          summary: "⚠️ K6 Test: Response time P95 alto - Performance degradado"
+          description: "El percentil 95 de tiempo de respuesta es {{ $value | humanize }}ms (umbral: 1000ms). Esto significa que el 5% de usuarios más lentos esperan más de 1 segundo. Bajo carga, la aplicación está lenta. En producción, usuarios experimentarían lentitud notable. Necesita optimización antes de desplegar."
           dashboard: "http://localhost:3302/d/k6-stress-test"
-          action: "Optimizar aplicación o reducir carga"
+          action: "🔍 Optimizar: 1) Ver endpoints lentos en K6 output. 2) Revisar queries de DB sin índices. 3) Implementar caché. 4) Optimizar código ineficiente. 5) Agregar CDN para assets. 6) Considerar scaling horizontal. Target: P95 < 500ms."
       
       # ALERTA 35: Response time p95 crítico
       - alert: K6CriticalResponseTimeP95
@@ -42,10 +42,10 @@ groups:
           service: k6-stress-testing
           component: performance
         annotations:
-          summary: "⚠️ Response time p95 CRÍTICO en test K6"
-          description: "P95: {{ $value | humanize }}ms (umbral crítico: 3000ms)"
+          summary: "🔴 K6 Test: Response time P95 CRÍTICO - Sistema INACEPTABLE"
+          description: "¡CRÍTICO! El P95 es {{ $value | humanize }}ms (umbral crítico: 3000ms = 3 segundos). El 5% de usuarios espera MÁS DE 3 SEGUNDOS por respuesta. Esto es completamente inaceptable para producción. Los usuarios abandonarían el sitio. El sistema está severamente degradado bajo carga. NO APTO PARA PRODUCCION."
           dashboard: "http://localhost:3302/d/k6-stress-test"
-          action: "URGENTE: Sistema degradado, reducir carga"
+          action: "🚨 NO DESPLEGAR: 1) DETENER test. 2) Reducir carga para encontrar punto de quiebre. 3) Perfilar aplicación. 4) Identificar cuello de botella crítico. 5) Refactorizar urgente. 6) Escalar verticalmente/horizontalmente. 7) Re-arquitecturar si es necesario."
       
       # ALERTA 36: Response time p99 muy alto
       - alert: K6HighResponseTimeP99
@@ -56,10 +56,10 @@ groups:
           service: k6-stress-testing
           component: performance
         annotations:
-          summary: "Response time p99 muy alto en test K6"
-          description: "P99: {{ $value | humanize }}ms (umbral: 5000ms)"
+          summary: "⚠️ K6 Test: Response time P99 extremo - Outliers preocupantes"
+          description: "El percentil 99 es {{ $value | humanize }}ms (umbral: 5000ms). El 1% de usuarios más desafortunados espera MÁS DE 5 SEGUNDOS. Aunque es un porcentaje pequeño, representa experiencia pésima para algunos usuarios. Indica variabilidad alta - algunos requests son extremadamente lentos (outliers)."
           dashboard: "http://localhost:3302/d/k6-stress-test"
-          action: "Revisar outliers y cuellos de botella"
+          action: "🔍 Investigar outliers: 1) Ver requests individuales lentos en K6. 2) Buscar: queries N+1, operaciones síncronas pesadas, timeouts. 3) Implementar timeouts agresivos. 4) Cacha operaciones costosas. 5) Usar async/queues para operaciones pesadas. Target: P99 < 2000ms."
       
       # ALERTA 37: Checks fallando en K6
       - alert: K6FailedChecks
@@ -70,10 +70,10 @@ groups:
           service: k6-stress-testing
           component: validation
         annotations:
-          summary: "Checks fallando en test K6"
-          description: "{{ $value }} checks han fallado"
+          summary: "⚠️ K6 Test: Checks fallando - Validaciones incorrectas"
+          description: "{{ $value }} validaciones (checks) de K6 han fallado. Los checks validan que las respuestas sean correctas (status 200, contenido esperado, headers, etc.). Si fallan, significa que la aplicación está retornando respuestas incorrectas o incompletas bajo carga. Funcionalidad degradada."
           dashboard: "http://localhost:3302/d/k6-stress-test"
-          action: "Revisar validaciones del test y respuestas"
+          action: "🔍 Depurar checks: 1) Ver cuál check falla: revisar K6 output. 2) Ver respuesta real vs esperada. 3) Reproducir request manualmente. 4) Revisar código del endpoint. 5) Verificar que DB tenga datos correctos. 6) Ajustar check si expectativa es incorrecta."
       
       # ALERTA 38: Alta tasa de requests
       - alert: K6HighRequestRate
@@ -84,10 +84,10 @@ groups:
           service: k6-stress-testing
           component: load
         annotations:
-          summary: "Alta tasa de requests en test K6"
-          description: "{{ $value | humanize }} requests/s (info: > 1000)"
+          summary: "ℹ️ K6 Test: Alta carga activa - {{ $value | humanize }} req/s"
+          description: "INFO: Test de estrés K6 está generando {{ $value | humanize }} requests por segundo (threshold informativo: >1000). Esta es una alerta informativa para notificar que hay un test de carga intenso corriendo. Esto es NORMAL y ESPERADO durante pruebas de estrés. ÚNICAMENTE preocupante si no hay test programado."
           dashboard: "http://localhost:3302/d/k6-stress-test"
-          action: "Informativo: Test ejecutándose con alta carga"
+          action: "✅ Normal durante testing. 1) Verificar si test está programado. 2) Monitorear métricas de la aplicación. 3) Si NO hay test programado, investigar quién ejecutó K6. 4) Revisar que aplicación soporte la carga. 5) Documentar resultados del test."
       
       # ALERTA 39: Muchos VUs activos
       - alert: K6HighVirtualUsers
@@ -98,10 +98,10 @@ groups:
           service: k6-stress-testing
           component: load
         annotations:
-          summary: "Muchos usuarios virtuales en test K6"
-          description: "{{ $value }} VUs activos (info: > 100)"
+          summary: "ℹ️ K6 Test: {{ $value }} usuarios virtuales activos - Test en progreso"
+          description: "INFO: K6 está simulando {{ $value }} usuarios virtuales concurrentes (threshold informativo: >100). Esta es una notificación de que hay un test de carga con muchos VUs ejecutándose. Es NORMAL durante stress testing. Cada VU simula un usuario real haciendo requests. Más VUs = más carga."
           dashboard: "http://localhost:3302/d/k6-stress-test"
-          action: "Informativo: Test de alta carga ejecutándose"
+          action: "✅ Normal durante testing. 1) Verificar test programado. 2) Monitorear CPU/RAM de aplicación bajo esta carga. 3) Documentar comportamiento. 4) Verificar que sea un test legítimo. 5) Usar resultados para capacity planning."
 
   - name: k6_availability_alerts
     interval: 30s
@@ -115,7 +115,7 @@ groups:
           service: k6-stress-testing
           component: metrics
         annotations:
-          summary: "K6 no está enviando métricas"
-          description: "No se han recibido métricas de K6 en 5 minutos"
+          summary: "⚠️ K6 Pushgateway: No recibe métricas - Test detenido o fallando"
+          description: "El Pushgateway no ha recibido métricas de K6 en los últimos 5 minutos. Esto significa que: test de K6 terminó, K6 crashó, Pushgateway caído, o problema de red. Sin métricas no podemos monitorear los tests de carga. Si el test debería estar corriendo, hay un problema."
           dashboard: "http://localhost:9093"
-          action: "Verificar que K6 está ejecutándose y enviando métricas"
+          action: "🔍 Verificar K6: 1) Ver si K6 está corriendo: 'docker ps | grep k6'. 2) Ver logs: 'docker logs [k6-container]'. 3) Verificar Pushgateway: 'curl http://localhost:9091/metrics'. 4) Re-ejecutar test K6 si falló. 5) Revisar conectividad entre K6 y Pushgateway."

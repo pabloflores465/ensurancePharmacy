@@ -1,5 +1,5 @@
-# ALERTAS DE CI/CD - Jenkins y Pipeline
-# Monitorea builds, deployments y métricas de CI/CD
+# ALERTAS DE CI/CD - Jenkins, SonarQube y Drone
+# Monitorea builds, deployments y calidad de código
 
 groups:
   - name: jenkins_availability_alerts
@@ -14,10 +14,10 @@ groups:
           service: jenkins-ci
           component: server
         annotations:
-          summary: "⚠️ Jenkins CAÍDO"
-          description: "Jenkins no responde desde hace 2 minutos"
+          summary: "🔴 Jenkins CAÍDO - Sistema CI/CD detenido"
+          description: "¡CRÍTICO! Jenkins no responde. Sin Jenkins, TODO el proceso de CI/CD está detenido: no se pueden ejecutar builds, deployments están bloqueados, tests automáticos no corren, pipelines en espera. Desarrollo y operaciones completamente bloqueados. No hay forma de desplegar código nuevo."
           dashboard: "http://localhost:8080/jenkins"
-          action: "URGENTE: Reiniciar contenedor ensurance-jenkins-full"
+          action: "🚨 URGENTE: 1) Ver contenedor: 'docker ps | grep jenkins'. 2) Ver logs: 'docker logs ensurance-jenkins-full --tail 100'. 3) Reiniciar: 'docker restart ensurance-jenkins-full'. 4) Verificar espacio en disco (Jenkins falla sin espacio). 5) Verificar puerto 8080. 6) Acceso: http://localhost:8080/jenkins."
       
       # ALERTA 42: Pushgateway Down
       - alert: PushgatewayDown
@@ -28,10 +28,10 @@ groups:
           service: pushgateway
           component: metrics
         annotations:
-          summary: "Pushgateway caído"
-          description: "Pushgateway no responde desde hace 2 minutos"
+          summary: "⚠️ Pushgateway CAÍDO - Métricas batch perdidas"
+          description: "Pushgateway no responde. Pushgateway recibe métricas de jobs batch y tests de K6. Sin él, perdemos visibilidad de: resultados de stress tests, métricas de jobs programados, estadísticas de builds. No afecta aplicaciones en vivo, solo métricas temporales."
           dashboard: "http://localhost:9093"
-          action: "Reiniciar contenedor ensurance-pushgateway-full"
+          action: "🔍 Recuperar: 1) Ver contenedor: 'docker ps | grep pushgateway'. 2) Ver logs: 'docker logs ensurance-pushgateway-full'. 3) Reiniciar: 'docker restart ensurance-pushgateway-full'. 4) Verificar que K6 pueda conectar. 5) Re-ejecutar tests si es necesario."
 
   - name: jenkins_build_alerts
     interval: 30s
@@ -45,10 +45,10 @@ groups:
           service: jenkins-ci
           component: build
         annotations:
-          summary: "Build fallido en Jenkins: {{ $labels.job_name }}"
-          description: "El build {{ $labels.build_number }} ha fallado"
-          dashboard: "http://localhost:8080/jenkins"
-          action: "Revisar logs del build y corregir errores"
+          summary: "⚠️ Build {{ $labels.job_name }} #{{ $labels.build_number }} FALLIDO"
+          description: "El build {{ $labels.job_name }} #{{ $labels.build_number }} ha fallado. Posibles causas: tests unitarios fallando, error de compilación, lint errors, dependency issues, timeout. El código NO puede desplegarse. Developers deben corregir antes de merge/deploy."
+          dashboard: "http://localhost:8080/jenkins/job/{{ $labels.job_name }}/{{ $labels.build_number }}"
+          action: "🔍 Depurar build: 1) Ver logs en Jenkins. 2) Identificar step que falló. 3) Tests? Fix código. 4) Compilación? Revisar dependencias. 5) Lint? Corregir estilo. 6) Re-ejecutar build después de fix. 7) Notificar a developer responsable."
       
       # ALERTA 44: Build muy lento
       - alert: JenkinsSlowBuild
@@ -59,10 +59,10 @@ groups:
           service: jenkins-ci
           component: performance
         annotations:
-          summary: "Build lento en Jenkins: {{ $labels.job_name }}"
-          description: "El build tarda {{ $value | humanizeDuration }} (umbral: 30 min)"
+          summary: "⚠️ Build {{ $labels.job_name }} muy lento - {{ $value | humanizeDuration }}"
+          description: "El build {{ $labels.job_name }} está tardando {{ $value | humanizeDuration }} (umbral: 30 minutos). Builds lentos afectan productividad: developers esperan mucho por feedback, deploys se retrasan, CI/CD pipeline bloqueado. Puede indicar: tests ineficientes, compilación pesada, recursos insuficientes."
           dashboard: "http://localhost:8080/jenkins"
-          action: "Optimizar pipeline o aumentar recursos"
+          action: "🔍 Optimizar build: 1) Identificar step lento en logs. 2) Paralelizar tests si es posible. 3) Usar caché de dependencias. 4) Optimizar tests lentos. 5) Aumentar executors de Jenkins. 6) Considerar split del pipeline. Target: <10 minutos."
       
       # ALERTA 45: Cola de builds larga
       - alert: JenkinsLongQueue
@@ -73,10 +73,10 @@ groups:
           service: jenkins-ci
           component: queue
         annotations:
-          summary: "Cola de builds larga en Jenkins"
-          description: "{{ $value }} builds en cola (umbral: 5)"
-          dashboard: "http://localhost:8080/jenkins"
-          action: "Aumentar executors o revisar builds bloqueados"
+          summary: "⚠️ Cola de Jenkins saturada - {{ $value }} builds esperando"
+          description: "Hay {{ $value }} builds en cola esperando ejecutarse (umbral: 5). Cola larga significa: developers esperan mucho por builds, feedback loop lento, productividad reducida. Causas: pocos executors, builds lentos, muchos commits concurrentes."
+          dashboard: "http://localhost:8080/jenkins/queue"
+          action: "🔍 Reducir cola: 1) Ver cola en Jenkins. 2) Cancelar builds obsoletos. 3) Aumentar número de executors. 4) Optimizar builds lentos. 5) Priorizar builds críticos. 6) Considerar Jenkins horizontal scaling."
       
       # ALERTA 46: Múltiples builds fallidos consecutivos
       - alert: JenkinsMultipleBuildFailures
@@ -87,10 +87,10 @@ groups:
           service: jenkins-ci
           component: build
         annotations:
-          summary: "⚠️ Múltiples builds fallidos en Jenkins"
-          description: "{{ $value }} builds han fallado en los últimos 15 minutos"
+          summary: "🔴 Múltiples builds fallando - {{ $value }} en 15 min - Problema sistémico"
+          description: "¡CRÍTICO! {{ $value }} builds han fallado en los últimos 15 minutos. Múltiples fallos indican problema sistémico, NO errores aislados. Posibles causas: bug introducido en main/master, servicio externo caído (DB, API), Jenkins mal configurado, infraestructura con problemas. TODO el equipo afectado."
           dashboard: "http://localhost:8080/jenkins"
-          action: "URGENTE: Problema sistemático, revisar pipeline"
+          action: "🚨 URGENTE: 1) Identificar commit que rompió builds. 2) Revert si es necesario. 3) Verificar servicios externos (DB, APIs). 4) Revisar cambios en Jenkins/pipeline. 5) Comunicar al equipo. 6) Bloquear merges hasta resolver. 7) Hotfix prioritario."
 
   - name: jenkins_executor_alerts
     interval: 30s
@@ -104,10 +104,10 @@ groups:
           service: jenkins-ci
           component: executors
         annotations:
-          summary: "Todos los executors de Jenkins están ocupados"
-          description: "{{ $value | humanizePercentage }} executors en uso (umbral: 90%)"
+          summary: "⚠️ Jenkins saturado - {{ $value | humanizePercentage }} executors ocupados"
+          description: "{{ $value | humanizePercentage }} de executors de Jenkins están ocupados (umbral: 90%). Jenkins está a máxima capacidad. Nuevos builds se quedarán en cola esperando. Developers experimentan delays largos. Sistema CI/CD operando al límite."
           dashboard: "http://localhost:8080/jenkins/computer"
-          action: "Aumentar número de executors o distribuir carga"
+          action: "🔍 Escalar Jenkins: 1) Ver executors: Jenkins > Manage Jenkins > Nodes. 2) Aumentar executors por node. 3) Agregar nuevos agents/nodes. 4) Optimizar builds para liberar executors más rápido. 5) Cancelar builds stuck. 6) Considerar cloud executors (AWS/GCP)."
       
       # ALERTA 48: Executor desconectado
       - alert: JenkinsExecutorOffline
@@ -118,10 +118,10 @@ groups:
           service: jenkins-ci
           component: executors
         annotations:
-          summary: "Executor offline en Jenkins"
-          description: "{{ $value }} executors están offline"
+          summary: "⚠️ Jenkins Executor offline - {{ $value }} agents no disponibles"
+          description: "{{ $value }} executors/agents de Jenkins están offline. Executors offline reducen capacidad de Jenkins. Builds se encolan más. Puede indicar: agent crasheado, conectividad de red perdida, agent suspendido manualmente, problema de autenticación."
           dashboard: "http://localhost:8080/jenkins/computer"
-          action: "Reconectar executors o revisar agents"
+          action: "🔍 Reconectar: 1) Ver agents offline en Jenkins. 2) Intentar reconectar desde UI. 3) SSH al agent y verificar proceso. 4) Reiniciar agent: 'java -jar agent.jar'. 5) Revisar conectividad de red. 6) Ver logs del agent. 7) Eliminar y re-agregar si está corrupto."
 
   - name: sonarqube_alerts
     interval: 30s
@@ -135,12 +135,12 @@ groups:
           service: sonarqube
           component: quality
         annotations:
-          summary: "SonarQube caído"
-          description: "SonarQube no responde desde hace 2 minutos"
+          summary: "⚠️ SonarQube CAÍDO - Sin análisis de calidad"
+          description: "SonarQube no responde. Sin SonarQube: no hay análisis de calidad de código, code coverage no se calcula, security vulnerabilities no se detectan, code smells no se reportan. Builds pueden continuar, pero sin quality gates. Deuda técnica no se monitorea."
           dashboard: "http://localhost:9000/sonar"
-          action: "Reiniciar contenedor ensurance-sonarqube-full"
+          action: "🔍 Recuperar SonarQube: 1) Ver contenedor: 'docker ps | grep sonarqube'. 2) Ver logs: 'docker logs ensurance-sonarqube-full --tail 100'. 3) Reiniciar: 'docker restart ensurance-sonarqube-full'. 4) SonarQube requiere mucha RAM, verificar memoria. 5) Acceso: http://localhost:9000/sonar."
       
-      # ALERTA 50: Quality Gate fallido (si se expone métrica)
+      # ALERTA 50: Quality Gate fallido
       - alert: SonarQubeQualityGateFailed
         expr: sonarqube_quality_gate_status{status="ERROR"} > 0
         for: 1m
@@ -149,10 +149,10 @@ groups:
           service: sonarqube
           component: quality
         annotations:
-          summary: "Quality Gate fallido en SonarQube: {{ $labels.project }}"
-          description: "El proyecto no cumple con los estándares de calidad"
-          dashboard: "http://localhost:9000/sonar"
-          action: "Revisar y corregir issues de calidad de código"
+          summary: "⚠️ Quality Gate FALLIDO en {{ $labels.project }} - Código no cumple estándares"
+          description: "El proyecto {{ $labels.project }} NO pasa el Quality Gate de SonarQube. Esto significa: demasiados bugs, security vulnerabilities detectadas, code coverage bajo, código duplicado excesivo, o code smells críticos. El código necesita mejoras antes de merge/deploy."
+          dashboard: "http://localhost:9000/sonar/dashboard?id={{ $labels.project }}"
+          action: "🔍 Mejorar calidad: 1) Ver detalles en SonarQube. 2) Priorizar security issues. 3) Fix bugs críticos. 4) Aumentar test coverage. 5) Refactorizar code smells. 6) Eliminar código duplicado. 7) Re-analizar después de fixes. 8) Considerar ajustar quality gate si es muy estricto."
 
   - name: drone_alerts
     interval: 30s
@@ -166,10 +166,10 @@ groups:
           service: drone-ci
           component: server
         annotations:
-          summary: "Drone Server caído"
-          description: "Drone no responde desde hace 2 minutos"
+          summary: "⚠️ Drone CI CAÍDO - Pipeline alternativo detenido"
+          description: "Drone Server no responde. Drone es un sistema CI/CD alternativo/complementario a Jenkins. Si se usa: pipelines de Drone detenidos, deployments automatizados de Drone bloqueados, webhooks de Git no procesados. Si no se usa activamente, impacto menor."
           dashboard: "http://localhost:8002"
-          action: "Reiniciar contenedor ensurance-drone-full"
+          action: "🔍 Recuperar Drone: 1) Ver contenedor: 'docker ps | grep drone'. 2) Ver logs: 'docker logs ensurance-drone-full'. 3) Reiniciar: 'docker restart ensurance-drone-full'. 4) Verificar integración con Git. 5) Acceso: http://localhost:8002."
       
       # ALERTA 52: Drone Runner Down
       - alert: DroneRunnerDown
@@ -180,7 +180,7 @@ groups:
           service: drone-ci
           component: runner
         annotations:
-          summary: "Drone Runner caído"
-          description: "Drone Runner no responde desde hace 2 minutos"
+          summary: "⚠️ Drone Runner CAÍDO - Ejecutor de pipelines detenido"
+          description: "Drone Runner no responde. El Runner ejecuta los steps de los pipelines de Drone. Sin Runner: pipelines no pueden ejecutarse, builds en cola indefinidamente, Drone Server funciona pero no puede procesar trabajo. Similar a Jenkins executors offline."
           dashboard: "http://localhost:8002"
-          action: "Reiniciar contenedor ensurance-drone-runner-full"
+          action: "🔍 Recuperar Runner: 1) Ver contenedor: 'docker ps | grep drone-runner'. 2) Ver logs: 'docker logs ensurance-drone-runner-full'. 3) Reiniciar: 'docker restart ensurance-drone-runner-full'. 4) Verificar conectividad con Drone Server. 5) Revisar configuración de runner."

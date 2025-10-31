@@ -2,6 +2,23 @@
 # Monitorea métricas del sistema: CPU, Memoria, Disco, Red
 
 groups:
+  - name: system_ram_alerts
+    interval: 30s
+    rules:
+      # ALERTA 0: RAM Usage > 60% (se ejecuta primero)
+      - alert: HighRAMUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 60
+        for: 1m
+        labels:
+          severity: warning
+          service: system
+          component: ram
+        annotations:
+          summary: "⚠️ Uso de RAM elevado - Monitoreo preventivo"
+          description: "El servidor {{ $labels.instance }} tiene un uso de RAM de {{ $value | humanize }}% (umbral de alerta: 60%). Esta es una advertencia temprana para evitar saturación de memoria. La memoria disponible se está reduciendo y es momento de revisar qué aplicaciones están consumiendo recursos."
+          dashboard: "http://localhost:19999"
+          action: "🔍 Ejecutar 'ps aux --sort=-%mem | head -20' para ver procesos con más memoria. Revisar logs de aplicaciones y considerar liberar cache si es necesario. Monitorear tendencia de uso."
+
   - name: system_cpu_alerts
     interval: 30s
     rules:
@@ -14,10 +31,10 @@ groups:
           service: system
           component: cpu
         annotations:
-          summary: "Alto uso de CPU en {{ $labels.instance }}"
-          description: "El uso de CPU está en {{ $value | humanize }}% (umbral: 70%)"
+          summary: "⚠️ CPU elevada - Rendimiento puede verse afectado"
+          description: "El servidor {{ $labels.instance }} está usando {{ $value | humanize }}% de CPU (umbral: 70%). El procesamiento está por encima de lo normal. Si continúa subiendo, podría afectar el rendimiento de las aplicaciones y tiempos de respuesta."
           dashboard: "http://localhost:19999"
-          action: "Revisar procesos con alto consumo de CPU"
+          action: "🔍 Identificar procesos: 'top -o %CPU' o 'htop'. Revisar logs de aplicaciones. Si es Ensurance/Pharmacy backend, considerar escalar horizontalmente o optimizar consultas."
       
       # ALERTA 2: CPU Usage > 90% - CRÍTICO
       - alert: CriticalCPUUsage
@@ -28,10 +45,10 @@ groups:
           service: system
           component: cpu
         annotations:
-          summary: "⚠️ CPU CRÍTICO en {{ $labels.instance }}"
-          description: "El uso de CPU está en {{ $value | humanize }}% (umbral crítico: 90%)"
+          summary: "🔴 CPU CRÍTICO - Sistema saturado - Acción inmediata"
+          description: "¡ALERTA CRÍTICA! El servidor {{ $labels.instance }} está usando {{ $value | humanize }}% de CPU (umbral crítico: 90%). El sistema está saturado y las aplicaciones están experimentando degradación severa de rendimiento. Los usuarios pueden estar experimentando lentitud o timeouts."
           dashboard: "http://localhost:19999"
-          action: "URGENTE: Escalar recursos o detener procesos"
+          action: "🚨 URGENTE: 1) Ver procesos: 'ps aux --sort=-%cpu | head'. 2) Matar procesos si es necesario: 'kill -9 PID'. 3) Reiniciar servicios Docker si aplica. 4) Escalar recursos o agregar CPU. 5) Revisar si hay bucles infinitos o consultas pesadas."
 
   - name: system_memory_alerts
     interval: 30s
@@ -45,10 +62,10 @@ groups:
           service: system
           component: memory
         annotations:
-          summary: "Alto uso de memoria en {{ $labels.instance }}"
-          description: "El uso de memoria está en {{ $value | humanize }}% (umbral: 80%)"
+          summary: "⚠️ Memoria alta - Riesgo de saturación"
+          description: "El servidor {{ $labels.instance }} está usando {{ $value | humanize }}% de memoria RAM (umbral: 80%). La memoria disponible es limitada. Si alcanza 95%, el kernel puede activar el OOM killer y matar procesos automáticamente."
           dashboard: "http://localhost:19999"
-          action: "Revisar procesos con alto consumo de memoria"
+          action: "🔍 Investigar: 'free -h' y 'ps aux --sort=-%mem | head -15'. Revisar si hay memory leaks en Node.js/Java. Considerar reiniciar servicios o liberar cache: 'sync; echo 3 > /proc/sys/vm/drop_caches'."
       
       # ALERTA 4: Memory Usage > 95% - CRÍTICO
       - alert: CriticalMemoryUsage
@@ -59,10 +76,10 @@ groups:
           service: system
           component: memory
         annotations:
-          summary: "⚠️ MEMORIA CRÍTICA en {{ $labels.instance }}"
-          description: "El uso de memoria está en {{ $value | humanize }}% (umbral crítico: 95%)"
+          summary: "🔴 MEMORIA CRÍTICA - OOM killer puede activarse"
+          description: "¡EMERGENCIA! El servidor {{ $labels.instance }} está usando {{ $value | humanize }}% de memoria (umbral crítico: 95%). El sistema está al borde del colapso. El kernel Linux puede activar el OOM (Out Of Memory) killer en cualquier momento, lo cual matará procesos para liberar memoria, potencialmente incluyendo tus aplicaciones críticas."
           dashboard: "http://localhost:19999"
-          action: "URGENTE: Riesgo de OOM killer, reiniciar servicios"
+          action: "🚨 ACCIÓN INMEDIATA: 1) Reiniciar servicios no críticos. 2) 'docker restart [contenedores]'. 3) Liberar cache: 'sync; echo 3 > /proc/sys/vm/drop_caches'. 4) Revisar 'dmesg | grep -i oom' para ver si ya hay kills. 5) Escalar RAM urgentemente."
 
   - name: system_disk_alerts
     interval: 30s
@@ -76,10 +93,10 @@ groups:
           service: system
           component: disk
         annotations:
-          summary: "Alto uso de disco en {{ $labels.instance }}:{{ $labels.mountpoint }}"
-          description: "El uso de disco está en {{ $value | humanize }}% (umbral: 75%)"
+          summary: "⚠️ Espacio en disco limitado - Planificar limpieza"
+          description: "El disco {{ $labels.mountpoint }} en {{ $labels.instance }} está usando {{ $value | humanize }}% de su capacidad (umbral: 75%). El espacio disponible se está agotando. Si alcanza 90%, las aplicaciones pueden fallar al intentar escribir logs, bases de datos o archivos temporales."
           dashboard: "http://localhost:19999"
-          action: "Limpiar archivos temporales o logs antiguos"
+          action: "🔍 Analizar uso: 'df -h' y 'du -sh /* | sort -rh | head -10'. Limpiar: logs antiguos, Docker: 'docker system prune -a', cachés, archivos temp en /tmp. Revisar rotación de logs."
       
       # ALERTA 6: Disk Usage > 90% - CRÍTICO
       - alert: CriticalDiskUsage
@@ -90,10 +107,10 @@ groups:
           service: system
           component: disk
         annotations:
-          summary: "⚠️ DISCO CRÍTICO en {{ $labels.instance }}:{{ $labels.mountpoint }}"
-          description: "El uso de disco está en {{ $value | humanize }}% (umbral crítico: 90%)"
+          summary: "🔴 DISCO CRÍTICO - Fallo inminente de aplicaciones"
+          description: "¡CRÍTICO! El disco {{ $labels.mountpoint }} en {{ $labels.instance }} está al {{ $value | humanize }}% (umbral crítico: 90%). Las aplicaciones pueden comenzar a fallar. Bases de datos no podrán escribir, logs se detendrán, y servicios pueden crashear por falta de espacio."
           dashboard: "http://localhost:19999"
-          action: "URGENTE: Expandir disco o eliminar datos inmediatamente"
+          action: "🚨 URGENTE: 1) Liberar espacio AHORA: 'docker system prune -af --volumes'. 2) Eliminar logs: 'find /var/log -name *.log -mtime +7 -delete'. 3) Ver archivos grandes: 'find / -type f -size +100M 2>/dev/null'. 4) Expandir volumen o agregar disco."
       
       # ALERTA 7: Disk casi lleno (< 5GB libre)
       - alert: DiskAlmostFull
@@ -104,10 +121,10 @@ groups:
           service: system
           component: disk
         annotations:
-          summary: "Disco con poco espacio en {{ $labels.instance }}:{{ $labels.mountpoint }}"
-          description: "Solo quedan {{ $value | humanize }}GB disponibles"
+          summary: "⚠️ Disco con espacio crítico - Menos de 5GB disponibles"
+          description: "El disco {{ $labels.mountpoint }} en {{ $labels.instance }} tiene solo {{ $value | humanize }}GB libres (menos de 5GB). Aunque el porcentaje no sea alto, el espacio absoluto es crítico. Sistemas con poca RAM pueden necesitar swap, bases de datos requieren espacio para operaciones, y logs pueden crecer rápidamente."
           dashboard: "http://localhost:19999"
-          action: "Liberar espacio en disco"
+          action: "🔍 Liberar espacio: 1) 'docker system prune -f'. 2) Limpiar logs: 'journalctl --vacuum-time=3d'. 3) Revisar /tmp y /var/tmp. 4) Comprimir o mover archivos grandes a otro volumen."
 
   - name: system_network_alerts
     interval: 30s
@@ -121,10 +138,10 @@ groups:
           service: system
           component: network
         annotations:
-          summary: "Alto tráfico de red entrante en {{ $labels.instance }}"
-          description: "Tráfico entrante: {{ $value | humanize }}MB/s (umbral: 100MB/s)"
+          summary: "⚠️ Tráfico de red entrante anormalmente alto"
+          description: "El servidor {{ $labels.instance }} está recibiendo {{ $value | humanize }}MB/s de tráfico (umbral: 100MB/s). Esto puede indicar: tráfico legítimo alto (muchos usuarios), ataque DDoS, scraping masivo, o transferencia de datos grande. Monitorear para determinar si es normal o malicioso."
           dashboard: "http://localhost:19999"
-          action: "Verificar conexiones activas y posibles ataques DDoS"
+          action: "🔍 Investigar: 1) Ver conexiones: 'netstat -tnp | grep ESTABLISHED | wc -l'. 2) IPs con más conexiones: 'netstat -tnp | awk '{print $5}' | cut -d: -f1 | sort | uniq -c | sort -nr | head'. 3) Revisar logs de Nginx/Apache. 4) Considerar rate limiting o firewall."
       
       # ALERTA 9: Alto tráfico de red saliente
       - alert: HighNetworkTransmit
@@ -135,10 +152,10 @@ groups:
           service: system
           component: network
         annotations:
-          summary: "Alto tráfico de red saliente en {{ $labels.instance }}"
-          description: "Tráfico saliente: {{ $value | humanize }}MB/s (umbral: 100MB/s)"
+          summary: "⚠️ Tráfico de red saliente anormalmente alto"
+          description: "El servidor {{ $labels.instance }} está enviando {{ $value | humanize }}MB/s de tráfico (umbral: 100MB/s). Puede indicar: backups legítimos, sincronización de datos, respuestas a muchos usuarios, o en el peor caso, exfiltración de datos o servidor comprometido enviando spam/ataques."
           dashboard: "http://localhost:19999"
-          action: "Verificar conexiones activas y posible exfiltración de datos"
+          action: "🔍 Investigar: 1) Procesos con red: 'iftop' o 'nethogs'. 2) Conexiones establecidas: 'netstat -tnp'. 3) Revisar si es backup programado o sincronización normal. 4) Revisar logs de seguridad. 5) Si es sospechoso, aislar servidor."
 
   - name: system_availability_alerts
     interval: 30s
@@ -152,10 +169,10 @@ groups:
           service: system
           component: node-exporter
         annotations:
-          summary: "⚠️ Node Exporter caído en {{ $labels.instance }}"
-          description: "Node Exporter no responde desde hace 1 minuto"
+          summary: "🔴 Node Exporter caído - Sin métricas del sistema"
+          description: "¡CRÍTICO! El Node Exporter en {{ $labels.instance }} no responde. Sin este servicio, Prometheus no puede recolectar métricas del sistema (CPU, RAM, disco, red). Estás volando a ciegas - no hay visibilidad del estado del servidor. Otras alertas de sistema no funcionarán hasta que se recupere."
           dashboard: "http://localhost:19999"
-          action: "URGENTE: Reiniciar contenedor node-exporter"
+          action: "🚨 URGENTE: 1) Verificar contenedor: 'docker ps | grep node-exporter'. 2) Ver logs: 'docker logs ensurance-node-exporter'. 3) Reiniciar: 'docker restart ensurance-node-exporter'. 4) Si persiste, revisar configuración en docker-compose.full.yml."
       
       # ALERTA 11: Sistema con alta carga (Load Average)
       - alert: HighSystemLoad
@@ -166,7 +183,7 @@ groups:
           service: system
           component: load
         annotations:
-          summary: "Alta carga del sistema en {{ $labels.instance }}"
-          description: "Load average (5m): {{ $value | humanize }} (umbral: 2x CPUs)"
+          summary: "⚠️ Carga del sistema elevada - Sistema bajo presión"
+          description: "El load average (5 min) en {{ $labels.instance }} es {{ $value | humanize }}, más del doble de CPUs disponibles. Esto significa que hay más procesos esperando ejecutarse que CPUs disponibles. El sistema está sobrecargado y los procesos están en cola, causando lentitud generalizada."
           dashboard: "http://localhost:19999"
-          action: "Revisar procesos que consumen recursos"
+          action: "🔍 Diagnosticar: 1) Ver load: 'uptime'. 2) Procesos: 'top' o 'htop'. 3) I/O wait: 'iostat -x 1'. 4) Si load es por I/O, revisar disco. 5) Si es por CPU, identificar procesos pesados. 6) Considerar escalar o optimizar aplicaciones."

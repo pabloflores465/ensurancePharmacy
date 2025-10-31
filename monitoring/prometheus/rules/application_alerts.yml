@@ -14,10 +14,10 @@ groups:
           service: pharmacy-backend
           component: backv5
         annotations:
-          summary: "⚠️ Backend Pharmacy (v5) CAÍDO"
-          description: "El backend de Pharmacy no responde desde hace 1 minuto"
+          summary: "🔴 Backend Pharmacy CAÍDO - Sistema de farmacia FUERA DE LÍNEA"
+          description: "¡EMERGENCIA! El backend de Pharmacy (backv5) no responde. Los usuarios NO PUEDEN: crear recetas, consultar medicamentos, procesar ventas, gestionar inventario. El sistema de farmacia está completamente inoperativo. Esto afecta directamente a las operaciones de farmacia y atención a pacientes."
           dashboard: "http://localhost:3103"
-          action: "URGENTE: Reiniciar contenedor ensurance-pharmacy-full"
+          action: "🚨 ACCIÓN INMEDIATA: 1) Ver logs: 'docker logs ensurance-pharmacy-apps --tail 100'. 2) Reiniciar: 'docker restart ensurance-pharmacy-apps'. 3) Verificar DB: revisar conexión a base de datos. 4) Si persiste, revisar /logs/backv5.log. 5) Notificar al equipo de desarrollo."
       
       # ALERTA 13: Backend v4 (Ensurance) Down
       - alert: EnsuranceBackendDown
@@ -28,10 +28,10 @@ groups:
           service: ensurance-backend
           component: backv4
         annotations:
-          summary: "⚠️ Backend Ensurance (v4) CAÍDO"
-          description: "El backend de Ensurance no responde desde hace 1 minuto"
+          summary: "🔴 Backend Ensurance CAÍDO - Sistema de seguros FUERA DE LÍNEA"
+          description: "¡EMERGENCIA! El backend de Ensurance (backv4) no responde. Los usuarios NO PUEDEN: gestionar pólizas de seguro, procesar reclamos, consultar coberturas, validar asegurados. El módulo de seguros está caído, bloqueando operaciones críticas de autorizaciones y pagos."
           dashboard: "http://localhost:3102"
-          action: "URGENTE: Reiniciar contenedor ensurance-pharmacy-full"
+          action: "🚨 ACCIÓN INMEDIATA: 1) Ver logs: 'docker logs ensurance-pharmacy-apps --tail 100'. 2) Reiniciar: 'docker restart ensurance-pharmacy-apps'. 3) Revisar puerto 3102. 4) Verificar DB SQLite: databases/ensurance/. 5) Escalar a desarrollo si no se recupera."
       
       # ALERTA 14: Frontend Ensurance Down
       - alert: EnsuranceFrontendDown
@@ -42,10 +42,10 @@ groups:
           service: ensurance-frontend
           component: vue-app
         annotations:
-          summary: "⚠️ Frontend Ensurance CAÍDO"
-          description: "El frontend de Ensurance no responde desde hace 2 minutos"
+          summary: "🔴 Frontend Ensurance CAÍDO - Interfaz de seguros inaccesible"
+          description: "¡CRÍTICO! El frontend de Ensurance (Vue.js) está caído. Los usuarios no pueden acceder a la aplicación web de seguros. Pantalla en blanco o error 502/503. Aunque el backend funcione, nadie puede usar el sistema. Impacto total en operaciones de seguros."
           dashboard: "http://localhost:3100"
-          action: "URGENTE: Reiniciar contenedor ensurance-pharmacy-full"
+          action: "🚨 URGENTE: 1) Verificar contenedor: 'docker ps | grep ensurance'. 2) Ver logs: 'docker logs ensurance-pharmacy-apps'. 3) Reiniciar: 'docker restart ensurance-pharmacy-apps'. 4) Probar acceso: 'curl http://localhost:3100'. 5) Revisar configuración de Nginx si aplica."
       
       # ALERTA 15: Frontend Pharmacy Down
       - alert: PharmacyFrontendDown
@@ -56,10 +56,10 @@ groups:
           service: pharmacy-frontend
           component: vue-app
         annotations:
-          summary: "⚠️ Frontend Pharmacy CAÍDO"
-          description: "El frontend de Pharmacy no responde desde hace 2 minutos"
+          summary: "🔴 Frontend Pharmacy CAÍDO - Interfaz de farmacia inaccesible"
+          description: "¡CRÍTICO! El frontend de Pharmacy (Vue.js) está caído. Los usuarios no pueden acceder a la aplicación web de farmacia. Sin acceso a la interfaz, no pueden procesar recetas, ventas, o consultar inventario. Sistema completamente bloqueado para usuarios finales."
           dashboard: "http://localhost:3101"
-          action: "URGENTE: Reiniciar contenedor ensurance-pharmacy-full"
+          action: "🚨 URGENTE: 1) Verificar contenedor: 'docker ps | grep pharmacy'. 2) Ver logs: 'docker logs ensurance-pharmacy-apps'. 3) Reiniciar: 'docker restart ensurance-pharmacy-apps'. 4) Probar acceso: 'curl http://localhost:3101'. 5) Verificar que Vue.js compiló correctamente."
 
   - name: application_performance_alerts
     interval: 30s
@@ -73,10 +73,10 @@ groups:
           service: pharmacy-backend
           component: nodejs
         annotations:
-          summary: "Alto uso de memoria heap en Backend Pharmacy"
-          description: "Uso de heap: {{ $value | humanizePercentage }} (umbral: 85%)"
+          summary: "⚠️ Memoria heap alta en Backend Pharmacy - Riesgo de crash"
+          description: "El backend Pharmacy (Node.js) está usando {{ $value | humanizePercentage }} de su heap memory (umbral: 85%). La memoria JavaScript está casi llena. Si alcanza 100%, Node.js lanzará 'JavaScript heap out of memory' y el proceso crasheará, dejando el sistema de farmacia fuera de línea. Posible memory leak o carga excesiva."
           dashboard: "http://localhost:9470"
-          action: "Revisar memory leaks o aumentar heap size"
+          action: "🔍 Investigar: 1) Ver métricas Node.js en puerto 9470. 2) Heap dump si es posible. 3) Revisar logs por memory leaks. 4) Reiniciar temporalmente: 'docker restart ensurance-pharmacy-apps'. 5) Aumentar --max-old-space-size en NODE_OPTIONS. 6) Optimizar código si hay leaks."
       
       # ALERTA 17: Alta memoria en Node.js (Backend v4)
       - alert: HighNodeMemoryBackendV4
@@ -87,10 +87,10 @@ groups:
           service: ensurance-backend
           component: nodejs
         annotations:
-          summary: "Alto uso de memoria heap en Backend Ensurance"
-          description: "Uso de heap: {{ $value | humanizePercentage }} (umbral: 85%)"
+          summary: "⚠️ Memoria heap alta en Backend Ensurance - Riesgo de crash"
+          description: "El backend Ensurance (Node.js) está usando {{ $value | humanizePercentage }} de su heap memory (umbral: 85%). La memoria JavaScript está casi llena. Si alcanza 100%, Node.js lanzará 'JavaScript heap out of memory' y el proceso crasheará, dejando el sistema de seguros fuera de línea. Posible memory leak o carga excesiva."
           dashboard: "http://localhost:9471"
-          action: "Revisar memory leaks o aumentar heap size"
+          action: "🔍 Investigar: 1) Ver métricas Node.js en puerto 9471. 2) Heap dump si es posible. 3) Revisar logs por memory leaks. 4) Reiniciar temporalmente: 'docker restart ensurance-pharmacy-apps'. 5) Aumentar --max-old-space-size en NODE_OPTIONS. 6) Optimizar código si hay leaks."
       
       # ALERTA 18: Event Loop Lag alto
       - alert: HighEventLoopLag
@@ -101,10 +101,10 @@ groups:
           service: backend
           component: nodejs
         annotations:
-          summary: "Event Loop Lag alto en {{ $labels.job }}"
-          description: "Event loop lag: {{ $value | humanize }}s (umbral: 0.5s)"
+          summary: "⚠️ Event Loop bloqueado en {{ $labels.job }} - Aplicación lenta"
+          description: "El Event Loop de Node.js en {{ $labels.job }} tiene un lag de {{ $value | humanize }} segundos (umbral: 0.5s). Esto significa que hay operaciones síncronas bloqueando el hilo principal. Los usuarios experimentan lentitud extrema en todas las operaciones. Cada request tarda segundos en responder."
           dashboard: "http://localhost:9090"
-          action: "Revisar operaciones bloqueantes en el código"
+          action: "🔍 Identificar bloqueos: 1) Revisar logs por operaciones lentas. 2) Buscar: lecturas de archivos síncronas, loops pesados, cálculos complejos. 3) Usar async/await correctamente. 4) Implementar workers para operaciones pesadas. 5) Perfilar código con clinic.js o --inspect."
       
       # ALERTA 19: Garbage Collection frecuente
       - alert: FrequentGarbageCollection
@@ -115,10 +115,10 @@ groups:
           service: backend
           component: nodejs
         annotations:
-          summary: "GC frecuente en {{ $labels.job }}"
-          description: "GC ejecutándose {{ $value | humanize }} veces/s (umbral: 10/s)"
+          summary: "⚠️ Garbage Collection excesivo en {{ $labels.job }} - Degradación de performance"
+          description: "El Garbage Collector de Node.js en {{ $labels.job }} se está ejecutando {{ $value | humanize }} veces por segundo (umbral: 10/s). GC demasiado frecuente indica que la aplicación está creando y destruyendo muchos objetos. Esto causa pausas constantes (stop-the-world) y degrada el rendimiento significativamente."
           dashboard: "http://localhost:9090"
-          action: "Optimizar uso de memoria o aumentar heap"
+          action: "🔍 Optimizar memoria: 1) Revisar uso de objetos temporales. 2) Implementar object pooling. 3) Reducir creación de closures en loops. 4) Aumentar heap si es necesario: NODE_OPTIONS='--max-old-space-size=2048'. 5) Perfilar con heap snapshots."
 
   - name: application_errors_alerts
     interval: 30s
@@ -132,7 +132,7 @@ groups:
           service: application
           component: http
         annotations:
-          summary: "Alta tasa de errores HTTP 5xx en {{ $labels.job }}"
-          description: "Tasa de errores: {{ $value | humanizePercentage }} (umbral: 5%)"
+          summary: "⚠️ Errores HTTP 5xx altos en {{ $labels.job }} - Usuarios afectados"
+          description: "La aplicación {{ $labels.job }} está generando {{ $value | humanizePercentage }} de errores HTTP 5xx (umbral: 5%). Más del 5% de las peticiones están fallando con errores de servidor. Esto afecta directamente a los usuarios - funcionalidades no funcionan, datos no se guardan, operaciones fallan. Posibles causas: bugs en código, DB caída, timeout en servicios externos."
           dashboard: "http://localhost:9090"
-          action: "Revisar logs de aplicación y errores recientes"
+          action: "🚨 Investigar urgente: 1) Ver logs: 'docker logs ensurance-pharmacy-apps --tail 200 | grep ERROR'. 2) Identificar endpoint que falla. 3) Revisar stack traces. 4) Verificar conexión a DB. 5) Revisar servicios externos. 6) Rollback si es deploy reciente."

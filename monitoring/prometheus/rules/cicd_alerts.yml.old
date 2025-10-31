@@ -1,0 +1,186 @@
+# ALERTAS DE CI/CD - Jenkins y Pipeline
+# Monitorea builds, deployments y métricas de CI/CD
+
+groups:
+  - name: jenkins_availability_alerts
+    interval: 30s
+    rules:
+      # ALERTA 41: Jenkins Down
+      - alert: JenkinsDown
+        expr: up{job="jenkins"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: jenkins-ci
+          component: server
+        annotations:
+          summary: "⚠️ Jenkins CAÍDO"
+          description: "Jenkins no responde desde hace 2 minutos"
+          dashboard: "http://localhost:8080/jenkins"
+          action: "URGENTE: Reiniciar contenedor ensurance-jenkins-full"
+      
+      # ALERTA 42: Pushgateway Down
+      - alert: PushgatewayDown
+        expr: up{job="pushgateway"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          service: pushgateway
+          component: metrics
+        annotations:
+          summary: "Pushgateway caído"
+          description: "Pushgateway no responde desde hace 2 minutos"
+          dashboard: "http://localhost:9093"
+          action: "Reiniciar contenedor ensurance-pushgateway-full"
+
+  - name: jenkins_build_alerts
+    interval: 30s
+    rules:
+      # ALERTA 43: Build fallido
+      - alert: JenkinsBuildFailed
+        expr: jenkins_build_result{result="FAILURE"} > 0
+        for: 1m
+        labels:
+          severity: warning
+          service: jenkins-ci
+          component: build
+        annotations:
+          summary: "Build fallido en Jenkins: {{ $labels.job_name }}"
+          description: "El build {{ $labels.build_number }} ha fallado"
+          dashboard: "http://localhost:8080/jenkins"
+          action: "Revisar logs del build y corregir errores"
+      
+      # ALERTA 44: Build muy lento
+      - alert: JenkinsSlowBuild
+        expr: jenkins_build_duration_seconds > 1800
+        for: 1m
+        labels:
+          severity: warning
+          service: jenkins-ci
+          component: performance
+        annotations:
+          summary: "Build lento en Jenkins: {{ $labels.job_name }}"
+          description: "El build tarda {{ $value | humanizeDuration }} (umbral: 30 min)"
+          dashboard: "http://localhost:8080/jenkins"
+          action: "Optimizar pipeline o aumentar recursos"
+      
+      # ALERTA 45: Cola de builds larga
+      - alert: JenkinsLongQueue
+        expr: jenkins_queue_size > 5
+        for: 5m
+        labels:
+          severity: warning
+          service: jenkins-ci
+          component: queue
+        annotations:
+          summary: "Cola de builds larga en Jenkins"
+          description: "{{ $value }} builds en cola (umbral: 5)"
+          dashboard: "http://localhost:8080/jenkins"
+          action: "Aumentar executors o revisar builds bloqueados"
+      
+      # ALERTA 46: Múltiples builds fallidos consecutivos
+      - alert: JenkinsMultipleBuildFailures
+        expr: increase(jenkins_build_result{result="FAILURE"}[15m]) > 3
+        for: 1m
+        labels:
+          severity: critical
+          service: jenkins-ci
+          component: build
+        annotations:
+          summary: "⚠️ Múltiples builds fallidos en Jenkins"
+          description: "{{ $value }} builds han fallado en los últimos 15 minutos"
+          dashboard: "http://localhost:8080/jenkins"
+          action: "URGENTE: Problema sistemático, revisar pipeline"
+
+  - name: jenkins_executor_alerts
+    interval: 30s
+    rules:
+      # ALERTA 47: Todos los executors ocupados
+      - alert: JenkinsAllExecutorsBusy
+        expr: jenkins_executor_busy / jenkins_executor_total > 0.9
+        for: 10m
+        labels:
+          severity: warning
+          service: jenkins-ci
+          component: executors
+        annotations:
+          summary: "Todos los executors de Jenkins están ocupados"
+          description: "{{ $value | humanizePercentage }} executors en uso (umbral: 90%)"
+          dashboard: "http://localhost:8080/jenkins/computer"
+          action: "Aumentar número de executors o distribuir carga"
+      
+      # ALERTA 48: Executor desconectado
+      - alert: JenkinsExecutorOffline
+        expr: jenkins_executor_offline > 0
+        for: 5m
+        labels:
+          severity: warning
+          service: jenkins-ci
+          component: executors
+        annotations:
+          summary: "Executor offline en Jenkins"
+          description: "{{ $value }} executors están offline"
+          dashboard: "http://localhost:8080/jenkins/computer"
+          action: "Reconectar executors o revisar agents"
+
+  - name: sonarqube_alerts
+    interval: 30s
+    rules:
+      # ALERTA 49: SonarQube Down
+      - alert: SonarQubeDown
+        expr: up{job="sonarqube"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          service: sonarqube
+          component: quality
+        annotations:
+          summary: "SonarQube caído"
+          description: "SonarQube no responde desde hace 2 minutos"
+          dashboard: "http://localhost:9000/sonar"
+          action: "Reiniciar contenedor ensurance-sonarqube-full"
+      
+      # ALERTA 50: Quality Gate fallido (si se expone métrica)
+      - alert: SonarQubeQualityGateFailed
+        expr: sonarqube_quality_gate_status{status="ERROR"} > 0
+        for: 1m
+        labels:
+          severity: warning
+          service: sonarqube
+          component: quality
+        annotations:
+          summary: "Quality Gate fallido en SonarQube: {{ $labels.project }}"
+          description: "El proyecto no cumple con los estándares de calidad"
+          dashboard: "http://localhost:9000/sonar"
+          action: "Revisar y corregir issues de calidad de código"
+
+  - name: drone_alerts
+    interval: 30s
+    rules:
+      # ALERTA 51: Drone Server Down
+      - alert: DroneServerDown
+        expr: up{job="drone"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          service: drone-ci
+          component: server
+        annotations:
+          summary: "Drone Server caído"
+          description: "Drone no responde desde hace 2 minutos"
+          dashboard: "http://localhost:8002"
+          action: "Reiniciar contenedor ensurance-drone-full"
+      
+      # ALERTA 52: Drone Runner Down
+      - alert: DroneRunnerDown
+        expr: up{job="drone-runner"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          service: drone-ci
+          component: runner
+        annotations:
+          summary: "Drone Runner caído"
+          description: "Drone Runner no responde desde hace 2 minutos"
+          dashboard: "http://localhost:8002"
+          action: "Reiniciar contenedor ensurance-drone-runner-full"
