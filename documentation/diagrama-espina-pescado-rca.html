@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrama Espina de Pescado - RCA Performance</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+        canvas {
+            width: 100%;
+            height: 1000px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: crosshair;
+        }
+        .legend {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        .legend-item {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+        .legend-item h3 {
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+        .legend-item p {
+            font-size: 0.9em;
+            color: #4a5568;
+            line-height: 1.5;
+        }
+        .code { border-color: #fc8181; }
+        .architecture { border-color: #f6ad55; }
+        .database { border-color: #68d391; }
+        .infrastructure { border-color: #4299e1; }
+        .process { border-color: #9f7aea; }
+        .metrics {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .metric-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Análisis de Causa Raíz (RCA) - Performance</h1>
+        <p class="subtitle">Diagrama de Espina de Pescado (Ishikawa) - EnsurancePharmacy</p>
+        
+        <canvas id="fishboneCanvas"></canvas>
+        
+        <div class="metrics">
+            <div class="metric-card">
+                <div class="metric-value">479ms</div>
+                <div class="metric-label">Ensurance LCP</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">179ms</div>
+                <div class="metric-label">Pharmacy LCP</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">5000</div>
+                <div class="metric-label">Usuarios Backend</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">18</div>
+                <div class="metric-label">Deudas Técnicas</div>
+            </div>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item code">
+                <h3>Código</h3>
+                <p><strong>1.</strong> Passwords almacenadas en texto plano sin hashing BCrypt/Argon2<br>
+                <strong>2.</strong> Lógica de negocio mezclada en DAOs en lugar de capa de servicios<br>
+                <strong>3.</strong> Validaciones manuales sin Bean Validation (JSR-380)<br>
+                <strong>4.</strong> Logging con printStackTrace sin niveles ni correlación</p>
+            </div>
+            <div class="legend-item architecture">
+                <h3>Arquitectura</h3>
+                <p><strong>1.</strong> HttpServer sin middleware para CORS, auth y rate limiting<br>
+                <strong>2.</strong> Ausencia de capa de servicios causando acoplamiento<br>
+                <strong>3.</strong> Entities JPA expuestas directamente sin DTOs<br>
+                <strong>4.</strong> Assets JavaScript/CSS bloqueando render inicial</p>
+            </div>
+            <div class="legend-item database">
+                <h3>Base de Datos</h3>
+                <p><strong>1.</strong> Transacciones manuales sin propagación ni retry logic<br>
+                <strong>2.</strong> Connection pool sin optimizar (HikariCP no configurado)<br>
+                <strong>3.</strong> Queries N+1 por relaciones lazy sin JOIN FETCH<br>
+                <strong>4.</strong> Índices faltantes en columnas de búsqueda frecuente</p>
+            </div>
+            <div class="legend-item infrastructure">
+                <h3>Infraestructura</h3>
+                <p><strong>1.</strong> Headers Cache-Control ausentes para assets estáticos<br>
+                <strong>2.</strong> Jobs CI/CD duplican ejecución de tests en SonarQube<br>
+                <strong>3.</strong> Sin CDN para distribución geográfica de assets<br>
+                <strong>4.</strong> Componentes Vue sin lazy loading dinámico</p>
+            </div>
+            <div class="legend-item process">
+                <h3>Proceso</h3>
+                <p><strong>1.</strong> Cobertura de tests limitada sin casos negativos<br>
+                <strong>2.</strong> Load testing no automatizado ni regular<br>
+                <strong>3.</strong> Deploy manual sin scripts en jobs de GitHub Actions<br>
+                <strong>4.</strong> Monitoreo APM ausente (sin Prometheus/Grafana)</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('fishboneCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = rect.height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            drawFishbone();
+        }
+        
+        function drawFishbone() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const width = canvas.width / window.devicePixelRatio;
+            const height = canvas.height / window.devicePixelRatio;
+            
+            // Main spine (backbone)
+            ctx.strokeStyle = '#2d3748';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(80, height / 2);
+            ctx.lineTo(width - 120, height / 2);
+            ctx.stroke();
+            
+            // Problem head (right side)
+            ctx.fillStyle = '#fc8181';
+            ctx.beginPath();
+            ctx.arc(width - 70, height / 2, 50, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.strokeStyle = '#2d3748';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 13px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Performance', width - 70, height / 2 - 8);
+            ctx.fillText('Degradado', width - 70, height / 2 + 8);
+            
+            // Define categories with detailed descriptions
+            const categories = [
+                {
+                    name: 'Código',
+                    color: '#fc8181',
+                    side: 'top',
+                    causes: [
+                        'Passwords almacenadas en texto plano sin hashing BCrypt/Argon2',
+                        'Lógica de negocio mezclada en DAOs en lugar de capa de servicios',
+                        'Validaciones manuales sin Bean Validation (JSR-380)',
+                        'Logging con printStackTrace sin niveles ni correlación'
+                    ]
+                },
+                {
+                    name: 'Arquitectura',
+                    color: '#f6ad55',
+                    side: 'bottom',
+                    causes: [
+                        'HttpServer sin middleware para CORS, auth y rate limiting',
+                        'Ausencia de capa de servicios causando acoplamiento',
+                        'Entities JPA expuestas directamente sin DTOs',
+                        'Assets JavaScript/CSS bloqueando render inicial'
+                    ]
+                },
+                {
+                    name: 'Base de Datos',
+                    color: '#68d391',
+                    side: 'top',
+                    causes: [
+                        'Transacciones manuales sin propagación ni retry logic',
+                        'Connection pool sin optimizar (HikariCP no configurado)',
+                        'Queries N+1 por relaciones lazy sin JOIN FETCH',
+                        'Índices faltantes en columnas de búsqueda frecuente'
+                    ]
+                },
+                {
+                    name: 'Infraestructura',
+                    color: '#4299e1',
+                    side: 'bottom',
+                    causes: [
+                        'Headers Cache-Control ausentes para assets estáticos',
+                        'Jobs CI/CD duplican ejecución de tests en SonarQube',
+                        'Sin CDN para distribución geográfica de assets',
+                        'Componentes Vue sin lazy loading dinámico'
+                    ]
+                },
+                {
+                    name: 'Proceso',
+                    color: '#9f7aea',
+                    side: 'top',
+                    causes: [
+                        'Cobertura de tests limitada sin casos negativos',
+                        'Load testing no automatizado ni regular',
+                        'Deploy manual sin scripts en jobs de GitHub Actions',
+                        'Monitoreo APM ausente (sin Prometheus/Grafana)'
+                    ]
+                }
+            ];
+            
+            const spineLength = width - 200;
+            const categorySpacing = spineLength / (categories.length + 1);
+            
+            categories.forEach((category, index) => {
+                const x = 80 + categorySpacing * (index + 1);
+                const y = height / 2;
+                const isTop = category.side === 'top';
+                const angleSign = isTop ? -1 : 1;
+                const angle = Math.PI / 4;
+                const branchLength = 150;
+                
+                // Main branch (thicker and longer)
+                ctx.strokeStyle = category.color;
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(
+                    x - Math.cos(angle) * branchLength,
+                    y + angleSign * Math.sin(angle) * branchLength
+                );
+                ctx.stroke();
+                
+                // Category label (with background)
+                const labelX = x - Math.cos(angle) * branchLength;
+                const labelY = y + angleSign * (Math.sin(angle) * branchLength + 25);
+                
+                ctx.fillStyle = 'white';
+                ctx.fillRect(labelX - 55, labelY - 18, 110, 28);
+                ctx.strokeStyle = category.color;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(labelX - 55, labelY - 18, 110, 28);
+                
+                ctx.fillStyle = category.color;
+                ctx.font = 'bold 16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(category.name, labelX, labelY);
+                
+                // Sub-causes with better spacing and multi-line text
+                const causeSpacing = 70;
+                const startOffset = 50;
+                
+                category.causes.forEach((cause, causeIndex) => {
+                    const subY = y + angleSign * (startOffset + causeIndex * causeSpacing);
+                    const subX = x - 90;
+                    
+                    // Sub-branch line
+                    ctx.strokeStyle = category.color;
+                    ctx.lineWidth = 2;
+                    ctx.globalAlpha = 0.7;
+                    ctx.beginPath();
+                    ctx.moveTo(x - Math.cos(angle) * branchLength * 0.5, y + angleSign * Math.sin(angle) * branchLength * 0.5);
+                    ctx.lineTo(subX, subY);
+                    ctx.stroke();
+                    ctx.globalAlpha = 1;
+                    
+                    // Wrap text for long causes
+                    ctx.fillStyle = '#2d3748';
+                    ctx.font = '11px Arial';
+                    ctx.textAlign = isTop ? 'right' : 'left';
+                    
+                    const maxWidth = 180;
+                    const words = cause.split(' ');
+                    let line = '';
+                    let lineY = subY - 8;
+                    const lineHeight = 14;
+                    
+                    words.forEach((word, wordIndex) => {
+                        const testLine = line + word + ' ';
+                        const metrics = ctx.measureText(testLine);
+                        
+                        if (metrics.width > maxWidth && wordIndex > 0) {
+                            ctx.fillText(line.trim(), subX + (isTop ? -10 : 10), lineY);
+                            line = word + ' ';
+                            lineY += lineHeight;
+                        } else {
+                            line = testLine;
+                        }
+                    });
+                    ctx.fillText(line.trim(), subX + (isTop ? -10 : 10), lineY);
+                });
+            });
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+    </script>
+</body>
+</html>

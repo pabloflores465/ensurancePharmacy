@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matriz de Deuda Técnica - EnsurancePharmacy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .matrix-container {
+            background: #f7fafc;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .matrix-title {
+            font-size: 1.5em;
+            color: #2d3748;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        canvas {
+            border-radius: 10px;
+            background: white;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+        }
+        
+        .legend {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid rgba(0,0,0,0.2);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 40px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .priority-list {
+            margin-top: 40px;
+            background: #f7fafc;
+            padding: 30px;
+            border-radius: 15px;
+        }
+        
+        .priority-list h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        
+        .priority-item {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+        
+        .priority-item:hover {
+            transform: translateX(5px);
+        }
+        
+        .priority-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        
+        .badge-critical { background: #fc8181; color: white; }
+        .badge-high { background: #f6ad55; color: white; }
+        .badge-medium { background: #68d391; color: white; }
+        
+        @media (max-width: 1024px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Matriz de Deuda Técnica</h1>
+        <p class="subtitle">EnsurancePharmacy - Análisis de Riesgo vs Impacto</p>
+        
+        <div class="dashboard">
+            <!-- Pipeline Matrix -->
+            <div class="matrix-container">
+                <div class="matrix-title">Pipeline (CI/CD)</div>
+                <canvas id="pipelineCanvas" width="600" height="600"></canvas>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #fc8181;"></div>
+                        <span>Crítico</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f6ad55;"></div>
+                        <span>Alto</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #68d391;"></div>
+                        <span>Medio</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #4299e1;"></div>
+                        <span>Bajo</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Application Matrix -->
+            <div class="matrix-container">
+                <div class="matrix-title">Aplicación (Backend/Frontend)</div>
+                <canvas id="applicationCanvas" width="600" height="600"></canvas>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #fc8181;"></div>
+                        <span>Crítico</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f6ad55;"></div>
+                        <span>Alto</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #68d391;"></div>
+                        <span>Medio</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #4299e1;"></div>
+                        <span>Bajo</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Statistics -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalDebt">18</div>
+                <div class="stat-label">Deudas Totales</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="criticalDebt">5</div>
+                <div class="stat-label">Críticas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="pipelineDebt">9</div>
+                <div class="stat-label">Pipeline</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="appDebt">9</div>
+                <div class="stat-label">Aplicación</div>
+            </div>
+        </div>
+        
+        <!-- Priority Actions by Category -->
+        <div class="priority-list">
+            <h2>Acciones Prioritarias - CI/CD</h2>
+            
+            <div class="priority-item">
+                <span class="priority-badge badge-critical">CRÍTICO</span>
+                <strong>CI/CD - Deploy: Scripts de despliegue no implementados</strong>
+                <p style="margin-top: 10px; color: #4a5568;">Los jobs deploy-* en GitHub Actions tienen comandos vacíos. Integrar scripts/deploy.sh en GitHub Actions para automatizar despliegues por ambiente (dev/qa/main).</p>
+            </div>
+            
+            <div class="priority-item">
+                <span class="priority-badge badge-critical">CRÍTICO</span>
+                <strong>CI/CD - Seguridad: Gestión centralizada de secretos</strong>
+                <p style="margin-top: 10px; color: #4a5568;">Secretos de GitHub Actions y Jenkins sin documentación ni rotación. Implementar Vault/Secret Manager y documentar políticas de rotación.</p>
+            </div>
+            
+            <div class="priority-item">
+                <span class="priority-badge badge-high">ALTA</span>
+                <strong>CI/CD - Performance: Jobs SonarQube duplican tests</strong>
+                <p style="margin-top: 10px; color: #4a5568;">Jobs de SonarQube re-ejecutan mvn test y npm test duplicando tiempo de build. Publicar artifacts de cobertura y reutilizarlos para reducir tiempo 50%.</p>
+            </div>
+            
+            <div class="priority-item">
+                <span class="priority-badge badge-high">ALTA</span>
+                <strong>CI/CD - Performance: Pipeline serial sin paralelización</strong>
+                <p style="margin-top: 10px; color: #4a5568;">Jobs ejecutan secuencialmente aumentando tiempo total. Implementar matrix strategy para ejecutar backend/frontend en paralelo.</p>
+            </div>
+            
+            <div class="priority-item">
+                <span class="priority-badge badge-medium">MEDIA</span>
+                <strong>CI/CD - Calidad: Codecov sin enforcement de cobertura</strong>
+                <p style="margin-top: 10px; color: #4a5568;">No hay bloqueo de merges por cobertura mínima. Configurar status checks en Codecov y Sonar Quality Gate.</p>
+            </div>
+        </div>
+        
+        <div class="priority-list">
+            <h2>Acciones Prioritarias - Aplicación</h2>
+            
+            <div class="priority-item">
+                <span class="priority-badge badge-critical">CRÍTICO</span>
+                <strong>Aplicación - Seguridad: Contraseñas en texto plano</strong>
+                <p style="margin-top: 10px; color: #4a5568;">UserDAO.login compara passwords en texto plano. Implementar BCrypt/Argon2, migrar datos existentes y actualizar flujo de autenticación.</p>
+            </div>
+            
+            <div class="priority-item">
+                <span class="priority-badge badge-critical">CRÍTICO</span>
+                <strong>Aplicación - Autorización: Roles sin validación server-side</strong>
+                <p style="margin-top: 10px; color: #4a5568;">Roles se asignan como espacio vacío sin validación. Implementar enum de roles, validar en handlers y devolver 403 cuando corresponda.</p>
+            </div>
+            
+            <div class="priority-item">
+                <span class="priority-badge badge-high">ALTA</span>
+                <strong>Aplicación - Seguridad: Entities expuestas directamente en APIs</strong>
+                <p style="margin-top: 10px; color: #4a5568;">Entities User, Policy, etc. se serializan directamente. Crear DTOs con MapStruct para ocultar campos sensibles (password, flags internos).</p>
+            </div>
+            
+            <div class="priority-item">
+                <span class="priority-badge badge-high">ALTA</span>
+                <strong>Aplicación - Validación: Validaciones de entrada insuficientes</strong>
+                <p style="margin-top: 10px; color: #4a5568;">Validaciones manuales con regex básicas. Implementar Bean Validation (JSR-380) con DTOs y validaciones globales.</p>
+            </div>
+            
+            <div class="priority-item">
+                <span class="priority-badge badge-medium">MEDIA</span>
+                <strong>Aplicación - Arquitectura: Lógica de negocio en DAOs/Handlers</strong>
+                <p style="margin-top: 10px; color: #4a5568;">Reglas de negocio (expiración servicios, validaciones) en DAOs. Extraer a capa de servicios dedicada.</p>
+            </div>
+            
+            <div class="priority-item">
+                <span class="priority-badge badge-medium">MEDIA</span>
+                <strong>Aplicación - Observabilidad: Logging con printStackTrace</strong>
+                <p style="margin-top: 10px; color: #4a5568;">Errores se registran con e.printStackTrace(). Implementar SLF4J/Logback con niveles y correlación (requestId).</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Datos de deuda técnica - Pipeline CI/CD (Redistribuidos con mayor espaciado)
+        const pipelineDebts = [
+            { name: "Deploy scripts", x: 9.5, y: 8.5, priority: "critical", size: 28, category: "CI/CD - Deploy" },
+            { name: "Gestión secretos", x: 7.5, y: 8, priority: "critical", size: 28, category: "CI/CD - Seguridad" },
+            { name: "SonarQube duplica", x: 8, y: 6.5, priority: "high", size: 24, category: "CI/CD - Performance" },
+            { name: "Pipeline serial", x: 6, y: 7, priority: "high", size: 24, category: "CI/CD - Performance" },
+            { name: "Codecov enforcement", x: 4.5, y: 5.5, priority: "medium", size: 20, category: "CI/CD - Calidad" },
+            { name: "Jenkinsfile monolítico", x: 3.5, y: 6.5, priority: "medium", size: 20, category: "CI/CD - Mantenimiento" },
+            { name: "Drone sin pipeline", x: 6, y: 4, priority: "medium", size: 20, category: "CI/CD - Consistencia" },
+            { name: "Ausencia IaC", x: 4, y: 3.5, priority: "medium", size: 20, category: "CI/CD - Infraestructura" },
+            { name: "Notif. SMTP", x: 2.5, y: 2.5, priority: "low", size: 16, category: "CI/CD - Alertas" }
+        ];
+        
+        // Datos de deuda técnica - Aplicación (Redistribuidos con mayor espaciado)
+        const appDebts = [
+            { name: "Passwords planas", x: 9.5, y: 9.5, priority: "critical", size: 32, category: "Aplicación - Seguridad" },
+            { name: "Roles sin validar", x: 8, y: 8.5, priority: "critical", size: 32, category: "Aplicación - Autorización" },
+            { name: "Entities expuestas", x: 7, y: 7, priority: "high", size: 24, category: "Aplicación - Seguridad" },
+            { name: "Validaciones", x: 5.5, y: 6.5, priority: "high", size: 24, category: "Aplicación - Validación" },
+            { name: "Lógica en DAOs", x: 7, y: 5, priority: "medium", size: 20, category: "Aplicación - Arquitectura" },
+            { name: "Logging", x: 4.5, y: 5, priority: "medium", size: 20, category: "Aplicación - Observabilidad" },
+            { name: "Tests limitados", x: 6, y: 3.5, priority: "medium", size: 20, category: "Aplicación - Calidad" },
+            { name: "Sin middleware", x: 4, y: 3.5, priority: "medium", size: 20, category: "Aplicación - Arquitectura" },
+            { name: "Transacciones", x: 2.5, y: 2.5, priority: "low", size: 16, category: "Aplicación - Persistencia" }
+        ];
+        
+        function drawMatrix(canvasId, debts, title, hoveredDebt = null) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = 60;
+            const gridSize = width - 2 * padding;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Draw grid
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1;
+            
+            // Vertical lines
+            for (let i = 0; i <= 10; i++) {
+                const x = padding + (i * gridSize / 10);
+                ctx.beginPath();
+                ctx.moveTo(x, padding);
+                ctx.lineTo(x, height - padding);
+                ctx.stroke();
+            }
+            
+            // Horizontal lines
+            for (let i = 0; i <= 10; i++) {
+                const y = padding + (i * gridSize / 10);
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(width - padding, y);
+                ctx.stroke();
+            }
+            
+            // Draw quadrants
+            ctx.fillStyle = 'rgba(252, 129, 129, 0.1)'; // Critical zone
+            ctx.fillRect(padding + gridSize / 2, padding, gridSize / 2, gridSize / 2);
+            
+            ctx.fillStyle = 'rgba(246, 173, 85, 0.1)'; // High zone
+            ctx.fillRect(padding, padding, gridSize / 2, gridSize / 2);
+            
+            ctx.fillStyle = 'rgba(104, 211, 145, 0.1)'; // Medium zone
+            ctx.fillRect(padding + gridSize / 2, padding + gridSize / 2, gridSize / 2, gridSize / 2);
+            
+            ctx.fillStyle = 'rgba(66, 153, 225, 0.1)'; // Low zone
+            ctx.fillRect(padding, padding + gridSize / 2, gridSize / 2, gridSize / 2);
+            
+            // Draw axes
+            ctx.strokeStyle = '#2d3748';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
+            ctx.lineTo(width - padding - 10, height - padding - 5);
+            ctx.moveTo(width - padding, height - padding);
+            ctx.lineTo(width - padding - 10, height - padding + 5);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(padding, height - padding);
+            ctx.lineTo(padding, padding);
+            ctx.lineTo(padding - 5, padding + 10);
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding + 5, padding + 10);
+            ctx.stroke();
+            
+            // Labels
+            ctx.fillStyle = '#2d3748';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('RIESGO →', width / 2, height - 20);
+            
+            ctx.save();
+            ctx.translate(20, height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('IMPACTO →', 0, 0);
+            ctx.restore();
+            
+            // Draw debt items
+            debts.forEach(debt => {
+                const x = padding + (debt.x / 10) * gridSize;
+                const y = height - padding - (debt.y / 10) * gridSize;
+                
+                // Color based on priority
+                let color;
+                switch(debt.priority) {
+                    case 'critical': color = '#fc8181'; break;
+                    case 'high': color = '#f6ad55'; break;
+                    case 'medium': color = '#68d391'; break;
+                    default: color = '#4299e1';
+                }
+                
+                // Check if this is the hovered debt
+                const isHovered = hoveredDebt && debt.name === hoveredDebt.name;
+                
+                // Draw highlight ring if hovered
+                if (isHovered) {
+                    ctx.beginPath();
+                    ctx.arc(x, y, debt.size + 8, 0, 2 * Math.PI);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 4;
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, y, debt.size + 12, 0, 2 * Math.PI);
+                    ctx.strokeStyle = color;
+                    ctx.globalAlpha = 0.3;
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    ctx.globalAlpha = 1;
+                }
+                
+                // Draw circle
+                ctx.beginPath();
+                ctx.arc(x, y, debt.size, 0, 2 * Math.PI);
+                ctx.fillStyle = color;
+                ctx.fill();
+                ctx.strokeStyle = isHovered ? '#fff' : 'rgba(0,0,0,0.3)';
+                ctx.lineWidth = isHovered ? 3 : 2;
+                ctx.stroke();
+                
+                // Draw label with category
+                ctx.fillStyle = '#2d3748';
+                ctx.font = 'bold 11px Arial';
+                ctx.textAlign = 'center';
+                const words = debt.name.split(' ');
+                words.forEach((word, i) => {
+                    ctx.fillText(word, x, y + debt.size + 15 + (i * 12));
+                });
+                
+                // Draw category
+                ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                ctx.font = '9px Arial';
+                ctx.fillText(debt.category, x, y + debt.size + 15 + (words.length * 12) + 5);
+            });
+            
+            // Draw zone labels
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            ctx.font = 'bold 12px Arial';
+            ctx.fillText('BAJO', padding + gridSize * 0.25, height - padding - gridSize * 0.75);
+            ctx.fillText('MEDIO', padding + gridSize * 0.25, height - padding - gridSize * 0.25);
+            ctx.fillText('ALTO', padding + gridSize * 0.75, height - padding - gridSize * 0.75);
+            ctx.fillText('CRÍTICO', padding + gridSize * 0.75, height - padding - gridSize * 0.25);
+        }
+        
+        // Draw matrices
+        drawMatrix('pipelineCanvas', pipelineDebts, 'Pipeline CI/CD');
+        drawMatrix('applicationCanvas', appDebts, 'Aplicación');
+        
+        // Add interactivity with tooltip
+        function addTooltip(canvasId, debts) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            let hoveredDebt = null;
+            
+            // Create tooltip element
+            const tooltip = document.createElement('div');
+            tooltip.style.position = 'absolute';
+            tooltip.style.background = 'rgba(0, 0, 0, 0.9)';
+            tooltip.style.color = 'white';
+            tooltip.style.padding = '12px 16px';
+            tooltip.style.borderRadius = '8px';
+            tooltip.style.fontSize = '13px';
+            tooltip.style.pointerEvents = 'none';
+            tooltip.style.display = 'none';
+            tooltip.style.zIndex = '1000';
+            tooltip.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+            tooltip.style.maxWidth = '300px';
+            document.body.appendChild(tooltip);
+            
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                
+                const padding = 60;
+                const gridSize = canvas.width - 2 * padding;
+                
+                let found = false;
+                debts.forEach(debt => {
+                    const x = padding + (debt.x / 10) * gridSize;
+                    const y = canvas.height - padding - (debt.y / 10) * gridSize;
+                    const distance = Math.sqrt((mouseX - x) ** 2 + (mouseY - y) ** 2);
+                    
+                    if (distance < debt.size) {
+                        canvas.style.cursor = 'pointer';
+                        hoveredDebt = debt;
+                        
+                        // Show tooltip
+                        tooltip.innerHTML = `
+                            <strong style="font-size: 14px;">${debt.name}</strong><br>
+                            <span style="color: #cbd5e1;">Categoría:</span> ${debt.category}<br>
+                            <span style="color: #cbd5e1;">Riesgo:</span> ${debt.x}/10<br>
+                            <span style="color: #cbd5e1;">Impacto:</span> ${debt.y}/10<br>
+                            <span style="color: #cbd5e1;">Prioridad:</span> <strong>${debt.priority.toUpperCase()}</strong>
+                        `;
+                        tooltip.style.display = 'block';
+                        tooltip.style.left = (e.clientX + 15) + 'px';
+                        tooltip.style.top = (e.clientY + 15) + 'px';
+                        
+                        found = true;
+                        
+                        // Redraw with highlight
+                        drawMatrix(canvasId, debts, '', hoveredDebt);
+                    }
+                });
+                
+                if (!found) {
+                    canvas.style.cursor = 'default';
+                    tooltip.style.display = 'none';
+                    hoveredDebt = null;
+                    drawMatrix(canvasId, debts, '');
+                }
+            });
+            
+            canvas.addEventListener('mouseleave', () => {
+                tooltip.style.display = 'none';
+                hoveredDebt = null;
+                drawMatrix(canvasId, debts, '');
+            });
+        }
+        
+        addTooltip('pipelineCanvas', pipelineDebts);
+        addTooltip('applicationCanvas', appDebts);
+    </script>
+</body>
+</html>
